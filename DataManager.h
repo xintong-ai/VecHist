@@ -1,6 +1,7 @@
 #ifndef DATA_MANAGER_H
 #define DATA_MANAGER_H
 #include <vector>
+#include <vector_types.h>
 
 class DataManager
 {
@@ -15,6 +16,7 @@ public:
 	std::vector<std::vector<double> > GetScaledVertexPos();
 	std::vector<std::vector<int> > GetFaceVertices();
 	std::vector<float> GetVertexValue();
+	std::vector<float3> GetBlock(int x, int y, int z, int nx, int ny, int nz);
 	~DataManager();
 };
 

@@ -7,12 +7,15 @@ find_package(EIGEN REQUIRED)
 find_package(LIBIGL REQUIRED)
 find_package(GLFW REQUIRED)
 find_package(GLEW)
+find_package(CUDA)
+
 include_directories( ${ANT_TWEAK_BAR_INCLUDE_DIR} )
 #message("ant:" ${ANT_TWEAK_BAR_INCLUDE_DIR})
 include_directories( ${LIBIGL_INCLUDE_DIR})
 include_directories( ${EIGEN_INCLUDE_DIR})
 include_directories( ${GLFW_INCLUDE_DIR})
 include_directories( ${GLEW_INCLUDE_DIR} )
+include_directories( ${CUDA_INCLUDE_DIRS} )
 
 set(SHARED_LIBRARIES
 		${LIBIGL_LIBRARIES}
@@ -23,17 +26,13 @@ set(SHARED_LIBRARIES
 		${GLFW_LIBRARIES}
 )
 
-set(SHARED_SOURCES ${LIBIGL_SOURCES})
 set(GLEW_SOURCES "D:/lib/libigl/external/glew/src/glew.c")
-set(SHARED_SOURCES ${SHARED_SOURCES} ${GLEW_SOURCES})
-message(SHARED_SOURCES ${SHARED_SOURCES})
-# if("${VTK_QT_VERSION}" STREQUAL "")
-  # message(FATAL_ERROR "VTK was not built with Qt")
-# endif()
+set(SHARED_SOURCES ${LIBIGL_SOURCES} ${GLEW_SOURCES})
 
 # Set your files and resources here
-set( Srcs glwidget.cpp main.cpp window.cpp hist.cpp DataManager.cpp)
-set( Hdrs glwidget.h window.h hist.h dstat.h DataManager.h)
+set( Srcs glwidget.cpp main.cpp window.cpp hist.cpp DataManager.cpp HistMesh.cpp)
+set( Hdrs glwidget.h window.h hist.h dstat.h DataManager.h HistMesh.h)
+
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 
