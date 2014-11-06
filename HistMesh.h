@@ -40,6 +40,7 @@ class HistMesh
 	std::vector<int3> faces;
 
 	std::vector<float3> verticesReg;
+	int nSub;
 public:
 	//HistMesh();
 	HistMesh(int level);
@@ -49,7 +50,7 @@ public:
 		std::vector<float3> &vertices, std::vector<std::vector<int>> &faces);
 
 	void ComputeHistMesh(std::vector<float3> data,
-		std::vector<float3> &vertices, std::vector<std::vector<int>> &faces);
+		std::vector<float3> &vertices2, std::vector<std::vector<int>> &faces);
 
 	void VisualizeMesh();
 };

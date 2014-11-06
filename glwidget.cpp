@@ -130,7 +130,7 @@ void GLWidget::initializeGL()
 {
     qglClearColor(qtPurple.dark());
 
-	hist = new Hist(this, "D:/data/isabel/UVWf01.vec", 64);
+	hist = new Hist(this, "D:/data/plume/15plume3d421.vec", 64);
     hist->setColor(qtGreen.dark());
 
     glEnable(GL_DEPTH_TEST);

@@ -511,11 +511,12 @@ void Hist::buildGeometry(int divisions, qreal scale)
 	//	glyph = new Glyph(geom, QVector3D( (i - 0.5) * 2 * a, (j - 0.5) * 2 * a, (k - 0.5) * 2 * a), values, 4);
 	glyph = new Dice(geom, QVector3D(0, 0, 0));// , values);
 //	glyph->SetCorners(dataManager->GetScaledVertexPos());
-	std::vector<float3> datablock = dataManager->GetBlock(1, 1, 1, 2, 2, 2);
-	HistMesh *histMesh = new HistMesh(5);
+	std::vector<float3> datablock = dataManager->GetBlock(150, 150, 150, 64, 64, 64);
+	HistMesh *histMesh = new HistMesh(4);
 	std::vector<float3> vertices;
 	std::vector<std::vector<int>> faces;
 	histMesh->ComputeHistMesh(datablock, vertices, faces);
+	histMesh->VisualizeMesh();
 
 //	glyph->BuildMesh(dataManager->GetFaceVertices());
 	//		glyph = new Glyph(geom, QVector3D( 0,0,0), values, 2);
