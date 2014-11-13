@@ -2,6 +2,15 @@
 #include <stdio.h>
 #include <iostream>
 #include "dstat.h"
+#include <memory>
+
+void DataManager::GetVolumeSize(int &nx, int &ny, int&nz)
+{
+	nx = dim[0];
+	ny = dim[1];
+	nz = dim[2];
+}
+
 
 
 void DataManager::LoadVec(char* filename)
@@ -10,9 +19,8 @@ void DataManager::LoadVec(char* filename)
 	FILE* file;
 	file = fopen(filename, "rb");
 
-	int dims[3];
-	fread(dims, sizeof(int), 3, file);
-	int dimtotal = dims[0] * dims[1] * dims[2];
+	fread(dim, sizeof(int), 3, file);
+	int dimtotal = dim[0] * dim[1] * dim[2];
 
 	data = new float[dimtotal * 3];
 	fread(data, sizeof(float), dimtotal * 3, file);
@@ -80,6 +88,101 @@ std::vector<float3> DataManager::GetBlock(int x, int y, int z, int nx, int ny, i
 		}
 	}
 	return ret;
+}
+
+std::vector<float> ComputePatchSolidAngle(int size)
+{
+	float delta = 2.0 / size;
+	std::vector<float> solAng(size * size);
+	float a1, a2, sa;
+	float b1, b2, sb;
+	float c1, c2, sc;
+	float d1, d2, sd;
+	for (int i = 0; i < size; i++)	{
+		for (int j = 0; j < size; j++)	{
+			a1 = 2 - 2 * i * delta;
+			a2 = 2 - 2 * j * delta;
+			sa = 4 * asin(sin(atan(a1 * 0.5)) * sin(atan(a2 * 0.5)));
+
+			b1 = 2 - 2 * i * delta - 2 * delta;
+			b2 = 2 - 2 * j * delta;
+			sb = 4 * asin(sin(atan(b1 * 0.5)) * sin(atan(b2 * 0.5)));
+
+			c1 = 2 - 2 * i * delta;
+			c2 = 2 - 2 * j * delta - 2 * delta;
+			sc = 4 * asin(sin(atan(c1 * 0.5)) * sin(atan(c2 * 0.5)));
+
+			d1 = 2 - 2 * i * delta - 2 * delta;
+			d2 = 2 - 2 * j * delta - 2 * delta;
+			sd = 4 * asin(sin(atan(d1 * 0.5)) * sin(atan(d2 * 0.5)));
+
+			solAng[i * size + j] = (sa - sb - sc + sd) * 0.25;
+		}
+	}
+	return solAng;
+
+}
+
+inline void ComputeCubeMap(std::vector<float3> data, float* cubemap, const int size)
+{
+	using namespace std;
+	vector<int> binCnt(size * size * 6, 0);// (new int(size * size * 6));
+	//int *binCnt = new int[size * size * 6];
+	const int size2 = size * size;
+
+	float x, y;
+	int binx, biny;
+	
+	for (auto d : data)	{
+		int f = -1;
+		if		(d.x >= abs(d.y) && d.x > abs(d.z))
+			f = 0;
+		else if (d.x < - abs(d.y) && d.x <= - abs(d.z))
+			f = 1;
+		else if (d.y >= abs(d.z) && d.y > abs(d.x))
+			f = 2;
+		else if (d.y < - abs(d.z) && d.y <= - abs(d.x))
+			f = 3;
+		else if (d.z >= abs(d.x) && d.z > abs(d.y))
+			f = 4;
+		else if (d.z < - abs(d.x) && d.z <= - abs(d.y))
+			f = 5;
+		else 
+			continue;
+
+		//switch (f)
+		//{
+		//case 0:
+		//	binCnt
+		//	break;
+		//}
+		int ci = f / 2;
+		x = (d[(ci + 1) % 3]) / d[ci];
+		y = (d[(ci + 2) % 3]) / d[ci];
+
+		float binSize = 2.0 / size;
+		binx = (x + 1) / binSize;
+		biny = (y + 1) / binSize;
+
+		binCnt[f* size2 + binx * size + biny] += 1;
+	}
+
+	vector<float> solAng = ComputePatchSolidAngle(size);
+
+	const float den_uniform = data.size() / (4 * M_PI);
+
+	for (int i = 0; i < size2; i++)	{
+		for (int j = 0; j < 6; j++)	{
+			int idx = j * size2 + i;
+			cubemap[idx] = (float)binCnt[idx] / solAng[i] / den_uniform;
+		}
+	}
+}
+
+void DataManager::GenCubeMap(int x, int y, int z, int nx, int ny, int nz, float* cubemap, int size)
+{
+	std::vector<float3> datablock = GetBlock(x, y, z, nx, ny, nz);
+	ComputeCubeMap(datablock, cubemap, size);
 }
 
 DataManager::~DataManager()
