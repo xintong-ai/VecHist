@@ -17,6 +17,7 @@
     <file>reflection.fsh</file>
     <file>refraction.fsh</file>
     <file>wood.fsh</file>
+	<file>distribution.fsh</file>
     <file>parameters.par</file>
     <file>qt-logo.png</file>
     <file>smiley.png</file>

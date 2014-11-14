@@ -123,7 +123,7 @@ public:
 	explicit GLTextureCube(const QStringList& fileNames, int size = 0);
 	explicit GLTextureCube(int size, int datatype);
 	void load(int size, int face, QRgb *data);
-	void load(int size, int face, float *data);
+	void load(float* data, int size);
     virtual void bind();
     virtual void unbind();
 };

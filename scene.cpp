@@ -514,10 +514,11 @@ void ItemDialog::mouseDoubleClickEvent(QMouseEvent *event)
 //============================================================================//
 
 const static char environmentShaderText[] =
-    "uniform samplerCube env;"
-    "void main() {"
-        "gl_FragColor = textureCube(env, gl_TexCoord[1].xyz);"
-    "}";
+"uniform samplerCube env;"
+"void main() {"
+//"float a = textureCube(env, gl_TexCoord[1].xyz).x * 0.1;"
+"gl_FragColor =  textureCube(env, gl_TexCoord[1].xyz);"//vec4(a, 0, 0, 1.0f);"//vec4(0.0,1.0,0.0,1.0) * 1000;"////
+		"}";
 
 Scene::Scene(int width, int height, int maxTextureSize)
     : m_distExp(600)
@@ -611,7 +612,7 @@ void Scene::initGL()
     //QStringList list;
     //list << ":/res/boxes/cubemap_posx.jpg" << ":/res/boxes/cubemap_negx.jpg" << ":/res/boxes/cubemap_posy.jpg"
     //     << ":/res/boxes/cubemap_negy.jpg" << ":/res/boxes/cubemap_posz.jpg" << ":/res/boxes/cubemap_negz.jpg";
-	m_environment = new GLTextureCube(qMin(1024, m_maxTextureSize));
+	m_environment = new GLTextureCube(qMin(1024, m_maxTextureSize), 1);
 	//m_environment = new GLTextureCube(list, qMin(1024, m_maxTextureSize));
     m_environmentShader = new QGLShader(QGLShader::Fragment);
     m_environmentShader->compileSourceCode(environmentShaderText);
@@ -1113,10 +1114,9 @@ void Scene::setFloatParameter(const QString &name, float value)
 void Scene::UpdateBlock(int x, int y, int z, int nx, int ny, int nz)
 {
 	int size = 32;
-	std::unique_ptr<float> cubemap(new float(size * size * 6));
+	std::unique_ptr<float[]> cubemap(new float[size * size * 6]);
 	dataManager->GenCubeMap(x, y, z, nx, ny, nz, cubemap.get(), size);
-
-
+	m_environment->load(cubemap.get(), size);
 }
 
 void RenderOptionsDialog::setBlock(int x, int y, int z, int nx, int ny, int nz)

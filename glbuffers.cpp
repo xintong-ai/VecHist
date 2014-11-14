@@ -230,6 +230,19 @@ GLTextureCube::GLTextureCube(int size, int datatype)
 }
 
 
+void GLTextureCube::load(float* data, int size)
+{
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_texture);
+
+	for (int i = 0; i < 6; i++) {
+		// Works on x86, so probably works on all little-endian systems.
+		// Does it work on big-endian systems?
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, 4, size, size, 0,
+			GL_LUMINANCE, GL_FLOAT, &data[size * size * i]);
+	}
+
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+}
 ////by Tong
 //GLTextureCube::GLTextureCube(float *data, int size)
 //{
@@ -291,12 +304,6 @@ void GLTextureCube::load(int size, int face, QRgb *data)
             GL_BGRA, GL_UNSIGNED_BYTE, data);
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 }
-
-void GLTextureCube::load(int size, int face, float *data)
-{
-
-}
-
 
 void GLTextureCube::bind()
 {
