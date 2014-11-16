@@ -48,7 +48,8 @@
 #include <QtWidgets>
 #include <QtOpenGL>
 
-#include "box.h"
+#include "glsphere.h"
+//#include "box.h"
 #include "gltrianglemesh.h"
 #include "trackball.h"
 #include "glbuffers.h"
@@ -241,7 +242,7 @@ private:
     RenderOptionsDialog *m_renderOptions;
     ItemDialog *m_itemDialog;
     QTimer *m_timer;
-    GLBox *m_box;
+	GLSphere *m_vecWidget;
     TrackBall m_trackBalls[3];
     QVector<GLTexture *> m_textures;
     GLTextureCube *m_environment;

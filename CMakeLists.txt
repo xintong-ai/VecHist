@@ -30,10 +30,10 @@ set(GLEW_SOURCES "D:/lib/libigl/external/glew/src/glew.c")
 set(SHARED_SOURCES ${LIBIGL_SOURCES} ${GLEW_SOURCES})
 
 # Set your files and resources here
-set( Srcs glwidget.cpp main.cpp window.cpp hist.cpp DataManager.cpp HistMesh.cpp VecDistr.cpp
-	scene.cpp glbuffers.cpp glextensions.cpp box.cpp trackball.cpp 3rdparty/fbm.c)
-set( Hdrs glwidget.h window.h hist.h dstat.h DataManager.h HistMesh.h VecDistr.h vector_types.h
-	scene.h glbuffers.h glextensions.h box.h trackball.h gltrianglemesh.h 3rdparty/fbm.h)
+set( Srcs glwidget.cpp main.cpp window.cpp hist.cpp DataManager.cpp HistMesh.cpp VecDistr.cpp glsphere.cpp
+	scene.cpp glbuffers.cpp glextensions.cpp trackball.cpp 3rdparty/fbm.c) # box.cpp
+set( Hdrs glwidget.h window.h hist.h dstat.h DataManager.h HistMesh.h VecDistr.h vector_types.h glsphere.h
+	scene.h glbuffers.h glextensions.h trackball.h gltrianglemesh.h 3rdparty/fbm.h) #box.h 
 set( Rcs resources/boxes.qrc)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -43,5 +43,5 @@ find_package(Qt5Widgets)
 # qt5_wrap_ui(UI_Srcs ${UIs})
 qt5_add_resources(QtApp_RCC_SRCS ${Rcs})
 add_executable(VecHist ${Srcs} ${Hdrs} ${SHARED_SOURCES} ${QtApp_RCC_SRCS})#${UI_Srcs})# ${MOC_Hdrs})
-qt5_use_modules(VecHist OpenGL)
+qt5_use_modules(VecHist OpenGL GUI)
 target_link_libraries(VecHist  Qt5::Widgets opengl32.lib ${SHARED_LIBRARIES}) 

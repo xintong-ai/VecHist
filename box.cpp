@@ -41,26 +41,36 @@
 
 #include "box.h"
 
-//============================================================================//
-//                                P3T2N3Vertex                                //
-//============================================================================//
+////============================================================================//
+////                                P3T2N3Vertex                                //
+////============================================================================//
+//
+//VertexDescription P3T2N3Vertex::description[] = {
+//	{ VertexDescription::Position, GL_FLOAT, SIZE_OF_MEMBER(P3T2N3Vertex, position) / sizeof(float), 0, 0 },
+//	{ VertexDescription::TexCoord, GL_FLOAT, SIZE_OF_MEMBER(P3T2N3Vertex, texCoord) / sizeof(float), sizeof(QVector3D), 0 },
+//	{ VertexDescription::Normal, GL_FLOAT, SIZE_OF_MEMBER(P3T2N3Vertex, normal) / sizeof(float), sizeof(QVector3D)+sizeof(QVector2D), 0 },
+//
+//	{ VertexDescription::Null, 0, 0, 0, 0 },
+//};
 
-VertexDescription P3T2N3Vertex::description[] = {
-	{ VertexDescription::Position, GL_FLOAT, SIZE_OF_MEMBER(P3T2N3Vertex, position) / sizeof(float), 0, 0 },
-	{ VertexDescription::TexCoord, GL_FLOAT, SIZE_OF_MEMBER(P3T2N3Vertex, texCoord) / sizeof(float), sizeof(QVector3D), 0 },
-	{ VertexDescription::Normal, GL_FLOAT, SIZE_OF_MEMBER(P3T2N3Vertex, normal) / sizeof(float), sizeof(QVector3D)+sizeof(QVector2D), 0 },
+////============================================================================//
+////                                GLRoundedBox                                //
+////============================================================================//
+//
+//float lerp(float a, float b, float t)
+//{
+//	return a * (1.0f - t) + b * t;
+//}
 
-	{ VertexDescription::Null, 0, 0, 0, 0 },
-};
+//
+//VertexDescription P3T2N3Vertex::description[] = {
+//	{ VertexDescription::Position, GL_FLOAT, SIZE_OF_MEMBER(P3T2N3Vertex, position) / sizeof(float), 0, 0 },
+//	{ VertexDescription::TexCoord, GL_FLOAT, SIZE_OF_MEMBER(P3T2N3Vertex, texCoord) / sizeof(float), sizeof(QVector3D), 0 },
+//	{ VertexDescription::Normal, GL_FLOAT, SIZE_OF_MEMBER(P3T2N3Vertex, normal) / sizeof(float), sizeof(QVector3D)+sizeof(QVector2D), 0 },
+//
+//	{ VertexDescription::Null, 0, 0, 0, 0 },
+//};
 
-//============================================================================//
-//                                GLRoundedBox                                //
-//============================================================================//
-
-float lerp(float a, float b, float t)
-{
-	return a * (1.0f - t) + b * t;
-}
 
 GLBox::GLBox(float r, float scale, int n)
 : GLTriangleMesh<P3T2N3Vertex, unsigned short>(8, 36)

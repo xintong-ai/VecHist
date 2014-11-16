@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef GLTRIANGLEMESH_H
-#define GLTRIANGLEMESH_H
+#ifndef GLSPHERE_H
+#define GLSPHERE_H
 
 //#include <GL/glew.h>
 #include "glextensions.h"
@@ -48,54 +48,26 @@
 #include <QtWidgets>
 #include <QtOpenGL>
 
+#include "gltrianglemesh.h"
+#include <QtGui/qvector3d.h>
+#include <QtGui/qvector2d.h>
 #include "glbuffers.h"
 
-//============================================================================//
-//                                P3T2N3Vertex                                //
-//============================================================================//
 
-
-//============================================================================//
-//                                GLRoundedBox                                //
-//============================================================================//
-
-
-template<class TVertex, class TIndex>
-class GLTriangleMesh
+struct P3T2N3Vertex
 {
-public:
-    GLTriangleMesh(int vertexCount, int indexCount) : m_vb(vertexCount), m_ib(indexCount)
-    {
-    }
-
-    virtual ~GLTriangleMesh()
-    {
-    }
-
-    virtual void draw()
-    {
-        if (failed())
-            return;
-
-        int type = GL_UNSIGNED_INT;
-        if (sizeof(TIndex) == sizeof(char)) type = GL_UNSIGNED_BYTE;
-        if (sizeof(TIndex) == sizeof(short)) type = GL_UNSIGNED_SHORT;
-
-        m_vb.bind();
-        m_ib.bind();
-        glDrawElements(GL_TRIANGLES, m_ib.length(), type, BUFFER_OFFSET(0));
-        m_vb.unbind();
-        m_ib.unbind();
-    }
-
-    bool failed()
-    {
-        return m_vb.failed() || m_ib.failed();
-    }
-protected:
-    GLVertexBuffer<TVertex> m_vb;
-    GLIndexBuffer<TIndex> m_ib;
+	QVector3D position;
+	QVector2D texCoord;
+	QVector3D normal;
+	static VertexDescription description[];
 };
 
+class GLSphere : public GLTriangleMesh<P3T2N3Vertex, unsigned short>
+{
+	//Q_OBJECT
+public:
+    // 0 < r < 0.5, 0 <= n <= 125
+	explicit GLSphere(float r = 0.25f, float scale = 1.0f, int n = 10);
+};
 
 #endif

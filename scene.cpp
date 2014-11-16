@@ -517,7 +517,8 @@ const static char environmentShaderText[] =
 "uniform samplerCube env;"
 "void main() {"
 //"float a = textureCube(env, gl_TexCoord[1].xyz).x * 0.1;"
-"gl_FragColor =  textureCube(env, gl_TexCoord[1].xyz);"//vec4(a, 0, 0, 1.0f);"//vec4(0.0,1.0,0.0,1.0) * 1000;"////
+//"gl_FragColor =  textureCube(env, gl_TexCoord[1].xyz);"//vec4(a, 0, 0, 1.0f);"//vec4(0.0,1.0,0.0,1.0) * 1000;"////
+"gl_FragColor =  vec4(0.5f,0.5f,0.5f,1.0f);"
 		"}";
 
 Scene::Scene(int width, int height, int maxTextureSize)
@@ -528,14 +529,14 @@ Scene::Scene(int width, int height, int maxTextureSize)
     , m_currentTexture(0)
     , m_dynamicCubemap(false)
     , m_updateAllCubemaps(true)
-    , m_box(0)
+    , m_vecWidget(0)
     , m_vertexShader(0)
     , m_environmentShader(0)
     , m_environmentProgram(0)
 {
-
 	dataManager = new DataManager();
-	dataManager->LoadVec("D:/data/plume/15plume3d421.vec");
+	//dataManager->LoadVec("D:/data/plume/15plume3d421.vec");
+	dataManager->LoadVec("D:/data/isabel/UVWf01.vec");
 
     setSceneRect(0, 0, width, height);
 
@@ -582,8 +583,8 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
 Scene::~Scene()
 {
-    if (m_box)
-        delete m_box;
+	if (m_vecWidget)
+        delete m_vecWidget;
     foreach (GLTexture *texture, m_textures)
         if (texture) delete texture;
     if (m_mainCubemap)
@@ -604,7 +605,7 @@ Scene::~Scene()
 
 void Scene::initGL()
 {
-    m_box = new GLBox(0.25f, 1.0f, 10);
+	m_vecWidget = new GLSphere(0.25f, 1.0f, 10);
 
     m_vertexShader = new QGLShader(QGLShader::Vertex);
     m_vertexShader->compileSourceFile(QLatin1String(":/res/boxes/basic.vsh"));
@@ -750,7 +751,7 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
         m_environmentProgram->setUniformValue("tex", GLint(0));
         m_environmentProgram->setUniformValue("env", GLint(1));
         m_environmentProgram->setUniformValue("noise", GLint(2));
-        m_box->draw();
+     //   m_vecWidget->draw();
         m_environmentProgram->release();
         m_environment->unbind();
     }
@@ -785,7 +786,7 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
         m_programs[i]->setUniformValue("noise", GLint(2));
         m_programs[i]->setUniformValue("view", view);
         m_programs[i]->setUniformValue("invView", invView);
-        m_box->draw();
+   //     m_vecWidget->draw();
         m_programs[i]->release();
 
         if (glActiveTexture) {
@@ -815,7 +816,7 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
         m_programs[m_currentShader]->setUniformValue("noise", GLint(2));
         m_programs[m_currentShader]->setUniformValue("view", view);
         m_programs[m_currentShader]->setUniformValue("invView", invView);
-        m_box->draw();
+        m_vecWidget->draw();
         m_programs[m_currentShader]->release();
 
         if (glActiveTexture) {
@@ -836,7 +837,7 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
 
 void Scene::setStates()
 {
-    //glClearColor(0.25f, 0.25f, 0.5f, 1.0f);
+    glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);

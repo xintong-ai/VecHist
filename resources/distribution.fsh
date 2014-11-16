@@ -48,5 +48,7 @@ uniform mat4 view;
 
 void main()
 {
-    gl_FragColor = textureCube(env, normal);
+    //gl_FragColor = textureCube(env, normal);
+	float v = textureCube(env, normal).x;
+	gl_FragColor = vec4(v, 0, 1 - v, 1);
 }

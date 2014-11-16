@@ -132,49 +132,66 @@ inline void ComputeCubeMap(std::vector<float3> data, float* cubemap, const int s
 
 	float x, y;
 	int binx, biny;
-	
+	int f = -1;
+
+	//(s,t,r) selects one of the cube map face's 2D mipmap sets 
+	//based on the largest magnitude coordinate direction (the major axis direction). 
 	for (auto d : data)	{
-		int f = -1;
-		if		(d.x >= abs(d.y) && d.x > abs(d.z))
+		if (d.x >= abs(d.y) && d.x > abs(d.z))
+		{
 			f = 0;
-		else if (d.x < - abs(d.y) && d.x <= - abs(d.z))
+			x = (-d.z / abs(d.x) + 1) * 0.5;
+			y = (-d.y / abs(d.x) + 1) * 0.5;
+		}
+		else if (d.x < -abs(d.y) && d.x <= -abs(d.z))
+		{
 			f = 1;
+			x = (d.z / abs(d.x) + 1) * 0.5;
+			y = (-d.y / abs(d.x) + 1) * 0.5;
+		}
 		else if (d.y >= abs(d.z) && d.y > abs(d.x))
+		{
 			f = 2;
+			x = (d.x / abs(d.y) + 1) * 0.5;
+			y = (d.z / abs(d.y) + 1) * 0.5;
+		}
 		else if (d.y < - abs(d.z) && d.y <= - abs(d.x))
+		{
 			f = 3;
+			x = (d.x / abs(d.y) + 1) * 0.5;
+			y = (-d.z / abs(d.y) + 1) * 0.5;
+		}
 		else if (d.z >= abs(d.x) && d.z > abs(d.y))
+		{
 			f = 4;
+			x = (d.x / abs(d.z) + 1) * 0.5;
+			y = (-d.y / abs(d.z) + 1) * 0.5;
+		}
 		else if (d.z < - abs(d.x) && d.z <= - abs(d.y))
+		{
 			f = 5;
+			x = (-d.x / abs(d.z) + 1) * 0.5;
+			y = (-d.y / abs(d.z) + 1) * 0.5;
+		}
 		else 
 			continue;
 
-		//switch (f)
-		//{
-		//case 0:
-		//	binCnt
-		//	break;
-		//}
-		int ci = f / 2;
-		x = (d[(ci + 1) % 3]) / d[ci];
-		y = (d[(ci + 2) % 3]) / d[ci];
+		binx = x * size;
+		biny = y * size;
 
-		float binSize = 2.0 / size;
-		binx = (x + 1) / binSize;
-		biny = (y + 1) / binSize;
-
-		binCnt[f* size2 + binx * size + biny] += 1;
+		binCnt[f* size2 + biny * size + binx] += 1;
 	}
 
 	vector<float> solAng = ComputePatchSolidAngle(size);
 
 	const float den_uniform = data.size() / (4 * M_PI);
 
+	const float scale = 0.03;
+	//const float scale = 0.5;
 	for (int i = 0; i < size2; i++)	{
 		for (int j = 0; j < 6; j++)	{
 			int idx = j * size2 + i;
-			cubemap[idx] = (float)binCnt[idx] / solAng[i] / den_uniform;
+			cubemap[idx] = (float)binCnt[idx] / solAng[i] / den_uniform * scale;
 		}
 	}
 }
