@@ -535,8 +535,8 @@ Scene::Scene(int width, int height, int maxTextureSize)
     , m_environmentProgram(0)
 {
 	dataManager = new DataManager();
-	//dataManager->LoadVec("D:/data/plume/15plume3d421.vec");
-	dataManager->LoadVec("D:/data/isabel/UVWf01.vec");
+	dataManager->LoadVec("D:/data/plume/15plume3d421.vec");
+	//dataManager->LoadVec("D:/data/isabel/UVWf01.vec");
 
     setSceneRect(0, 0, width, height);
 
@@ -1074,6 +1074,44 @@ void Scene::wheelEvent(QGraphicsSceneWheelEvent * event)
     }
 }
 
+void Scene::keyPressEvent(QKeyEvent *event)
+{
+	QGraphicsScene::keyPressEvent(event);
+		//m_blockLoc[1]->text().toInt(),
+		//m_blockLoc[2]->text().toInt(),
+		//m_blockSize[0]->text().toInt(),
+		//m_blockSize[1]->text().toInt(),
+		//m_blockSize[2]->text().toInt()
+	int change = 50;
+	switch (event->key())
+	{
+	case Qt::Key_W:
+		m_renderOptions->changeBlockLoc(0, change);
+		m_renderOptions->updateBlock();
+		break;
+	case Qt::Key_S:
+		m_renderOptions->changeBlockLoc(0, -change);
+		m_renderOptions->updateBlock();
+		break;
+	case Qt::Key_A:
+		m_renderOptions->changeBlockLoc(1, change);
+		m_renderOptions->updateBlock();
+		break;
+	case Qt::Key_D:
+		m_renderOptions->changeBlockLoc(1, -change);
+		m_renderOptions->updateBlock();
+		break;
+	case Qt::Key_Q:
+		m_renderOptions->changeBlockLoc(2, change);
+		m_renderOptions->updateBlock();
+		break;
+	case Qt::Key_E:
+		m_renderOptions->changeBlockLoc(2, -change);
+		m_renderOptions->updateBlock();
+		break;
+	}
+}
+
 void Scene::setShader(int index)
 {
     if (index >= 0 && index < m_fragmentShaders.size())
@@ -1130,8 +1168,15 @@ void RenderOptionsDialog::setBlock(int x, int y, int z, int nx, int ny, int nz)
 	m_blockSize[1]->setText(QString::number(ny));
 	m_blockSize[2]->setText(QString::number(nz));
 
+	m_blockLoc[0]->setValidator(new QIntValidator(0, nx - 1));
+	m_blockLoc[1]->setValidator(new QIntValidator(0, ny - 1));
+	m_blockLoc[2]->setValidator(new QIntValidator(0, nz - 1));
 }
 
+void RenderOptionsDialog::changeBlockLoc(const int idx, const int val)
+{
+	m_blockLoc[idx]->setText(QString::number(m_blockLoc[idx]->text().toInt() + val));
+}
 
 //void Scene::newItem(ItemDialog::ItemType type)
 //{

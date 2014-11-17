@@ -47,6 +47,7 @@
 
 #include <QtWidgets>
 #include <QtOpenGL>
+#include <QtGui>
 
 #include "glsphere.h"
 //#include "box.h"
@@ -144,15 +145,16 @@ public:
     int addTexture(const QString &name);
     int addShader(const QString &name);
     void emitParameterChanged();
+	void changeBlockLoc(const int idx, const int val);
 
 public slots:
 	void setBlock(int x, int y, int z, int nx, int ny, int nz);
+	void updateBlock();
 
 
 protected slots:
     void setColorParameter(QRgb color, int id);
     void setFloatParameter(float value, int id);
-	void updateBlock();
 signals:
     void dynamicCubemapToggled(int);
     void colorParameterChanged(const QString &, QRgb);
@@ -223,6 +225,7 @@ protected:
     virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
     virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
     virtual void wheelEvent(QGraphicsSceneWheelEvent * event);
+	virtual void keyPressEvent(QKeyEvent *event);
 private:
     void initGL();
     QPointF pixelPosToViewPos(const QPointF& p);

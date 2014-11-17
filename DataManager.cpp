@@ -1,8 +1,11 @@
 #include "DataManager.h"
 #include <stdio.h>
 #include <iostream>
-#include "dstat.h"
+//#include "dstat.h"
 #include <memory>
+
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 void DataManager::GetVolumeSize(int &nx, int &ny, int&nz)
 {
@@ -186,8 +189,8 @@ inline void ComputeCubeMap(std::vector<float3> data, float* cubemap, const int s
 
 	const float den_uniform = data.size() / (4 * M_PI);
 
-	const float scale = 0.03;
-	//const float scale = 0.5;
+	//const float scale = 0.03;	//for isabel
+	const float scale = 0.3;	//for plume
 	for (int i = 0; i < size2; i++)	{
 		for (int j = 0; j < 6; j++)	{
 			int idx = j * size2 + i;
