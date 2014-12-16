@@ -219,7 +219,7 @@ protected:
     void setStates();
     void setLights();
     void defaultStates();
-    void renderCubemaps();
+    //void renderCubemaps();
 
     virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
     virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);

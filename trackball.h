@@ -61,10 +61,12 @@ public:
     void push(const QPointF& p, const QQuaternion &transformation);
     void move(const QPointF& p, const QQuaternion &transformation);
     void release(const QPointF& p, const QQuaternion &transformation);
+	void translate(const QPointF& p, const QQuaternion &transformation);
     void start(); // starts clock
     void stop(); // stops clock
     QQuaternion rotation() const;
 private:
+	//float m_translate[3];
     QQuaternion m_rotation;
     QVector3D m_axis;
     float m_angularVelocity;

@@ -541,7 +541,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
     setSceneRect(0, 0, width, height);
 
     m_trackBalls[0] = TrackBall(0.05f, QVector3D(0, 1, 0), TrackBall::Sphere);
-    m_trackBalls[1] = TrackBall(0.005f, QVector3D(0, 0, 1), TrackBall::Sphere);
+    //m_trackBalls[1] = TrackBall(0.005f, QVector3D(0, 0, 1), TrackBall::Sphere);
     m_trackBalls[2] = TrackBall(0.0f, QVector3D(0, 1, 0), TrackBall::Plane);
 
     m_renderOptions = new RenderOptionsDialog;
@@ -735,79 +735,81 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
         m_textures[m_currentTexture]->bind();
     }
 
-    glDisable(GL_LIGHTING);
-    glDisable(GL_CULL_FACE);
+	/*****The following is for rendering background******/
+    //glDisable(GL_LIGHTING);
+    //glDisable(GL_CULL_FACE);
 
-    QMatrix4x4 viewRotation(view);
-    viewRotation(3, 0) = viewRotation(3, 1) = viewRotation(3, 2) = 0.0f;
-    viewRotation(0, 3) = viewRotation(1, 3) = viewRotation(2, 3) = 0.0f;
-    viewRotation(3, 3) = 1.0f;
-    loadMatrix(viewRotation);
-    glScalef(20.0f, 20.0f, 20.0f);
+    //QMatrix4x4 viewRotation(view);
+    //viewRotation(3, 0) = viewRotation(3, 1) = viewRotation(3, 2) = 0.0f;
+    //viewRotation(0, 3) = viewRotation(1, 3) = viewRotation(2, 3) = 0.0f;
+    //viewRotation(3, 3) = 1.0f;
+    //loadMatrix(viewRotation);
+    //glScalef(20.0f, 20.0f, 20.0f);
 
     // Don't render the environment if the environment texture can't be set for the correct sampler.
-    if (glActiveTexture) {
-        m_environment->bind();
-        m_environmentProgram->bind();
-        m_environmentProgram->setUniformValue("tex", GLint(0));
-        m_environmentProgram->setUniformValue("env", GLint(1));
-        m_environmentProgram->setUniformValue("noise", GLint(2));
-     //   m_vecWidget->draw();
-        m_environmentProgram->release();
-        m_environment->unbind();
-    }
+    //if (glActiveTexture) {
+    //    m_environment->bind();
+    //    m_environmentProgram->bind();
+    //    m_environmentProgram->setUniformValue("tex", GLint(0));
+    //    m_environmentProgram->setUniformValue("env", GLint(1));
+    //    m_environmentProgram->setUniformValue("noise", GLint(2));
+    // //   m_vecWidget->draw();
+    //    m_environmentProgram->release();
+    //    m_environment->unbind();
+    //}
 
     loadMatrix(view);
 
-    glEnable(GL_CULL_FACE);
-    glEnable(GL_LIGHTING);
+    //glEnable(GL_CULL_FACE);
+    //glEnable(GL_LIGHTING);
 
-    for (int i = 0; i < m_programs.size(); ++i) {
-        if (i == excludeBox)
-            continue;
+   // for (int i = 0; i < m_programs.size(); ++i) {
+   //     if (i == excludeBox)
+   //         continue;
 
-        glPushMatrix();
-        QMatrix4x4 m;
-        m.rotate(m_trackBalls[1].rotation());
-        glMultMatrixf(m.constData());
+   //     glPushMatrix();
+   //     QMatrix4x4 m;
+   //     m.rotate(m_trackBalls[1].rotation());
+   //     glMultMatrixf(m.constData());
 
-        glRotatef(360.0f * i / m_programs.size(), 0.0f, 0.0f, 1.0f);
-        glTranslatef(2.0f, 0.0f, 0.0f);
-        glScalef(0.3f, 0.6f, 0.6f);
+   //     glRotatef(360.0f * i / m_programs.size(), 0.0f, 0.0f, 1.0f);
+   //     glTranslatef(2.0f, 0.0f, 0.0f);
+   //     glScalef(0.3f, 0.6f, 0.6f);
 
-        if (glActiveTexture) {
-            if (m_dynamicCubemap && m_cubemaps[i])
-                m_cubemaps[i]->bind();
-            else
-                m_environment->bind();
-        }
-        m_programs[i]->bind();
-        m_programs[i]->setUniformValue("tex", GLint(0));
-        m_programs[i]->setUniformValue("env", GLint(1));
-        m_programs[i]->setUniformValue("noise", GLint(2));
-        m_programs[i]->setUniformValue("view", view);
-        m_programs[i]->setUniformValue("invView", invView);
-   //     m_vecWidget->draw();
-        m_programs[i]->release();
+   //     if (glActiveTexture) {
+   //         if (m_dynamicCubemap && m_cubemaps[i])
+   //             m_cubemaps[i]->bind();
+   //         else
+   //             m_environment->bind();
+   //     }
+   //     m_programs[i]->bind();
+   //     m_programs[i]->setUniformValue("tex", GLint(0));
+   //     m_programs[i]->setUniformValue("env", GLint(1));
+   //     m_programs[i]->setUniformValue("noise", GLint(2));
+   //     m_programs[i]->setUniformValue("view", view);
+   //     m_programs[i]->setUniformValue("invView", invView);
+   ////     m_vecWidget->draw();
+   //     m_programs[i]->release();
 
-        if (glActiveTexture) {
-            if (m_dynamicCubemap && m_cubemaps[i])
-                m_cubemaps[i]->unbind();
-            else
-                m_environment->unbind();
-        }
-        glPopMatrix();
-    }
+   //     if (glActiveTexture) {
+   //         if (m_dynamicCubemap && m_cubemaps[i])
+   //             m_cubemaps[i]->unbind();
+   //         else
+   //             m_environment->unbind();
+   //     }
+   //     glPopMatrix();
+   // }
 
     if (-1 != excludeBox) {
         QMatrix4x4 m;
         m.rotate(m_trackBalls[0].rotation());
         glMultMatrixf(m.constData());
+		//glTranslatef(m_translate[0], m_translate[1], m_translate[2]);
 
         if (glActiveTexture) {
-            if (m_dynamicCubemap)
-                m_mainCubemap->bind();
-            else
+            //if (m_dynamicCubemap)
+            //    m_mainCubemap->bind();
+            //else
                 m_environment->bind();
         }
 
@@ -821,9 +823,9 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
         m_programs[m_currentShader]->release();
 
         if (glActiveTexture) {
-            if (m_dynamicCubemap)
-                m_mainCubemap->unbind();
-            else
+            //if (m_dynamicCubemap)
+            //    m_mainCubemap->unbind();
+            //else
                 m_environment->unbind();
         }
     }
@@ -898,62 +900,62 @@ void Scene::defaultStates()
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 0.0f);
 }
 
-void Scene::renderCubemaps()
-{
-    // To speed things up, only update the cubemaps for the small cubes every N frames.
-    const int N = (m_updateAllCubemaps ? 1 : 3);
-
-    QMatrix4x4 mat;
-    GLRenderTargetCube::getProjectionMatrix(mat, 0.1f, 100.0f);
-
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    loadMatrix(mat);
-
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-
-    QVector3D center;
-
-    for (int i = m_frame % N; i < m_cubemaps.size(); i += N) {
-        if (0 == m_cubemaps[i])
-            continue;
-
-        float angle = 2.0f * PI * i / m_cubemaps.size();
-
-        center = m_trackBalls[1].rotation().rotatedVector(QVector3D(cos(angle), sin(angle), 0.0f));
-
-        for (int face = 0; face < 6; ++face) {
-            m_cubemaps[i]->begin(face);
-
-            GLRenderTargetCube::getViewMatrix(mat, face);
-            QVector4D v = QVector4D(-center.x(), -center.y(), -center.z(), 1.0);
-            mat.setColumn(3, mat * v);
-
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            renderBoxes(mat, i);
-
-            m_cubemaps[i]->end();
-        }
-    }
-
-    for (int face = 0; face < 6; ++face) {
-        m_mainCubemap->begin(face);
-        GLRenderTargetCube::getViewMatrix(mat, face);
-
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        renderBoxes(mat, -1);
-
-        m_mainCubemap->end();
-    }
-
-    glPopMatrix();
-
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-
-    m_updateAllCubemaps = false;
-}
+//void Scene::renderCubemaps()
+//{
+//    // To speed things up, only update the cubemaps for the small cubes every N frames.
+//    const int N = (m_updateAllCubemaps ? 1 : 3);
+//
+//    QMatrix4x4 mat;
+//    GLRenderTargetCube::getProjectionMatrix(mat, 0.1f, 100.0f);
+//
+//    glMatrixMode(GL_PROJECTION);
+//    glPushMatrix();
+//    loadMatrix(mat);
+//
+//    glMatrixMode(GL_MODELVIEW);
+//    glPushMatrix();
+//
+//    QVector3D center;
+//
+//    for (int i = m_frame % N; i < m_cubemaps.size(); i += N) {
+//        if (0 == m_cubemaps[i])
+//            continue;
+//
+//        float angle = 2.0f * PI * i / m_cubemaps.size();
+//
+//        center = m_trackBalls[1].rotation().rotatedVector(QVector3D(cos(angle), sin(angle), 0.0f));
+//
+//        for (int face = 0; face < 6; ++face) {
+//            m_cubemaps[i]->begin(face);
+//
+//            GLRenderTargetCube::getViewMatrix(mat, face);
+//            QVector4D v = QVector4D(-center.x(), -center.y(), -center.z(), 1.0);
+//            mat.setColumn(3, mat * v);
+//
+//            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//            renderBoxes(mat, i);
+//
+//            m_cubemaps[i]->end();
+//        }
+//    }
+//
+//    for (int face = 0; face < 6; ++face) {
+//        m_mainCubemap->begin(face);
+//        GLRenderTargetCube::getViewMatrix(mat, face);
+//
+//        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//        renderBoxes(mat, -1);
+//
+//        m_mainCubemap->end();
+//    }
+//
+//    glPopMatrix();
+//
+//    glMatrixMode(GL_PROJECTION);
+//    glPopMatrix();
+//
+//    m_updateAllCubemaps = false;
+//}
 
 void Scene::drawBackground(QPainter *painter, const QRectF &)
 {
@@ -974,8 +976,11 @@ void Scene::drawBackground(QPainter *painter, const QRectF &)
     glMatrixMode(GL_MODELVIEW);
 
     QMatrix4x4 view;
-    view.rotate(m_trackBalls[2].rotation());
+//    view.rotate(m_trackBalls[2].rotation());
+
+	//zoom in/out
     view(2, 3) -= 2.0f * exp(m_distExp / 1200.0f);
+
     renderBoxes(view);
 
     defaultStates();
@@ -999,23 +1004,28 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     if (event->buttons() & Qt::LeftButton) {
         m_trackBalls[0].move(pixelPosToViewPos(event->scenePos()), m_trackBalls[2].rotation().conjugate());
         event->accept();
-    } else {
+	}
+	else if (event->buttons() & Qt::LeftButton) {
+		m_trackBalls[0].translate(pixelPosToViewPos(event->scenePos()), m_trackBalls[2].rotation().conjugate());
+		event->accept();
+	}
+	else {
         m_trackBalls[0].release(pixelPosToViewPos(event->scenePos()), m_trackBalls[2].rotation().conjugate());
     }
 
-    if (event->buttons() & Qt::RightButton) {
-        m_trackBalls[1].move(pixelPosToViewPos(event->scenePos()), m_trackBalls[2].rotation().conjugate());
-        event->accept();
-    } else {
-        m_trackBalls[1].release(pixelPosToViewPos(event->scenePos()), m_trackBalls[2].rotation().conjugate());
-    }
+    //if (event->buttons() & Qt::RightButton) {
+    //    m_trackBalls[1].move(pixelPosToViewPos(event->scenePos()), m_trackBalls[2].rotation().conjugate());
+    //    event->accept();
+    //} else {
+    //    m_trackBalls[1].release(pixelPosToViewPos(event->scenePos()), m_trackBalls[2].rotation().conjugate());
+    //}
 
-    if (event->buttons() & Qt::MidButton) {
-        m_trackBalls[2].move(pixelPosToViewPos(event->scenePos()), QQuaternion());
-        event->accept();
-    } else {
-        m_trackBalls[2].release(pixelPosToViewPos(event->scenePos()), QQuaternion());
-    }
+    //if (event->buttons() & Qt::MidButton) {
+    //    m_trackBalls[2].move(pixelPosToViewPos(event->scenePos()), QQuaternion());
+    //    event->accept();
+    //} else {
+    //    m_trackBalls[2].release(pixelPosToViewPos(event->scenePos()), QQuaternion());
+    //}
 }
 
 void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
@@ -1024,20 +1034,20 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
     if (event->isAccepted())
         return;
 
-    if (event->buttons() & Qt::LeftButton) {
-        m_trackBalls[0].push(pixelPosToViewPos(event->scenePos()), m_trackBalls[2].rotation().conjugate());
+	if (event->buttons() & (Qt::LeftButton | Qt::RightButton)) {
+        m_trackBalls[0].push(pixelPosToViewPos(event->scenePos()), m_trackBalls[0].rotation().conjugate());
         event->accept();
     }
 
-    if (event->buttons() & Qt::RightButton) {
-        m_trackBalls[1].push(pixelPosToViewPos(event->scenePos()), m_trackBalls[2].rotation().conjugate());
-        event->accept();
-    }
+    //if (event->buttons() & Qt::RightButton) {
+    //    m_trackBalls[0].push(pixelPosToViewPos(event->scenePos()), m_trackBalls[2].rotation().conjugate());
+    //    event->accept();
+    //}
 
-    if (event->buttons() & Qt::MidButton) {
-        m_trackBalls[2].push(pixelPosToViewPos(event->scenePos()), QQuaternion());
-        event->accept();
-    }
+    //if (event->buttons() & Qt::MidButton) {
+    //    m_trackBalls[2].push(pixelPosToViewPos(event->scenePos()), QQuaternion());
+    //    event->accept();
+    //}
 }
 
 void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
@@ -1047,19 +1057,19 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         return;
 
     if (event->button() == Qt::LeftButton) {
-        m_trackBalls[0].release(pixelPosToViewPos(event->scenePos()), m_trackBalls[2].rotation().conjugate());
+        m_trackBalls[0].release(pixelPosToViewPos(event->scenePos()), m_trackBalls[0].rotation().conjugate());
         event->accept();
     }
 
-    if (event->button() == Qt::RightButton) {
-        m_trackBalls[1].release(pixelPosToViewPos(event->scenePos()), m_trackBalls[2].rotation().conjugate());
-        event->accept();
-    }
+    //if (event->button() == Qt::RightButton) {
+    //    m_trackBalls[1].release(pixelPosToViewPos(event->scenePos()), m_trackBalls[2].rotation().conjugate());
+    //    event->accept();
+    //}
 
-    if (event->button() == Qt::MidButton) {
-        m_trackBalls[2].release(pixelPosToViewPos(event->scenePos()), QQuaternion());
-        event->accept();
-    }
+    //if (event->button() == Qt::MidButton) {
+    //    m_trackBalls[2].release(pixelPosToViewPos(event->scenePos()), QQuaternion());
+    //    event->accept();
+    //}
 }
 
 void Scene::wheelEvent(QGraphicsSceneWheelEvent * event)

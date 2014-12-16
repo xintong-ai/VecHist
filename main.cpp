@@ -52,7 +52,7 @@ class GraphicsView : public QGraphicsView
 public:
     GraphicsView()
     {
-        setWindowTitle(tr("Boxes"));
+        setWindowTitle(tr("Vector Field Histogram"));
         setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
         //setRenderHints(QPainter::SmoothPixmapTransform);
     }

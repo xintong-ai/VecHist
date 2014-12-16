@@ -30,10 +30,10 @@ set(SHARED_LIBRARIES
 #set(SHARED_SOURCES ${LIBIGL_SOURCES} ${GLEW_SOURCES})
 
 # Set your files and resources here
-set( Srcs glwidget.cpp main.cpp window.cpp DataManager.cpp glsphere.cpp
+set( Srcs main.cpp DataManager.cpp glsphere.cpp
 	scene.cpp glbuffers.cpp glextensions.cpp trackball.cpp )# 3rdparty/fbm.c) # box.cpp
-set( Hdrs glwidget.h window.h DataManager.h vector_types.h glsphere.h
-	scene.h glbuffers.h glextensions.h trackball.h gltrianglemesh.h )# 3rdparty/fbm.h) #box.h 
+set( Hdrs DataManager.h vector_types.h glsphere.h gltrianglemesh.h
+	scene.h glbuffers.h glextensions.h trackball.h )# 3rdparty/fbm.h) #box.h 
 set( Rcs resources/boxes.qrc)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
