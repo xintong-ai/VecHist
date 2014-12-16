@@ -44,7 +44,7 @@
 #include <QtGui/qmatrix4x4.h>
 #include <QtGui/qvector3d.h>
 
-#include "3rdparty/fbm.h"
+//#include "3rdparty/fbm.h"
 #include <memory>
 
 void checkGLErrors(const QString& prefix)
@@ -635,7 +635,8 @@ void Scene::initGL()
                 for (int byte = 0; byte < 4; ++byte) {
                     pos[0] = (i + (byte & 1) * 16) * (0x20 / (float)NOISE_SIZE);
                     pos[1] = (j + (byte & 2) * 8) * (0x20 / (float)NOISE_SIZE);
-                    *p |= (int)(128.0f * (noise3(pos) + 1.0f)) << (byte * 8);
+                    //*p |= (int)(128.0f * (noise3(pos) + 1.0f)) << (byte * 8);
+					*p |= (int)(128.0f * (1.0f)) << (byte * 8);
                 }
                 ++p;
             }

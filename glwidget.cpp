@@ -44,7 +44,7 @@
 #include <math.h>
 
 #include "glwidget.h"
-#include "hist.h"
+//#include "hist.h"
 
 #ifndef GL_MULTISAMPLE
 #define GL_MULTISAMPLE  0x809D
@@ -130,8 +130,8 @@ void GLWidget::initializeGL()
 {
     qglClearColor(qtPurple.dark());
 
-	hist = new Hist(this, "D:/data/plume/15plume3d421.vec", 64);
-    hist->setColor(qtGreen.dark());
+	//hist = new Hist(this, "D:/data/plume/15plume3d421.vec", 64);
+    //hist->setColor(qtGreen.dark());
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
@@ -153,7 +153,7 @@ void GLWidget::paintGL()
     glRotatef(xRot / 16.0, 1.0, 0.0, 0.0);
     glRotatef(yRot / 16.0, 0.0, 1.0, 0.0);
     glRotatef(zRot / 16.0, 0.0, 0.0, 1.0);
-    hist->draw();
+//    hist->draw();
 }
 //! [7]
 
