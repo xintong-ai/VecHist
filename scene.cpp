@@ -605,7 +605,7 @@ Scene::~Scene()
 
 void Scene::initGL()
 {
-	m_vecWidget = new GLSphere(0.25f, 1.0f, 10);
+	m_vecWidget = new GLSphere(1.0f, 0.5f, 10);
 
     m_vertexShader = new QGLShader(QGLShader::Vertex);
     m_vertexShader->compileSourceFile(QLatin1String(":/res/boxes/basic.vsh"));
@@ -718,6 +718,113 @@ static void loadMatrix(const QMatrix4x4& m)
     glLoadMatrixf(mat);
 }
 
+
+void Scene::renderBBox(const QMatrix4x4 &view)
+{
+	//int nx, ny, nz;
+	//dataManager->GetVolumeSize(nx, ny, nz);
+
+	int nx, ny, nz;
+	dataManager->GetVolumeSize(nx, ny, nz);
+	
+	glBegin(GL_LINES);
+	glVertex3f(0, 0, 0);
+	glVertex3f(nx, 0, 0);
+
+	glVertex3f(nx, 0, 0);
+	glVertex3f(nx, ny, 0);
+
+	glVertex3f(nx, ny, 0);
+	glVertex3f(0, ny, 0);
+
+	glVertex3f(0, ny, 0);
+	glVertex3f(0, 0, 0);
+
+	//////
+	glVertex3f(0, 0, 0);
+	glVertex3f(0, 0, nz);
+
+	glVertex3f(nx, 0, 0);
+	glVertex3f(nx, 0, nz);
+
+	glVertex3f(nx, ny, 0);
+	glVertex3f(nx, ny, nz);
+
+	glVertex3f(0, ny, 0);
+	glVertex3f(0, ny, nz);
+
+	//////
+	glVertex3f(0, 0, nz);
+	glVertex3f(nx, 0, nz);
+
+	glVertex3f(nx, 0, nz);
+	glVertex3f(nx, ny, nz);
+
+	glVertex3f(nx, ny, nz);
+	glVertex3f(0, ny, nz);
+
+	glVertex3f(0, ny, nz);
+	glVertex3f(0, 0, nz);
+
+	glEnd();
+}
+
+void Scene::renderQCube(const QMatrix4x4 &view)
+{
+
+	int x, y, z;
+	int nx, ny, nz;
+	dataManager->GetQCube(x, y, z, nx, ny, nz);
+
+	glPushAttrib(GL_LINE_BIT | GL_CURRENT_BIT);
+
+	glColor3f(0.0f, 0.0f, 1.0f);
+	glLineWidth(3.0f);
+	glBegin(GL_LINES);
+	glVertex3f(x, y, z);
+	glVertex3f(x + nx, y, z);
+
+	glVertex3f(x + nx, y, z);
+	glVertex3f(x + nx, y + ny, z);
+
+	glVertex3f(x + nx, y + ny, z);
+	glVertex3f(x, y + ny, z);
+
+	glVertex3f(x, y + ny, z);
+	glVertex3f(x, y, z);
+
+	//////
+	glVertex3f(x, y, z);
+	glVertex3f(x, y, z + nz);
+
+	glVertex3f(x + nx, y, z);
+	glVertex3f(x + nx, y, z + nz);
+
+	glVertex3f(x + nx, y + ny, z);
+	glVertex3f(x + nx, y + ny, z + nz);
+
+	glVertex3f(x, y + ny, z);
+	glVertex3f(x, y + ny, z + nz);
+
+	//////
+	glVertex3f(x, y, z + nz);
+	glVertex3f(x + nx, y, z + nz);
+
+	glVertex3f(x + nx, y, z + nz);
+	glVertex3f(x + nx, y + ny, z + nz);
+
+	glVertex3f(x + nx, y + ny, z + nz);
+	glVertex3f(x, y + ny, z + nz);
+
+	glVertex3f(x, y + ny, z + nz);
+	glVertex3f(x, y, z + nz);
+
+	glEnd();
+
+	glPopAttrib();
+}
+
+
 // If one of the boxes should not be rendered, set excludeBox to its index.
 // If the main box should not be rendered, set excludeBox to -1.
 void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
@@ -735,75 +842,28 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
         m_textures[m_currentTexture]->bind();
     }
 
-	/*****The following is for rendering background******/
-    //glDisable(GL_LIGHTING);
-    //glDisable(GL_CULL_FACE);
-
-    //QMatrix4x4 viewRotation(view);
-    //viewRotation(3, 0) = viewRotation(3, 1) = viewRotation(3, 2) = 0.0f;
-    //viewRotation(0, 3) = viewRotation(1, 3) = viewRotation(2, 3) = 0.0f;
-    //viewRotation(3, 3) = 1.0f;
-    //loadMatrix(viewRotation);
-    //glScalef(20.0f, 20.0f, 20.0f);
-
-    // Don't render the environment if the environment texture can't be set for the correct sampler.
-    //if (glActiveTexture) {
-    //    m_environment->bind();
-    //    m_environmentProgram->bind();
-    //    m_environmentProgram->setUniformValue("tex", GLint(0));
-    //    m_environmentProgram->setUniformValue("env", GLint(1));
-    //    m_environmentProgram->setUniformValue("noise", GLint(2));
-    // //   m_vecWidget->draw();
-    //    m_environmentProgram->release();
-    //    m_environment->unbind();
-    //}
-
     loadMatrix(view);
 
-    //glEnable(GL_CULL_FACE);
-    //glEnable(GL_LIGHTING);
+	int nx, ny, nz;
+	dataManager->GetVolumeSize(nx, ny, nz);
 
-   // for (int i = 0; i < m_programs.size(); ++i) {
-   //     if (i == excludeBox)
-   //         continue;
+	int qx, qy, qz;
+	int qnx, qny, qnz;
+	dataManager->GetQCube(qx, qy, qz, qnx, qny, qnz);
 
-   //     glPushMatrix();
-   //     QMatrix4x4 m;
-   //     m.rotate(m_trackBalls[1].rotation());
-   //     glMultMatrixf(m.constData());
+	float mindim = std::min(nx, std::min(ny, nz));
+	float maxdim = std::max(nx, std::max(ny, nz));
 
-   //     glRotatef(360.0f * i / m_programs.size(), 0.0f, 0.0f, 1.0f);
-   //     glTranslatef(2.0f, 0.0f, 0.0f);
-   //     glScalef(0.3f, 0.6f, 0.6f);
-
-   //     if (glActiveTexture) {
-   //         if (m_dynamicCubemap && m_cubemaps[i])
-   //             m_cubemaps[i]->bind();
-   //         else
-   //             m_environment->bind();
-   //     }
-   //     m_programs[i]->bind();
-   //     m_programs[i]->setUniformValue("tex", GLint(0));
-   //     m_programs[i]->setUniformValue("env", GLint(1));
-   //     m_programs[i]->setUniformValue("noise", GLint(2));
-   //     m_programs[i]->setUniformValue("view", view);
-   //     m_programs[i]->setUniformValue("invView", invView);
-   ////     m_vecWidget->draw();
-   //     m_programs[i]->release();
-
-   //     if (glActiveTexture) {
-   //         if (m_dynamicCubemap && m_cubemaps[i])
-   //             m_cubemaps[i]->unbind();
-   //         else
-   //             m_environment->unbind();
-   //     }
-   //     glPopMatrix();
-   // }
+	float minqsize = std::min(qnx, std::min(qny, qnz));
+	float minbymax = mindim / maxdim;
 
     if (-1 != excludeBox) {
         QMatrix4x4 m;
         m.rotate(m_trackBalls[0].rotation());
         glMultMatrixf(m.constData());
+
+		float s = 1.0f / maxdim;
+		glScalef(s, s, s);
 		//glTranslatef(m_translate[0], m_translate[1], m_translate[2]);
 
         if (glActiveTexture) {
@@ -819,8 +879,15 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
         m_programs[m_currentShader]->setUniformValue("noise", GLint(2));
         m_programs[m_currentShader]->setUniformValue("view", view);
         m_programs[m_currentShader]->setUniformValue("invView", invView);
-        m_vecWidget->draw();
-        m_programs[m_currentShader]->release();
+		glTranslatef(-(0 + nx / 2), -(0 + ny / 2), -(0 + nz / 2));
+
+		glPushMatrix();
+		glTranslatef(qnx / 2 + qx, qny / 2 + qy, qnz / 2 + qz);
+		glScalef(minqsize, minqsize, minqsize);
+		m_vecWidget->draw();
+		glPopMatrix();
+
+		m_programs[m_currentShader]->release();
 
         if (glActiveTexture) {
             //if (m_dynamicCubemap)
@@ -836,6 +903,18 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
         glActiveTexture(GL_TEXTURE0);
     }
     m_textures[m_currentTexture]->unbind();
+
+
+	glPushAttrib(GL_LIGHTING_BIT);
+	glDisable(GL_LIGHTING);
+	
+
+
+	renderQCube(view);
+	renderBBox(view);
+	
+	glPopAttrib();
+
 }
 
 void Scene::setStates()
@@ -979,7 +1058,7 @@ void Scene::drawBackground(QPainter *painter, const QRectF &)
 //    view.rotate(m_trackBalls[2].rotation());
 
 	//zoom in/out
-    view(2, 3) -= 2.0f * exp(m_distExp / 1200.0f);
+    view(2, 3) -= 0.5f * exp(m_distExp / 1200.0f);
 
     renderBoxes(view);
 

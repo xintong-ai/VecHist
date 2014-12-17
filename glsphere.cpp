@@ -60,7 +60,7 @@ VertexDescription P3T2N3Vertex::description[] = {
 GLSphere::GLSphere(float r, float scale, int n)
 : GLTriangleMesh<P3T2N3Vertex, unsigned short>((n + 1) * (n + 1) * 6, 36 * n * n)
 {
-	//scale = 0.25 * scale;
+	//scale = 0.2;
 	int vidx = 0, iidx = 0;
 
 	P3T2N3Vertex *vp = m_vb.lock();
@@ -86,23 +86,23 @@ GLSphere::GLSphere(float r, float scale, int n)
 				//v.setX(0.5 * pow(-1, fsign));
 				//v[0] = 0.5;// *pow(-1, fsign);
 				if (0 == fcoord)	{
-					v.setX(0.5 * fsign * scale);
-					v.setY(x * fsign * scale);
-					v.setZ(y * scale);
+					v.setX(0.5 * fsign);
+					v.setY(x * fsign);
+					v.setZ(y);
 				}
 				else if (1 == fcoord)	{
-					v.setX(y * scale);
-					v.setY(0.5 * fsign * scale);
-					v.setZ(x * fsign * scale);
+					v.setX(y);
+					v.setY(0.5 * fsign);
+					v.setZ(x * fsign);
 				}
 				else{
-					v.setX(x * fsign * scale);
-					v.setY(y * scale);
-					v.setZ(0.5 * fsign * scale);
+					v.setX(x * fsign);
+					v.setY(y);
+					v.setZ(0.5 * fsign);
 				}
 				//grid.push_back(v);
-				vp[vidx].position = v.normalized();
-				vp[vidx].normal = vp[vidx].position;
+				vp[vidx].normal = v.normalized();
+				vp[vidx].position = vp[vidx].normal * scale;
 				vp[vidx].texCoord = QVector2D(0.5f, 0.5f);
 				vidx++;
 				//int first = (nSub + 1) * j + i;

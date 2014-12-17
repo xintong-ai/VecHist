@@ -14,7 +14,16 @@ void DataManager::GetVolumeSize(int &nx, int &ny, int&nz)
 	nz = dim[2];
 }
 
+void DataManager::GetQCube(int &x, int &y, int &z, int &nx, int &ny, int &nz)
+{
+	x = qCubePos[0];
+	y = qCubePos[1];
+	z = qCubePos[2];
 
+	nx = qCubeSize[0];
+	ny = qCubeSize[1];
+	nz = qCubeSize[2];
+}
 
 void DataManager::LoadVec(char* filename)
 {
@@ -30,6 +39,14 @@ void DataManager::LoadVec(char* filename)
 
 	fclose(file);
 	cout << "Data loaded" << endl;
+
+	qCubePos[0] = 0;
+	qCubePos[1] = 0;
+	qCubePos[2] = 0;
+
+	qCubeSize[0] = dim[0];
+	qCubeSize[1] = dim[1];
+	qCubeSize[2] = dim[2];
 //
 //	int block_size = 51/*atoi(argv[5])*/, block_size_it = block_size - 1, dimbs[3];
 //	dimbs[0] = static_cast<int>(ceil(static_cast<float>(dims[0]) / block_size_it));
@@ -201,6 +218,12 @@ inline void ComputeCubeMap(std::vector<float3> data, float* cubemap, const int s
 
 void DataManager::GenCubeMap(int x, int y, int z, int nx, int ny, int nz, float* cubemap, int size)
 {
+	qCubePos[0] = x;
+	qCubePos[1] = y;
+	qCubePos[2] = z;
+	qCubeSize[0] = nx;
+	qCubeSize[1] = ny;
+	qCubeSize[2] = nz;
 	std::vector<float3> datablock = GetBlock(x, y, z, nx, ny, nz);
 	ComputeCubeMap(datablock, cubemap, size);
 }

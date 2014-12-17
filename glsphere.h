@@ -67,7 +67,7 @@ class GLSphere : public GLTriangleMesh<P3T2N3Vertex, unsigned short>
 	//Q_OBJECT
 public:
     // 0 < r < 0.5, 0 <= n <= 125
-	explicit GLSphere(float r = 0.25f, float scale = 1.0f, int n = 10);
+	explicit GLSphere(float r = 0.5f, float scale = 1.0f, int n = 10);
 };
 
 #endif

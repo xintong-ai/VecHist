@@ -216,7 +216,9 @@ public slots:
 //    void newItem(ItemDialog::ItemType type);
 protected:
     void renderBoxes(const QMatrix4x4 &view, int excludeBox = -2);
-    void setStates();
+	void renderBBox(const QMatrix4x4 &view);
+	void renderQCube(const QMatrix4x4 &view);	//render the queried cube
+	void setStates();
     void setLights();
     void defaultStates();
     //void renderCubemaps();
