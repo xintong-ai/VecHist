@@ -25,6 +25,17 @@ void DataManager::GetQCube(int &x, int &y, int &z, int &nx, int &ny, int &nz)
 	nz = qCubeSize[2];
 }
 
+void DataManager::SetQCube(int x, int y, int z, int nx, int ny, int nz)
+{
+	qCubePos[0] = x;
+	qCubePos[1] = y;
+	qCubePos[2] = z;
+
+	qCubeSize[0] = nx;
+	qCubeSize[1] = ny;
+	qCubeSize[2] = nz;
+}
+
 void DataManager::LoadVec(char* filename)
 {
 	using namespace std;
@@ -94,6 +105,7 @@ void DataManager::LoadVec(char* filename)
 
 std::vector<float3> DataManager::GetBlock(int x, int y, int z, int nx, int ny, int nz)
 {
+	std::cout << "z:" << z << std::endl;
 	//using namespace std;
 	std::vector<float3> ret;
 	float3* idata = static_cast<float3*>((void *)data);
@@ -103,7 +115,7 @@ std::vector<float3> DataManager::GetBlock(int x, int y, int z, int nx, int ny, i
 			int iy = j + y;
 			for (int k = 0; k < nz; k++)	{
 				int iz = k + z;
-				ret.push_back(idata[ix * ny * nz + iy * nz + iz]);
+				ret.push_back(idata[ix * dim[1] * dim[2] + iy * dim[2] + iz]);
 			}
 		}
 	}
@@ -227,6 +239,19 @@ void DataManager::GenCubeMap(int x, int y, int z, int nx, int ny, int nz, float*
 	std::vector<float3> datablock = GetBlock(x, y, z, nx, ny, nz);
 	ComputeCubeMap(datablock, cubemap, size);
 }
+
+void DataManager::UpdateCubeMap(float* cubemap, int size)
+{
+	//qCubePos[0] = x;
+	//qCubePos[1] = y;
+	//qCubePos[2] = z;
+	//qCubeSize[0] = nx;
+	//qCubeSize[1] = ny;
+	//qCubeSize[2] = nz;
+	std::vector<float3> datablock = GetBlock(qCubePos[0], qCubePos[1], qCubePos[2], qCubeSize[0], qCubeSize[1], qCubeSize[2]);
+	ComputeCubeMap(datablock, cubemap, size);
+}
+
 
 DataManager::~DataManager()
 {

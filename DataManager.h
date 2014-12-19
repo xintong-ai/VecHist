@@ -20,8 +20,10 @@ public:
 	std::vector<float> GetVertexValue();
 	std::vector<float3> GetBlock(int x, int y, int z, int nx, int ny, int nz);
 	void GenCubeMap(int x, int y, int z, int nx, int ny, int nz, float* cubemap, int size);
+	void UpdateCubeMap(float* cubemap, int size);
 	void GetVolumeSize(int &nx, int &ny, int&nz);
 	void GetQCube(int &x, int &y, int &z, int &nx, int &ny, int &nz);
+	void SetQCube(int x, int y, int z, int nx, int ny, int nz);
 	~DataManager();
 };
 

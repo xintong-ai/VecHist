@@ -205,6 +205,7 @@ public:
     Scene(int width, int height, int maxTextureSize);
     ~Scene();
     virtual void drawBackground(QPainter *painter, const QRectF &rect);
+	void UpdateBlock();
 
 public slots:
     void setShader(int index);

@@ -1167,39 +1167,73 @@ void Scene::wheelEvent(QGraphicsSceneWheelEvent * event)
 void Scene::keyPressEvent(QKeyEvent *event)
 {
 	QGraphicsScene::keyPressEvent(event);
-		//m_blockLoc[1]->text().toInt(),
-		//m_blockLoc[2]->text().toInt(),
-		//m_blockSize[0]->text().toInt(),
-		//m_blockSize[1]->text().toInt(),
-		//m_blockSize[2]->text().toInt()
-	int change = 50;
-	switch (event->key())
+	//m_blockLoc[1]->text().toInt(),
+	//m_blockLoc[2]->text().toInt(),
+	//m_blockSize[0]->text().toInt(),
+	//m_blockSize[1]->text().toInt(),
+	//m_blockSize[2]->text().toInt()
+	if (event->key() == Qt::Key_W || event->key() == Qt::Key_S
+		|| event->key() == Qt::Key_A || event->key() == Qt::Key_D
+		|| event->key() == Qt::Key_Q || event->key() == Qt::Key_E)
 	{
-	case Qt::Key_W:
-		m_renderOptions->changeBlockLoc(0, change);
-		m_renderOptions->updateBlock();
-		break;
-	case Qt::Key_S:
-		m_renderOptions->changeBlockLoc(0, -change);
-		m_renderOptions->updateBlock();
-		break;
-	case Qt::Key_A:
-		m_renderOptions->changeBlockLoc(1, change);
-		m_renderOptions->updateBlock();
-		break;
-	case Qt::Key_D:
-		m_renderOptions->changeBlockLoc(1, -change);
-		m_renderOptions->updateBlock();
-		break;
-	case Qt::Key_Q:
-		m_renderOptions->changeBlockLoc(2, change);
-		m_renderOptions->updateBlock();
-		break;
-	case Qt::Key_E:
-		m_renderOptions->changeBlockLoc(2, -change);
-		m_renderOptions->updateBlock();
-		break;
+		//int change = 50;
+		int qx, qy, qz;
+		int qnx, qny, qnz;
+		dataManager->GetQCube(qx, qy, qz, qnx, qny, qnz);
+
+		int nx, ny, nz;
+		dataManager->GetVolumeSize(nx, ny, nz);
+		switch (event->key())
+		{
+		case Qt::Key_W:
+			if (qx + qnx * 2 > nx)
+				return;
+			qx += qnx;
+			//m_renderOptions->changeBlockLoc(0, change);
+			//m_renderOptions->updateBlock();
+			break;
+		case Qt::Key_S:
+			if (qx - qnx < 0)
+				return;
+			qx -= qnx;
+			//m_renderOptions->changeBlockLoc(0, -change);
+			//m_renderOptions->updateBlock();
+			break;
+		case Qt::Key_A:
+			if (qy + qny * 2 > ny)
+				return;
+			qy += qny;
+			//m_renderOptions->changeBlockLoc(1, change);
+			//m_renderOptions->updateBlock();
+			break;
+		case Qt::Key_D:
+			if (qy - qny < 0)
+				return;
+			qy -= qny;
+			//m_renderOptions->changeBlockLoc(1, -change);
+			//m_renderOptions->updateBlock();
+			break;
+		case Qt::Key_Q:
+			if (qz + qnz * 2 > nz)
+				return;
+			qz += qnz;
+			//m_renderOptions->changeBlockLoc(2, change);
+			//m_renderOptions->updateBlock();
+			break;
+		case Qt::Key_E:
+			if (qz - qnz < 0)
+				return;
+			qz -= qnz;
+			//m_renderOptions->changeBlockLoc(2, -change);
+			//m_renderOptions->updateBlock();
+			break;
+		}
+		dataManager->SetQCube(qx, qy, qz, qnx, qny, qnz);
+		m_renderOptions->setBlock(qx, qy, qz, qnx, qny, qnz);
+		UpdateBlock();
+
 	}
+
 }
 
 void Scene::setShader(int index)
@@ -1245,6 +1279,14 @@ void Scene::UpdateBlock(int x, int y, int z, int nx, int ny, int nz)
 	int size = 32;
 	std::unique_ptr<float[]> cubemap(new float[size * size * 6]);
 	dataManager->GenCubeMap(x, y, z, nx, ny, nz, cubemap.get(), size);
+	m_environment->load(cubemap.get(), size);
+}
+
+void Scene::UpdateBlock()
+{
+	int size = 32;
+	std::unique_ptr<float[]> cubemap(new float[size * size * 6]);
+	dataManager->UpdateCubeMap(cubemap.get(), size);
 	m_environment->load(cubemap.get(), size);
 }
 
