@@ -7,7 +7,7 @@ find_package(OpenGL REQUIRED)
 #find_package(LIBIGL REQUIRED)
 #find_package(GLFW REQUIRED)
 #find_package(GLEW)
-find_package(CUDA)
+find_package(CUDA REQUIRED)
 
 #include_directories( ${ANT_TWEAK_BAR_INCLUDE_DIR} )
 #message("ant:" ${ANT_TWEAK_BAR_INCLUDE_DIR})
@@ -15,7 +15,7 @@ find_package(CUDA)
 #include_directories( ${EIGEN_INCLUDE_DIR})
 #include_directories( ${GLFW_INCLUDE_DIR})
 #include_directories( ${GLEW_INCLUDE_DIR} )
-include_directories( ${CUDA_INCLUDE_DIRS} )
+include_directories( ${CUDA_INCLUDE_DIRS} ${CUDA_TOOLKIT_INCLUDE} ${CMAKE_CURRENT_SOURCE_DIR} required)
 
 set(SHARED_LIBRARIES
 #		${LIBIGL_LIBRARIES}
@@ -26,22 +26,30 @@ set(SHARED_LIBRARIES
 #		${GLFW_LIBRARIES}
 )
 
+#set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-O3 -gencode arch=compute_22,code=sm_22)
 #set(GLEW_SOURCES "D:/lib/libigl/external/glew/src/glew.c")
 #set(SHARED_SOURCES ${LIBIGL_SOURCES} ${GLEW_SOURCES})
 
 # Set your files and resources here
 set( Srcs main.cpp DataManager.cpp glsphere.cpp
-	scene.cpp glbuffers.cpp glextensions.cpp trackball.cpp )# 3rdparty/fbm.c) # box.cpp
+	scene.cpp glbuffers.cpp glextensions.cpp trackball.cpp 
+	volumeRender.cpp
+	volumeRender_kernel.cu
+	)# 3rdparty/fbm.c) # box.cpp
 set( Hdrs DataManager.h vector_types.h glsphere.h gltrianglemesh.h
-	scene.h glbuffers.h glextensions.h trackball.h )# 3rdparty/fbm.h) #box.h 
+	scene.h glbuffers.h glextensions.h trackball.h
+    helper_cuda.h helper_cuda_gl.h helper_functions.h helper_image.h helper_string.h helper_timer.h
+	helper_math.h)# 3rdparty/fbm.h) #box.h 
 set( Rcs resources/boxes.qrc)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 
+#enable_cuda_support()
+
 find_package(Qt5Widgets)
 # qt5_wrap_ui(UI_Srcs ${UIs})
 qt5_add_resources(QtApp_RCC_SRCS ${Rcs})
-add_executable(VecHist ${Srcs} ${Hdrs} ${SHARED_SOURCES} ${QtApp_RCC_SRCS})#${UI_Srcs})# ${MOC_Hdrs})
+cuda_add_executable(VecHist ${Srcs} ${Hdrs} ${SHARED_SOURCES} ${QtApp_RCC_SRCS})#${UI_Srcs})# ${MOC_Hdrs})
 qt5_use_modules(VecHist OpenGL GUI)
 target_link_libraries(VecHist  Qt5::Widgets opengl32.lib ${SHARED_LIBRARIES}) 
