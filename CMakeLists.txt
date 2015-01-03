@@ -33,7 +33,6 @@ set(SHARED_LIBRARIES
 # Set your files and resources here
 set( Srcs main.cpp DataManager.cpp glsphere.cpp
 	scene.cpp glbuffers.cpp glextensions.cpp trackball.cpp 
-	volumeRender.cpp
 	volumeRender_kernel.cu
 	)# 3rdparty/fbm.c) # box.cpp
 set( Hdrs DataManager.h vector_types.h glsphere.h gltrianglemesh.h

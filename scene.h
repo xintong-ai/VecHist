@@ -56,6 +56,16 @@
 #include "glbuffers.h"
 #include "DataManager.h"
 //#include "qtbox.h"
+#include <cuda_runtime.h>
+#include <cuda_gl_interop.h>
+// CUDA utilities
+#include <helper_cuda.h>
+#include <helper_cuda_gl.h>
+
+// Helper functions
+//#include <helper_cuda.h>
+#include <helper_functions.h>
+#include <helper_timer.h>
 
 #define PI 3.14159265358979
 
@@ -150,6 +160,7 @@ public:
 public slots:
 	void setBlock(int x, int y, int z, int nx, int ny, int nz);
 	void updateBlock();
+	void doQuery();
 
 
 protected slots:
@@ -163,6 +174,7 @@ signals:
     void shaderChanged(int);
     void doubleClicked();
 	void blockChanged(int, int, int, int, int, int);
+	void queryChanged(int, int, int);
 protected:
     virtual void mouseDoubleClickEvent(QMouseEvent *event);
 
@@ -173,6 +185,7 @@ protected:
 	QVector<QLineEdit *> m_blockLoc;
 	QVector<QLineEdit *> m_blockSize;
 	QPushButton *m_updateButton;
+	QPushButton *m_query;
 
 };
 
@@ -214,6 +227,7 @@ public slots:
     void setColorParameter(const QString &name, QRgb color);
 	void setFloatParameter(const QString &name, float value);
 	void UpdateBlock(int x, int y, int z, int nx, int ny, int nz);
+	void UpdateQuery(int f, int x, int y);
 //    void newItem(ItemDialog::ItemType type);
 protected:
     void renderBoxes(const QMatrix4x4 &view, int excludeBox = -2);
@@ -232,6 +246,10 @@ protected:
 private:
     void initGL();
     QPointF pixelPosToViewPos(const QPointF& p);
+	void initPixelBuffer();
+	void cleanup();
+	void displayVolume();
+	void renderVolume();
 
     QTime m_time;
     int m_lastTime;
@@ -262,6 +280,18 @@ private:
     QGLShaderProgram *m_environmentProgram;
 
 	DataManager* dataManager;
+
+	GLuint pbo = 0;     // OpenGL pixel buffer object
+	GLuint tex = 0;     // OpenGL texture object
+	struct cudaGraphicsResource *cuda_pbo_resource; // CUDA Graphics Resource (to transfer PBO)
+	int m_width;
+	int m_height;
+	float invViewMatrix[12];
+	float invProjMatrix[12];
+	dim3 gridSize;
+	dim3 blockSize;
+	GLfloat invProjMulView[16];
+
 };
 
 #endif

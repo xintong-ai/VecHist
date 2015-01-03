@@ -22,6 +22,7 @@ typedef unsigned char uchar;
 
 cudaArray *d_volumeArray = 0;
 cudaArray *d_transferFuncArray;
+//int3 data_dim;
 
 typedef unsigned char VolumeType;
 //typedef unsigned short VolumeType;
@@ -34,7 +35,15 @@ typedef struct
     float4 m[3];
 } float3x4;
 
-__constant__ float3x4 c_invViewMatrix;  // inverse view matrix
+typedef struct
+{
+	float4 m[4];
+} float4x4;
+
+__constant__ float4x4 c_invProjMulViewMatrix;  // inverse view matrix
+//__constant__ float3x4 c_invViewMatrix;  // inverse view matrix
+//__constant__ float3x4 c_invProjMatrix;  // inverse view matrix
+__constant__ int3 c_dataDim;
 
 struct Ray
 {
@@ -90,6 +99,21 @@ float4 mul(const float3x4 &M, const float4 &v)
     return r;
 }
 
+
+// transform vector by matrix with translation
+__device__
+float4 mul(const float4x4 &M, const float4 &v)
+{
+	float4 r;
+	r.w = dot(v, M.m[3]);
+	r.x = dot(v, M.m[0]) / r.w;
+	r.y = dot(v, M.m[1]) / r.w;
+	r.z = dot(v, M.m[2]) / r.w;
+
+//	r.w = 1.0f;
+	return r;
+}
+
 __device__ uint rgbaFloatToInt(float4 rgba)
 {
     rgba.x = __saturatef(rgba.x);   // clamp to [0.0, 1.0]
@@ -100,15 +124,16 @@ __device__ uint rgbaFloatToInt(float4 rgba)
 }
 
 __global__ void
-d_render(uint *d_output, uint imageW, uint imageH,
-         float density, float brightness,
-         float transferOffset, float transferScale)
+d_render(uint *d_output, uint imageW, uint imageH)//,
+         //float density, float brightness,
+         //float transferOffset, float transferScale)
 {
-    const int maxSteps = 500;
-    const float tstep = 0.01f;
+	const int maxSteps = max(max(c_dataDim.x, c_dataDim.y), c_dataDim.z) * 1.5;
+    const float tstep = 1.0f;
     const float opacityThreshold = 0.95f;
-    const float3 boxMin = make_float3(-1.0f, -1.0f, -1.0f);
-    const float3 boxMax = make_float3(1.0f, 1.0f, 1.0f);
+	const float3 boxMin = make_float3(0.0f, 0.0f, 0.0f);
+	const float3 boxMax = make_float3(c_dataDim.x, c_dataDim.y, c_dataDim.z); //126, 126, 512);//
+
 
     uint x = blockIdx.x*blockDim.x + threadIdx.x;
     uint y = blockIdx.y*blockDim.y + threadIdx.y;
@@ -118,17 +143,22 @@ d_render(uint *d_output, uint imageW, uint imageH,
     float u = (x / (float) imageW)*2.0f-1.0f;
     float v = (y / (float) imageH)*2.0f-1.0f;
 
+
     // calculate eye ray in world space
     Ray eyeRay;
-    eyeRay.o = make_float3(mul(c_invViewMatrix, make_float4(0.0f, 0.0f, 0.0f, 1.0f)));
-    eyeRay.d = normalize(make_float3(u, v, -2.0f));
-    eyeRay.d = mul(c_invViewMatrix, eyeRay.d);
+	
+	//unproject: http://gamedev.stackexchange.com/questions/8974/how-can-i-convert-a-mouse-click-to-a-ray
+	eyeRay.o = make_float3(mul(c_invProjMulViewMatrix, make_float4(u, v, 0.0f, 1.0f)));
+	//eyeRay.d = normalize();
+	float3 eyeRay_t = make_float3(mul(c_invProjMulViewMatrix, make_float4(u, v, 1.0f, 1.0f)));
+	eyeRay.d = normalize(eyeRay_t - eyeRay.o);// make_float3(mul(c_invProjMulViewMatrix, make_float4(0, 0, -1.0f, 1.0)));
 
     // find intersection with box
     float tnear, tfar;
     int hit = intersectBox(eyeRay, boxMin, boxMax, &tnear, &tfar);
 
-    if (!hit) return;
+	if (!hit)
+		return;
 
     if (tnear < 0.0f) tnear = 0.0f;     // clamp to near plane
 
@@ -142,22 +172,24 @@ d_render(uint *d_output, uint imageW, uint imageH,
     {
         // read from 3D texture
         // remap position to [0, 1] coordinates
-        float sample = tex3D(tex, pos.x*0.5f+0.5f, pos.y*0.5f+0.5f, pos.z*0.5f+0.5f);
+		float sample = tex3D(tex, (pos.x - 0.5) / c_dataDim.x, (pos.y - 0.5) / c_dataDim.y, (pos.z - 0.5) / c_dataDim.z);
         //sample *= 64.0f;    // scale for 10-bit data
 
         // lookup in transfer function texture
-        float4 col = tex1D(transferTex, (sample-transferOffset)*transferScale);
-        col.w *= density;
+//        float4 col = tex1D(transferTex, (sample-transferOffset)*transferScale);
+		float4 col = make_float4(0, 1, 0, sample);
+    //    col.w *= density;
 
         // "under" operator for back-to-front blending
-        //sum = lerp(sum, col, col.w);
+        sum = lerp(sum, col, col.w);
 
         // pre-multiply alpha
         col.x *= col.w;
         col.y *= col.w;
         col.z *= col.w;
         // "over" operator for front-to-back blending
-        sum = sum + col*(1.0f - sum.w);
+		sum = (1.0f - sum.w) *col +sum;
+		//sum.w = (1 - sum.w) * col.w + sum.w;
 
         // exit early if opaque
         if (sum.w > opacityThreshold)
@@ -170,9 +202,10 @@ d_render(uint *d_output, uint imageW, uint imageH,
         pos += step;
     }
 
-    sum *= brightness;
+  //  sum *= brightness;
 
     // write output color
+//	sum = make_float4(1.0f, 0.0f, 0.0f, 1.0f);
     d_output[y*imageW + x] = rgbaFloatToInt(sum);
 }
 
@@ -234,6 +267,58 @@ void initCuda(void *h_volume, cudaExtent volumeSize)
 }
 
 extern "C"
+void inputMask(void *h_volume, cudaExtent volumeSize)
+{
+	// create 3D array
+	cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc<VolumeType>();
+	checkCudaErrors(cudaMalloc3DArray(&d_volumeArray, &channelDesc, volumeSize));
+
+	// copy data to 3D array
+	cudaMemcpy3DParms copyParams = { 0 };
+	copyParams.srcPtr = make_cudaPitchedPtr(h_volume, volumeSize.width*sizeof(VolumeType), volumeSize.width, volumeSize.height);
+	copyParams.dstArray = d_volumeArray;
+	copyParams.extent = volumeSize;
+	copyParams.kind = cudaMemcpyHostToDevice;
+	checkCudaErrors(cudaMemcpy3D(&copyParams));
+
+	// set texture parameters
+	tex.normalized = true;                      // access with normalized texture coordinates
+	tex.filterMode = cudaFilterModeLinear;      // linear interpolation
+	tex.addressMode[0] = cudaAddressModeClamp;  // clamp texture coordinates
+	tex.addressMode[1] = cudaAddressModeClamp;
+
+	// bind array to 3D texture
+	checkCudaErrors(cudaBindTextureToArray(tex, d_volumeArray, channelDesc));
+
+	// create transfer function texture
+	float4 transferFunc[] =
+	{
+		{ 0.0, 0.0, 0.0, 0.0, },
+		{ 1.0, 0.0, 0.0, 1.0, },
+		{ 1.0, 0.5, 0.0, 1.0, },
+		{ 1.0, 1.0, 0.0, 1.0, },
+		{ 0.0, 1.0, 0.0, 1.0, },
+		{ 0.0, 1.0, 1.0, 1.0, },
+		{ 0.0, 0.0, 1.0, 1.0, },
+		{ 1.0, 0.0, 1.0, 1.0, },
+		{ 0.0, 0.0, 0.0, 0.0, },
+	};
+
+	cudaChannelFormatDesc channelDesc2 = cudaCreateChannelDesc<float4>();
+	cudaArray *d_transferFuncArray;
+	checkCudaErrors(cudaMallocArray(&d_transferFuncArray, &channelDesc2, sizeof(transferFunc) / sizeof(float4), 1));
+	checkCudaErrors(cudaMemcpyToArray(d_transferFuncArray, 0, 0, transferFunc, sizeof(transferFunc), cudaMemcpyHostToDevice));
+
+	transferTex.filterMode = cudaFilterModeLinear;
+	transferTex.normalized = true;    // access with normalized texture coordinates
+	transferTex.addressMode[0] = cudaAddressModeClamp;   // wrap texture coordinates
+
+	// Bind the array to the texture
+	checkCudaErrors(cudaBindTextureToArray(transferTex, d_transferFuncArray, channelDesc2));
+}
+
+
+extern "C"
 void freeCudaBuffers()
 {
     checkCudaErrors(cudaFreeArray(d_volumeArray));
@@ -242,17 +327,35 @@ void freeCudaBuffers()
 
 
 extern "C"
-void render_kernel(dim3 gridSize, dim3 blockSize, uint *d_output, uint imageW, uint imageH,
-                   float density, float brightness, float transferOffset, float transferScale)
+void render_kernel(dim3 gridSize, dim3 blockSize, uint *d_output, uint imageW, uint imageH)//,
+//                   float density, float brightness, float transferOffset, float transferScale)
 {
-    d_render<<<gridSize, blockSize>>>(d_output, imageW, imageH, density,
-                                      brightness, transferOffset, transferScale);
+	d_render << <gridSize, blockSize >> >(d_output, imageW, imageH);//, density,
+                                      //brightness, transferOffset, transferScale);
+}
+
+//extern "C"
+//void copyInvViewMatrix(float *invViewMatrix, size_t sizeofMatrix)
+//{
+//    checkCudaErrors(cudaMemcpyToSymbol(c_invViewMatrix, invViewMatrix, sizeofMatrix));
+//}
+//
+//extern "C"
+//void copyInvProjMatrix(float *invProjMatrix, size_t sizeofMatrix)
+//{
+//	checkCudaErrors(cudaMemcpyToSymbol(c_invProjMatrix, invProjMatrix, sizeofMatrix));
+//}
+
+extern "C"
+void copyInvProjMulViewMatrix(float *invProjMulViewMatrix, size_t sizeofMatrix)
+{
+	checkCudaErrors(cudaMemcpyToSymbol(c_invProjMulViewMatrix, invProjMulViewMatrix, sizeofMatrix));
 }
 
 extern "C"
-void copyInvViewMatrix(float *invViewMatrix, size_t sizeofMatrix)
+void copyDataDim(int *dataDim, size_t size)
 {
-    checkCudaErrors(cudaMemcpyToSymbol(c_invViewMatrix, invViewMatrix, sizeofMatrix));
+	checkCudaErrors(cudaMemcpyToSymbol(c_dataDim, dataDim, size));
 }
 
 

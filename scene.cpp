@@ -46,6 +46,245 @@
 
 //#include "3rdparty/fbm.h"
 #include <memory>
+#include <driver_types.h>
+#include <driver_functions.h>
+
+extern "C" void inputMask(void *h_volume, cudaExtent volumeSize);
+
+extern "C" void setTextureFilterMode(bool bLinearFilter);
+//extern "C" void initCuda(void *h_volume, cudaExtent volumeSize);
+extern "C" void freeCudaBuffers();
+extern "C" void render_kernel(dim3 gridSize, dim3 blockSize, uint *d_output, uint imageW, uint imageH);//,
+//	float density, float brightness, float transferOffset, float transferScale);
+//extern "C" void copyInvViewMatrix(float *invViewMatrix, size_t sizeofMatrix);
+//extern "C" void copyInvProjMatrix(float *invProjMatrix, size_t sizeofMatrix);
+extern "C" void copyInvProjMulViewMatrix(float *InvProjMulViewMatrix, size_t sizeofMatrix);
+extern "C" void copyDataDim(int *dataDim, size_t size);
+
+#define SWAP_ROWS_FLOAT(a, b) { float *_tmp = a; (a) = (b); (b) = _tmp; }
+#define MAT(m,r,c) (m)[(c)*4+(r)]
+
+////This code comes directly from GLU except that it is for float
+//int glhInvertMatrixf2(float *m, float *out)
+//{
+//	float wtmp[4][8];
+//	float m0, m1, m2, m3, s;
+//	float *r0, *r1, *r2, *r3;
+//	r0 = wtmp[0], r1 = wtmp[1], r2 = wtmp[2], r3 = wtmp[3];
+//	r0[0] = MAT(m, 0, 0), r0[1] = MAT(m, 0, 1),
+//		r0[2] = MAT(m, 0, 2), r0[3] = MAT(m, 0, 3),
+//		r0[4] = 1.0, r0[5] = r0[6] = r0[7] = 0.0,
+//		r1[0] = MAT(m, 1, 0), r1[1] = MAT(m, 1, 1),
+//		r1[2] = MAT(m, 1, 2), r1[3] = MAT(m, 1, 3),
+//		r1[5] = 1.0, r1[4] = r1[6] = r1[7] = 0.0,
+//		r2[0] = MAT(m, 2, 0), r2[1] = MAT(m, 2, 1),
+//		r2[2] = MAT(m, 2, 2), r2[3] = MAT(m, 2, 3),
+//		r2[6] = 1.0, r2[4] = r2[5] = r2[7] = 0.0,
+//		r3[0] = MAT(m, 3, 0), r3[1] = MAT(m, 3, 1),
+//		r3[2] = MAT(m, 3, 2), r3[3] = MAT(m, 3, 3),
+//		r3[7] = 1.0, r3[4] = r3[5] = r3[6] = 0.0;
+//	/* choose pivot - or die */
+//	if (fabsf(r3[0]) > fabsf(r2[0]))
+//		SWAP_ROWS_FLOAT(r3, r2);
+//	if (fabsf(r2[0]) > fabsf(r1[0]))
+//		SWAP_ROWS_FLOAT(r2, r1);
+//	if (fabsf(r1[0]) > fabsf(r0[0]))
+//		SWAP_ROWS_FLOAT(r1, r0);
+//	if (0.0 == r0[0])
+//		return 0;
+//	/* eliminate first variable     */
+//	m1 = r1[0] / r0[0];
+//	m2 = r2[0] / r0[0];
+//	m3 = r3[0] / r0[0];
+//	s = r0[1];
+//	r1[1] -= m1 * s;
+//	r2[1] -= m2 * s;
+//	r3[1] -= m3 * s;
+//	s = r0[2];
+//	r1[2] -= m1 * s;
+//	r2[2] -= m2 * s;
+//	r3[2] -= m3 * s;
+//	s = r0[3];
+//	r1[3] -= m1 * s;
+//	r2[3] -= m2 * s;
+//	r3[3] -= m3 * s;
+//	s = r0[4];
+//	if (s != 0.0) {
+//		r1[4] -= m1 * s;
+//		r2[4] -= m2 * s;
+//		r3[4] -= m3 * s;
+//	}
+//	s = r0[5];
+//	if (s != 0.0) {
+//		r1[5] -= m1 * s;
+//		r2[5] -= m2 * s;
+//		r3[5] -= m3 * s;
+//	}
+//	s = r0[6];
+//	if (s != 0.0) {
+//		r1[6] -= m1 * s;
+//		r2[6] -= m2 * s;
+//		r3[6] -= m3 * s;
+//	}
+//	s = r0[7];
+//	if (s != 0.0) {
+//		r1[7] -= m1 * s;
+//		r2[7] -= m2 * s;
+//		r3[7] -= m3 * s;
+//	}
+//	/* choose pivot - or die */
+//	if (fabsf(r3[1]) > fabsf(r2[1]))
+//		SWAP_ROWS_FLOAT(r3, r2);
+//	if (fabsf(r2[1]) > fabsf(r1[1]))
+//		SWAP_ROWS_FLOAT(r2, r1);
+//	if (0.0 == r1[1])
+//		return 0;
+//	/* eliminate second variable */
+//	m2 = r2[1] / r1[1];
+//	m3 = r3[1] / r1[1];
+//	r2[2] -= m2 * r1[2];
+//	r3[2] -= m3 * r1[2];
+//	r2[3] -= m2 * r1[3];
+//	r3[3] -= m3 * r1[3];
+//	s = r1[4];
+//	if (0.0 != s) {
+//		r2[4] -= m2 * s;
+//		r3[4] -= m3 * s;
+//	}
+//	s = r1[5];
+//	if (0.0 != s) {
+//		r2[5] -= m2 * s;
+//		r3[5] -= m3 * s;
+//	}
+//	s = r1[6];
+//	if (0.0 != s) {
+//		r2[6] -= m2 * s;
+//		r3[6] -= m3 * s;
+//	}
+//	s = r1[7];
+//	if (0.0 != s) {
+//		r2[7] -= m2 * s;
+//		r3[7] -= m3 * s;
+//	}
+//	/* choose pivot - or die */
+//	if (fabsf(r3[2]) > fabsf(r2[2]))
+//		SWAP_ROWS_FLOAT(r3, r2);
+//	if (0.0 == r2[2])
+//		return 0;
+//	/* eliminate third variable */
+//	m3 = r3[2] / r2[2];
+//	r3[3] -= m3 * r2[3], r3[4] -= m3 * r2[4],
+//		r3[5] -= m3 * r2[5], r3[6] -= m3 * r2[6], r3[7] -= m3 * r2[7];
+//	/* last check */
+//	if (0.0 == r3[3])
+//		return 0;
+//	s = 1.0 / r3[3];		/* now back substitute row 3 */
+//	r3[4] *= s;
+//	r3[5] *= s;
+//	r3[6] *= s;
+//	r3[7] *= s;
+//	m2 = r2[3];			/* now back substitute row 2 */
+//	s = 1.0 / r2[2];
+//	r2[4] = s * (r2[4] - r3[4] * m2), r2[5] = s * (r2[5] - r3[5] * m2),
+//		r2[6] = s * (r2[6] - r3[6] * m2), r2[7] = s * (r2[7] - r3[7] * m2);
+//	m1 = r1[3];
+//	r1[4] -= r3[4] * m1, r1[5] -= r3[5] * m1,
+//		r1[6] -= r3[6] * m1, r1[7] -= r3[7] * m1;
+//	m0 = r0[3];
+//	r0[4] -= r3[4] * m0, r0[5] -= r3[5] * m0,
+//		r0[6] -= r3[6] * m0, r0[7] -= r3[7] * m0;
+//	m1 = r1[2];			/* now back substitute row 1 */
+//	s = 1.0 / r1[1];
+//	r1[4] = s * (r1[4] - r2[4] * m1), r1[5] = s * (r1[5] - r2[5] * m1),
+//		r1[6] = s * (r1[6] - r2[6] * m1), r1[7] = s * (r1[7] - r2[7] * m1);
+//	m0 = r0[2];
+//	r0[4] -= r2[4] * m0, r0[5] -= r2[5] * m0,
+//		r0[6] -= r2[6] * m0, r0[7] -= r2[7] * m0;
+//	m0 = r0[1];			/* now back substitute row 0 */
+//	s = 1.0 / r0[0];
+//	r0[4] = s * (r0[4] - r1[4] * m0), r0[5] = s * (r0[5] - r1[5] * m0),
+//		r0[6] = s * (r0[6] - r1[6] * m0), r0[7] = s * (r0[7] - r1[7] * m0);
+//	MAT(out, 0, 0) = r0[4];
+//	MAT(out, 0, 1) = r0[5], MAT(out, 0, 2) = r0[6];
+//	MAT(out, 0, 3) = r0[7], MAT(out, 1, 0) = r1[4];
+//	MAT(out, 1, 1) = r1[5], MAT(out, 1, 2) = r1[6];
+//	MAT(out, 1, 3) = r1[7], MAT(out, 2, 0) = r2[4];
+//	MAT(out, 2, 1) = r2[5], MAT(out, 2, 2) = r2[6];
+//	MAT(out, 2, 3) = r2[7], MAT(out, 3, 0) = r3[4];
+//	MAT(out, 3, 1) = r3[5], MAT(out, 3, 2) = r3[6];
+//	MAT(out, 3, 3) = r3[7];
+//	return 1;
+//}
+//
+//void MultiplyMatrices4by4OpenGL_FLOAT(float *result, float *matrix1, float *matrix2)
+//{
+//	result[0] = matrix1[0] * matrix2[0] +
+//		matrix1[4] * matrix2[1] +
+//		matrix1[8] * matrix2[2] +
+//		matrix1[12] * matrix2[3];
+//	result[4] = matrix1[0] * matrix2[4] +
+//		matrix1[4] * matrix2[5] +
+//		matrix1[8] * matrix2[6] +
+//		matrix1[12] * matrix2[7];
+//	result[8] = matrix1[0] * matrix2[8] +
+//		matrix1[4] * matrix2[9] +
+//		matrix1[8] * matrix2[10] +
+//		matrix1[12] * matrix2[11];
+//	result[12] = matrix1[0] * matrix2[12] +
+//		matrix1[4] * matrix2[13] +
+//		matrix1[8] * matrix2[14] +
+//		matrix1[12] * matrix2[15];
+//	result[1] = matrix1[1] * matrix2[0] +
+//		matrix1[5] * matrix2[1] +
+//		matrix1[9] * matrix2[2] +
+//		matrix1[13] * matrix2[3];
+//	result[5] = matrix1[1] * matrix2[4] +
+//		matrix1[5] * matrix2[5] +
+//		matrix1[9] * matrix2[6] +
+//		matrix1[13] * matrix2[7];
+//	result[9] = matrix1[1] * matrix2[8] +
+//		matrix1[5] * matrix2[9] +
+//		matrix1[9] * matrix2[10] +
+//		matrix1[13] * matrix2[11];
+//	result[13] = matrix1[1] * matrix2[12] +
+//		matrix1[5] * matrix2[13] +
+//		matrix1[9] * matrix2[14] +
+//		matrix1[13] * matrix2[15];
+//	result[2] = matrix1[2] * matrix2[0] +
+//		matrix1[6] * matrix2[1] +
+//		matrix1[10] * matrix2[2] +
+//		matrix1[14] * matrix2[3];
+//	result[6] = matrix1[2] * matrix2[4] +
+//		matrix1[6] * matrix2[5] +
+//		matrix1[10] * matrix2[6] +
+//		matrix1[14] * matrix2[7];
+//	result[10] = matrix1[2] * matrix2[8] +
+//		matrix1[6] * matrix2[9] +
+//		matrix1[10] * matrix2[10] +
+//		matrix1[14] * matrix2[11];
+//	result[14] = matrix1[2] * matrix2[12] +
+//		matrix1[6] * matrix2[13] +
+//		matrix1[10] * matrix2[14] +
+//		matrix1[14] * matrix2[15];
+//	result[3] = matrix1[3] * matrix2[0] +
+//		matrix1[7] * matrix2[1] +
+//		matrix1[11] * matrix2[2] +
+//		matrix1[15] * matrix2[3];
+//	result[7] = matrix1[3] * matrix2[4] +
+//		matrix1[7] * matrix2[5] +
+//		matrix1[11] * matrix2[6] +
+//		matrix1[15] * matrix2[7];
+//	result[11] = matrix1[3] * matrix2[8] +
+//		matrix1[7] * matrix2[9] +
+//		matrix1[11] * matrix2[10] +
+//		matrix1[15] * matrix2[11];
+//	result[15] = matrix1[3] * matrix2[12] +
+//		matrix1[7] * matrix2[13] +
+//		matrix1[11] * matrix2[14] +
+//		matrix1[15] * matrix2[15];
+//}
+//
+//
 
 void checkGLErrors(const QString& prefix)
 {
@@ -404,12 +643,23 @@ RenderOptionsDialog::RenderOptionsDialog()
 
 	m_updateButton = new QPushButton("Update Block");
 	layout->addWidget(m_updateButton);
+
+	m_query = new QPushButton("Do Query");
+	layout->addWidget(m_query);
+
 	++row;
 
 	connect(m_updateButton, SIGNAL(clicked()), this, SLOT(updateBlock()));
+	connect(m_query, SIGNAL(clicked()), this, SLOT(doQuery()));
 
     layout->setRowStretch(row, 1);
 }
+
+void RenderOptionsDialog::doQuery()
+{
+	emit queryChanged(0, 10, 10);
+}
+
 
 void RenderOptionsDialog::updateBlock()
 {
@@ -521,6 +771,11 @@ const static char environmentShaderText[] =
 "gl_FragColor =  vec4(0.5f,0.5f,0.5f,1.0f);"
 		"}";
 
+inline int iDivUp(int a, int b)
+{
+	return (a % b != 0) ? (a / b + 1) : (a / b);
+}
+
 Scene::Scene(int width, int height, int maxTextureSize)
     : m_distExp(600)
     , m_frame(0)
@@ -537,6 +792,12 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	dataManager = new DataManager();
 	dataManager->LoadVec("D:/data/plume/15plume3d421.vec");
 	//dataManager->LoadVec("D:/data/isabel/UVWf01.vec");
+	m_width = width;
+	m_height = height;
+	blockSize.x = 16;
+	blockSize.y = 16;
+	gridSize = dim3(iDivUp(width, blockSize.x), iDivUp(height, blockSize.y));
+
 
     setSceneRect(0, 0, width, height);
 
@@ -552,6 +813,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	dataManager->GetVolumeSize(nx, ny, nz);
 	m_renderOptions->setBlock(0, 0, 0, nx, ny, nz);
 
+	initPixelBuffer();
 
     connect(m_renderOptions, SIGNAL(dynamicCubemapToggled(int)), this, SLOT(toggleDynamicCubemap(int)));
     connect(m_renderOptions, SIGNAL(colorParameterChanged(QString,QRgb)), this, SLOT(setColorParameter(QString,QRgb)));
@@ -560,7 +822,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
     connect(m_renderOptions, SIGNAL(shaderChanged(int)), this, SLOT(setShader(int)));
 	connect(m_renderOptions, SIGNAL(blockChanged(int, int, int, int, int, int)), 
 		this, SLOT(UpdateBlock(int, int, int, int, int, int)));
-
+	connect(m_renderOptions, SIGNAL(queryChanged(int, int, int)), this, SLOT(UpdateQuery(int, int, int)));
     m_itemDialog = new ItemDialog;
 //    connect(m_itemDialog, SIGNAL(newItemTriggered(ItemDialog::ItemType)), this, SLOT(newItem(ItemDialog::ItemType)));
 
@@ -601,6 +863,9 @@ Scene::~Scene()
         delete m_environmentShader;
     if (m_environmentProgram)
         delete m_environmentProgram;
+
+	cleanup();
+	cudaDeviceReset();
 }
 
 void Scene::initGL()
@@ -726,6 +991,9 @@ void Scene::renderBBox(const QMatrix4x4 &view)
 
 	int nx, ny, nz;
 	dataManager->GetVolumeSize(nx, ny, nz);
+	//nx -= 1;
+	//ny -= 1;
+	//nz -= 1;
 	
 	glBegin(GL_LINES);
 	glVertex3f(0, 0, 0);
@@ -831,21 +1099,22 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
 {
     QMatrix4x4 invView = view.inverted();
 
-    // If multi-texturing is supported, use three saplers.
-    if (glActiveTexture) {
-        glActiveTexture(GL_TEXTURE0);
-        m_textures[m_currentTexture]->bind();
-        glActiveTexture(GL_TEXTURE2);
-        m_noise->bind();
-        glActiveTexture(GL_TEXTURE1);
-    } else {
-        m_textures[m_currentTexture]->bind();
-    }
+    //// If multi-texturing is supported, use three saplers.
+    //if (glActiveTexture) {
+    //    //glActiveTexture(GL_TEXTURE0);
+    //    //m_textures[m_currentTexture]->bind();
+    //    //glActiveTexture(GL_TEXTURE2);
+    //    //m_noise->bind();
+    //} else {
+    //    //m_textures[m_currentTexture]->bind();
+    //}
 
     loadMatrix(view);
 
 	int nx, ny, nz;
 	dataManager->GetVolumeSize(nx, ny, nz);
+	int dataDim[3] = { nx, ny, nz };
+	copyDataDim(dataDim, sizeof(int3));
 
 	int qx, qy, qz;
 	int qnx, qny, qnz;
@@ -857,62 +1126,68 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
 	float minqsize = std::min(qnx, std::min(qny, qnz));
 	float minbymax = mindim / maxdim;
 
-    if (-1 != excludeBox) {
-        QMatrix4x4 m;
-        m.rotate(m_trackBalls[0].rotation());
-        glMultMatrixf(m.constData());
 
-		float s = 1.0f / maxdim;
-		glScalef(s, s, s);
-		//glTranslatef(m_translate[0], m_translate[1], m_translate[2]);
+	//if (-1 != excludeBox) {
+	QMatrix4x4 m;
+	m.rotate(m_trackBalls[0].rotation());
+	glMultMatrixf(m.constData());
 
-        if (glActiveTexture) {
-            //if (m_dynamicCubemap)
-            //    m_mainCubemap->bind();
-            //else
-                m_environment->bind();
-        }
+	float s = 1.0f / maxdim;
+	glScalef(s, s, s);
+	//glTranslatef(m_translate[0], m_translate[1], m_translate[2]);
+	glTranslatef(-(0 + nx / 2), -(0 + ny / 2), -(0 + nz / 2));
 
-        m_programs[m_currentShader]->bind();
-        m_programs[m_currentShader]->setUniformValue("tex", GLint(0));
-        m_programs[m_currentShader]->setUniformValue("env", GLint(1));
-        m_programs[m_currentShader]->setUniformValue("noise", GLint(2));
-        m_programs[m_currentShader]->setUniformValue("view", view);
-        m_programs[m_currentShader]->setUniformValue("invView", invView);
-		glTranslatef(-(0 + nx / 2), -(0 + ny / 2), -(0 + nz / 2));
-
-		glPushMatrix();
-		glTranslatef(qnx / 2 + qx, qny / 2 + qy, qnz / 2 + qz);
-		glScalef(minqsize, minqsize, minqsize);
-		m_vecWidget->draw();
-		glPopMatrix();
-
-		m_programs[m_currentShader]->release();
-
-        if (glActiveTexture) {
-            //if (m_dynamicCubemap)
-            //    m_mainCubemap->unbind();
-            //else
-                m_environment->unbind();
-        }
-    }
-
-    if (glActiveTexture) {
-        glActiveTexture(GL_TEXTURE2);
-        m_noise->unbind();
-        glActiveTexture(GL_TEXTURE0);
-    }
-    m_textures[m_currentTexture]->unbind();
+	displayVolume();
 
 
-	glPushAttrib(GL_LIGHTING_BIT);
-	glDisable(GL_LIGHTING);
+	if (glActiveTexture) {
+		//if (m_dynamicCubemap)
+		//    m_mainCubemap->bind();
+		//else
+		glActiveTexture(GL_TEXTURE1);
+		m_environment->bind();
+	}
+
+	m_programs[m_currentShader]->bind();
+	m_programs[m_currentShader]->setUniformValue("tex", GLint(0));
+	m_programs[m_currentShader]->setUniformValue("env", GLint(1));
+	m_programs[m_currentShader]->setUniformValue("noise", GLint(2));
+	m_programs[m_currentShader]->setUniformValue("view", view);
+	m_programs[m_currentShader]->setUniformValue("invView", invView);
+
+	glPushMatrix();
+	glTranslatef(qnx / 2 + qx, qny / 2 + qy, qnz / 2 + qz);
+	glScalef(minqsize, minqsize, minqsize);
+	m_vecWidget->draw();
+	glPopMatrix();
+
+	m_programs[m_currentShader]->release();
+
+	if (glActiveTexture) {
+		//if (m_dynamicCubemap)
+		//    m_mainCubemap->unbind();
+		//else
+		m_environment->unbind();
+	}
+	//}
+
+    //if (glActiveTexture) {
+    //    glActiveTexture(GL_TEXTURE2);
+    //    m_noise->unbind();
+    //    glActiveTexture(GL_TEXTURE0);
+    //}
+    //m_textures[m_currentTexture]->unbind();
+
+
+	//glPushAttrib(GL_LIGHTING_BIT);
+	//glDisable(GL_LIGHTING);
 	
+
 
 
 	renderQCube(view);
 	renderBBox(view);
-	
+
 	glPopAttrib();
 
 }
@@ -923,7 +1198,7 @@ void Scene::setStates()
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
-    glEnable(GL_LIGHTING);
+    //glEnable(GL_LIGHTING);
     //glEnable(GL_COLOR_MATERIAL);
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_NORMALIZE);
@@ -961,7 +1236,7 @@ void Scene::defaultStates()
 
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
-    glDisable(GL_LIGHTING);
+    //glDisable(GL_LIGHTING);
     //glDisable(GL_COLOR_MATERIAL);
     glDisable(GL_TEXTURE_2D);
     glDisable(GL_LIGHT0);
@@ -1277,10 +1552,25 @@ void Scene::setFloatParameter(const QString &name, float value)
 void Scene::UpdateBlock(int x, int y, int z, int nx, int ny, int nz)
 {
 	int size = 32;
-	std::unique_ptr<float[]> cubemap(new float[size * size * 6]);
-	dataManager->GenCubeMap(x, y, z, nx, ny, nz, cubemap.get(), size);
-	m_environment->load(cubemap.get(), size);
+//	std::unique_ptr<float[]> cubemap(new float[size * size * 6]);
+	float* cubemap = nullptr;
+	dataManager->GenCubeMap(x, y, z, nx, ny, nz, cubemap, size);
+	m_environment->load(cubemap, size);
 }
+
+void Scene::UpdateQuery(int f, int x, int y)
+{
+//	std::unique_ptr<bool[]> result(new bool[size * size * 6]);
+	int size = dataManager->GetNumOfCells();
+	unsigned char* result = new unsigned char[size];
+//	int size = 0;
+	dataManager->QueryByBin(f, x, y, result);
+	int nx, ny, nz;
+	dataManager->GetVolumeSize(nx, ny, nz);
+	cudaExtent volumeSize = make_cudaExtent(nx, ny, nz);
+	inputMask(result, volumeSize);
+}
+
 
 void Scene::UpdateBlock()
 {
@@ -1327,3 +1617,177 @@ void RenderOptionsDialog::changeBlockLoc(const int idx, const int val)
 //        break;
 //    }
 //}
+
+void Scene::initPixelBuffer()
+{
+	if (pbo)
+	{
+		// unregister this buffer object from CUDA C
+		checkCudaErrors(cudaGraphicsUnregisterResource(cuda_pbo_resource));
+
+		// delete old buffer
+		glDeleteBuffers(1, &pbo);
+		glDeleteTextures(1, &tex);
+	}
+	// create pixel buffer object for display
+	glGenBuffers(1, &pbo);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, pbo);
+	glBufferData(GL_PIXEL_UNPACK_BUFFER_ARB, m_width*m_height*sizeof(GLubyte)* 4, 0, GL_STREAM_DRAW_ARB);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+
+	// register this buffer object with CUDA
+	checkCudaErrors(cudaGraphicsGLRegisterBuffer(&cuda_pbo_resource, pbo, cudaGraphicsMapFlagsWriteDiscard));
+
+	// create texture for display
+	glGenTextures(1, &tex);
+	glBindTexture(GL_TEXTURE_2D, tex);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void Scene::cleanup()
+{
+	//sdkDeleteTimer(&timer);
+
+	freeCudaBuffers();
+
+	if (pbo)
+	{
+		cudaGraphicsUnregisterResource(cuda_pbo_resource);
+		glDeleteBuffers(1, &pbo);
+		glDeleteTextures(1, &tex);
+	}
+}
+
+// render image using CUDA
+void Scene::renderVolume()
+{
+	//copyInvViewMatrix(invViewMatrix, sizeof(float4)* 4);
+	//copyInvProjMatrix(invProjMatrix, sizeof(float4)* 3);
+	copyInvProjMulViewMatrix(invProjMulView, sizeof(float4)* 4);
+
+
+
+	// map PBO to get CUDA device pointer
+	uint *d_output;
+	// map PBO to get CUDA device pointer
+	checkCudaErrors(cudaGraphicsMapResources(1, &cuda_pbo_resource, 0));
+	size_t num_bytes;
+	checkCudaErrors(cudaGraphicsResourceGetMappedPointer((void **)&d_output, &num_bytes,
+		cuda_pbo_resource));
+	//printf("CUDA mapped PBO: May access %ld bytes\n", num_bytes);
+
+	// clear image
+	checkCudaErrors(cudaMemset(d_output, 0, m_width*m_height * 4));
+
+	// call CUDA kernel, writing results to PBO
+	render_kernel(gridSize, blockSize, d_output, m_width, m_height);// , density, brightness, transferOffset, transferScale);
+
+	getLastCudaError("kernel failed");
+
+	checkCudaErrors(cudaGraphicsUnmapResources(1, &cuda_pbo_resource, 0));
+}
+
+
+// display results using OpenGL (called by GLUT)
+void Scene::displayVolume()
+{
+	//sdkStartTimer(&timer);
+
+	// use OpenGL to build view matrix
+	GLfloat modelView[16];
+	glGetFloatv(GL_MODELVIEW_MATRIX, modelView);
+
+	GLfloat projection[16];
+	glGetFloatv(GL_PROJECTION_MATRIX, projection);
+
+	QMatrix4x4 q_modelview(
+		modelView[0], modelView[4], modelView[8], modelView[12], 
+		modelView[1], modelView[5], modelView[9], modelView[13],
+		modelView[2], modelView[6], modelView[10], modelView[14],
+		modelView[3], modelView[7], modelView[11], modelView[15]
+		);
+
+	QMatrix4x4 q_projection(
+		projection[0], projection[4], projection[8], projection[12],
+		projection[1], projection[5], projection[9], projection[13],
+		projection[2], projection[6], projection[10], projection[14],
+		projection[3], projection[7], projection[11], projection[15]
+		);
+
+	QMatrix4x4 q_invProjMulView = (q_projection * q_modelview).inverted();
+	//GLfloat projMulView[16];
+	//MultiplyMatrices4by4OpenGL_FLOAT(projMulView, projection, modelView);
+
+	//glhInvertMatrixf2(projMulView, invProjMulView);
+	q_invProjMulView.copyDataTo(invProjMulView);
+	//invProjMulView 
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+	//glRotatef(-viewRotation.x, 1.0, 0.0, 0.0);
+	//glRotatef(-viewRotation.y, 0.0, 1.0, 0.0);
+	//glTranslatef(-viewTranslation.x, -viewTranslation.y, -viewTranslation.z);
+
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	glOrtho(0.0, 1.0, 0.0, 1.0, 0.0, 1.0);
+
+
+	renderVolume();
+
+	// display results
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	// draw image from PBO
+	glDisable(GL_DEPTH_TEST);
+
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+#if 0
+	// draw using glDrawPixels (slower)
+	glRasterPos2i(0, 0);
+	glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, pbo);
+	glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+#else
+	// draw using texture
+
+	// copy from pbo to texture
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, pbo);
+	glBindTexture(GL_TEXTURE_2D, tex);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_width, m_height, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+
+	// draw textured quad
+	glEnable(GL_TEXTURE_2D);
+	glBegin(GL_QUADS);
+	glTexCoord2f(0, 0);
+	glVertex2f(0, 0);
+	glTexCoord2f(1, 0);
+	glVertex2f(1, 0);
+	glTexCoord2f(1, 1);
+	glVertex2f(1, 1);
+	glTexCoord2f(0, 1);
+	glVertex2f(0, 1);
+	glEnd();
+
+	glDisable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, 0);
+#endif
+
+	//glutSwapBuffers();
+	//glutReportErrors();
+
+	//sdkStopTimer(&timer);
+	//glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
+
+	//computeFPS();
+}

@@ -58,6 +58,10 @@ void DataManager::LoadVec(char* filename)
 	qCubeSize[0] = dim[0];
 	qCubeSize[1] = dim[1];
 	qCubeSize[2] = dim[2];
+
+	cubemap_size = 32;
+
+	IndexVolume(cubemap_size);
 //
 //	int block_size = 51/*atoi(argv[5])*/, block_size_it = block_size - 1, dimbs[3];
 //	dimbs[0] = static_cast<int>(ceil(static_cast<float>(dims[0]) / block_size_it));
@@ -155,6 +159,53 @@ std::vector<float> ComputePatchSolidAngle(int size)
 
 }
 
+inline int3 XYZ2Idx(float3 d, int size)
+{
+	int f = 0;
+	float x = 0, y = 0;
+	if (d.x >= abs(d.y) && d.x > abs(d.z))
+	{
+		f = 0;
+		x = (-d.z / abs(d.x) + 1) * 0.5;
+		y = (-d.y / abs(d.x) + 1) * 0.5;
+	}
+	else if (d.x < -abs(d.y) && d.x <= -abs(d.z))
+	{
+		f = 1;
+		x = (d.z / abs(d.x) + 1) * 0.5;
+		y = (-d.y / abs(d.x) + 1) * 0.5;
+	}
+	else if (d.y >= abs(d.z) && d.y > abs(d.x))
+	{
+		f = 2;
+		x = (d.x / abs(d.y) + 1) * 0.5;
+		y = (d.z / abs(d.y) + 1) * 0.5;
+	}
+	else if (d.y < -abs(d.z) && d.y <= -abs(d.x))
+	{
+		f = 3;
+		x = (d.x / abs(d.y) + 1) * 0.5;
+		y = (-d.z / abs(d.y) + 1) * 0.5;
+	}
+	else if (d.z >= abs(d.x) && d.z > abs(d.y))
+	{
+		f = 4;
+		x = (d.x / abs(d.z) + 1) * 0.5;
+		y = (-d.y / abs(d.z) + 1) * 0.5;
+	}
+	else if (d.z < -abs(d.x) && d.z <= -abs(d.y))
+	{
+		f = 5;
+		x = (-d.x / abs(d.z) + 1) * 0.5;
+		y = (-d.y / abs(d.z) + 1) * 0.5;
+	}
+	//else
+	//	continue;
+
+	return make_int3(f, x * size, y * size);
+
+}
+
 inline void ComputeCubeMap(std::vector<float3> data, float* cubemap, const int size)
 {
 	using namespace std;
@@ -169,49 +220,8 @@ inline void ComputeCubeMap(std::vector<float3> data, float* cubemap, const int s
 	//(s,t,r) selects one of the cube map face's 2D mipmap sets 
 	//based on the largest magnitude coordinate direction (the major axis direction). 
 	for (auto d : data)	{
-		if (d.x >= abs(d.y) && d.x > abs(d.z))
-		{
-			f = 0;
-			x = (-d.z / abs(d.x) + 1) * 0.5;
-			y = (-d.y / abs(d.x) + 1) * 0.5;
-		}
-		else if (d.x < -abs(d.y) && d.x <= -abs(d.z))
-		{
-			f = 1;
-			x = (d.z / abs(d.x) + 1) * 0.5;
-			y = (-d.y / abs(d.x) + 1) * 0.5;
-		}
-		else if (d.y >= abs(d.z) && d.y > abs(d.x))
-		{
-			f = 2;
-			x = (d.x / abs(d.y) + 1) * 0.5;
-			y = (d.z / abs(d.y) + 1) * 0.5;
-		}
-		else if (d.y < - abs(d.z) && d.y <= - abs(d.x))
-		{
-			f = 3;
-			x = (d.x / abs(d.y) + 1) * 0.5;
-			y = (-d.z / abs(d.y) + 1) * 0.5;
-		}
-		else if (d.z >= abs(d.x) && d.z > abs(d.y))
-		{
-			f = 4;
-			x = (d.x / abs(d.z) + 1) * 0.5;
-			y = (-d.y / abs(d.z) + 1) * 0.5;
-		}
-		else if (d.z < - abs(d.x) && d.z <= - abs(d.y))
-		{
-			f = 5;
-			x = (-d.x / abs(d.z) + 1) * 0.5;
-			y = (-d.y / abs(d.z) + 1) * 0.5;
-		}
-		else 
-			continue;
-
-		binx = x * size;
-		biny = y * size;
-
-		binCnt[f* size2 + biny * size + binx] += 1;
+		int3 ret = XYZ2Idx(d, size);
+		binCnt[ret.x* size2 + ret.z * size + ret.y] += 1;
 	}
 
 	vector<float> solAng = ComputePatchSolidAngle(size);
@@ -228,7 +238,7 @@ inline void ComputeCubeMap(std::vector<float3> data, float* cubemap, const int s
 	}
 }
 
-void DataManager::GenCubeMap(int x, int y, int z, int nx, int ny, int nz, float* cubemap, int size)
+void DataManager::GenCubeMap(int x, int y, int z, int nx, int ny, int nz, float* &cubemap, int size)
 {
 	qCubePos[0] = x;
 	qCubePos[1] = y;
@@ -236,9 +246,59 @@ void DataManager::GenCubeMap(int x, int y, int z, int nx, int ny, int nz, float*
 	qCubeSize[0] = nx;
 	qCubeSize[1] = ny;
 	qCubeSize[2] = nz;
+	cubemap = new float[size * size * 6];
 	std::vector<float3> datablock = GetBlock(x, y, z, nx, ny, nz);
 	ComputeCubeMap(datablock, cubemap, size);
+	cubemap_data = cubemap;
+	cubemap_size = size;
 }
+
+void DataManager::IndexVolume(int size)
+{
+	float3* idata = static_cast<float3*>((void *)data);
+	dataIdx = new int3[dim[0] * dim[1] * dim[2]];
+
+	for (int i = 0; i < dim[0]; i++)	{
+		for (int j = 0; j < dim[1]; j++)	{
+			for (int k = 0; k < dim[2]; k++)	{
+				float3 d = idata[i * dim[1] * dim[2] + j * dim[2] + k];
+				dataIdx[i * dim[1] * dim[2] + j * dim[2] + k] = XYZ2Idx(d, size);
+			}
+		}
+	}
+}
+
+int DataManager::GetCubemapSize()
+{
+	return cubemap_size;
+}
+
+int DataManager::GetNumOfCells()
+{
+	return dim[0] * dim[1] * dim[2];
+}
+
+
+void DataManager::QueryByBin(int f, int x, int y, unsigned char* result)
+{
+	int cnt = 0;
+	for (int i = 0; i < dim[0]; i++)	{
+		for (int j = 0; j < dim[1]; j++)	{
+			for (int k = 0; k < dim[2]; k++)	{
+				int3 b = dataIdx[i * dim[1] * dim[2] + j * dim[2] + k];
+				if (b.x == f && abs(b.y - x) < 4 && abs(b.z - y) < 4)
+				{
+					result[i * dim[1] * dim[2] + j * dim[2] + k] = (unsigned char)255;
+					cnt++;
+				}
+				else
+					result[i * dim[1] * dim[2] + j * dim[2] + k] = (unsigned char)0;
+			}
+		}
+	}
+	std::cout << "perc:" << (float) cnt / (dim[0] * dim[1] * dim[2])<< std::endl;
+}
+
 
 void DataManager::UpdateCubeMap(float* cubemap, int size)
 {
@@ -255,7 +315,9 @@ void DataManager::UpdateCubeMap(float* cubemap, int size)
 
 DataManager::~DataManager()
 {
+	delete [] cubemap_data;
 	delete [] data;
+	delete [] dataIdx;
 }
 
 std::vector<std::vector<double> > DataManager::GetVertexPos()
