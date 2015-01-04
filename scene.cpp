@@ -1097,19 +1097,11 @@ void Scene::renderQCube(const QMatrix4x4 &view)
 // If the main box should not be rendered, set excludeBox to -1.
 void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
 {
-    QMatrix4x4 invView = view.inverted();
+	QMatrix4x4 m;
+	m.rotate(m_trackBalls[0].rotation());
+	loadMatrix(view);
 
-    //// If multi-texturing is supported, use three saplers.
-    //if (glActiveTexture) {
-    //    //glActiveTexture(GL_TEXTURE0);
-    //    //m_textures[m_currentTexture]->bind();
-    //    //glActiveTexture(GL_TEXTURE2);
-    //    //m_noise->bind();
-    //} else {
-    //    //m_textures[m_currentTexture]->bind();
-    //}
 
-    loadMatrix(view);
 
 	int nx, ny, nz;
 	dataManager->GetVolumeSize(nx, ny, nz);
@@ -1126,24 +1118,22 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
 	float minqsize = std::min(qnx, std::min(qny, qnz));
 	float minbymax = mindim / maxdim;
 
-
-	//if (-1 != excludeBox) {
-	QMatrix4x4 m;
-	m.rotate(m_trackBalls[0].rotation());
+	/****** transform********/
 	glMultMatrixf(m.constData());
+
+
+	//glPushMatrix();
 
 	float s = 1.0f / maxdim;
 	glScalef(s, s, s);
 	//glTranslatef(m_translate[0], m_translate[1], m_translate[2]);
 	glTranslatef(-(0 + nx / 2), -(0 + ny / 2), -(0 + nz / 2));
 
+	/****** Volume rendering ******/
 	displayVolume();
 
-
+	/***** Draw sphere ****/
 	if (glActiveTexture) {
-		//if (m_dynamicCubemap)
-		//    m_mainCubemap->bind();
-		//else
 		glActiveTexture(GL_TEXTURE1);
 		m_environment->bind();
 	}
@@ -1151,9 +1141,17 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
 	m_programs[m_currentShader]->bind();
 	m_programs[m_currentShader]->setUniformValue("tex", GLint(0));
 	m_programs[m_currentShader]->setUniformValue("env", GLint(1));
-	m_programs[m_currentShader]->setUniformValue("noise", GLint(2));
-	m_programs[m_currentShader]->setUniformValue("view", view);
-	m_programs[m_currentShader]->setUniformValue("invView", invView);
+
+
+	glPushMatrix();
+	loadMatrix(view);
+	//glLoadIdentity();
+	glTranslatef(0.3, -0.25, 0.2);
+	glColor3f(1.0f, 1.0f, 1.0f);
+	glScalef(0.2, 0.2, 0.2);
+	glMultMatrixf(m.constData());
+	m_vecWidget->draw();
+	glPopMatrix();
 
 	glPushMatrix();
 	glTranslatef(qnx / 2 + qx, qny / 2 + qy, qnz / 2 + qz);
@@ -1161,32 +1159,27 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
 	m_vecWidget->draw();
 	glPopMatrix();
 
+
 	m_programs[m_currentShader]->release();
 
 	if (glActiveTexture) {
-		//if (m_dynamicCubemap)
-		//    m_mainCubemap->unbind();
-		//else
 		m_environment->unbind();
 	}
-	//}
-
-    //if (glActiveTexture) {
-    //    glActiveTexture(GL_TEXTURE2);
-    //    m_noise->unbind();
-    //    glActiveTexture(GL_TEXTURE0);
-    //}
-    //m_textures[m_currentTexture]->unbind();
-
-
-	//glPushAttrib(GL_LIGHTING_BIT);
-	//glDisable(GL_LIGHTING);
-	
-
 
 
 	renderQCube(view);
 	renderBBox(view);
+
+	//glPopMatrix();
+
+	//glPushMatrix();
+	//glScalef(0.5, 0.5, 0.5);
+	//glTranslatef(-1, -1, -1);
+
+	//m_vecWidget->draw();
+	//glPopMatrix();
+
+
 
 	glPopAttrib();
 
@@ -1743,6 +1736,7 @@ void Scene::displayVolume()
 	// display results
 	glClear(GL_COLOR_BUFFER_BIT);
 
+	glPushAttrib(GL_DEPTH_TEST);
 	// draw image from PBO
 	glDisable(GL_DEPTH_TEST);
 
@@ -1777,6 +1771,8 @@ void Scene::displayVolume()
 
 	glDisable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, 0);
+
+	glPopAttrib();
 #endif
 
 	//glutSwapBuffers();
