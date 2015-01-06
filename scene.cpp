@@ -790,8 +790,9 @@ Scene::Scene(int width, int height, int maxTextureSize)
     , m_environmentProgram(0)
 {
 	dataManager = new DataManager();
-	dataManager->LoadVec("D:/data/plume/15plume3d421.vec");
-	//dataManager->LoadVec("D:/data/isabel/UVWf01.vec");
+	//dataManager->LoadVec("D:/data/sample/test1.vec");
+	//dataManager->LoadVec("D:/data/plume/15plume3d421.vec");
+	dataManager->LoadVec("D:/data/isabel/UVWf01.vec");
 	m_width = width;
 	m_height = height;
 	blockSize.x = 16;
@@ -1156,7 +1157,7 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
 	glPushMatrix();
 	glTranslatef(qnx / 2 + qx, qny / 2 + qy, qnz / 2 + qz);
 	glScalef(minqsize, minqsize, minqsize);
-	m_vecWidget->draw();
+//	m_vecWidget->draw();
 	glPopMatrix();
 
 

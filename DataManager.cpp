@@ -6,6 +6,7 @@
 
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <vector_functions.h>
 
 void DataManager::GetVolumeSize(int &nx, int &ny, int&nz)
 {
@@ -62,6 +63,7 @@ void DataManager::LoadVec(char* filename)
 	cubemap_size = 32;
 
 	IndexVolume(cubemap_size);
+	ComputeCurl();
 //
 //	int block_size = 51/*atoi(argv[5])*/, block_size_it = block_size - 1, dimbs[3];
 //	dimbs[0] = static_cast<int>(ceil(static_cast<float>(dims[0]) / block_size_it));
@@ -212,6 +214,7 @@ inline void ComputeCubeMap(std::vector<float3> data, float* cubemap, const int s
 	vector<int> binCnt(size * size * 6, 0);// (new int(size * size * 6));
 	//int *binCnt = new int[size * size * 6];
 	const int size2 = size * size;
+	const int size3 = size * size * 6;
 
 	float x, y;
 	int binx, biny;
@@ -221,7 +224,9 @@ inline void ComputeCubeMap(std::vector<float3> data, float* cubemap, const int s
 	//based on the largest magnitude coordinate direction (the major axis direction). 
 	for (auto d : data)	{
 		int3 ret = XYZ2Idx(d, size);
-		binCnt[ret.x* size2 + ret.z * size + ret.y] += 1;
+		int idx = ret.x* size2 + ret.z * size + ret.y;
+		if (idx >= 0 && idx < size3)
+			binCnt[idx] += 1;
 	}
 
 	vector<float> solAng = ComputePatchSolidAngle(size);
@@ -268,6 +273,46 @@ void DataManager::IndexVolume(int size)
 	}
 }
 
+void DataManager::ComputeCurl()
+{
+	float3* idata = static_cast<float3*>((void *)data);
+	curlIdx = new int3[dim[0] * dim[1] * dim[2]];
+
+	for (int i = 0; i < dim[0]; i++)	{
+		for (int j = 0; j < dim[1]; j++)	{
+			for (int k = 0; k < dim[2]; k++)	{
+				if (0 == i || 0 == j || 0 == k || (dim[0] - 1) == i || (dim[1] - 1) == j || (dim[2] - 1) == k)
+					dataIdx[i * dim[1] * dim[2] + j * dim[2] + k] = make_int3(0, 0, 0);
+				else
+				{
+					float3 dx1	= idata[(i + 1) * dim[1] * dim[2] + j * dim[2] + k];
+					float3 dx_1 = idata[(i - 1) * dim[1] * dim[2] + j * dim[2] + k];
+					
+					float3 dy1	= idata[i * dim[1] * dim[2] + (j + 1) * dim[2] + k];
+					float3 dy_1 = idata[i * dim[1] * dim[2] + (j - 1) * dim[2] + k];
+					
+					float3 dz1	= idata[i * dim[1] * dim[2] + j * dim[2] + k + 1];
+					float3 dz_1 = idata[i * dim[1] * dim[2] + j * dim[2] + k - 1];
+
+					float3 curl = make_float3(
+						(dy1.z - dy_1.z) - (dz1.y - dz_1.y), 
+						(dz1.x - dz_1.x) - (dx1.z - dx_1.z), 
+						(dx1.y - dx_1.y) - (dy1.x - dy_1.x));
+						//(dz1.y - dz_1.y) - (dy1.z - dy_1.z),
+						//(dx1.z - dx_1.z) - (dz1.x - dz_1.x),
+						//(dy1.x - dy_1.x) - (dx1.y - dx_1.y));
+
+					if ((curl.x * curl.x + curl.y * curl.y + curl.z * curl.z) > 2000)
+						curlIdx[i * dim[1] * dim[2] + j * dim[2] + k] = XYZ2Idx(curl, cubemap_size);
+					else
+						curlIdx[i * dim[1] * dim[2] + j * dim[2] + k] = make_int3(0, 0, 0);
+				}
+			}
+		}
+	}
+
+}
+
 int DataManager::GetCubemapSize()
 {
 	return cubemap_size;
@@ -281,12 +326,20 @@ int DataManager::GetNumOfCells()
 
 void DataManager::QueryByBin(int f, int x, int y, unsigned char* result)
 {
+	// isabel: 2, 3
+	// isabel, curl: 4
+	// plume: 4, 5
+	f = 2;
+	int a = 4;
+	int x1 = 16 - a, y1 = 16 - a;
+	int x2 = 16 + a, y2 = 16 + a;
 	int cnt = 0;
 	for (int i = 0; i < dim[0]; i++)	{
 		for (int j = 0; j < dim[1]; j++)	{
 			for (int k = 0; k < dim[2]; k++)	{
 				int3 b = dataIdx[i * dim[1] * dim[2] + j * dim[2] + k];
-				if (b.x == f && abs(b.y - x) < 4 && abs(b.z - y) < 4)
+				//int3 b = curlIdx[i * dim[1] * dim[2] + j * dim[2] + k];
+				if (b.x == f && b.y > x1 && b.y < x2 && b.z > y1 && b.z < y2)
 				{
 					result[i * dim[1] * dim[2] + j * dim[2] + k] = (unsigned char)255;
 					cnt++;
