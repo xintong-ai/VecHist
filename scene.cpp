@@ -48,6 +48,7 @@
 #include <memory>
 #include <driver_types.h>
 #include <driver_functions.h>
+//#include <qopenglext.h>
 
 extern "C" void inputMask(void *h_volume, cudaExtent volumeSize);
 
@@ -647,10 +648,14 @@ RenderOptionsDialog::RenderOptionsDialog()
 	m_query = new QPushButton("Do Query");
 	layout->addWidget(m_query);
 
+	m_segmentation = new QPushButton("Segmentation");
+	layout->addWidget(m_segmentation);
+
 	++row;
 
 	connect(m_updateButton, SIGNAL(clicked()), this, SLOT(updateBlock()));
 	connect(m_query, SIGNAL(clicked()), this, SLOT(doQuery()));
+	connect(m_segmentation, SIGNAL(clicked()), this, SLOT(doSegmentation()));
 
     layout->setRowStretch(row, 1);
 }
@@ -659,6 +664,12 @@ void RenderOptionsDialog::doQuery()
 {
 	emit queryChanged(0, 10, 10);
 }
+
+void RenderOptionsDialog::doSegmentation()
+{
+	emit segmentationRequested();
+}
+
 
 
 void RenderOptionsDialog::updateBlock()
@@ -790,9 +801,13 @@ Scene::Scene(int width, int height, int maxTextureSize)
     , m_environmentProgram(0)
 {
 	dataManager = new DataManager();
-	//dataManager->LoadVec("D:/data/sample/test1.vec");
-	//dataManager->LoadVec("D:/data/plume/15plume3d421.vec");
-	dataManager->LoadVec("D:/data/isabel/UVWf01.vec");
+	//$$$
+	
+	//dataManager->LoadVec("D:/data/sample/test2.vec");
+		//dataManager->LoadVec("D:/data/sample/test1.vec");
+	//dataManager->LoadVec("C:/Users/tong.tong-idea/SkyDrive/share/15plume3d430.vec");
+	dataManager->LoadVec("D:/data/plume/15plume3d421.vec");
+	//dataManager->LoadVec("D:/data/isabel/UVWf01.vec");
 	m_width = width;
 	m_height = height;
 	blockSize.x = 16;
@@ -815,7 +830,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	m_renderOptions->setBlock(0, 0, 0, nx, ny, nz);
 
 	initPixelBuffer();
-
+	
     connect(m_renderOptions, SIGNAL(dynamicCubemapToggled(int)), this, SLOT(toggleDynamicCubemap(int)));
     connect(m_renderOptions, SIGNAL(colorParameterChanged(QString,QRgb)), this, SLOT(setColorParameter(QString,QRgb)));
     connect(m_renderOptions, SIGNAL(floatParameterChanged(QString,float)), this, SLOT(setFloatParameter(QString,float)));
@@ -824,6 +839,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	connect(m_renderOptions, SIGNAL(blockChanged(int, int, int, int, int, int)), 
 		this, SLOT(UpdateBlock(int, int, int, int, int, int)));
 	connect(m_renderOptions, SIGNAL(queryChanged(int, int, int)), this, SLOT(UpdateQuery(int, int, int)));
+	connect(m_renderOptions, SIGNAL(segmentationRequested()), this, SLOT(Segmentation()));
     m_itemDialog = new ItemDialog;
 //    connect(m_itemDialog, SIGNAL(newItemTriggered(ItemDialog::ItemType)), this, SLOT(newItem(ItemDialog::ItemType)));
 
@@ -1157,7 +1173,7 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
 	glPushMatrix();
 	glTranslatef(qnx / 2 + qx, qny / 2 + qy, qnz / 2 + qz);
 	glScalef(minqsize, minqsize, minqsize);
-//	m_vecWidget->draw();
+	//m_vecWidget->draw();
 	glPopMatrix();
 
 
@@ -1545,10 +1561,11 @@ void Scene::setFloatParameter(const QString &name, float value)
 
 void Scene::UpdateBlock(int x, int y, int z, int nx, int ny, int nz)
 {
-	int size = 32;
-//	std::unique_ptr<float[]> cubemap(new float[size * size * 6]);
+	//int size = 32;
+	int size = dataManager->GetCubemapSize();
+	//	std::unique_ptr<float[]> cubemap(new float[size * size * 6]);
 	float* cubemap = nullptr;
-	dataManager->GenCubeMap(x, y, z, nx, ny, nz, cubemap, size);
+	dataManager->GenCubeMap(x, y, z, nx, ny, nz, cubemap);
 	m_environment->load(cubemap, size);
 }
 
@@ -1568,9 +1585,10 @@ void Scene::UpdateQuery(int f, int x, int y)
 
 void Scene::UpdateBlock()
 {
-	int size = 32;
+	//int size = 32;
+	int size = dataManager->GetCubemapSize();
 	std::unique_ptr<float[]> cubemap(new float[size * size * 6]);
-	dataManager->UpdateCubeMap(cubemap.get(), size);
+	dataManager->UpdateCubeMap(cubemap.get());
 	m_environment->load(cubemap.get(), size);
 }
 
@@ -1787,4 +1805,66 @@ void Scene::displayVolume()
 	glPopMatrix();
 
 	//computeFPS();
+}
+
+//color picking: http://ogldev.atspace.co.uk/www/tutorial29/tutorial29.html
+bool Scene::InitPicking(unsigned int WindowWidth, unsigned int WindowHeight)
+{
+	// Create the FBO
+	glGenFramebuffersEXT(1, &m_fbo);
+	glBindFramebufferEXT(GL_FRAMEBUFFER, m_fbo);
+
+	// Create the texture object for the primitive information buffer
+	glGenTextures(1, &m_pickingTexture);
+	glBindTexture(GL_TEXTURE_2D, m_pickingTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, WindowWidth, WindowHeight,
+		0, GL_RGB, GL_FLOAT, NULL);
+	glFramebufferTexture2DEXT(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+		m_pickingTexture, 0);
+
+	// Create the texture object for the depth buffer
+	glGenTextures(1, &m_depthTexture);
+	glBindTexture(GL_TEXTURE_2D, m_depthTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, WindowWidth, WindowHeight,
+		0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glFramebufferTexture2DEXT(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
+		m_depthTexture, 0);
+
+	// Disable reading to avoid problems with older GPUs
+	glReadBuffer(GL_NONE);
+
+	glDrawBuffer(GL_COLOR_ATTACHMENT0);
+
+	// Verify that the FBO is correct
+	GLenum Status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
+
+	if (Status != GL_FRAMEBUFFER_COMPLETE) {
+		printf("FB error, status: 0x%x\n", Status);
+		return false;
+	}
+
+	// Restore the default framebuffer
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+
+	return 0;// GLCheckError();
+}
+
+Bin Scene::ReadPixel(unsigned int x, unsigned int y)
+{
+	glBindFramebufferEXT(GL_READ_FRAMEBUFFER, m_fbo);
+	glReadBuffer(GL_COLOR_ATTACHMENT0);
+
+	Bin Pixel;
+	glReadPixels(x, y, 1, 1, GL_RGB, GL_FLOAT, &Pixel);
+
+	glReadBuffer(GL_NONE);
+	glBindFramebufferEXT(GL_READ_FRAMEBUFFER, 0);
+
+	return Pixel;
+}
+
+void Scene::Segmentation()
+{
+	dataManager->Segmentation();
 }

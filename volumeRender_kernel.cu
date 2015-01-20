@@ -123,6 +123,8 @@ __device__ uint rgbaFloatToInt(float4 rgba)
     return (uint(rgba.w*255)<<24) | (uint(rgba.z*255)<<16) | (uint(rgba.y*255)<<8) | uint(rgba.x*255);
 }
 
+//add some lighting to the volume rendering:
+//http://http.developer.nvidia.com/GPUGems/gpugems_ch39.html
 __global__ void
 d_render(uint *d_output, uint imageW, uint imageH)//,
          //float density, float brightness,
@@ -178,10 +180,10 @@ d_render(uint *d_output, uint imageW, uint imageH)//,
         // lookup in transfer function texture
 //        float4 col = tex1D(transferTex, (sample-transferOffset)*transferScale);
 		float4 col = make_float4(0, 1, 0, sample);
-    //    col.w *= density;
+        col.w *= 0.1;
 
         // "under" operator for back-to-front blending
-        sum = lerp(sum, col, col.w);
+        //sum = lerp(sum, col, col.w);
 
         // pre-multiply alpha
         col.x *= col.w;

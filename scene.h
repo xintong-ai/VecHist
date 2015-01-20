@@ -79,6 +79,18 @@ public:
     virtual void emitChange() = 0;
 };
 
+struct Bin {
+	unsigned char f;
+	unsigned char x;
+	unsigned char y;
+
+	Bin()     {
+		f = 0;
+		x = 0;
+		y = 0;
+	}
+};
+
 class ColorEdit : public ParameterEdit
 {
     Q_OBJECT
@@ -161,7 +173,7 @@ public slots:
 	void setBlock(int x, int y, int z, int nx, int ny, int nz);
 	void updateBlock();
 	void doQuery();
-
+	void doSegmentation();
 
 protected slots:
     void setColorParameter(QRgb color, int id);
@@ -175,6 +187,8 @@ signals:
     void doubleClicked();
 	void blockChanged(int, int, int, int, int, int);
 	void queryChanged(int, int, int);
+	void segmentationRequested();
+
 protected:
     virtual void mouseDoubleClickEvent(QMouseEvent *event);
 
@@ -186,6 +200,7 @@ protected:
 	QVector<QLineEdit *> m_blockSize;
 	QPushButton *m_updateButton;
 	QPushButton *m_query;
+	QPushButton *m_segmentation;
 
 };
 
@@ -228,6 +243,7 @@ public slots:
 	void setFloatParameter(const QString &name, float value);
 	void UpdateBlock(int x, int y, int z, int nx, int ny, int nz);
 	void UpdateQuery(int f, int x, int y);
+	void Segmentation();
 //    void newItem(ItemDialog::ItemType type);
 protected:
     void renderBoxes(const QMatrix4x4 &view, int excludeBox = -2);
@@ -250,6 +266,8 @@ private:
 	void cleanup();
 	void displayVolume();
 	void renderVolume();
+	bool InitPicking(unsigned int WindowWidth, unsigned int WindowHeight);
+	Bin ReadPixel(unsigned int x, unsigned int y);
 
     QTime m_time;
     int m_lastTime;
@@ -292,6 +310,10 @@ private:
 	dim3 blockSize;
 	GLfloat invProjMulView[16];
 
+	//picking
+	GLuint m_fbo;
+	GLuint m_pickingTexture;
+	GLuint m_depthTexture;
 };
 
 #endif

@@ -28,7 +28,7 @@ def write(d, filename):
 #        f.write(dim[1])
 #        f.write(dim[2])
         f.write(struct.pack('3i', dim[0], dim[1], dim[2]))
-        np.save(f, dim)
+#        np.save(f, dim)
         print(dim)
         n = dim[0] * dim[1] * dim[2] * 3
         print(n)

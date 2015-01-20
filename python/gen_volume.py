@@ -9,4 +9,4 @@ import sample_3d_ball
 import write_vec
 
 d = sample_3d_ball.sample(2**6)
-write_vec.write(d, "D:/data/sample/test1.vec")
+write_vec.write(d, "D:/data/sample/test2.vec")
