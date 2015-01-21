@@ -600,3 +600,20 @@ void DataManager::Segmentation()
 	}
 	cout << "number of cubic blocks: " << numBlocks << endl;
 }
+
+vector<Node*> DataManager::GetAllNode()
+{
+	vector<Node*> ret;
+	GetDescendantNodes(ret, topNode);
+	return ret;
+}
+
+void DataManager::GetDescendantNodes(vector<Node*> &ret, Node* nd)
+{
+	for (auto child : nd->children){
+		if (child->children.size() > 0)
+			GetDescendantNodes(ret, child);
+		else
+			ret.push_back(child);
+	}
+}

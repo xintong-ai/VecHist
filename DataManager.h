@@ -90,11 +90,12 @@ class DataManager
 	std::vector<std::vector<double> > vVScaled;
 	float* cubemap_data;// (new float[size * size * 6]);
 	int cubemap_size;
-	const float entropyThreshold = 10;	//592 cubes for plume
+	const float entropyThreshold = 10.2;	//592 cubes for plume
 	Node *topNode;
 	int numBlocks;
 	void SplitNode(Node* parent);
 	void ComputeCubemapNode(Node *&nd);
+	void GetDescendantNodes(vector<Node*> &ret, Node* nd);
 
 public:
 	void LoadVec(char* filename);
@@ -116,6 +117,7 @@ public:
 	void Segmentation();
 	void SplitTopNode();
 	void BuildOctree(Node *nd);
+	vector<Node*> GetAllNode();
 	DataManager();
 	~DataManager();
 };

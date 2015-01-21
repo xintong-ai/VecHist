@@ -805,8 +805,8 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	
 	//dataManager->LoadVec("D:/data/sample/test2.vec");
 		//dataManager->LoadVec("D:/data/sample/test1.vec");
-	//dataManager->LoadVec("C:/Users/tong.tong-idea/SkyDrive/share/15plume3d430.vec");
-	dataManager->LoadVec("D:/data/plume/15plume3d421.vec");
+	dataManager->LoadVec("C:/Users/tong.tong-idea/SkyDrive/share/15plume3d430.vec");
+	//dataManager->LoadVec("D:/data/plume/15plume3d421.vec");
 	//dataManager->LoadVec("D:/data/isabel/UVWf01.vec");
 	m_width = width;
 	m_height = height;
@@ -1110,6 +1110,8 @@ void Scene::renderQCube(const QMatrix4x4 &view)
 }
 
 
+
+
 // If one of the boxes should not be rendered, set excludeBox to its index.
 // If the main box should not be rendered, set excludeBox to -1.
 void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
@@ -1176,6 +1178,18 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
 	//m_vecWidget->draw();
 	glPopMatrix();
 
+	vector<Node*> nodes = dataManager->GetAllNode();
+	for (auto nd : nodes)	{
+		glPushMatrix();
+		glTranslatef(
+			nd->dim[0] / 2 + nd->start[0], 
+			nd->dim[1] / 2 + nd->start[1], 
+			nd->dim[2] / 2 + nd->start[2]);
+		glScalef(nd->dim[0], nd->dim[0], nd->dim[0]);
+		glScalef(0.5, 0.5, 0.5);
+		m_vecWidget->draw();
+		glPopMatrix();
+	}
 
 	m_programs[m_currentShader]->release();
 
