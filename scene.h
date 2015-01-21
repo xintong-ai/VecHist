@@ -91,45 +91,24 @@ struct Bin {
 	}
 };
 
-class ColorEdit : public ParameterEdit
-{
-    Q_OBJECT
-public:
-    ColorEdit(QRgb initialColor, int id);
-    QRgb color() const {return m_color;}
-    virtual void emitChange() {emit colorChanged(m_color, m_id);}
-public slots:
-    void editDone();
-signals:
-    void colorChanged(QRgb color, int id);
-protected:
-    virtual void mousePressEvent(QMouseEvent *event);
-    void setColor(QRgb color); // also emits colorChanged()
-private:
-    QGraphicsScene *m_dialogParentScene;
-    QLineEdit *m_lineEdit;
-    QFrame *m_button;
-    QRgb m_color;
-    int m_id;
-};
 
-class FloatEdit : public ParameterEdit
-{
-    Q_OBJECT
-public:
-    FloatEdit(float initialValue, int id);
-    float value() const {return m_value;}
-    virtual void emitChange() {emit valueChanged(m_value, m_id);}
-public slots:
-    void editDone();
-signals:
-    void valueChanged(float value, int id);
-private:
-    QGraphicsScene *m_dialogParentScene;
-    QLineEdit *m_lineEdit;
-    float m_value;
-    int m_id;
-};
+//class FloatEdit : public ParameterEdit
+//{
+//    Q_OBJECT
+//public:
+//    FloatEdit(float initialValue, int id);
+//    float value() const {return m_value;}
+//    virtual void emitChange() {emit valueChanged(m_value, m_id);}
+//public slots:
+//    void editDone();
+//signals:
+//    void valueChanged(float value, int id);
+//private:
+//    QGraphicsScene *m_dialogParentScene;
+//    QLineEdit *m_lineEdit;
+//    float m_value;
+//    int m_id;
+//};
 
 class GraphicsWidget : public QGraphicsProxyWidget
 {
@@ -164,7 +143,7 @@ class RenderOptionsDialog : public QDialog
     Q_OBJECT
 public:
     RenderOptionsDialog();
-    int addTexture(const QString &name);
+    //int addTexture(const QString &name);
     int addShader(const QString &name);
     void emitParameterChanged();
 	void changeBlockLoc(const int idx, const int val);
@@ -203,28 +182,28 @@ protected:
 	QPushButton *m_segmentation;
 
 };
-
-class ItemDialog : public QDialog
-{
-    Q_OBJECT
-public:
-    enum ItemType {
-        QtBoxItem,
-        CircleItem,
-        SquareItem,
-    };
-
-    ItemDialog();
-public slots:
-//    void triggerNewQtBox();
-//    void triggerNewCircleItem();
-//    void triggerNewSquareItem();
-signals:
-    void doubleClicked();
-//    void newItemTriggered(ItemDialog::ItemType type);
-protected:
-    virtual void mouseDoubleClickEvent(QMouseEvent *event);
-};
+//
+//class ItemDialog : public QDialog
+//{
+//    Q_OBJECT
+//public:
+//    enum ItemType {
+//        QtBoxItem,
+//        CircleItem,
+//        SquareItem,
+//    };
+//
+//    ItemDialog();
+//public slots:
+////    void triggerNewQtBox();
+////    void triggerNewCircleItem();
+////    void triggerNewSquareItem();
+//signals:
+//    void doubleClicked();
+////    void newItemTriggered(ItemDialog::ItemType type);
+//protected:
+//    virtual void mouseDoubleClickEvent(QMouseEvent *event);
+//};
 
 class Scene : public QGraphicsScene
 {
@@ -237,8 +216,8 @@ public:
 
 public slots:
     void setShader(int index);
-    void setTexture(int index);
-    void toggleDynamicCubemap(int state);
+    //void setTexture(int index);
+    //void toggleDynamicCubemap(int state);
     void setColorParameter(const QString &name, QRgb color);
 	void setFloatParameter(const QString &name, float value);
 	void UpdateBlock(int x, int y, int z, int nx, int ny, int nz);
@@ -246,7 +225,7 @@ public slots:
 	void Segmentation();
 //    void newItem(ItemDialog::ItemType type);
 protected:
-    void renderBoxes(const QMatrix4x4 &view, int excludeBox = -2);
+	void render3D(const QMatrix4x4 &view, int excludeBox = -2);
 	void renderBBox(const QMatrix4x4 &view);
 	void renderQCube(const QMatrix4x4 &view);	//render the queried cube
 	void setStates();
@@ -277,25 +256,26 @@ private:
     int m_maxTextureSize;
 
     int m_currentShader;
-    int m_currentTexture;
+    //int m_currentTexture;
     bool m_dynamicCubemap;
-    bool m_updateAllCubemaps;
+    //bool m_updateAllCubemaps;
 
     RenderOptionsDialog *m_renderOptions;
-    ItemDialog *m_itemDialog;
+    //ItemDialog *m_itemDialog;
     QTimer *m_timer;
 	GLSphere *m_vecWidget;
     TrackBall m_trackBalls[3];
     QVector<GLTexture *> m_textures;
-    GLTextureCube *m_environment;
-    GLTexture3D *m_noise;
+    GLTextureCube *m_environment;	//the used cubemap
+    //GLTexture3D *m_noise;
     GLRenderTargetCube *m_mainCubemap;
     QVector<GLRenderTargetCube *> m_cubemaps;
+
     QVector<QGLShaderProgram *> m_programs;
     QGLShader *m_vertexShader;
     QVector<QGLShader *> m_fragmentShaders;
-    QGLShader *m_environmentShader;
-    QGLShaderProgram *m_environmentProgram;
+    //QGLShader *m_environmentShader;
+    //QGLShaderProgram *m_environmentProgram;
 
 	DataManager* dataManager;
 

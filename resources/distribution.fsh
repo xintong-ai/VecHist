@@ -42,9 +42,9 @@
 varying vec3 position, normal;
 varying vec4 specular, ambient, diffuse, lightDirection;
 
-uniform sampler2D tex;
+//uniform sampler2D tex;
 uniform samplerCube env;
-uniform mat4 view;
+//uniform mat4 view;
 
 vec4 GetColor(float v,float vmin,float vmax)
 {
