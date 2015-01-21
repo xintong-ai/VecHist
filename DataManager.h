@@ -90,7 +90,7 @@ class DataManager
 	std::vector<std::vector<double> > vVScaled;
 	float* cubemap_data;// (new float[size * size * 6]);
 	int cubemap_size;
-	const float entropyThreshold = 10.2;	//592 cubes for plume
+	const float entropyThreshold = 9.5;// 6;// 10.2;	//592 cubes for plume
 	Node *topNode;
 	int numBlocks;
 	void SplitNode(Node* parent);

@@ -412,16 +412,16 @@ Scene::~Scene()
 {
 	if (m_vecWidget)
         delete m_vecWidget;
-    foreach (GLTexture *texture, m_textures)
-        if (texture) delete texture;
+    //foreach (GLTexture *texture, m_textures)
+    //    if (texture) delete texture;
     foreach (QGLShaderProgram *program, m_programs)
         if (program) delete program;
     if (m_vertexShader)
         delete m_vertexShader;
     foreach (QGLShader *shader, m_fragmentShaders)
         if (shader) delete shader;
-    foreach (GLRenderTargetCube *rt, m_cubemaps)
-        if (rt) delete rt;
+    //foreach (GLRenderTargetCube *rt, m_cubemaps)
+    //    if (rt) delete rt;
 
 	cleanup();
 	cudaDeviceReset();
@@ -468,9 +468,9 @@ void Scene::initGL()
         m_programs << program;
         m_renderOptions->addShader(file.baseName());
 
-        program->bind();
-        m_cubemaps << ((program->uniformLocation("env") != -1) ? new GLRenderTargetCube(qMin(256, m_maxTextureSize)) : 0);
-        program->release();
+        //program->bind();
+        ////m_cubemaps << ((program->uniformLocation("env") != -1) ? new GLRenderTargetCube(qMin(256, m_maxTextureSize)) : 0);
+        //program->release();
     }
 
     if (m_programs.size() == 0)
@@ -664,8 +664,15 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 	//m_vecWidget->draw();
 	glPopMatrix();
 
-	vector<Node*> nodes = dataManager->GetAllNode();
-	for (auto nd : nodes)	{
+
+	if (glActiveTexture) {
+		m_environment->unbind();
+	}
+
+
+	for (int i = 0; i < leafNodes.size(); i++)	{
+		GLTextureCube* tex = blockTex[i];
+		auto nd = leafNodes[i];
 		glPushMatrix();
 		glTranslatef(
 			nd->dim[0] / 2 + nd->start[0], 
@@ -673,15 +680,14 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 			nd->dim[2] / 2 + nd->start[2]);
 		glScalef(nd->dim[0], nd->dim[0], nd->dim[0]);
 		glScalef(0.5, 0.5, 0.5);
+		tex->bind();
 		m_vecWidget->draw();
+		tex->unbind();
 		glPopMatrix();
 	}
 
 	m_programs[m_currentShader]->release();
 
-	if (glActiveTexture) {
-		m_environment->unbind();
-	}
 
 
 	renderQCube(view);
@@ -1225,4 +1231,12 @@ Bin Scene::ReadPixel(unsigned int x, unsigned int y)
 void Scene::Segmentation()
 {
 	dataManager->Segmentation();
+	leafNodes = dataManager->GetAllNode();
+
+
+	for (auto nd : leafNodes)	{
+		GLTextureCube *texCube = new GLTextureCube(qMin(1024, m_maxTextureSize), 1);
+		texCube->load(nd->cubemap, nd->cube_size);
+		blockTex << texCube;
+	}
 }

@@ -265,11 +265,12 @@ private:
     QTimer *m_timer;
 	GLSphere *m_vecWidget;
     TrackBall m_trackBalls[3];
-    QVector<GLTexture *> m_textures;
+    //QVector<GLTexture *> m_textures;
     GLTextureCube *m_environment;	//the used cubemap
+	QVector<GLTextureCube*> blockTex;
     //GLTexture3D *m_noise;
-    GLRenderTargetCube *m_mainCubemap;
-    QVector<GLRenderTargetCube *> m_cubemaps;
+    //GLRenderTargetCube *m_mainCubemap;
+    //QVector<GLRenderTargetCube *> m_cubemaps;
 
     QVector<QGLShaderProgram *> m_programs;
     QGLShader *m_vertexShader;
@@ -294,6 +295,9 @@ private:
 	GLuint m_fbo;
 	GLuint m_pickingTexture;
 	GLuint m_depthTexture;
+
+	//
+	vector<Node*> leafNodes;
 };
 
 #endif

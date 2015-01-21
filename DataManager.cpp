@@ -177,6 +177,7 @@ inline float CubemapEntropy(float *cubemap, int size)
 
 void DataManager::SplitTopNode()
 {
+	//$$$
 	initBlockSize = 64;
 	//Node left, right;
 	for (int i = 0; i < 3; i++)	{
@@ -212,7 +213,7 @@ void DataManager::BuildOctree(Node *nd)
 	//for (auto nd : node->children)	{
 		float entropy = CubemapEntropy(nd->cubemap, nd->cube_size);
 		nd->entropy = entropy;
-		//cout << "entropy:\t" << entropy << endl;
+		//cout << entropy << ",";
 		if (entropy > entropyThreshold)	{
 			//Node *node0 = new Node(...);
 			//BuildOctree(node0);
