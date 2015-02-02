@@ -48,6 +48,7 @@
 #include <memory>
 #include <driver_types.h>
 #include <driver_functions.h>
+
 //#include <qopenglext.h>
 
 extern "C" void inputMask(void *h_volume, cudaExtent volumeSize);
@@ -64,6 +65,11 @@ extern "C" void copyDataDim(int *dataDim, size_t size);
 
 #define SWAP_ROWS_FLOAT(a, b) { float *_tmp = a; (a) = (b); (b) = _tmp; }
 #define MAT(m,r,c) (m)[(c)*4+(r)]
+
+//int mul3(int a[3], float v)
+//{
+//	return
+//}
 
 void checkGLErrors(const QString& prefix)
 {
@@ -93,6 +99,94 @@ void checkGLErrors(const QString& prefix)
         qDebug() << prefix << QObject::tr("Unknown error.");
         break;
     }
+}
+
+void renderCylinder(float x1, float y1, float z1, float x2, float y2, float z2, float radius, int subdivisions, GLUquadricObj *quadric)
+{
+	float vx = x2 - x1;
+	float vy = y2 - y1;
+	float vz = z2 - z1;
+
+	//handle the degenerate case of z1 == z2 with an approximation
+	if (vz == 0)
+		vz = .0001;
+
+	float v = sqrt(vx*vx + vy*vy + vz*vz);
+	float ax = 57.2957795*acos(vz / v);
+	if (vz < 0.0)
+		ax = -ax;
+	float rx = -vy*vz;
+	float ry = vx*vz;
+	glPushMatrix();
+
+	//draw the cylinder body
+	glTranslatef(x1, y1, z1);
+	glRotatef(ax, rx, ry, 0.0);
+	gluQuadricOrientation(quadric, GLU_OUTSIDE);
+	gluCylinder(quadric, radius, radius, v, subdivisions, 1);
+
+	////draw the first cap
+	//gluQuadricOrientation(quadric, GLU_INSIDE);
+	//gluDisk(quadric, 0.0, radius, subdivisions, 1);
+	//glTranslatef(0, 0, v);
+
+	////draw the second cap
+	//gluQuadricOrientation(quadric, GLU_OUTSIDE);
+	//gluDisk(quadric, 0.0, radius, subdivisions, 1);
+	glPopMatrix();
+}
+
+void renderCylinder_convenient(float x1, float y1, float z1, float x2, float y2, float z2, float radius, int subdivisions)
+{
+	//the same quadric can be re-used for drawing many cylinders
+	GLUquadricObj *quadric = gluNewQuadric();
+	gluQuadricNormals(quadric, GLU_SMOOTH);
+	renderCylinder(x1, y1, z1, x2, y2, z2, radius, subdivisions, quadric);
+	gluDeleteQuadric(quadric);
+}
+
+void renderCone(float x1, float y1, float z1, float x2, float y2, float z2, float radius, int subdivisions, GLUquadricObj *quadric)
+{
+	float vx = x2 - x1;
+	float vy = y2 - y1;
+	float vz = z2 - z1;
+
+	//handle the degenerate case of z1 == z2 with an approximation
+	if (vz == 0)
+		vz = .0001;
+
+	float v = sqrt(vx*vx + vy*vy + vz*vz);
+	float ax = 57.2957795*acos(vz / v);
+	if (vz < 0.0)
+		ax = -ax;
+	float rx = -vy*vz;
+	float ry = vx*vz;
+	glPushMatrix();
+
+	//draw the cylinder body
+	glTranslatef(x1, y1, z1);
+	glRotatef(ax, rx, ry, 0.0);
+	gluQuadricOrientation(quadric, GLU_OUTSIDE);
+	gluCylinder(quadric, radius, radius * 0.1, v, subdivisions, 1);
+
+	////draw the first cap
+	//gluQuadricOrientation(quadric, GLU_INSIDE);
+	//gluDisk(quadric, 0.0, radius, subdivisions, 1);
+	//glTranslatef(0, 0, v);
+
+	////draw the second cap
+	//gluQuadricOrientation(quadric, GLU_OUTSIDE);
+	//gluDisk(quadric, 0.0, radius, subdivisions, 1);
+	glPopMatrix();
+}
+
+void renderCone_convenient(float x1, float y1, float z1, float x2, float y2, float z2, float radius, int subdivisions)
+{
+	//the same quadric can be re-used for drawing many cylinders
+	GLUquadricObj *quadric = gluNewQuadric();
+	gluQuadricNormals(quadric, GLU_SMOOTH);
+	renderCone(x1, y1, z1, x2, y2, z2, radius, subdivisions, quadric);
+	gluDeleteQuadric(quadric);
 }
 
 //============================================================================//
@@ -364,6 +458,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	dataManager->LoadVec("C:/Users/tong.tong-idea/SkyDrive/share/15plume3d430.vec");
 	//dataManager->LoadVec("D:/data/plume/15plume3d421.vec");
 	//dataManager->LoadVec("D:/data/isabel/UVWf01.vec");
+	//dataManager->LoadVec("D:/data/nek/nek.d_4.vec");
 	m_width = width;
 	m_height = height;
 	blockSize.x = 16;
@@ -648,6 +743,7 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 	m_programs[m_currentShader]->setUniformValue("env", GLint(0));
 
 
+	//draw sphere by the side
 	glPushMatrix();
 	loadMatrix(view);
 	//glLoadIdentity();
@@ -655,20 +751,21 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 	glColor3f(1.0f, 1.0f, 1.0f);
 	glScalef(0.2, 0.2, 0.2);
 	glMultMatrixf(m.constData());
-	m_vecWidget->draw();
+	//m_vecWidget->draw();
 	glPopMatrix();
 
+
+	//draw sphere at the queried region
 	glPushMatrix();
 	glTranslatef(qnx / 2 + qx, qny / 2 + qy, qnz / 2 + qz);
 	glScalef(minqsize, minqsize, minqsize);
-	//m_vecWidget->draw();
+	m_vecWidget->draw();
 	glPopMatrix();
 
 
 	if (glActiveTexture) {
 		m_environment->unbind();
 	}
-
 
 	for (int i = 0; i < leafNodes.size(); i++)	{
 		GLTextureCube* tex = blockTex[i];
@@ -684,10 +781,55 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 		m_vecWidget->draw();
 		tex->unbind();
 		glPopMatrix();
-	}
 
+		////draw the links
+		//for (int j = 0; j < 6; j++)	{
+		//	if (nd->flux[j] > 0)	{
+		//		float3 c1 = make_float3(
+		//			nd->start[0] + nd->dim[0] * 0.5, 
+		//			nd->start[1] + nd->dim[1] * 0.5, 
+		//			nd->start[2] + nd->dim[2] * 0.5);
+		//		float3 c2 = make_float3(
+		//			nd->neighbor[j]->start[0] + nd->neighbor[j]->dim[0] * 0.5,
+		//			nd->neighbor[j]->start[1] + nd->neighbor[j]->dim[1] * 0.5,
+		//			nd->neighbor[j]->start[2] + nd->neighbor[j]->dim[2] * 0.5);
+		//		//renderCylinder_convenient(c1.x, c1.y, c1.z, c2.x, c2.y, c2.z, 0.1 * log2( nd->flux[j]), 16);
+		//		renderCone_convenient(c1.x, c1.y, c1.z, c2.x, c2.y, c2.z, 0.2 * log2( nd->flux[j]), 16);
+		//	}
+		//}
+	}
 	m_programs[m_currentShader]->release();
 
+	//draw streamlines
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	vector<vector<float4>> lines = dataManager->GetStreamlines();
+	for (auto line : lines)
+	{
+		// activate and specify pointer to vertex array
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glVertexPointer(4, GL_FLOAT, 0, &line[0]);
+
+		// draw a cube
+		glDrawArrays(GL_LINE_STRIP, 0, line.size());
+
+		// deactivate vertex arrays after drawing
+		glDisableClientState(GL_VERTEX_ARRAY);
+	}
+
+	glColor4f(1.0f, 0.0f, 0.0f, 1.0f);
+	vector<vector<float4>> linesInCube = dataManager->GetStreamlinesInCube();
+	for (auto line : linesInCube)
+	{
+		// activate and specify pointer to vertex array
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glVertexPointer(4, GL_FLOAT, 0, &line[0]);
+
+		// draw a cube
+		glDrawArrays(GL_LINE_STRIP, 0, line.size());
+
+		// deactivate vertex arrays after drawing
+		glDisableClientState(GL_VERTEX_ARRAY);
+	}
 
 
 	renderQCube(view);
@@ -911,7 +1053,7 @@ void Scene::keyPressEvent(QKeyEvent *event)
 		dataManager->SetQCube(qx, qy, qz, qnx, qny, qnz);
 		m_renderOptions->setBlock(qx, qy, qz, qnx, qny, qnz);
 		UpdateBlock();
-
+		dataManager->GenStreamInCube();
 	}
 
 }

@@ -178,25 +178,120 @@ inline float CubemapEntropy(float *cubemap, int size)
 void DataManager::SplitTopNode()
 {
 	//$$$
-	initBlockSize = 64;
+	initBlockSize = 32;
 	//Node left, right;
 	for (int i = 0; i < 3; i++)	{
 		blockDim[i] = ceil((float)dim[i] / initBlockSize);
 	}
+	int numBlocks = blockDim[0] * blockDim[1] * blockDim[2];
+	Node **nd = new Node*[numBlocks];
 	for (int i = 0; i < blockDim[0]; i++)	{
 		for (int j = 0; j < blockDim[1]; j++)	{
 			for (int k = 0; k < blockDim[2]; k++)	{
 				int start[3] = { i * initBlockSize, j * initBlockSize, k * initBlockSize };
-				int blockDim[3] = { 
+				int blockSize[3] = { 
 					min(initBlockSize, dim[0] - i * initBlockSize),
 					min(initBlockSize, dim[1] - j * initBlockSize),
 					min(initBlockSize, dim[2] - k * initBlockSize) };
-				Node *nd = new Node(start, blockDim, cubemap_size);
-				ComputeCubemapNode(nd);
-				topNode->children.push_back(nd);
+				nd[i * blockDim[1] * blockDim[2] + j * blockDim[2] + k] = 
+					new Node(start, blockSize, cubemap_size, 1);
 			}
 		}
 	}
+	float3* idata = static_cast<float3*>((void *)data);
+	for (int i = 0; i < (blockDim[0] - 1); i++)	{
+		for (int j = 0; j < blockDim[1]; j++)	{
+			for (int k = 0; k < blockDim[2]; k++)	{
+				Node* thisNode = nd[i * blockDim[1] * blockDim[2] + j * blockDim[2] + k];
+				Node* nextNode = nd[(i + 1) * blockDim[1] * blockDim[2] + j * blockDim[2] + k];
+				int xa = thisNode->start[0] + thisNode->dim[0] - 1;
+				int xb = xa + 2;
+				int ya = thisNode->start[1];
+				int yb = thisNode->start[1] + thisNode->dim[1];
+				int za = thisNode->start[2];
+				int zb = thisNode->start[2] + thisNode->dim[2];
+				float sum = 0;
+				for (int x = xa; x < xb; x++)	{
+					for (int y = ya; y < yb; y++)	{
+						for (int z = za; z < zb; z++)	{
+							sum += idata[x * dim[1] * dim[2] + y * dim[2] + z].x;
+						}
+					}
+				}
+				if (sum > 0)
+					thisNode->flux[1] = sum;
+				else
+					nextNode->flux[0] = - sum;
+				thisNode->neighbor[1] = nextNode;
+				nextNode->neighbor[0] = thisNode;
+			}
+		}
+	}
+
+	for (int i = 0; i < blockDim[0]; i++)	{
+		for (int j = 0; j < (blockDim[1] - 1); j++)	{
+			for (int k = 0; k < blockDim[2]; k++)	{
+				Node* thisNode = nd[i * blockDim[1] * blockDim[2] + j * blockDim[2] + k];
+				Node* nextNode = nd[i * blockDim[1] * blockDim[2] + (j + 1) * blockDim[2] + k];
+				int xa = thisNode->start[0];
+				int xb = thisNode->start[0] + thisNode->dim[0];
+				int ya = thisNode->start[1] + thisNode->dim[1] - 1;
+				int yb = ya + 2;
+				int za = thisNode->start[2];
+				int zb = thisNode->start[2] + thisNode->dim[2];
+				float sum = 0;
+				for (int x = xa; x < xb; x++)	{
+					for (int y = ya; y < yb; y++)	{
+						for (int z = za; z < zb; z++)	{
+							sum += idata[x * dim[1] * dim[2] + y * dim[2] + z].y;
+						}
+					}
+				}
+				if (sum > 0)
+					thisNode->flux[3] = sum;
+				else
+					nextNode->flux[2] = - sum;
+				thisNode->neighbor[3] = nextNode;
+				nextNode->neighbor[2] = thisNode;
+			}
+		}
+	}
+
+	for (int i = 0; i < blockDim[0]; i++)	{
+		for (int j = 0; j < blockDim[1]; j++)	{
+			for (int k = 0; k < (blockDim[2] - 1); k++)	{
+				Node* thisNode = nd[i * blockDim[1] * blockDim[2] + j * blockDim[2] + k];
+				Node* nextNode = nd[i * blockDim[1] * blockDim[2] + j * blockDim[2] + k + 1];
+				int xa = thisNode->start[0];
+				int xb = thisNode->start[0] + thisNode->dim[0];
+				int ya = thisNode->start[1];
+				int yb = thisNode->start[1] + thisNode->dim[1];
+				int za = thisNode->start[2] + thisNode->dim[2] - 1;
+				int zb = za + 2;
+				float sum = 0;
+				for (int x = xa; x < xb; x++)	{
+					for (int y = ya; y < yb; y++)	{
+						for (int z = za; z < zb; z++)	{
+							sum += idata[x * dim[1] * dim[2] + y * dim[2] + z].z;
+						}
+					}
+				}
+				if (sum > 0)
+					thisNode->flux[5] = sum;
+				else
+					nextNode->flux[4] = - sum;
+				thisNode->neighbor[5] = nextNode;
+				nextNode->neighbor[4] = thisNode;
+			}
+		}
+	}
+
+	for (int i = 0; i < numBlocks; i++)
+	{
+		ComputeCubemapNode(nd[i]);
+		topNode->children.push_back(nd[i]);;
+	}
+	delete[] nd;
 }
 
 void DataManager::ComputeCubemapNode(Node *&nd)
@@ -232,7 +327,7 @@ void DataManager::BuildOctree(Node *nd)
 			child = new Node(
 				nd->start[0], nd->start[1], nd->start[2],
 				childDimL[0],					childDimL[1],					childDimL[2],
-				cubemap_size);
+				cubemap_size, nd->level + 1);
 			ComputeCubemapNode(child);
 			nd->children.push_back(child);
 			BuildOctree(child);
@@ -240,7 +335,7 @@ void DataManager::BuildOctree(Node *nd)
 			child = new Node(
 				nd->start[0] + childDimL[0], nd->start[1], nd->start[2],
 				childDimR[0],					childDimL[1],					childDimL[2],
-				cubemap_size);
+				cubemap_size, nd->level + 1);
 			ComputeCubemapNode(child);
 			nd->children.push_back(child);
 			BuildOctree(child);
@@ -248,7 +343,7 @@ void DataManager::BuildOctree(Node *nd)
 			child = new Node(
 				nd->start[0], nd->start[1] + childDimL[1], nd->start[2],
 				childDimL[0],					childDimR[1],					childDimL[2],
-				cubemap_size);
+				cubemap_size, nd->level + 1);
 			ComputeCubemapNode(child);
 			nd->children.push_back(child);
 			BuildOctree(child);
@@ -256,7 +351,7 @@ void DataManager::BuildOctree(Node *nd)
 			child = new Node(
 				nd->start[0] + childDimL[0], nd->start[1] + childDimL[1], nd->start[2],
 				childDimR[0],					childDimR[1],					childDimL[2],
-				cubemap_size);
+				cubemap_size, nd->level + 1);
 			ComputeCubemapNode(child);
 			nd->children.push_back(child);
 			BuildOctree(child);
@@ -264,7 +359,7 @@ void DataManager::BuildOctree(Node *nd)
 			child = new Node(
 				nd->start[0], nd->start[1], nd->start[2] + childDimL[2],
 				childDimL[0],					childDimL[1],					childDimR[2],
-				cubemap_size);
+				cubemap_size, nd->level + 1);
 			ComputeCubemapNode(child);
 			nd->children.push_back(child);
 			BuildOctree(child);
@@ -272,7 +367,7 @@ void DataManager::BuildOctree(Node *nd)
 			child = new Node(
 				nd->start[0] + childDimL[0], nd->start[1], nd->start[2] + childDimL[2],
 				childDimR[0],					childDimL[1],					childDimR[2],
-				cubemap_size);
+				cubemap_size, nd->level + 1);
 			ComputeCubemapNode(child);
 			nd->children.push_back(child);
 			BuildOctree(child);
@@ -280,7 +375,7 @@ void DataManager::BuildOctree(Node *nd)
 			child = new Node(
 				nd->start[0], nd->start[1] + childDimL[1], nd->start[2] + childDimL[2],
 				childDimL[0],					childDimR[1],					childDimR[2],
-				cubemap_size);
+				cubemap_size, nd->level + 1);
 			ComputeCubemapNode(child);
 			nd->children.push_back(child);
 			BuildOctree(child);
@@ -288,7 +383,7 @@ void DataManager::BuildOctree(Node *nd)
 			child = new Node(
 				nd->start[0] + childDimL[0], nd->start[1] + childDimL[1], nd->start[2] + childDimL[2],
 				childDimR[0],					childDimR[1],					childDimR[2],
-				cubemap_size);
+				cubemap_size, nd->level + 1);
 			ComputeCubemapNode(child);
 			nd->children.push_back(child);
 			BuildOctree(child);
@@ -327,6 +422,7 @@ void DataManager::SetQCube(int x, int y, int z, int nx, int ny, int nz)
 	qCubeSize[0] = nx;
 	qCubeSize[1] = ny;
 	qCubeSize[2] = nz;
+
 }
 
 void DataManager::LoadVec(char* filename)
@@ -357,9 +453,134 @@ void DataManager::LoadVec(char* filename)
 	IndexVolume(cubemap_size);
 
 	int start[3] = {0, 0, 0};
-	topNode = new Node(start, dim, cubemap_size);
+	topNode = new Node(start, dim, cubemap_size, 0);
 	//ComputeCurl();
+
+	LoadOSUFlow(filename);
 }
+
+void DataManager::LoadOSUFlow(char* filename)
+{
+	list<vtListSeedTrace*> sl_list;
+
+	// load the scalar field
+//	LOG(printf("read file %s\n", argv[1]));
+
+	osuflow->LoadData(filename, true); //true: a steady flow field 
+
+	//szVecFilePath = argv[1];	// ADD-BY-LEETEN 09/29/2012
+
+	// comptue the bounding box of the streamlines 
+	VECTOR3 minB, maxB;
+	VECTOR3 minLen, maxLen;
+	float center[3], len[3];
+	osuflow->Boundary(minLen, maxLen); // get the boundary 
+	minB[0] = minLen[0]; minB[1] = minLen[1];  minB[2] = minLen[2];
+	maxB[0] = maxLen[0]; maxB[1] = maxLen[1];  maxB[2] = maxLen[2];
+	//  osuflow->SetBoundary(minB, maxB);  // set the boundary. just to test
+	// the subsetting feature of OSUFlow
+	printf(" volume boundary X: [%f %f] Y: [%f %f] Z: [%f %f]\n",
+		minLen[0], maxLen[0], minLen[1], maxLen[1],
+		minLen[2], maxLen[2]);
+
+	center[0] = (minLen[0] + maxLen[0]) / 2.0;
+	center[1] = (minLen[1] + maxLen[1]) / 2.0;
+	center[2] = (minLen[2] + maxLen[2]) / 2.0;
+	printf("center is at %f %f %f \n", center[0], center[1], center[2]);
+	len[0] = maxLen[0] - minLen[0];
+	len[1] = maxLen[1] - minLen[1];
+	len[2] = maxLen[2] - minLen[2];
+
+
+	float from[3], to[3];
+
+	from[0] = minLen[0];   from[1] = minLen[1];   from[2] = minLen[2];
+	to[0] = maxLen[0];   to[1] = maxLen[1];   to[2] = maxLen[2];
+
+	printf("generating seeds...\n");
+	osuflow->SetRandomSeedPoints(from, to, 100);
+	int nSeeds;
+	VECTOR3* seeds = osuflow->GetSeeds(nSeeds);
+	for (int i = 0; i<nSeeds; i++)
+		printf(" seed no. %d : [%f %f %f]\n", i, seeds[i][0],
+		seeds[i][1], seeds[i][2]);
+
+	sl_list.clear();
+
+	printf("compute streamlines..\n");
+	osuflow->SetIntegrationParams(1, 5);
+	osuflow->GenStreamLines(sl_list, BACKWARD_AND_FORWARD, 200, 0);
+	printf(" done integrations\n");
+	printf("list size = %d\n", (int)sl_list.size());
+
+	int iT = 0;
+	for (list<vtListSeedTrace*>::const_iterator
+		pIter = sl_list.begin();
+		pIter != sl_list.end();
+	pIter++, iT++)
+	{
+		const vtListSeedTrace *trace = *pIter;
+		int iP = 0;
+		vector<float4> line;
+		for (list<VECTOR3*>::const_iterator
+			pnIter = trace->begin();
+			pnIter != trace->end();
+		pnIter++, iP++)
+		{
+			VECTOR3 p = **pnIter;
+			line.push_back(make_float4(p[0], p[1], p[2], 1.0f));
+		}
+		streamlines.push_back(line);
+	}
+}
+
+void DataManager::GenStreamInCube()
+{
+	printf("generating seeds...\n");
+	list<vtListSeedTrace*> sl_list;
+	float from[3], to[3];
+	//int qCubePos[3], qCubeSize[3];	//queried cube position and sizes
+
+	from[0] = qCubePos[0];   from[1] = qCubePos[1];   from[2] = qCubePos[2];
+	to[0] = qCubePos[0] + qCubeSize[0];   to[1] = qCubePos[1] + qCubeSize[1];   to[2] = qCubePos[2] + qCubeSize[2];
+
+	osuflow->SetRandomSeedPoints(from, to, 16);
+	int nSeeds;
+	VECTOR3* seeds = osuflow->GetSeeds(nSeeds);
+	for (int i = 0; i<nSeeds; i++)
+		printf(" seed no. %d : [%f %f %f]\n", i, seeds[i][0],
+		seeds[i][1], seeds[i][2]);
+
+	sl_list.clear();
+
+	printf("compute streamlines..\n");
+	osuflow->SetIntegrationParams(1, 5);
+	osuflow->GenStreamLines(sl_list, BACKWARD_AND_FORWARD, 50, 0);
+	printf(" done integrations\n");
+	printf("list size = %d\n", (int)sl_list.size());
+
+	int iT = 0;
+	streamlinesInCube.clear();
+	for (list<vtListSeedTrace*>::const_iterator
+		pIter = sl_list.begin();
+		pIter != sl_list.end();
+	pIter++, iT++)
+	{
+		const vtListSeedTrace *trace = *pIter;
+		int iP = 0;
+		vector<float4> line;
+		for (list<VECTOR3*>::const_iterator
+			pnIter = trace->begin();
+			pnIter != trace->end();
+		pnIter++, iP++)
+		{
+			VECTOR3 p = **pnIter;
+			line.push_back(make_float4(p[0], p[1], p[2], 1.0f));
+		}
+		streamlinesInCube.push_back(line);
+	}
+}
+
 
 void DataManager::GetBlock(int3* datablock, int x, int y, int z, int nx, int ny, int nz)
 {
@@ -595,6 +816,7 @@ void DataManager::Segmentation()
 {
 	//topNode = new Node(cubemap_data, cubemap_size, dataIdx, dim);
 	SplitTopNode();
+
 	for (auto child : topNode->children)
 	{
 		BuildOctree(child);
@@ -617,4 +839,14 @@ void DataManager::GetDescendantNodes(vector<Node*> &ret, Node* nd)
 		else
 			ret.push_back(child);
 	}
+}
+
+vector<vector<float4>> DataManager::GetStreamlines()
+{
+	return streamlines;
+}
+
+vector<vector<float4>> DataManager::GetStreamlinesInCube()
+{
+	return streamlinesInCube;
 }

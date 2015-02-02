@@ -8,6 +8,7 @@ find_package(OpenGL REQUIRED)
 #find_package(GLFW REQUIRED)
 #find_package(GLEW)
 find_package(CUDA REQUIRED)
+find_package(OSUFlow REQUIRED)
 
 #include_directories( ${ANT_TWEAK_BAR_INCLUDE_DIR} )
 #message("ant:" ${ANT_TWEAK_BAR_INCLUDE_DIR})
@@ -15,7 +16,13 @@ find_package(CUDA REQUIRED)
 #include_directories( ${EIGEN_INCLUDE_DIR})
 #include_directories( ${GLFW_INCLUDE_DIR})
 #include_directories( ${GLEW_INCLUDE_DIR} )
-include_directories( ${CUDA_INCLUDE_DIRS} ${CUDA_TOOLKIT_INCLUDE} ${CMAKE_CURRENT_SOURCE_DIR} required)
+
+find_package(Qt5Widgets)
+#find_package(VTK REQUIRED)
+#include(${VTK_USE_FILE})
+#include_directories(${VTK_INCLUDE_DIRS})
+
+include_directories( ${CUDA_INCLUDE_DIRS} ${CUDA_TOOLKIT_INCLUDE} ${CMAKE_CURRENT_SOURCE_DIR} ${OSUFLOW_INCLUDE_DIR} required)
 
 set(SHARED_LIBRARIES
 #		${LIBIGL_LIBRARIES}
@@ -46,9 +53,14 @@ set(CMAKE_AUTOMOC ON)
 
 #enable_cuda_support()
 
-find_package(Qt5Widgets)
 # qt5_wrap_ui(UI_Srcs ${UIs})
 qt5_add_resources(QtApp_RCC_SRCS ${Rcs})
 cuda_add_executable(VecHist ${Srcs} ${Hdrs} ${SHARED_SOURCES} ${QtApp_RCC_SRCS})#${UI_Srcs})# ${MOC_Hdrs})
 qt5_use_modules(VecHist OpenGL GUI)
-target_link_libraries(VecHist  Qt5::Widgets opengl32.lib ${SHARED_LIBRARIES}) 
+target_link_libraries(VecHist  Qt5::Widgets opengl32.lib ${SHARED_LIBRARIES} ${OSUFLOW_LIBRARY}) 
+
+# if(VTK_LIBRARIES)
+  # target_link_libraries(VecHist ${VTK_LIBRARIES})
+# else()
+  # target_link_libraries(VecHist vtkHybrid vtkWidgets)
+# endif()

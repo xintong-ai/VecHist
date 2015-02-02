@@ -3,6 +3,7 @@
 #include <vector>
 #include <vector_types.h>
 #include <vector_functions.h>
+#include "OSUFlow.h"
 
 using namespace std;
 struct Node
@@ -12,31 +13,19 @@ struct Node
 
 	int start[3];
 	int dim[3];
+	int level;	//hierarchy level
 	//int3 *data;
 	vector<Node*> children;
 	float entropy;
-	Node(int *_start, int *_dim, int _cube_size)
-	{
-		//cubemap = _cubemap;
-		cube_size = _cube_size;
-		//data = _data;
+	//only outgoing flux is recorded, so that we only draw the link once for the two neighboring nodes
+	float flux[6];	//0: -x  1: +x   2: -y   3: +y   4: -z   5:+z
 
-		start[0] = _start[0];
-		start[1] = _start[1];
-		start[2] = _start[2];
-
-		dim[0] = _dim[0];
-		dim[1] = _dim[1];
-		dim[2] = _dim[2];
-		//left = nullptr;
-		//right = nullptr;
-		cubemap = nullptr;
-	};
+	Node* neighbor[6];
 
 	Node(
 		int _start0, int _start1, int _start2, 
 		int _dim0, int _dim1, int _dim2,
-		int _cube_size)
+		int _cube_size, int _level)
 	{
 		//cubemap = _cubemap;
 		cube_size = _cube_size;
@@ -52,7 +41,21 @@ struct Node
 		//left = nullptr;
 		//right = nullptr;
 		cubemap = nullptr;
-	};
+
+		level = _level;
+
+		for (int i = 0; i < 6; i++)	{
+			neighbor[i] = nullptr;
+			flux[6] = 0;
+		}
+	}
+
+	Node(int *_start, int *_dim, int _cube_size, int _level):
+		Node(_start[0], _start[1], _start[2],
+		_dim[0], _dim[1], _dim[2],
+		_cube_size, _level)
+	{}
+
 
 	Node(){
 		cubemap = nullptr;
@@ -90,12 +93,20 @@ class DataManager
 	std::vector<std::vector<double> > vVScaled;
 	float* cubemap_data;// (new float[size * size * 6]);
 	int cubemap_size;
+
+	OSUFlow *osuflow = new OSUFlow();
+	vector < vector<float4> > streamlines;
+	vector < vector<float4> > streamlinesInCube;
+	//9.5 is for nek
+	//
 	const float entropyThreshold = 9.5;// 6;// 10.2;	//592 cubes for plume
 	Node *topNode;
 	int numBlocks;
 	void SplitNode(Node* parent);
 	void ComputeCubemapNode(Node *&nd);
 	void GetDescendantNodes(vector<Node*> &ret, Node* nd);
+	void LoadOSUFlow(char* filename);
+
 
 public:
 	void LoadVec(char* filename);
@@ -106,6 +117,7 @@ public:
 	void GetBlock(int3* datablock, int x, int y, int z, int nx, int ny, int nz);
 	void GenCubeMap(int x, int y, int z, int nx, int ny, int nz, float* &cubemap);
 	void IndexVolume(int size);
+	//void ComputeFlux();	//compute flux for three directions of each face
 	void ComputeCurl();
 	void QueryByBin(int f, int x, int y, unsigned char* result);
 	void UpdateCubeMap(float* cubemap);
@@ -118,6 +130,9 @@ public:
 	void SplitTopNode();
 	void BuildOctree(Node *nd);
 	vector<Node*> GetAllNode();
+	vector<vector<float4>> GetStreamlines();
+	vector<vector<float4>> GetStreamlinesInCube();
+	void GenStreamInCube();
 	DataManager();
 	~DataManager();
 };
