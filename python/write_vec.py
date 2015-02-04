@@ -30,9 +30,20 @@ def write(d, filename):
         f.write(struct.pack('3i', dim[0], dim[1], dim[2]))
 #        np.save(f, dim)
         print(dim)
-        n = dim[0] * dim[1] * dim[2] * 3
+        n = dim[0] * dim[1] * dim[2]
+        
         print(n)
-        d= np.reshape(d, n)
-        d.tofile(f)
+#        print(d)
+        d_new = np.zeros((n, 3), dtype=np.float32)
+        for k in range(0, dim[2]):
+            for j in range(0, dim[1]):
+                for i in range(0, dim[0]):
+                    d_new[k * dim[0] * dim[1] + j * dim[0] + i,:] = d[i, j, k, :]
+#        print(d[0,0,0,:])
+#        print(d[0,1,0,:])
+#        print(d_new)     
+        d_new = np.reshape(d_new, n * 3)
+        print(type(d_new[0]))
+        d_new.tofile(f)
     finally:
         f.close()

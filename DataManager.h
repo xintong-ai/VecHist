@@ -99,7 +99,7 @@ class DataManager
 	vector < vector<float4> > streamlinesInCube;
 	//9.5 is for nek
 	//
-	const float entropyThreshold = 9.5;// 6;// 10.2;	//592 cubes for plume
+	const float entropyThreshold = 9;// 6;// 10.2;	//592 cubes for plume
 	Node *topNode;
 	int numBlocks;
 	void SplitNode(Node* parent);

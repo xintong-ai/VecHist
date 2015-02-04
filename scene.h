@@ -298,6 +298,7 @@ private:
 
 	//
 	vector<Node*> leafNodes;
+	vector<float3> colorMap;
 };
 
 #endif

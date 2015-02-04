@@ -71,6 +71,41 @@ extern "C" void copyDataDim(int *dataDim, size_t size);
 //	return
 //}
 
+typedef struct {
+	double r, g, b;
+} COLOUR;
+
+COLOUR GetColour(double v, double vmin, double vmax)
+{
+	COLOUR c = { 1.0, 1.0, 1.0 }; // white
+	double dv;
+
+	if (v < vmin)
+		v = vmin;
+	if (v > vmax)
+		v = vmax;
+	dv = vmax - vmin;
+
+	if (v < (vmin + 0.25 * dv)) {
+		c.r = 0;
+		c.g = 4 * (v - vmin) / dv;
+	}
+	else if (v < (vmin + 0.5 * dv)) {
+		c.r = 0;
+		c.b = 1 + 4 * (vmin + 0.25 * dv - v) / dv;
+	}
+	else if (v < (vmin + 0.75 * dv)) {
+		c.r = 4 * (v - vmin - 0.5 * dv) / dv;
+		c.b = 0;
+	}
+	else {
+		c.g = 1 + 4 * (vmin + 0.75 * dv - v) / dv;
+		c.b = 0;
+	}
+
+	return(c);
+}
+
 void checkGLErrors(const QString& prefix)
 {
     switch (glGetError()) {
@@ -454,6 +489,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	//$$$
 	
 	//dataManager->LoadVec("D:/data/sample/test2.vec");
+	//dataManager->LoadVec("D:/data/sample/sample_two_halves.vec");
 		//dataManager->LoadVec("D:/data/sample/test1.vec");
 	dataManager->LoadVec("C:/Users/tong.tong-idea/SkyDrive/share/15plume3d430.vec");
 	//dataManager->LoadVec("D:/data/plume/15plume3d421.vec");
@@ -501,6 +537,12 @@ Scene::Scene(int width, int height, int maxTextureSize)
     m_timer->start();
 
     m_time.start();
+
+
+	for (int i = 0; i < 500; i++)	{
+		COLOUR tmp = GetColour(i, 0, 500);
+		colorMap.push_back(make_float3(tmp.r, tmp.g, tmp.b));
+	}
 }
 
 Scene::~Scene()
@@ -782,7 +824,7 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 		tex->unbind();
 		glPopMatrix();
 
-		////draw the links
+		//draw the links
 		//for (int j = 0; j < 6; j++)	{
 		//	if (nd->flux[j] > 0)	{
 		//		float3 c1 = make_float3(
@@ -806,14 +848,18 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 	for (auto line : lines)
 	{
 		// activate and specify pointer to vertex array
+		//glEnableClientState(GL_COLOR_ARRAY);
 		glEnableClientState(GL_VERTEX_ARRAY);
-		glVertexPointer(4, GL_FLOAT, 0, &line[0]);
+
+		//glColorPointer(3, GL_FLOAT, line.size() * sizeof(float3), &colorMap[0]);
+		glVertexPointer(4, GL_FLOAT, 0, &line[0].x);
 
 		// draw a cube
 		glDrawArrays(GL_LINE_STRIP, 0, line.size());
 
 		// deactivate vertex arrays after drawing
 		glDisableClientState(GL_VERTEX_ARRAY);
+		//glDisableClientState(GL_COLOR_ARRAY);
 	}
 
 	glColor4f(1.0f, 0.0f, 0.0f, 1.0f);
@@ -821,7 +867,10 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 	for (auto line : linesInCube)
 	{
 		// activate and specify pointer to vertex array
+		//glEnableClientState(GL_COLOR_ARRAY);
 		glEnableClientState(GL_VERTEX_ARRAY);
+
+		//glColorPointer(3, GL_FLOAT, line.size() * sizeof(float3), &colorMap[0]);
 		glVertexPointer(4, GL_FLOAT, 0, &line[0]);
 
 		// draw a cube
@@ -829,6 +878,7 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 
 		// deactivate vertex arrays after drawing
 		glDisableClientState(GL_VERTEX_ARRAY);
+		//glDisableClientState(GL_COLOR_ARRAY);
 	}
 
 

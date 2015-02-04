@@ -178,7 +178,6 @@ inline float CubemapEntropy(float *cubemap, int size)
 void DataManager::SplitTopNode()
 {
 	//$$$
-	initBlockSize = 32;
 	//Node left, right;
 	for (int i = 0; i < 3; i++)	{
 		blockDim[i] = ceil((float)dim[i] / initBlockSize);
@@ -306,92 +305,92 @@ void DataManager::ComputeCubemapNode(Node *&nd)
 void DataManager::BuildOctree(Node *nd)
 {
 	//for (auto nd : node->children)	{
-		float entropy = CubemapEntropy(nd->cubemap, nd->cube_size);
-		nd->entropy = entropy;
-		//cout << entropy << ",";
-		if (entropy > entropyThreshold)	{
-			//Node *node0 = new Node(...);
-			//BuildOctree(node0);
-			/////....
-			int childDimL[3], childDimR[3];
-			childDimL[0] = nd->dim[0] / 2;
-			childDimL[1] = nd->dim[1] / 2;
-			childDimL[2] = nd->dim[2] / 2;
+	float entropy = CubemapEntropy(nd->cubemap, nd->cube_size);
+	nd->entropy = entropy;
+	cout << entropy << ",";
+	if (entropy > entropyThreshold)	{
+		//Node *node0 = new Node(...);
+		//BuildOctree(node0);
+		/////....
+		int childDimL[3], childDimR[3];
+		childDimL[0] = nd->dim[0] / 2;
+		childDimL[1] = nd->dim[1] / 2;
+		childDimL[2] = nd->dim[2] / 2;
 
-			childDimR[0] = nd->dim[0] - childDimL[0];
-			childDimR[1] = nd->dim[1] - childDimL[1];
-			childDimR[2] = nd->dim[2] - childDimL[2];
+		childDimR[0] = nd->dim[0] - childDimL[0];
+		childDimR[1] = nd->dim[1] - childDimL[1];
+		childDimR[2] = nd->dim[2] - childDimL[2];
 
-			Node *child;
+		Node *child;
 
-			child = new Node(
-				nd->start[0], nd->start[1], nd->start[2],
-				childDimL[0],					childDimL[1],					childDimL[2],
-				cubemap_size, nd->level + 1);
-			ComputeCubemapNode(child);
-			nd->children.push_back(child);
-			BuildOctree(child);
+		child = new Node(
+			nd->start[0], nd->start[1], nd->start[2],
+			childDimL[0], childDimL[1], childDimL[2],
+			cubemap_size, nd->level + 1);
+		ComputeCubemapNode(child);
+		nd->children.push_back(child);
+		BuildOctree(child);
 
-			child = new Node(
-				nd->start[0] + childDimL[0], nd->start[1], nd->start[2],
-				childDimR[0],					childDimL[1],					childDimL[2],
-				cubemap_size, nd->level + 1);
-			ComputeCubemapNode(child);
-			nd->children.push_back(child);
-			BuildOctree(child);
+		child = new Node(
+			nd->start[0] + childDimL[0], nd->start[1], nd->start[2],
+			childDimR[0], childDimL[1], childDimL[2],
+			cubemap_size, nd->level + 1);
+		ComputeCubemapNode(child);
+		nd->children.push_back(child);
+		BuildOctree(child);
 
-			child = new Node(
-				nd->start[0], nd->start[1] + childDimL[1], nd->start[2],
-				childDimL[0],					childDimR[1],					childDimL[2],
-				cubemap_size, nd->level + 1);
-			ComputeCubemapNode(child);
-			nd->children.push_back(child);
-			BuildOctree(child);
+		child = new Node(
+			nd->start[0], nd->start[1] + childDimL[1], nd->start[2],
+			childDimL[0], childDimR[1], childDimL[2],
+			cubemap_size, nd->level + 1);
+		ComputeCubemapNode(child);
+		nd->children.push_back(child);
+		BuildOctree(child);
 
-			child = new Node(
-				nd->start[0] + childDimL[0], nd->start[1] + childDimL[1], nd->start[2],
-				childDimR[0],					childDimR[1],					childDimL[2],
-				cubemap_size, nd->level + 1);
-			ComputeCubemapNode(child);
-			nd->children.push_back(child);
-			BuildOctree(child);
+		child = new Node(
+			nd->start[0] + childDimL[0], nd->start[1] + childDimL[1], nd->start[2],
+			childDimR[0], childDimR[1], childDimL[2],
+			cubemap_size, nd->level + 1);
+		ComputeCubemapNode(child);
+		nd->children.push_back(child);
+		BuildOctree(child);
 
-			child = new Node(
-				nd->start[0], nd->start[1], nd->start[2] + childDimL[2],
-				childDimL[0],					childDimL[1],					childDimR[2],
-				cubemap_size, nd->level + 1);
-			ComputeCubemapNode(child);
-			nd->children.push_back(child);
-			BuildOctree(child);
+		child = new Node(
+			nd->start[0], nd->start[1], nd->start[2] + childDimL[2],
+			childDimL[0], childDimL[1], childDimR[2],
+			cubemap_size, nd->level + 1);
+		ComputeCubemapNode(child);
+		nd->children.push_back(child);
+		BuildOctree(child);
 
-			child = new Node(
-				nd->start[0] + childDimL[0], nd->start[1], nd->start[2] + childDimL[2],
-				childDimR[0],					childDimL[1],					childDimR[2],
-				cubemap_size, nd->level + 1);
-			ComputeCubemapNode(child);
-			nd->children.push_back(child);
-			BuildOctree(child);
+		child = new Node(
+			nd->start[0] + childDimL[0], nd->start[1], nd->start[2] + childDimL[2],
+			childDimR[0], childDimL[1], childDimR[2],
+			cubemap_size, nd->level + 1);
+		ComputeCubemapNode(child);
+		nd->children.push_back(child);
+		BuildOctree(child);
 
-			child = new Node(
-				nd->start[0], nd->start[1] + childDimL[1], nd->start[2] + childDimL[2],
-				childDimL[0],					childDimR[1],					childDimR[2],
-				cubemap_size, nd->level + 1);
-			ComputeCubemapNode(child);
-			nd->children.push_back(child);
-			BuildOctree(child);
+		child = new Node(
+			nd->start[0], nd->start[1] + childDimL[1], nd->start[2] + childDimL[2],
+			childDimL[0], childDimR[1], childDimR[2],
+			cubemap_size, nd->level + 1);
+		ComputeCubemapNode(child);
+		nd->children.push_back(child);
+		BuildOctree(child);
 
-			child = new Node(
-				nd->start[0] + childDimL[0], nd->start[1] + childDimL[1], nd->start[2] + childDimL[2],
-				childDimR[0],					childDimR[1],					childDimR[2],
-				cubemap_size, nd->level + 1);
-			ComputeCubemapNode(child);
-			nd->children.push_back(child);
-			BuildOctree(child);
-		}
-		else
-		{
-			numBlocks += 1;
-		}
+		child = new Node(
+			nd->start[0] + childDimL[0], nd->start[1] + childDimL[1], nd->start[2] + childDimL[2],
+			childDimR[0], childDimR[1], childDimR[2],
+			cubemap_size, nd->level + 1);
+		ComputeCubemapNode(child);
+		nd->children.push_back(child);
+		BuildOctree(child);
+	}
+	else
+	{
+		numBlocks += 1;
+	}
 	//}
 }
 
@@ -434,8 +433,23 @@ void DataManager::LoadVec(char* filename)
 	fread(dim, sizeof(int), 3, file);
 	int dimtotal = dim[0] * dim[1] * dim[2];
 
+	float3* data_tmp = new float3[dimtotal];
 	data = new float[dimtotal * 3];
-	fread(data, sizeof(float), dimtotal * 3, file);
+	float3* idata = static_cast<float3*>((void *)data);
+
+	fread(data_tmp, sizeof(float3), dimtotal, file);
+	for (int i = 0; i < dim[0]; i++)	{
+		for (int j = 0; j < dim[1]; j++)	{
+			for (int k = 0; k < dim[2]; k++)	{
+				idata[i * dim[1] * dim[2] + j * dim[2] + k] = 
+					data_tmp[k * dim[0] * dim[1] + j * dim[0] + i];
+			}
+		}
+	}
+	initBlockSize = min(min(dim[0], dim[1]), dim[2]) / 3;
+
+
+	delete[] data_tmp;
 
 	fclose(file);
 	cout << "Data loaded" << endl;
@@ -498,7 +512,7 @@ void DataManager::LoadOSUFlow(char* filename)
 	to[0] = maxLen[0];   to[1] = maxLen[1];   to[2] = maxLen[2];
 
 	printf("generating seeds...\n");
-	osuflow->SetRandomSeedPoints(from, to, 100);
+	osuflow->SetRandomSeedPoints(from, to, 200);
 	int nSeeds;
 	VECTOR3* seeds = osuflow->GetSeeds(nSeeds);
 	for (int i = 0; i<nSeeds; i++)
@@ -509,7 +523,8 @@ void DataManager::LoadOSUFlow(char* filename)
 
 	printf("compute streamlines..\n");
 	osuflow->SetIntegrationParams(1, 5);
-	osuflow->GenStreamLines(sl_list, BACKWARD_AND_FORWARD, 200, 0);
+	//osuflow->GenStreamLines(sl_list, BACKWARD_AND_FORWARD, 200, 0);
+	osuflow->GenStreamLines(sl_list, FORWARD_DIR, 200, 0);
 	printf(" done integrations\n");
 	printf("list size = %d\n", (int)sl_list.size());
 
@@ -555,7 +570,8 @@ void DataManager::GenStreamInCube()
 
 	printf("compute streamlines..\n");
 	osuflow->SetIntegrationParams(1, 5);
-	osuflow->GenStreamLines(sl_list, BACKWARD_AND_FORWARD, 50, 0);
+	//osuflow->GenStreamLines(sl_list, BACKWARD_AND_FORWARD, 50, 0);
+	osuflow->GenStreamLines(sl_list, FORWARD_DIR, 200, 0);
 	printf(" done integrations\n");
 	printf("list size = %d\n", (int)sl_list.size());
 
@@ -816,7 +832,7 @@ void DataManager::Segmentation()
 {
 	//topNode = new Node(cubemap_data, cubemap_size, dataIdx, dim);
 	SplitTopNode();
-
+	//uncomment later
 	for (auto child : topNode->children)
 	{
 		BuildOctree(child);

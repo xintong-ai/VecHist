@@ -1,16 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Jan  5 22:45:26 2015
+Created on Mon Feb  2 14:56:32 2015
 
 @author: tong
 """
 
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Nov 11 16:36:20 2014
-
-@author: tong
-"""
 
 import numpy as np
 
@@ -29,7 +23,7 @@ def sample(n):
         for j in range(n):
             for k in range(n):
                 pos = [i, j, k]
-                vec = np.subtract(pos, center)
+                vec = [pos[0] - n * 0.5, 0, 0]#np.subtract(pos, center)
                 dis = np.linalg.norm(vec)
                 val = 0
                 if ( dis > 0.01):# and (dis > (n - 1) * 0.25):
