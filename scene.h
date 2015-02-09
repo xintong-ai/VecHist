@@ -223,6 +223,7 @@ public slots:
 	void UpdateBlock(int x, int y, int z, int nx, int ny, int nz);
 	void UpdateQuery(int f, int x, int y);
 	void Segmentation();
+	void OnMove(std::vector<float>& motionData);
 //    void newItem(ItemDialog::ItemType type);
 protected:
 	void render3D(const QMatrix4x4 &view, int excludeBox = -2);

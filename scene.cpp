@@ -1,4 +1,4 @@
-/****************************************************************************
+﻿/****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
@@ -43,6 +43,7 @@
 #include "scene.h"
 #include <QtGui/qmatrix4x4.h>
 #include <QtGui/qvector3d.h>
+#include <QOpenGLFunctions>
 
 //#include "3rdparty/fbm.h"
 #include <memory>
@@ -495,6 +496,9 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	//dataManager->LoadVec("D:/data/plume/15plume3d421.vec");
 	//dataManager->LoadVec("D:/data/isabel/UVWf01.vec");
 	//dataManager->LoadVec("D:/data/nek/nek.d_4.vec");
+	//dataManager->LoadVec("D:/data/tornado/1.vec");
+	//dataManager->LoadVec("D:/data/saddle/saddle.vec");
+
 	m_width = width;
 	m_height = height;
 	blockSize.x = 16;
@@ -530,6 +534,8 @@ Scene::Scene(int width, int height, int maxTextureSize)
     twoSided->setWidget(0, m_renderOptions);
 
     initGL();
+
+
 
     m_timer = new QTimer(this);
     m_timer->setInterval(20);
@@ -772,7 +778,7 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 	glTranslatef(-(0 + nx / 2), -(0 + ny / 2), -(0 + nz / 2));
 
 	/****** Volume rendering ******/
-	displayVolume();
+	//displayVolume();
 
 	/***** Draw sphere ****/
 	if (glActiveTexture) {
@@ -786,6 +792,7 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 
 
 	//draw sphere by the side
+	glCullFace(GL_FRONT);
 	glPushMatrix();
 	loadMatrix(view);
 	//glLoadIdentity();
@@ -793,9 +800,19 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 	glColor3f(1.0f, 1.0f, 1.0f);
 	glScalef(0.2, 0.2, 0.2);
 	glMultMatrixf(m.constData());
-	//m_vecWidget->draw();
+	m_vecWidget->draw();
 	glPopMatrix();
+	glCullFace(GL_BACK);
 
+	glPushMatrix();
+	loadMatrix(view);
+	//glLoadIdentity();
+	glTranslatef(-0.3, -0.25, 0.2);
+	glColor3f(1.0f, 1.0f, 1.0f);
+	glScalef(0.2, 0.2, 0.2);
+	glMultMatrixf(m.constData());
+	m_vecWidget->draw();
+	glPopMatrix();
 
 	//draw sphere at the queried region
 	glPushMatrix();
@@ -986,9 +1003,26 @@ void Scene::drawBackground(QPainter *painter, const QRectF &)
 	render3D(view);
 
     defaultStates();
-    ++m_frame;
+   // ++m_frame;
 
-    painter->endNativePainting();
+
+	QString framesPerSecond;
+	framesPerSecond.setNum(m_frame / (m_time.elapsed() / 1000.0), 'f', 2);
+
+	painter->setPen(Qt::white);
+
+	painter->drawText(20, 40, framesPerSecond + " fps");
+	//cout << "FPS: " << framesPerSecond.toStdString() << endl;
+
+	//painter->end();
+
+	painter->endNativePainting();
+
+	if (!(m_frame % 100)) {
+		m_time.start();
+		m_frame = 0;
+	}
+	m_frame++;
 }
 
 QPointF Scene::pixelPosToViewPos(const QPointF& p)
@@ -1105,7 +1139,22 @@ void Scene::keyPressEvent(QKeyEvent *event)
 		UpdateBlock();
 		dataManager->GenStreamInCube();
 	}
+}
 
+void Scene::OnMove(std::vector<float>& motionData)
+{
+	if (motionData.size() < 6) return;
+//	cout << motionData[0] << "," << motionData[1] << "," << motionData[2] << endl;
+	dataManager->MoveCube(motionData[0] * 1000, motionData[1] * 1000, motionData[2] * 1000);
+//	dataManager->ResizeCube(motionData[3] * 1000, motionData[4] * 1000, motionData[5] * 1000);
+
+	int qx, qy, qz;
+	int qnx, qny, qnz;
+	dataManager->GetQCube(qx, qy, qz, qnx, qny, qnz);
+
+	m_renderOptions->setBlock(qx, qy, qz, qnx, qny, qnz);
+	UpdateBlock();
+	//dataManager->GenStreamInCube();
 }
 
 void Scene::setShader(int index)

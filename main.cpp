@@ -46,6 +46,7 @@
 
 #include <QtWidgets>
 #include <QGLWidget>
+#include <Mouse3DInput.h>
 
 class GraphicsView : public QGraphicsView
 {
@@ -133,12 +134,17 @@ int main(int argc, char **argv)
     }
 
     // TODO: Make conditional for final release
-    QMessageBox::information(0, "For your information",
-        "This demo can be GPU and CPU intensive and may\n"
-        "work poorly or not at all on your system.");
+    //QMessageBox::information(0, "For your information",
+    //    "This demo can be GPU and CPU intensive and may\n"
+    //    "work poorly or not at all on your system.");
 
     widget->makeCurrent(); // The current context must be set before calling Scene's constructor
     Scene scene(1024, 768, maxTextureSize);
+	
+	Mouse3DInput mouse(widget);
+
+	QObject::connect(&mouse, SIGNAL(Move3d(std::vector<float>&)), &scene, SLOT(OnMove(std::vector<float>&)));
+
     GraphicsView view;
     view.setViewport(widget);
     view.setViewportUpdateMode(QGraphicsView::FullViewportUpdate);

@@ -421,8 +421,54 @@ void DataManager::SetQCube(int x, int y, int z, int nx, int ny, int nz)
 	qCubeSize[0] = nx;
 	qCubeSize[1] = ny;
 	qCubeSize[2] = nz;
-
 }
+
+bool DataManager::CubeInsideVolume(int x, int y, int z, int nx, int ny, int nz)
+{
+	return x >= 0 && y >= 0 && z >= 0 && (x + nx) <= dim[0] && (y + ny) <= dim[1] && (z + nz) <= dim[2];
+}
+
+bool DataManager::CubeInsideVolumeX(int x, int nx)
+{
+	return x >= 0 && (x + nx) <= dim[0];
+}
+
+bool DataManager::CubeInsideVolumeY(int x, int nx)
+{
+	return x >= 0 && (x + nx) <= dim[1];
+}
+
+bool DataManager::CubeInsideVolumeZ(int x, int nx)
+{
+	return x >= 0 && (x + nx) <= dim[2];
+}
+
+void DataManager::MoveCube(int x, int y, int z)
+{
+	if (!CubeInsideVolumeX(qCubePos[0] + x, qCubeSize[0]))
+		x = 0;
+	if (!CubeInsideVolumeY(qCubePos[1] + y, qCubeSize[1]))
+		y = 0;
+	if (!CubeInsideVolumeZ(qCubePos[2] + z, qCubeSize[2]))
+		z = 0;
+	qCubePos[0] += x;
+	qCubePos[1] += y;
+	qCubePos[2] += z;
+}
+
+void DataManager::ResizeCube(int x, int y, int z)
+{
+	if (!CubeInsideVolumeX(qCubePos[0], qCubeSize[0] + x) || (qCubeSize[0] + x < 0))
+		x = 0;
+	if (!CubeInsideVolumeY(qCubePos[1], qCubeSize[1] + y) || (qCubeSize[1] + y < 0))
+		y = 0;
+	if (!CubeInsideVolumeZ(qCubePos[2], qCubeSize[2] + z) || (qCubeSize[2] + z < 0))
+		z = 0;
+	qCubeSize[0] += x;
+	qCubeSize[1] += y;
+	qCubeSize[2] += z;
+}
+
 
 void DataManager::LoadVec(char* filename)
 {
@@ -512,7 +558,7 @@ void DataManager::LoadOSUFlow(char* filename)
 	to[0] = maxLen[0];   to[1] = maxLen[1];   to[2] = maxLen[2];
 
 	printf("generating seeds...\n");
-	osuflow->SetRandomSeedPoints(from, to, 200);
+	osuflow->SetRandomSeedPoints(from, to, 400);
 	int nSeeds;
 	VECTOR3* seeds = osuflow->GetSeeds(nSeeds);
 	for (int i = 0; i<nSeeds; i++)

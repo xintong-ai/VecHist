@@ -124,6 +124,12 @@ public:
 	void GetVolumeSize(int &nx, int &ny, int&nz);
 	void GetQCube(int &x, int &y, int &z, int &nx, int &ny, int &nz);
 	void SetQCube(int x, int y, int z, int nx, int ny, int nz);
+	void MoveCube(int x, int y, int z);
+	void ResizeCube(int x, int y, int z);
+	bool CubeInsideVolume(int x, int y, int z, int nx, int ny, int nz);
+	bool CubeInsideVolumeX(int x, int nx);
+	bool CubeInsideVolumeY(int x, int nx);
+	bool CubeInsideVolumeZ(int x, int nx);
 	int GetCubemapSize();
 	int GetNumOfCells();
 	void Segmentation();
