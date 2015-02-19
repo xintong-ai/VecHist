@@ -85,6 +85,7 @@ class DataManager
 	int dim[3];
 	int initBlockSize;
 	int blockDim[3];
+	float3* data_x_first;
 	//	int nCells;
 	int qCubePos[3], qCubeSize[3];	//queried cube position and sizes
 	std::vector<std::vector<double> > vV;
@@ -122,7 +123,9 @@ public:
 	void QueryByBin(int f, int x, int y, unsigned char* result);
 	void UpdateCubeMap(float* cubemap);
 	void GetVolumeSize(int &nx, int &ny, int&nz);
+	int3 GetVolumeDim();
 	void GetQCube(int &x, int &y, int &z, int &nx, int &ny, int &nz);
+	float3 GetQCubeCenter();
 	void SetQCube(int x, int y, int z, int nx, int ny, int nz);
 	void MoveCube(int x, int y, int z);
 	void ResizeCube(int x, int y, int z);
@@ -139,6 +142,8 @@ public:
 	vector<vector<float4>> GetStreamlines();
 	vector<vector<float4>> GetStreamlinesInCube();
 	void GenStreamInCube();
+	float* GetVecData();
+	float* GetVecDataXFirst();
 	DataManager();
 	~DataManager();
 };

@@ -67,10 +67,105 @@ extern "C" void copyDataDim(int *dataDim, size_t size);
 #define SWAP_ROWS_FLOAT(a, b) { float *_tmp = a; (a) = (b); (b) = _tmp; }
 #define MAT(m,r,c) (m)[(c)*4+(r)]
 
-//int mul3(int a[3], float v)
-//{
-//	return
-//}
+inline float3 operator*(const float3 &a, const float &b) {
+	return make_float3(a.x * b, a.y * b, a.z * b);
+}
+
+inline float3 operator+(const float3 &a, const float3 &b) {
+	return make_float3(a.x + b.x, a.y + b.y, a.z + b.z);
+}
+
+inline float3 operator-(const float3 &a, const float3 &b) {
+	return make_float3(a.x - b.x, a.y - b.y, a.z - b.z);
+}
+
+inline float3 cross(float3 a, float3 b)
+{
+	return make_float3(a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x);
+}
+
+inline float dot(float3 a, float3 b)
+{
+	return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+
+
+void sort_points(float3 *points, unsigned point_count, const float4 &plane)
+{
+	if (point_count == 0) return;
+
+	const float3 plane_normal = make_float3(plane.x, plane.y, plane.z);
+	const float3 origin = points[0];
+
+	std::sort(points, points + point_count, [&](const float3 &lhs, const float3 &rhs) -> bool {
+		float3 v;
+		v = cross((lhs - origin), (rhs - origin));
+		return dot(v, plane_normal) > 0;
+	});
+}
+
+bool ray_to_plane(const float3 &RayOrig, const float3 &RayDir, const float4 &Plane, float *OutT, float *OutVD)
+{
+	*OutVD = Plane.x * RayDir.x + Plane.y * RayDir.y + Plane.z * RayDir.z;
+	if (*OutVD == 0.0f)
+		return false;
+	*OutT = -(Plane.x * RayOrig.x + Plane.y * RayOrig.y + Plane.z * RayOrig.z + Plane.w) / *OutVD;
+	return true;
+}
+
+void calc_plane_aabb_intersection_points(const float4 &plane,
+	const float3 &aabb_min, const float3 &aabb_max,
+	float3 *out_points, unsigned &out_point_count)
+{
+	out_point_count = 0;
+	float vd, t;
+
+	// Test edges along X axis, pointing right.
+	float3 dir = make_float3(aabb_max.x - aabb_min.x, 0.f, 0.f);
+	float3 orig = aabb_min;
+	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
+		out_points[out_point_count++] = orig + dir * t;
+	orig = make_float3(aabb_min.x, aabb_max.y, aabb_min.z);
+	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
+		out_points[out_point_count++] = orig + dir * t;
+	orig = make_float3(aabb_min.x, aabb_min.y, aabb_max.z);
+	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
+		out_points[out_point_count++] = orig + dir * t;
+	orig = make_float3(aabb_min.x, aabb_max.y, aabb_max.z);
+	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
+		out_points[out_point_count++] = orig + dir * t;
+
+	// Test edges along Y axis, pointing up.
+	dir = make_float3(0.f, aabb_max.y - aabb_min.y, 0.f);
+	orig = make_float3(aabb_min.x, aabb_min.y, aabb_min.z);
+	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
+		out_points[out_point_count++] = orig + dir * t;
+	orig = make_float3(aabb_max.x, aabb_min.y, aabb_min.z);
+	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
+		out_points[out_point_count++] = orig + dir * t;
+	orig = make_float3(aabb_min.x, aabb_min.y, aabb_max.z);
+	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
+		out_points[out_point_count++] = orig + dir * t;
+	orig = make_float3(aabb_max.x, aabb_min.y, aabb_max.z);
+	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
+		out_points[out_point_count++] = orig + dir * t;
+
+	// Test edges along Z axis, pointing forward.
+	dir = make_float3(0.f, 0.f, aabb_max.z - aabb_min.z);
+	orig = make_float3(aabb_min.x, aabb_min.y, aabb_min.z);
+	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
+		out_points[out_point_count++] = orig + dir * t;
+	orig = make_float3(aabb_max.x, aabb_min.y, aabb_min.z);
+	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
+		out_points[out_point_count++] = orig + dir * t;
+	orig = make_float3(aabb_min.x, aabb_max.y, aabb_min.z);
+	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
+		out_points[out_point_count++] = orig + dir * t;
+	orig = make_float3(aabb_max.x, aabb_max.y, aabb_min.z);
+	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
+		out_points[out_point_count++] = orig + dir * t;
+}
 
 typedef struct {
 	double r, g, b;
@@ -477,7 +572,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
     : m_distExp(600)
     , m_frame(0)
     , m_maxTextureSize(maxTextureSize)
-    , m_currentShader(0)
+   // , m_currentShader(0)
     //, m_currentTexture(0)
     , m_dynamicCubemap(false)
     //, m_updateAllCubemaps(true)
@@ -492,8 +587,8 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	//dataManager->LoadVec("D:/data/sample/test2.vec");
 	//dataManager->LoadVec("D:/data/sample/sample_two_halves.vec");
 		//dataManager->LoadVec("D:/data/sample/test1.vec");
-	dataManager->LoadVec("C:/Users/tong.tong-idea/SkyDrive/share/15plume3d430.vec");
-	//dataManager->LoadVec("D:/data/plume/15plume3d421.vec");
+	//dataManager->LoadVec("C:/Users/tong.tong-idea/SkyDrive/share/15plume3d430.vec");
+	dataManager->LoadVec("D:/data/plume/15plume3d421.vec");
 	//dataManager->LoadVec("D:/data/isabel/UVWf01.vec");
 	//dataManager->LoadVec("D:/data/nek/nek.d_4.vec");
 	//dataManager->LoadVec("D:/data/tornado/1.vec");
@@ -520,6 +615,12 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	dataManager->GetVolumeSize(nx, ny, nz);
 	m_renderOptions->setBlock(0, 0, 0, nx, ny, nz);
 
+	ShowGpuMemInfo();
+	m_vec3DTex = new GLTexture3D(nx, ny, nz);
+	m_vec3DTex->load(nx, ny, nz, dataManager->GetVecDataXFirst());
+	cout << "Loading 3D texture..." << endl;
+	ShowGpuMemInfo();
+
 	initPixelBuffer();
 	
     connect(m_renderOptions, SIGNAL(colorParameterChanged(QString,QRgb)), this, SLOT(setColorParameter(QString,QRgb)));
@@ -534,7 +635,8 @@ Scene::Scene(int width, int height, int maxTextureSize)
     twoSided->setWidget(0, m_renderOptions);
 
     initGL();
-
+	//TODO: when width and height changes, this function should be called again
+	InitPicking(m_width, m_height);
 
 
     m_timer = new QTimer(this);
@@ -557,21 +659,23 @@ Scene::~Scene()
         delete m_vecWidget;
     //foreach (GLTexture *texture, m_textures)
     //    if (texture) delete texture;
-    foreach (QGLShaderProgram *program, m_programs)
-        if (program) delete program;
+    for (auto program : m_programs)
+		if (program.second) delete program.second;
     if (m_vertexShader)
         delete m_vertexShader;
     foreach (QGLShader *shader, m_fragmentShaders)
         if (shader) delete shader;
     //foreach (GLRenderTargetCube *rt, m_cubemaps)
     //    if (rt) delete rt;
+	delete m_vec3DTex;
 
-	cleanup();
 	cudaDeviceReset();
+	cleanup();
 }
 
 void Scene::initGL()
 {
+	initializeGLFunctions();
 	m_vecWidget = new GLSphere(1.0f, 0.5f, 10);
 
     m_vertexShader = new QGLShader(QGLShader::Vertex);
@@ -583,13 +687,14 @@ void Scene::initGL()
     QList<QFileInfo> files;
 
     // Load all .fsh files as fragment shaders
-    m_currentShader = 0;
+   // "distribution" = 0;
     filter = QStringList("*.fsh");
     files = QDir(":/res/boxes/").entryInfoList(filter, QDir::Files | QDir::Readable);
     foreach (QFileInfo file, files) {
         QGLShaderProgram *program = new QGLShaderProgram;
         QGLShader* shader = new QGLShader(QGLShader::Fragment);
-        shader->compileSourceFile(file.absoluteFilePath());
+		cout << "Loading shader: "<< file.absoluteFilePath().toStdString();
+		shader->compileSourceFile(file.absoluteFilePath());
         // The program does not take ownership over the shaders, so store them in a vector so they can be deleted afterwards.
         program->addShader(m_vertexShader);
         program->addShader(shader);
@@ -608,7 +713,8 @@ void Scene::initGL()
         }
 
         m_fragmentShaders << shader;
-        m_programs << program;
+		string filename = file.fileName().toStdString();
+		m_programs[filename.substr(0, filename.find(".", 0))] = program;
         m_renderOptions->addShader(file.baseName());
 
         //program->bind();
@@ -616,8 +722,8 @@ void Scene::initGL()
         //program->release();
     }
 
-    if (m_programs.size() == 0)
-        m_programs << new QGLShaderProgram;
+    //if (m_programs.size() == 0)
+    //    m_programs << new QGLShaderProgram;
 
     m_renderOptions->emitParameterChanged();
 }
@@ -643,45 +749,46 @@ void Scene::renderBBox(const QMatrix4x4 &view)
 	//nx -= 1;
 	//ny -= 1;
 	//nz -= 1;
+	int bx = nx - 1, by = ny - 1, bz = nz - 1;
 	
 	glBegin(GL_LINES);
 	glVertex3f(0, 0, 0);
-	glVertex3f(nx, 0, 0);
+	glVertex3f(bx, 0, 0);
 
-	glVertex3f(nx, 0, 0);
-	glVertex3f(nx, ny, 0);
+	glVertex3f(bx, 0, 0);
+	glVertex3f(bx, by, 0);
 
-	glVertex3f(nx, ny, 0);
-	glVertex3f(0, ny, 0);
+	glVertex3f(bx, by, 0);
+	glVertex3f(0, by, 0);
 
-	glVertex3f(0, ny, 0);
+	glVertex3f(0, by, 0);
 	glVertex3f(0, 0, 0);
 
 	//////
 	glVertex3f(0, 0, 0);
-	glVertex3f(0, 0, nz);
+	glVertex3f(0, 0, bz);
 
-	glVertex3f(nx, 0, 0);
-	glVertex3f(nx, 0, nz);
+	glVertex3f(bx, 0, 0);
+	glVertex3f(bx, 0, bz);
 
-	glVertex3f(nx, ny, 0);
-	glVertex3f(nx, ny, nz);
+	glVertex3f(bx, by, 0);
+	glVertex3f(bx, by, bz);
 
-	glVertex3f(0, ny, 0);
-	glVertex3f(0, ny, nz);
+	glVertex3f(0, by, 0);
+	glVertex3f(0, by, bz);
 
 	//////
-	glVertex3f(0, 0, nz);
-	glVertex3f(nx, 0, nz);
+	glVertex3f(0, 0, bz);
+	glVertex3f(bx, 0, bz);
 
-	glVertex3f(nx, 0, nz);
-	glVertex3f(nx, ny, nz);
+	glVertex3f(bx, 0, bz);
+	glVertex3f(bx, by, bz);
 
-	glVertex3f(nx, ny, nz);
-	glVertex3f(0, ny, nz);
+	glVertex3f(bx, by, bz);
+	glVertex3f(0, by, bz);
 
-	glVertex3f(0, ny, nz);
-	glVertex3f(0, 0, nz);
+	glVertex3f(0, by, bz);
+	glVertex3f(0, 0, bz);
 
 	glEnd();
 }
@@ -786,12 +893,13 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 		m_environment->bind();
 	}
 
-	m_programs[m_currentShader]->bind();
-//	m_programs[m_currentShader]->setUniformValue("tex", GLint(0));
-	m_programs[m_currentShader]->setUniformValue("env", GLint(0));
+	m_programs["distribution"]->bind();
+//	m_programs["distribution"]->setUniformValue("tex", GLint(0));
+	m_programs["distribution"]->setUniformValue("env", GLint(0));
 
 
 	//draw sphere by the side
+	glEnable(GL_CULL_FACE);
 	glCullFace(GL_FRONT);
 	glPushMatrix();
 	loadMatrix(view);
@@ -814,6 +922,8 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 	m_vecWidget->draw();
 	glPopMatrix();
 
+	glDisable(GL_CULL_FACE);
+
 	//draw sphere at the queried region
 	glPushMatrix();
 	glTranslatef(qnx / 2 + qx, qny / 2 + qy, qnz / 2 + qz);
@@ -825,6 +935,7 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 	if (glActiveTexture) {
 		m_environment->unbind();
 	}
+
 
 	for (int i = 0; i < leafNodes.size(); i++)	{
 		GLTextureCube* tex = blockTex[i];
@@ -857,7 +968,22 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 		//	}
 		//}
 	}
-	m_programs[m_currentShader]->release();
+	m_programs["distribution"]->release();
+
+	m_programs["sphere_brush"]->bind();
+	/********Draw for picking******/
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_fbo);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//draw sphere at the queried region
+	glPushMatrix();
+	glTranslatef(qnx / 2 + qx, qny / 2 + qy, qnz / 2 + qz);
+	glScalef(minqsize, minqsize, minqsize);
+	m_vecWidget->draw();
+	glPopMatrix();
+
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	/********end******/
+	m_programs["sphere_brush"]->release();
 
 	//draw streamlines
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -872,6 +998,7 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 		glVertexPointer(4, GL_FLOAT, 0, &line[0].x);
 
 		// draw a cube
+		//TODO: uncomment
 		glDrawArrays(GL_LINE_STRIP, 0, line.size());
 
 		// deactivate vertex arrays after drawing
@@ -897,6 +1024,38 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 		glDisableClientState(GL_VERTEX_ARRAY);
 		//glDisableClientState(GL_COLOR_ARRAY);
 	}
+
+	/**********draw plane********/
+//	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	/***** Draw sphere ****/
+	m_programs["cut_plane"]->bind();
+	if (glActiveTexture) {
+		glActiveTexture(GL_TEXTURE0);
+		m_vec3DTex->bind();
+	}
+	m_programs["cut_plane"]->setUniformValue("tex", GLint(0));
+	m_programs["cut_plane"]->setUniformValue("data_dim", GLfloat(nx), GLfloat(ny), GLfloat(nz));
+
+	for (CutPlane p : cutplanes){
+		//glDrawArrays(GL_TRIANGLE_FAN, 0, );
+		vector<float3> vs = p.vertices;
+		QVector3D plane_normal(p.normal.x, p.normal.y, p.normal.z);
+
+		m_programs["cut_plane"]->setUniformValue("plane_normal",
+			GLfloat(plane_normal.x()), GLfloat(plane_normal.y()), GLfloat(plane_normal.z()));
+
+		glBegin(GL_TRIANGLE_FAN);
+
+//	glUniform1fv(glGetUniformLocation(program, "v"), 10, v);
+		for (auto v : vs)
+			glVertex3fv(&v.x);
+		glEnd();
+	}
+	if (glActiveTexture) {
+		m_vec3DTex->unbind();
+	}
+	m_programs["cut_plane"]->release();
+	//	glPolygonMode(GL_FRONT, GL_FILL);
 
 
 	renderQCube(view);
@@ -1056,10 +1215,29 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
     if (event->isAccepted())
         return;
 
-	if (event->buttons() & (Qt::LeftButton | Qt::RightButton)) {
+	if (event->button() == Qt::LeftButton) {
         m_trackBalls[0].push(pixelPosToViewPos(event->scenePos()), m_trackBalls[0].rotation().conjugate());
         event->accept();
     }
+	else if (event->button() == Qt::RightButton)	{
+		float3 b = ReadPixel(event->scenePos().x(), event->scenePos().y());
+		//int3 dim = dataManager->GetVolumeDim();
+		//The boundary is from 0 to (dim - 1)
+		int qx, qy, qz;
+		int qnx, qny, qnz;
+		dataManager->GetQCube(qx, qy, qz, qnx, qny, qnz);
+
+		float3 aabb_min = make_float3(qx, qy, qz);
+		float3 aabb_max = make_float3(qx + qnx - 1, qy + qny - 1, qz + qnz - 1);
+		float3 normal = make_float3(b.x * 2 - 1, b.y * 2 - 1, b.z * 2 - 1);
+		CutPlane cp(normal, dataManager->GetQCubeCenter(), aabb_min, aabb_max);
+
+		if (cutplanes.size() == 0)
+			cutplanes.push_back(cp);
+		else
+			cutplanes.back() = cp;
+		cout << "(" << normal.x << "," << normal.y << "," << normal.z << endl;
+	}
 }
 
 void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
@@ -1133,11 +1311,22 @@ void Scene::keyPressEvent(QKeyEvent *event)
 				return;
 			qz -= qnz;
 			break;
+
+
 		}
 		dataManager->SetQCube(qx, qy, qz, qnx, qny, qnz);
 		m_renderOptions->setBlock(qx, qy, qz, qnx, qny, qnz);
 		UpdateBlock();
 		dataManager->GenStreamInCube();
+	}
+	switch (event->key())
+	{
+	case Qt::Key_Up:
+		cutplanes.back().MovePlane(1);
+		break;
+	case Qt::Key_Down:
+		cutplanes.back().MovePlane(-1);
+		break;
 	}
 }
 
@@ -1159,28 +1348,28 @@ void Scene::OnMove(std::vector<float>& motionData)
 
 void Scene::setShader(int index)
 {
-    if (index >= 0 && index < m_fragmentShaders.size())
-        m_currentShader = index;
+    //if (index >= 0 && index < m_fragmentShaders.size())
+    //    m_currentShader = index;
 }
 
 void Scene::setColorParameter(const QString &name, QRgb color)
 {
-    // set the color in all programs
-    foreach (QGLShaderProgram *program, m_programs) {
-        program->bind();
-        program->setUniformValue(program->uniformLocation(name), QColor(color));
-        program->release();
-    }
+    //// set the color in all programs
+    //foreach (QGLShaderProgram *program, m_programs) {
+    //    program->bind();
+    //    program->setUniformValue(program->uniformLocation(name), QColor(color));
+    //    program->release();
+    //}
 }
 
 void Scene::setFloatParameter(const QString &name, float value)
 {
-    // set the color in all programs
-    foreach (QGLShaderProgram *program, m_programs) {
-        program->bind();
-        program->setUniformValue(program->uniformLocation(name), value);
-        program->release();
-    }
+    //// set the color in all programs
+    //foreach (QGLShaderProgram *program, m_programs) {
+    //    program->bind();
+    //    program->setUniformValue(program->uniformLocation(name), value);
+    //    program->release();
+    //}
 }
 
 void Scene::UpdateBlock(int x, int y, int z, int nx, int ny, int nz)
@@ -1412,6 +1601,12 @@ void Scene::displayVolume()
 	//computeFPS();
 }
 
+void Scene::DrawPicking()
+{
+
+}
+
+
 //color picking: http://ogldev.atspace.co.uk/www/tutorial29/tutorial29.html
 bool Scene::InitPicking(unsigned int WindowWidth, unsigned int WindowHeight)
 {
@@ -1455,13 +1650,14 @@ bool Scene::InitPicking(unsigned int WindowWidth, unsigned int WindowHeight)
 	return 0;// GLCheckError();
 }
 
-Bin Scene::ReadPixel(unsigned int x, unsigned int y)
+float3 Scene::ReadPixel(unsigned int x, unsigned int y)
 {
 	glBindFramebufferEXT(GL_READ_FRAMEBUFFER, m_fbo);
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
+	cout << "x,y: " << x << "," << y << endl;
 
-	Bin Pixel;
-	glReadPixels(x, y, 1, 1, GL_RGB, GL_FLOAT, &Pixel);
+	float3 Pixel;
+	glReadPixels(x, m_height - y - 1, 1, 1, GL_RGB, GL_FLOAT, &Pixel);
 
 	glReadBuffer(GL_NONE);
 	glBindFramebufferEXT(GL_READ_FRAMEBUFFER, 0);
@@ -1480,4 +1676,70 @@ void Scene::Segmentation()
 		texCube->load(nd->cubemap, nd->cube_size);
 		blockTex << texCube;
 	}
+}
+
+CutPlane::CutPlane(float3 _normal, float3 _vertex, float3 _aabb_min, float3 _aabb_max)
+{
+	this->normal = _normal;
+	this->aabb_min = _aabb_min;
+	this->aabb_max = _aabb_max;
+	plane_coef = make_float4(normal.x, normal.y, normal.z, 
+		- normal.x * _vertex.x - normal.y * _vertex.y - normal.z * _vertex.z);
+	float3 out_points[6];
+	unsigned int out_point_count = 0;
+	calc_plane_aabb_intersection_points(plane_coef, aabb_min, aabb_max, out_points, out_point_count);
+	sort_points(out_points, out_point_count, plane_coef);
+	for (int i = 0; i < out_point_count; i++)	{
+		vertices.push_back(out_points[i]);
+	}
+}
+
+void CutPlane::MovePlane(float v)
+{
+	float3 out_points[6];
+	unsigned int out_point_count = 0;
+	plane_coef.w += v;
+	calc_plane_aabb_intersection_points(plane_coef, aabb_min, aabb_max, out_points, out_point_count);
+	sort_points(out_points, out_point_count, plane_coef);
+	vertices.clear();
+	for (int i = 0; i < out_point_count; i++)	{
+		vertices.push_back(out_points[i]);
+	}
+
+}
+
+
+void Scene::ShowGpuMemInfo()
+{
+
+
+
+	// show memory usage of GPU
+
+	size_t free_byte;
+
+	size_t total_byte;
+
+
+	cudaError_t cuda_status = cudaMemGetInfo(&free_byte, &total_byte);
+
+	if (cudaSuccess != cuda_status){
+
+		printf("Error: cudaMemGetInfo fails, %s \n", cudaGetErrorString(cuda_status));
+
+		exit(1);
+
+	}
+
+
+
+	double free_db = (double)free_byte;
+
+	double total_db = (double)total_byte;
+
+	double used_db = total_db - free_db;
+
+	printf("GPU memory usage: used = %f, free = %f MB, total = %f MB\n",
+
+		used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
 }

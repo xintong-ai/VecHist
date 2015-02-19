@@ -152,8 +152,8 @@ GLTexture3D::GLTexture3D(int width, int height, int depth)
     GLBUFFERS_ASSERT_OPENGL("GLTexture3D::GLTexture3D", glTexImage3D, return)
 
     glBindTexture(GL_TEXTURE_3D, m_texture);
-    glTexImage3D(GL_TEXTURE_3D, 0, 4, width, height, depth, 0,
-        GL_BGRA, GL_UNSIGNED_BYTE, 0);
+	glTexImage3D(GL_TEXTURE_3D, 0, 4/*GL_RGB16F*/, width, height, depth, 0,
+		GL_RGB, GL_FLOAT, 0);
 
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -165,13 +165,13 @@ GLTexture3D::GLTexture3D(int width, int height, int depth)
     glBindTexture(GL_TEXTURE_3D, 0);
 }
 
-void GLTexture3D::load(int width, int height, int depth, QRgb *data)
+void GLTexture3D::load(int width, int height, int depth, float *data)
 {
     GLBUFFERS_ASSERT_OPENGL("GLTexture3D::load", glTexImage3D, return)
 
     glBindTexture(GL_TEXTURE_3D, m_texture);
-    glTexImage3D(GL_TEXTURE_3D, 0, 4, width, height, depth, 0,
-        GL_BGRA, GL_UNSIGNED_BYTE, data);
+	glTexImage3D(GL_TEXTURE_3D, 0, 4/*GL_RGB16F*/, width, height, depth, 0,
+		GL_RGB, GL_FLOAT, data);
     glBindTexture(GL_TEXTURE_3D, 0);
 }
 
@@ -196,8 +196,8 @@ GLTextureCube::GLTextureCube(int size)
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_texture);
 
     for (int i = 0; i < 6; ++i)
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, 4, size, size, 0,
-            GL_BGRA, GL_UNSIGNED_BYTE, 0);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_LUMINANCE, size, size, 0,
+		GL_LUMINANCE, GL_FLOAT, 0);
 
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -216,7 +216,7 @@ GLTextureCube::GLTextureCube(int size, int datatype)
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_texture);
 
 	for (int i = 0; i < 6; ++i)
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, 4, size, size, 0,
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_LUMINANCE, size, size, 0,
 		GL_LUMINANCE, GL_FLOAT, 0);
 
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);

@@ -111,7 +111,7 @@ public:
     GLTexture3D(int width, int height, int depth);
     // TODO: Implement function below
     //GLTexture3D(const QString& fileName, int width = 0, int height = 0);
-    void load(int width, int height, int depth, QRgb *data);
+    void load(int width, int height, int depth, float *data);
     virtual void bind();
     virtual void unbind();
 };

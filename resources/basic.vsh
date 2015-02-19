@@ -43,6 +43,7 @@ varying vec3 position, normal;
 varying vec4 specular, ambient, diffuse, lightDirection;
 
 uniform mat4 view;
+uniform float plane_normal;
 
 void main()
 {	
@@ -55,7 +56,7 @@ void main()
 
 //    normal = gl_NormalMatrix * gl_Normal;
     normal = gl_Normal;
-    position = (gl_ModelViewMatrix * gl_Vertex).xyz;
+    position = gl_Vertex.xyz;
 
     gl_FrontColor = gl_Color;
     gl_Position = ftransform();

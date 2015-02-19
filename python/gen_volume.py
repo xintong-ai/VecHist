@@ -10,9 +10,10 @@ import sample_3d_ball
 import write_vec
 import numpy as np
 
-d = sample_3d_ball.sample(2**6)
+d = sample_3d_ball.sample(2**5)
 #d = np.array([[[[1,1,1], [2,2,2]], [[3,3,3], [4,4,4]]],[[[5,5,5], [6,6,6]], [[7,7,7], [8,8,8]]]])
-write_vec.write(d, "D:/data/sample/test2.vec")
+write_vec.write(d, "D:/data/sample/test3.vec")
+
 
 #d = sample_two_halves.sample(2**6)
 #write_vec.write(d, "D:/data/sample/sample_two_halves.vec")

@@ -19,15 +19,15 @@ def sample(n):
 
     #%% sample on a solid sphere
     
-    center = [(n - 1) * 0.5, (n - 1) * 0.5, (n - 1) * 0.5]
     
-    d = np.zeros((n, n, n, 3), dtype=np.float32)
+    d = np.zeros((n, n * 2, n * 3, 3), dtype=np.float32)
 #    dv = np.zeros((n, n, n))   #valid or not
+    center = [d.shape[0] * 0.5, d.shape[1] * 0.5, d.shape[2] * 0.5]
     
     
-    for i in range(n):
-        for j in range(n):
-            for k in range(n):
+    for i in range(d.shape[0]):
+        for j in range(d.shape[1]):
+            for k in range(d.shape[2]):
                 pos = [i, j, k]
                 vec = np.subtract(pos, center)
                 dis = np.linalg.norm(vec)

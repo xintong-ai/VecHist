@@ -77,5 +77,5 @@ void main()
 {
     //gl_FragColor = textureCube(env, normal);
 	float v = textureCube(env, normal).x;
-	gl_FragColor = GetColor(v, 0, 1); //vec4((normal.x + 1) * 0.5, (normal.y + 1), (normal.z + 1) * 0.5, 1.0f);
+	gl_FragColor = vec4((normal.x + 1) * 0.5, (normal.y + 1) * 0.5, (normal.z + 1) * 0.5, 1.0f);
 }

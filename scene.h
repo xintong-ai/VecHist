@@ -73,11 +73,7 @@ QT_BEGIN_NAMESPACE
 class QMatrix4x4;
 QT_END_NAMESPACE
 
-class ParameterEdit : public QWidget
-{
-public:
-    virtual void emitChange() = 0;
-};
+
 
 struct Bin {
 	unsigned char f;
@@ -91,6 +87,23 @@ struct Bin {
 	}
 };
 
+struct CutPlane{
+	//float3 center;
+	float dis2orig;
+	float3 normal;
+	float3 aabb_min, aabb_max;
+	vector < float3 > vertices;
+	float4 plane_coef;
+	CutPlane(float3 _normal, float3 _vertex, float3 _aabb_min, float3 _aabb_max);
+	void MovePlane(float v);
+};
+
+
+class ParameterEdit : public QWidget
+{
+public:
+	virtual void emitChange() = 0;
+};
 
 //class FloatEdit : public ParameterEdit
 //{
@@ -205,7 +218,7 @@ protected:
 //    virtual void mouseDoubleClickEvent(QMouseEvent *event);
 //};
 
-class Scene : public QGraphicsScene
+class Scene : public QGraphicsScene, protected QGLFunctions
 {
     Q_OBJECT
 public:
@@ -247,7 +260,9 @@ private:
 	void displayVolume();
 	void renderVolume();
 	bool InitPicking(unsigned int WindowWidth, unsigned int WindowHeight);
-	Bin ReadPixel(unsigned int x, unsigned int y);
+	float3 ReadPixel(unsigned int x, unsigned int y);
+	void DrawPicking();
+	void ShowGpuMemInfo();
 
     QTime m_time;
     int m_lastTime;
@@ -256,7 +271,7 @@ private:
     int m_frame;
     int m_maxTextureSize;
 
-    int m_currentShader;
+    //int m_currentShader;
     //int m_currentTexture;
     bool m_dynamicCubemap;
     //bool m_updateAllCubemaps;
@@ -269,11 +284,12 @@ private:
     //QVector<GLTexture *> m_textures;
     GLTextureCube *m_environment;	//the used cubemap
 	QVector<GLTextureCube*> blockTex;
+	GLTexture3D *m_vec3DTex;
     //GLTexture3D *m_noise;
     //GLRenderTargetCube *m_mainCubemap;
     //QVector<GLRenderTargetCube *> m_cubemaps;
 
-    QVector<QGLShaderProgram *> m_programs;
+    map<string, QGLShaderProgram *> m_programs;
     QGLShader *m_vertexShader;
     QVector<QGLShader *> m_fragmentShaders;
     //QGLShader *m_environmentShader;
@@ -300,6 +316,7 @@ private:
 	//
 	vector<Node*> leafNodes;
 	vector<float3> colorMap;
+	vector<CutPlane> cutplanes;
 };
 
 #endif

@@ -401,6 +401,12 @@ void DataManager::GetVolumeSize(int &nx, int &ny, int&nz)
 	nz = dim[2];
 }
 
+int3 DataManager::GetVolumeDim()
+{
+	return make_int3(dim[0], dim[1], dim[2]);
+}
+
+
 void DataManager::GetQCube(int &x, int &y, int &z, int &nx, int &ny, int &nz)
 {
 	x = qCubePos[0];
@@ -410,6 +416,14 @@ void DataManager::GetQCube(int &x, int &y, int &z, int &nx, int &ny, int &nz)
 	nx = qCubeSize[0];
 	ny = qCubeSize[1];
 	nz = qCubeSize[2];
+}
+
+float3 DataManager::GetQCubeCenter()
+{
+	return make_float3(
+		qCubePos[0] + qCubeSize[0] * 0.5,
+		qCubePos[1] + qCubeSize[1] * 0.5,
+		qCubePos[2] + qCubeSize[2] * 0.5);
 }
 
 void DataManager::SetQCube(int x, int y, int z, int nx, int ny, int nz)
@@ -479,23 +493,22 @@ void DataManager::LoadVec(char* filename)
 	fread(dim, sizeof(int), 3, file);
 	int dimtotal = dim[0] * dim[1] * dim[2];
 
-	float3* data_tmp = new float3[dimtotal];
+	data_x_first = new float3[dimtotal];
 	data = new float[dimtotal * 3];
 	float3* idata = static_cast<float3*>((void *)data);
 
-	fread(data_tmp, sizeof(float3), dimtotal, file);
+	fread(data_x_first, sizeof(float3), dimtotal, file);
 	for (int i = 0; i < dim[0]; i++)	{
 		for (int j = 0; j < dim[1]; j++)	{
 			for (int k = 0; k < dim[2]; k++)	{
 				idata[i * dim[1] * dim[2] + j * dim[2] + k] = 
-					data_tmp[k * dim[0] * dim[1] + j * dim[0] + i];
+					data_x_first[k * dim[0] * dim[1] + j * dim[0] + i];
 			}
 		}
 	}
 	initBlockSize = min(min(dim[0], dim[1]), dim[2]) / 3;
 
 
-	delete[] data_tmp;
 
 	fclose(file);
 	cout << "Data loaded" << endl;
@@ -558,7 +571,7 @@ void DataManager::LoadOSUFlow(char* filename)
 	to[0] = maxLen[0];   to[1] = maxLen[1];   to[2] = maxLen[2];
 
 	printf("generating seeds...\n");
-	osuflow->SetRandomSeedPoints(from, to, 400);
+	osuflow->SetRandomSeedPoints(from, to, 100);
 	int nSeeds;
 	VECTOR3* seeds = osuflow->GetSeeds(nSeeds);
 	for (int i = 0; i<nSeeds; i++)
@@ -570,7 +583,7 @@ void DataManager::LoadOSUFlow(char* filename)
 	printf("compute streamlines..\n");
 	osuflow->SetIntegrationParams(1, 5);
 	//osuflow->GenStreamLines(sl_list, BACKWARD_AND_FORWARD, 200, 0);
-	osuflow->GenStreamLines(sl_list, FORWARD_DIR, 200, 0);
+	osuflow->GenStreamLines(sl_list, FORWARD_DIR, 100, 0);
 	printf(" done integrations\n");
 	printf("list size = %d\n", (int)sl_list.size());
 
@@ -617,7 +630,7 @@ void DataManager::GenStreamInCube()
 	printf("compute streamlines..\n");
 	osuflow->SetIntegrationParams(1, 5);
 	//osuflow->GenStreamLines(sl_list, BACKWARD_AND_FORWARD, 50, 0);
-	osuflow->GenStreamLines(sl_list, FORWARD_DIR, 200, 0);
+	osuflow->GenStreamLines(sl_list, FORWARD_DIR, 100, 0);
 	printf(" done integrations\n");
 	printf("list size = %d\n", (int)sl_list.size());
 
@@ -847,9 +860,10 @@ DataManager::DataManager()
 
 DataManager::~DataManager()
 {
-	delete [] cubemap_data;
-	delete [] data;
-	delete [] dataIdx;
+	delete[] cubemap_data;
+	delete[] data;
+	delete[] data_x_first;
+	delete[] dataIdx;
 	delete[] curlIdx;
 	delete[] topNode;
 }
@@ -912,3 +926,14 @@ vector<vector<float4>> DataManager::GetStreamlinesInCube()
 {
 	return streamlinesInCube;
 }
+
+float* DataManager::GetVecData()
+{
+	return data;
+}
+
+float* DataManager::GetVecDataXFirst()
+{
+	return (float*)data_x_first;
+}
+

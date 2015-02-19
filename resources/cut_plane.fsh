@@ -42,9 +42,10 @@
 varying vec3 position, normal;
 varying vec4 specular, ambient, diffuse, lightDirection;
 
-//uniform sampler2D tex;
-uniform samplerCube env;
 //uniform mat4 view;
+uniform sampler3D tex;
+uniform vec3 plane_normal;
+uniform vec3 data_dim;
 
 vec4 GetColor(float v,float vmin,float vmax)
 {
@@ -76,6 +77,13 @@ vec4 GetColor(float v,float vmin,float vmax)
 void main()
 {
     //gl_FragColor = textureCube(env, normal);
-	float v = textureCube(env, normal).x;
-	gl_FragColor = GetColor(v, 0, 1); //vec4((normal.x + 1) * 0.5, (normal.y + 1), (normal.z + 1) * 0.5, 1.0f);
+	vec3 v = texture3D(tex, vec3(position.x / (float)data_dim.x, position.y / (float)data_dim.y, position.z / (float)data_dim.z));
+	gl_FragColor = GetColor(dot(plane_normal, v) / length(v), -1, 1);
+	//gl_FragColor = vec4(plane_normal.x, plane_normal.y, plane_normal.z, 1);//
+	//GetColor(plane_normal.x , -1, 1);
+	//gl_FragColor = vec4(v.x, v.y, v.z, 1);//
+	//
 }
+
+
+
