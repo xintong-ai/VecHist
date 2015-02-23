@@ -139,7 +139,7 @@ int main(int argc, char **argv)
     //    "work poorly or not at all on your system.");
 
     widget->makeCurrent(); // The current context must be set before calling Scene's constructor
-    Scene scene(1000, 700, maxTextureSize);
+    Scene scene(800, 600, maxTextureSize);
 	
 	Mouse3DInput mouse(widget);
 

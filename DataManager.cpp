@@ -541,71 +541,71 @@ void DataManager::LoadOSUFlow(char* filename)
 
 	osuflow->LoadData(filename, true); //true: a steady flow field 
 
-	//szVecFilePath = argv[1];	// ADD-BY-LEETEN 09/29/2012
+	////szVecFilePath = argv[1];	// ADD-BY-LEETEN 09/29/2012
 
-	// comptue the bounding box of the streamlines 
-	VECTOR3 minB, maxB;
-	VECTOR3 minLen, maxLen;
-	float center[3], len[3];
-	osuflow->Boundary(minLen, maxLen); // get the boundary 
-	minB[0] = minLen[0]; minB[1] = minLen[1];  minB[2] = minLen[2];
-	maxB[0] = maxLen[0]; maxB[1] = maxLen[1];  maxB[2] = maxLen[2];
-	//  osuflow->SetBoundary(minB, maxB);  // set the boundary. just to test
-	// the subsetting feature of OSUFlow
-	printf(" volume boundary X: [%f %f] Y: [%f %f] Z: [%f %f]\n",
-		minLen[0], maxLen[0], minLen[1], maxLen[1],
-		minLen[2], maxLen[2]);
+	//// comptue the bounding box of the streamlines 
+	//VECTOR3 minB, maxB;
+	//VECTOR3 minLen, maxLen;
+	//float center[3], len[3];
+	//osuflow->Boundary(minLen, maxLen); // get the boundary 
+	//minB[0] = minLen[0]; minB[1] = minLen[1];  minB[2] = minLen[2];
+	//maxB[0] = maxLen[0]; maxB[1] = maxLen[1];  maxB[2] = maxLen[2];
+	////  osuflow->SetBoundary(minB, maxB);  // set the boundary. just to test
+	//// the subsetting feature of OSUFlow
+	//printf(" volume boundary X: [%f %f] Y: [%f %f] Z: [%f %f]\n",
+	//	minLen[0], maxLen[0], minLen[1], maxLen[1],
+	//	minLen[2], maxLen[2]);
 
-	center[0] = (minLen[0] + maxLen[0]) / 2.0;
-	center[1] = (minLen[1] + maxLen[1]) / 2.0;
-	center[2] = (minLen[2] + maxLen[2]) / 2.0;
-	printf("center is at %f %f %f \n", center[0], center[1], center[2]);
-	len[0] = maxLen[0] - minLen[0];
-	len[1] = maxLen[1] - minLen[1];
-	len[2] = maxLen[2] - minLen[2];
+	//center[0] = (minLen[0] + maxLen[0]) / 2.0;
+	//center[1] = (minLen[1] + maxLen[1]) / 2.0;
+	//center[2] = (minLen[2] + maxLen[2]) / 2.0;
+	//printf("center is at %f %f %f \n", center[0], center[1], center[2]);
+	//len[0] = maxLen[0] - minLen[0];
+	//len[1] = maxLen[1] - minLen[1];
+	//len[2] = maxLen[2] - minLen[2];
 
 
-	float from[3], to[3];
+	//float from[3], to[3];
 
-	from[0] = minLen[0];   from[1] = minLen[1];   from[2] = minLen[2];
-	to[0] = maxLen[0];   to[1] = maxLen[1];   to[2] = maxLen[2];
+	//from[0] = minLen[0];   from[1] = minLen[1];   from[2] = minLen[2];
+	//to[0] = maxLen[0];   to[1] = maxLen[1];   to[2] = maxLen[2];
 
-	printf("generating seeds...\n");
-	osuflow->SetRandomSeedPoints(from, to, 100);
-	int nSeeds;
-	VECTOR3* seeds = osuflow->GetSeeds(nSeeds);
-	for (int i = 0; i<nSeeds; i++)
-		printf(" seed no. %d : [%f %f %f]\n", i, seeds[i][0],
-		seeds[i][1], seeds[i][2]);
+	//printf("generating seeds...\n");
+	//osuflow->SetRandomSeedPoints(from, to, 100);
+	//int nSeeds;
+	//VECTOR3* seeds = osuflow->GetSeeds(nSeeds);
+	//for (int i = 0; i<nSeeds; i++)
+	//	printf(" seed no. %d : [%f %f %f]\n", i, seeds[i][0],
+	//	seeds[i][1], seeds[i][2]);
 
-	sl_list.clear();
+	//sl_list.clear();
 
-	printf("compute streamlines..\n");
-	osuflow->SetIntegrationParams(1, 5);
-	//osuflow->GenStreamLines(sl_list, BACKWARD_AND_FORWARD, 200, 0);
-	osuflow->GenStreamLines(sl_list, FORWARD_DIR, 100, 0);
-	printf(" done integrations\n");
-	printf("list size = %d\n", (int)sl_list.size());
+	//printf("compute streamlines..\n");
+	//osuflow->SetIntegrationParams(1, 5);
+	////osuflow->GenStreamLines(sl_list, BACKWARD_AND_FORWARD, 200, 0);
+	//osuflow->GenStreamLines(sl_list, FORWARD_DIR, 100, 0);
+	//printf(" done integrations\n");
+	//printf("list size = %d\n", (int)sl_list.size());
 
-	int iT = 0;
-	for (list<vtListSeedTrace*>::const_iterator
-		pIter = sl_list.begin();
-		pIter != sl_list.end();
-	pIter++, iT++)
-	{
-		const vtListSeedTrace *trace = *pIter;
-		int iP = 0;
-		vector<float4> line;
-		for (list<VECTOR3*>::const_iterator
-			pnIter = trace->begin();
-			pnIter != trace->end();
-		pnIter++, iP++)
-		{
-			VECTOR3 p = **pnIter;
-			line.push_back(make_float4(p[0], p[1], p[2], 1.0f));
-		}
-		streamlines.push_back(line);
-	}
+	//int iT = 0;
+	//for (list<vtListSeedTrace*>::const_iterator
+	//	pIter = sl_list.begin();
+	//	pIter != sl_list.end();
+	//pIter++, iT++)
+	//{
+	//	const vtListSeedTrace *trace = *pIter;
+	//	int iP = 0;
+	//	vector<float4> line;
+	//	for (list<VECTOR3*>::const_iterator
+	//		pnIter = trace->begin();
+	//		pnIter != trace->end();
+	//	pnIter++, iP++)
+	//	{
+	//		VECTOR3 p = **pnIter;
+	//		line.push_back(make_float4(p[0], p[1], p[2], 1.0f));
+	//	}
+	//	streamlines.push_back(line);
+	//}
 }
 
 void DataManager::GenStreamInCube()

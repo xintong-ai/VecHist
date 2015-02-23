@@ -588,7 +588,8 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	//dataManager->LoadVec("D:/data/sample/sample_two_halves.vec");
 		//dataManager->LoadVec("D:/data/sample/test1.vec");
 	//dataManager->LoadVec("C:/Users/tong.tong-idea/SkyDrive/share/15plume3d430.vec");
-	dataManager->LoadVec("D:/data/plume/15plume3d421.vec");
+	//dataManager->LoadVec("D:/data/plume/15plume3d421.vec");
+	dataManager->LoadVec("D:/data/brain_dti/vector-field.vec");
 	//dataManager->LoadVec("D:/data/isabel/UVWf01.vec");
 	//dataManager->LoadVec("D:/data/nek/nek.d_4.vec");
 	//dataManager->LoadVec("D:/data/tornado/1.vec");
@@ -1072,7 +1073,7 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 
 
 
-	glPopAttrib();
+	//glPopAttrib();
 
 }
 
