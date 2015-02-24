@@ -26,6 +26,8 @@ cubemap_size = 16
 d_idx = np.apply_along_axis( cube.get, axis=1, arr=d, size=cubemap_size)
 #print(d_idx)
 cube_hist = cube.GenCubemap(d_idx, cubemap_size)
+cube.ShowHist(cube_hist)
+cube.FindPeak(cube_hist)
 
 #print('finished generating samples...')
 

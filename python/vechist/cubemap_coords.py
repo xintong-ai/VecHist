@@ -8,57 +8,119 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 
+def FindTowards(hist, pos, f, dirx, diry, step, threshold):
+    size = hist.shape[1]
+    if(dirx != 0):
+        pos[0] += dirx
+        if (pos[0] >= size):
+            pos[0] = pos[0] % size
+            pos[0], pos[1] = pos[1], pos[0]
+            f = (f + 1) % 6
+            dirx = 0
+            diry = 1
+        elif(pos[0] < 0):
+            pos[0] = pos[0] % size
+            pos[0], pos[1] = pos[1], pos[0]
+            f = (f + 4) % 6    
+            dirx = 0
+            diry = -1
+            pos[0] = (- 1 - pos[0]) % size            
+    elif(diry != 0):
+        pos[1] += diry
+        if(pos[1] >= size):
+            pos[1] = pos[1] % size
+            pos[0], pos[1] = pos[1], pos[0]
+            f = (f + 2) % 6
+            dirx = 1
+            diry = 0
+            pos[1] = (- 1 - pos[1]) % size
+        elif(pos[1] < 0):
+            pos[1] = pos[1] % size
+            pos[0], pos[1] = pos[1], pos[0]
+            f = (f + 5) % 6
+            dirx = -1
+            diry = 0
+
+    idx = -1
+    ret = []
+    if (hist[pos[0] + f * size, pos[1]] > threshold):
+        idx = (pos[0] + f * size) * size + pos[1]
+    step -= 1
+    if(step != 0):
+        ret = FindTowards(hist, pos, f, dirx, diry, step, threshold)
+    if(idx != -1):
+        ret.append(idx)
+    return ret
+    
+
+def FindPeak(hist):
+    size = hist.shape[1]
+    max_idx = np.argmax(hist)
+    print(max_idx)
+    max_idx = (math.floor(max_idx / size), max_idx % size)
+    threshold = hist[max_idx] * 0.1
+    list1 = FindTowards(hist, [max_idx[0] % size, max_idx[1]], math.floor(max_idx[0] / size), -1, 0, 10, threshold)
+    list2 = FindTowards(hist, [max_idx[0] % size, max_idx[1]], math.floor(max_idx[0] / size), 1, 0, 10, threshold)
+    #seeds = list1.append()
+    print(list1)
+    hist.tofile('hist.dat', sep=" ", format="%s")
+    
+#    print(max_idx)
+#    print(hist[max_idx])
+#    print(np.max(hist))
+    return 
+
+
 def ShowHist(hist):
     size = hist.shape[1]
 #    print(np.sum(hist))
         
 #    max_val = size * size * 6 - 1
     max_val = np.max(hist)
-
-    plt_idx = 1
-    plt.subplot(345)
-    plt.imshow(hist[plt_idx*size:(plt_idx+1)*size, :].transpose(), aspect='equal', interpolation='nearest', vmin=0, vmax=max_val)
-    plt.gca().invert_yaxis()
-    plt.colorbar()
-
-    plt_idx = 4
-    plt.subplot(346)
-    plt.imshow(hist[plt_idx*size:(plt_idx+1)*size, :].transpose(), aspect='equal', interpolation='nearest', vmin=0, vmax=max_val)
-    plt.gca().invert_yaxis()
-    plt.colorbar()
-
-    plt_idx = 0
-    plt.subplot(347)
-    plt.imshow(hist[plt_idx*size:(plt_idx+1)*size, :].transpose(), aspect='equal', interpolation='nearest', vmin=0, vmax=max_val)
-    plt.gca().invert_yaxis()
-    plt.colorbar()
     
-    plt_idx = 5
-    plt.subplot(348)
-    plt.imshow(hist[plt_idx*size:(plt_idx+1)*size, :].transpose(), aspect='equal', interpolation='nearest', vmin=0, vmax=max_val)
-    plt.gca().invert_yaxis()
+    plt.imshow(hist, aspect='equal', interpolation='nearest', vmin=0, vmax=max_val)
     plt.colorbar()
-    
-    #http://www.humus.name/index.php?page=Textures
-    #3 is above, and 2 is below, because the y coordinates start from up.
-    plt_idx = 3
-    plt.subplot(342)
-    plt.imshow(hist[plt_idx*size:(plt_idx+1)*size, :].transpose(), aspect='equal', interpolation='nearest', vmin=0, vmax=max_val)
-    plt.gca().invert_yaxis()
-    plt.colorbar()
-
-    plt_idx = 2
-    plt.subplot(3,4,10)
-    plt.imshow(hist[plt_idx*size:(plt_idx+1)*size, :].transpose(), aspect='equal', interpolation='nearest', vmin=0, vmax=max_val)
-    plt.gca().invert_yaxis()
-    plt.colorbar()
+#    plt_idx = 1
+#    plt.subplot(345)
+#    plt.imshow(hist[plt_idx*size:(plt_idx+1)*size, :].transpose(), aspect='equal', interpolation='nearest', vmin=0, vmax=max_val)
+#    plt.gca().invert_yaxis()
+#    plt.colorbar()
+#
+#    plt_idx = 4
+#    plt.subplot(346)
+#    plt.imshow(hist[plt_idx*size:(plt_idx+1)*size, :].transpose(), aspect='equal', interpolation='nearest', vmin=0, vmax=max_val)
+#    plt.gca().invert_yaxis()
+#    plt.colorbar()
+#
+#    plt_idx = 0
+#    plt.subplot(347)
+#    plt.imshow(hist[plt_idx*size:(plt_idx+1)*size, :].transpose(), aspect='equal', interpolation='nearest', vmin=0, vmax=max_val)
+#    plt.gca().invert_yaxis()
+#    plt.colorbar()
+#    
+#    plt_idx = 5
+#    plt.subplot(348)
+#    plt.imshow(hist[plt_idx*size:(plt_idx+1)*size, :].transpose(), aspect='equal', interpolation='nearest', vmin=0, vmax=max_val)
+#    plt.gca().invert_yaxis()
+#    plt.colorbar()
+#    
+#    #http://www.humus.name/index.php?page=Textures
+#    #3 is above, and 2 is below, because the y coordinates start from up.
+#    plt_idx = 3
+#    plt.subplot(342)
+#    plt.imshow(hist[plt_idx*size:(plt_idx+1)*size, :].transpose(), aspect='equal', interpolation='nearest', vmin=0, vmax=max_val)
+#    plt.gca().invert_yaxis()
+#    plt.colorbar()
+#
+#    plt_idx = 2
+#    plt.subplot(3,4,10)
+#    plt.imshow(hist[plt_idx*size:(plt_idx+1)*size, :].transpose(), aspect='equal', interpolation='nearest', vmin=0, vmax=max_val)
+#    plt.gca().invert_yaxis()
+#    plt.colorbar()
     
     plt.show()
 
 
-def FindPeak(d):
-    
-    return
     
 def SolidAngles(nbin):
     #compute the solid angle for each patch and 
@@ -101,7 +163,6 @@ def SolidAngles(nbin):
 #    den_uniform = total / (4 * np.pi)
     #print(den_nx / den_uniform)
 
-    
 
 def GenCubemap(d, size):
     [hist, bin_edges] = np.histogram(d, np.arange(0, size * size * 6 + 1)) 
@@ -128,17 +189,17 @@ def get(v, size):
 #    print("size:"+str(size))
     coef = size * 0.5
     if    v[2] < - abs(v[0])  and v[2] <= - abs(v[1]):
-        idx3d = [5, math.floor((-v[0] / abs(v[2]) + 1) * coef) , math.floor((-v[1] / abs(v[2]) + 1) * coef)]
+        idx3d = [0, math.floor((-v[0] / abs(v[2]) + 1) * coef) , math.floor((-v[1] / abs(v[2]) + 1) * coef)]
     elif    v[0] < - abs(v[1])  and v[0] <= - abs(v[2]):
         idx3d = [1, math.floor((-v[1] / abs(v[0]) + 1) * coef) , math.floor((v[2] / abs(v[0]) + 1) * coef)]
     elif    v[1] <= - abs(v[2])  and v[1] < - abs(v[0]):
-        idx3d = [3, math.floor((v[2] / abs(v[1]) + 1) * coef) , math.floor((v[0] / abs(v[1]) + 1) * coef)]
+        idx3d = [2, math.floor((v[2] / abs(v[1]) + 1) * coef) , math.floor((v[0] / abs(v[1]) + 1) * coef)]
     elif    v[2] >= abs(v[0]) and v[2] > abs(v[1]):
-        idx3d = [4, math.floor((v[0] / abs(v[2]) + 1) * coef) , math.floor((v[1] / abs(v[2]) + 1) * coef)]
+        idx3d = [3, math.floor((v[0] / abs(v[2]) + 1) * coef) , math.floor((v[1] / abs(v[2]) + 1) * coef)]
     elif    v[0] >= abs(v[1])    and v[0] > abs(v[2]):
-        idx3d = [0, math.floor((v[1] / abs(v[0]) + 1) * coef) , math.floor((-v[2] / abs(v[0]) + 1) * coef)]
+        idx3d = [4, math.floor((v[1] / abs(v[0]) + 1) * coef) , math.floor((-v[2] / abs(v[0]) + 1) * coef)]
     elif    v[1] > abs(v[2])    and v[1] >= abs(v[0]):
-        idx3d = [2, math.floor((-v[2] / abs(v[1]) + 1) * coef) , math.floor((-v[0] / abs(v[1]) + 1) * coef)]
+        idx3d = [5, math.floor((-v[2] / abs(v[1]) + 1) * coef) , math.floor((-v[0] / abs(v[1]) + 1) * coef)]
     else:
         idx3d = [0,0,0]
         
