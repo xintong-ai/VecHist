@@ -7,9 +7,59 @@ Created on Sun Dec 14 23:42:54 2014
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+import copy
+from scipy import asarray as ar,exp
+from scipy.optimize import curve_fit
+#from mayavi import mlab
 
-def FindTowards(hist, pos, f, dirx, diry, step, threshold):
+
+
+def PlotMask(mask):
+    dim = mask.shape
+    print(np.count_nonzero(mask))
+    plt.figure()
+    plt.imshow(mask[math.floor(dim[0]*0.5), :, :])
+
+def SetMask(idx, mask, cand):
+    dim = idx.shape
+    for k in range(dim[2]):
+        for j in range(dim[1]):
+            for i in range(dim[0]):
+                v = idx[i, j, k]
+                if(v in cand):
+                    mask[i, j, k] = 1
+                else:
+                    mask[i, j, k] = 0
+
+def FindTowards(ret, hist, _pos, _f, _dirx, _diry, _step, _step2, threshold):
+    pos = copy.deepcopy(_pos)
+    f = copy.deepcopy(_f)
+    dirx = copy.deepcopy(_dirx)
+    diry = copy.deepcopy(_diry)
+    step = copy.deepcopy(_step)
+    step2 = copy.deepcopy(_step2)
+    
     size = hist.shape[1]
+    idx = -1
+#    ret = []
+
+    if (hist[pos[0] + f * size, pos[1]] > threshold):
+        idx = (pos[0] + f * size) * size + pos[1]
+        
+    if(idx != -1):
+        ret.append(idx)        
+        #make a turn
+        if(step2!=0):
+            if(dirx != 0):
+                FindTowards(ret, hist, pos, f, 0, -1, step2, 0, threshold)
+                FindTowards(ret, hist, pos, f, 0,  1, step2, 0, threshold)
+            elif(diry != 0):
+                FindTowards(ret, hist, pos, f, -1, 0, step2, 0, threshold)
+                FindTowards(ret, hist, pos, f,  1, 0, step2, 0, threshold)
+    else:
+        return
+    
+    #march
     if(dirx != 0):
         pos[0] += dirx
         if (pos[0] >= size):
@@ -41,34 +91,43 @@ def FindTowards(hist, pos, f, dirx, diry, step, threshold):
             dirx = -1
             diry = 0
 
-    idx = -1
-    ret = []
-    if (hist[pos[0] + f * size, pos[1]] > threshold):
-        idx = (pos[0] + f * size) * size + pos[1]
-    step -= 1
     if(step != 0):
-        ret = FindTowards(hist, pos, f, dirx, diry, step, threshold)
-    if(idx != -1):
-        ret.append(idx)
-    return ret
+        FindTowards(ret, hist, pos, f, dirx, diry, step - 1, step2, threshold)
+
+    return
     
 
 def FindPeak(hist):
     size = hist.shape[1]
-    max_idx = np.argmax(hist)
-    print(max_idx)
-    max_idx = (math.floor(max_idx / size), max_idx % size)
-    threshold = hist[max_idx] * 0.1
-    list1 = FindTowards(hist, [max_idx[0] % size, max_idx[1]], math.floor(max_idx[0] / size), -1, 0, 10, threshold)
-    list2 = FindTowards(hist, [max_idx[0] % size, max_idx[1]], math.floor(max_idx[0] / size), 1, 0, 10, threshold)
+    max_idx_1d = np.argmax(hist)
+#    print(max_idx)
+    max_idx = (math.floor(max_idx_1d / size), max_idx_1d % size)
+    threshold = hist[max_idx] * 0.08
+    nSteps = math.floor(size * 0.2)
+    list1 = []
+    list2 = []
+    #TODO:duplicated results are found. Need to improve the algorithm later
+    FindTowards(list1, hist, [max_idx[0] % size, max_idx[1]], math.floor(max_idx[0] / size), -1, 0, nSteps + 1, nSteps, threshold)
+    FindTowards(list2, hist, [max_idx[0] % size, max_idx[1]], math.floor(max_idx[0] / size), 1, 0, nSteps + 1, nSteps, threshold)
+#    arr = np.array(list1 + list2)    
+    arr = np.array(list(set(list1+list2)))
+    print(arr)
+
+    x = np.floor(arr / size).astype(int)
+    y = arr % size
+#    print(x)
+#    print(type(x))
+#    print(y)
+    plt.scatter(x, y, s = 2, color='white')
     #seeds = list1.append()
-    print(list1)
-    hist.tofile('hist.dat', sep=" ", format="%s")
+#    print(list1)
+#    hist.tofile('hist.dat', sep=" ", format="%s")
     
 #    print(max_idx)
 #    print(hist[max_idx])
 #    print(np.max(hist))
-    return 
+    
+    return arr
 
 
 def ShowHist(hist):
@@ -78,7 +137,7 @@ def ShowHist(hist):
 #    max_val = size * size * 6 - 1
     max_val = np.max(hist)
     
-    plt.imshow(hist, aspect='equal', interpolation='nearest', vmin=0, vmax=max_val)
+    plt.imshow(hist.transpose(), aspect='equal', interpolation='nearest', vmin=0, vmax=max_val)
     plt.colorbar()
 #    plt_idx = 1
 #    plt.subplot(345)
@@ -118,7 +177,7 @@ def ShowHist(hist):
 #    plt.gca().invert_yaxis()
 #    plt.colorbar()
     
-    plt.show()
+    
 
 
     
@@ -204,6 +263,48 @@ def get(v, size):
         idx3d = [0,0,0]
         
     return idx3d[0] * size * size + idx3d[1] * size + idx3d[2]
+    
+def Split(d_idx, cubemap_size):
+    
+    cube_hist = GenCubemap(d_idx.ravel(), cubemap_size)
+    ShowHist(cube_hist)
+
+    peak_idx = FindPeak(cube_hist)
+
+    #if the mask is 1, it means this grid is in the peak.
+    
+    d_mask = np.zeros(d_idx.shape, order='F')
+    SetMask(d_idx, d_mask, peak_idx)
+    PlotMask(d_mask)
+    
+    dim = d_idx.shape
+    
+    imax = np.argmax(dim)
+    print(imax)
+    #oneslice = d_mask.sum(axis = ((imax + 1) % 3))
+    #oneline = oneslice.sum(axis = ((imax + 1) % 3))
+    histAxis = np.apply_over_axes(np.sum, d_mask, [(imax + 1) % 3,(imax + 2) % 3]).ravel()
+    print(histAxis)
+    plt.figure()
+    plt.plot(histAxis)
+    
+    
+    def gaus(x,a,x0,sigma):
+        return a*exp(-(x-x0)**2/(2*sigma**2))
+    
+    n = histAxis.shape[0]
+    x = np.array(range(n))
+    y = histAxis
+    mean = np.argmax(histAxis)
+    sigma = n * 0.5 #np.sum(y*(x-mean)**2)/n
+    peak = histAxis[mean]
+    popt,pcov = curve_fit(gaus, x, y, p0=[peak,mean,sigma])
+    plt.plot(x,gaus(x,*popt),'ro:',label='fit')
+    plt.axvline(x=(popt[1] + 2 * popt[2]))
+    print(popt)
+    plt.show()
+#    Split()
+
         
 #    d_nx = d[np.array(d[:,0] < - abs(d[:,1])) & np.array(d[:,0] < - abs(d[:,2]))]
 #    d_px = d[np.array(d[:,0] > abs(d[:,1])) & np.array(d[:,0] > abs(d[:,2]))]

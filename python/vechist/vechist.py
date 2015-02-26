@@ -3,6 +3,8 @@ import numpy as np
 import read_vec
 import cubemap_coords as cube
 import plot_vec as pv
+import matplotlib.pyplot as plt
+
 
 #d = sample_ball.sample(2**8)
 #d = sample_uniform.sample(2**20)
@@ -15,6 +17,7 @@ d = np.reshape(d, (dim[2], dim[1], dim[0], 3))
 step = 4
 print(d.shape)
 d = d[::step, ::step, ::step,:]
+dim = d.shape
 print(d.shape)
 #pv.plot(d, 4)
 
@@ -22,12 +25,13 @@ d_idx = np.zeros(d.shape[0] * d.shape[1] * d.shape[2], dtype=np.float32)
 d = np.reshape(d, (d.shape[0] * d.shape[1] * d.shape[2], 3))
 
 print(d_idx.shape)
-cubemap_size = 16
+
+cubemap_size = 32
 d_idx = np.apply_along_axis( cube.get, axis=1, arr=d, size=cubemap_size)
 #print(d_idx)
-cube_hist = cube.GenCubemap(d_idx, cubemap_size)
-cube.ShowHist(cube_hist)
-cube.FindPeak(cube_hist)
+d_idx = np.reshape(d_idx, (dim[2], dim[1], dim[0]), order = 'F')
+cube.Split(d_idx, cubemap_size)
+
 
 #print('finished generating samples...')
 
