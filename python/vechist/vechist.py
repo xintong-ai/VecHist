@@ -30,7 +30,28 @@ cubemap_size = 32
 d_idx = np.apply_along_axis( cube.get, axis=1, arr=d, size=cubemap_size)
 #print(d_idx)
 d_idx = np.reshape(d_idx, (dim[2], dim[1], dim[0]), order = 'F')
-cube.Split(d_idx, cubemap_size)
+#root = cube.TreeNode()
+centers = []
+vectors = []
+cube.Split(centers, vectors, d_idx, cubemap_size, np.array([0, 0, 0]))
+
+#allcenters = cube.inorderTraversal(root)
+centers_array = np.array(centers)
+vectors_array = np.array(vectors)
+
+#import numpy as np
+from mpl_toolkits.mplot3d import Axes3D
+#import matplotlib.pyplot as plt
+
+fig = plt.figure()    
+ax = fig.gca(projection='3d')
+ax.set_aspect('equal')
+#print(vectors[:, 2])
+print(centers_array.shape)
+print(type(centers_array[0]))
+ax.quiver(centers_array[:, 0], centers_array[:, 1], centers_array[:, 2], vectors_array[:, 0], vectors_array[:, 1], vectors_array[:, 2], linewidths=(20,))
+
+plt.show()
 
 
 #print('finished generating samples...')

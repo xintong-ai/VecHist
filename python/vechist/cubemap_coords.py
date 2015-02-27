@@ -5,6 +5,7 @@ Created on Sun Dec 14 23:42:54 2014
 @author: tong
 """
 import numpy as np
+from numpy.linalg import norm
 import math
 import matplotlib.pyplot as plt
 import copy
@@ -12,11 +13,45 @@ from scipy import asarray as ar,exp
 from scipy.optimize import curve_fit
 #from mayavi import mlab
 
+#Definition for a  binary tree node
+class TreeNode:
+    def __init__(self):
+#        self.val = x
+        self.left = None
+        self.right = None
+        self.center = np.array([0, 0, 0])
+        
+    def SetCenter(p):
+        self.center = p
+    
+    def insertRight(self):
+        if self.right == None:
+            self.right = TreeNode()
+    
+    def insertLeft(self):
+        if self.left == None:
+            self.left = TreeNode()
 
+#class Solution:
+    # @param root, a tree node
+    # @return a list of integers
+def inorderTraversal(root):
+    stack = []
+    node = root
+    solution = []
+    while node!= None or len(stack)>0:
+        if node != None:
+            stack.append(node)
+            node = node.left
+        else:
+            node = stack.pop()
+            solution.append(node.center)
+            node = node.right
+    return solution
 
 def PlotMask(mask):
     dim = mask.shape
-    print(np.count_nonzero(mask))
+#    print(np.count_nonzero(mask))
     plt.figure()
     plt.imshow(mask[math.floor(dim[0]*0.5), :, :])
 
@@ -100,6 +135,7 @@ def FindTowards(ret, hist, _pos, _f, _dirx, _diry, _step, _step2, threshold):
 def FindPeak(hist):
     size = hist.shape[1]
     max_idx_1d = np.argmax(hist)
+#    peak_top = max_idx_1d
 #    print(max_idx)
     max_idx = (math.floor(max_idx_1d / size), max_idx_1d % size)
     threshold = hist[max_idx] * 0.08
@@ -111,7 +147,7 @@ def FindPeak(hist):
     FindTowards(list2, hist, [max_idx[0] % size, max_idx[1]], math.floor(max_idx[0] / size), 1, 0, nSteps + 1, nSteps, threshold)
 #    arr = np.array(list1 + list2)    
     arr = np.array(list(set(list1+list2)))
-    print(arr)
+#    print(arr)
 
     x = np.floor(arr / size).astype(int)
     y = arr % size
@@ -127,7 +163,7 @@ def FindPeak(hist):
 #    print(hist[max_idx])
 #    print(np.max(hist))
     
-    return arr
+    return arr, max_idx_1d
 
 
 def ShowHist(hist):
@@ -136,7 +172,7 @@ def ShowHist(hist):
         
 #    max_val = size * size * 6 - 1
     max_val = np.max(hist)
-    
+    plt.figure()
     plt.imshow(hist.transpose(), aspect='equal', interpolation='nearest', vmin=0, vmax=max_val)
     plt.colorbar()
 #    plt_idx = 1
@@ -263,14 +299,99 @@ def get(v, size):
         idx3d = [0,0,0]
         
     return idx3d[0] * size * size + idx3d[1] * size + idx3d[2]
+
+def get3dCoords(idx, size):
+    f = math.floor(idx / (size * size))
+    a = math.floor(idx / size) - f * size
+    b = idx % size
+#    print("size:"+str(size))
+    #coef = size * 0.5
+    print("idx: "+str(idx))
+    print("f: "+str(f))
+    v = np.array([1,1,1])    
+    a = a - size * 0.5
+    b = b - size * 0.5    
     
-def Split(d_idx, cubemap_size):
+    if(f == 0):
+        v[0] = - v[2] * a
+        v[1] = - v[2] * b
+    elif(f == 1):
+        v[1] = - v[0] * a
+        v[2] =   v[0] * b
+    elif(f == 2):
+        v[2] =   v[1] * a
+        v[0] =   v[1] * b
+    elif(f == 3):
+        v[0] =   v[2] * a
+        v[1] =   v[2] * b
+    elif(f == 4):
+        v[1] =   v[0] * a
+        v[2] = - v[0] * b
+    elif(f == 5):
+        v[2] = - v[1] * a
+        v[0] = - v[1] * b
+
+    return v / norm(v)
+#            
+#    if    v[2] < - abs(v[0])  and v[2] <= - abs(v[1]):
+#        idx3d = [0, math.floor((-v[0] / abs(v[2]) + 1) * coef) , math.floor((-v[1] / abs(v[2]) + 1) * coef)]
+#    elif    v[0] < - abs(v[1])  and v[0] <= - abs(v[2]):
+#        idx3d = [1, math.floor((-v[1] / abs(v[0]) + 1) * coef) , math.floor((v[2] / abs(v[0]) + 1) * coef)]
+#    elif    v[1] <= - abs(v[2])  and v[1] < - abs(v[0]):
+#        idx3d = [2, math.floor((v[2] / abs(v[1]) + 1) * coef) , math.floor((v[0] / abs(v[1]) + 1) * coef)]
+#    elif    v[2] >= abs(v[0]) and v[2] > abs(v[1]):
+#        idx3d = [3, math.floor((v[0] / abs(v[2]) + 1) * coef) , math.floor((v[1] / abs(v[2]) + 1) * coef)]
+#    elif    v[0] >= abs(v[1])    and v[0] > abs(v[2]):
+#        idx3d = [4, math.floor((v[1] / abs(v[0]) + 1) * coef) , math.floor((-v[2] / abs(v[0]) + 1) * coef)]
+#    elif    v[1] > abs(v[2])    and v[1] >= abs(v[0]):
+#        idx3d = [5, math.floor((-v[2] / abs(v[1]) + 1) * coef) , math.floor((-v[0] / abs(v[1]) + 1) * coef)]
+#    else:
+#        idx3d = [0,0,0]
+#        
+#    return idx3d[0] * size * size + idx3d[1] * size + idx3d[2]
+
+
+def get_histogram_dispersion(histogram):
+    log2 = lambda x:math.log(x)/math.log(2)
+
+    total = len(histogram)
+    counts = {}
+    for item in histogram:
+        counts.setdefault(item,0)
+        counts[item]+=1
+
+    ent = 0
+    for i in counts:
+        if(counts[i]>0):
+            p = float(counts[i])/total
+            ent-=p*log2(p)
+    return -ent*log2(1/ent)
+    
+def Split(centers, vectors, _d_idx, cubemap_size, _start_pos):
+    d_idx = copy.deepcopy(_d_idx)
+#    ret = TreeNode
+    start_pos = copy.deepcopy(_start_pos)
+    
+    shape = d_idx.shape
+    print(type(shape))
+#    ret.center = start_pos + np.array(shape) * 0.5
     
     cube_hist = GenCubemap(d_idx.ravel(), cubemap_size)
+    entropy = get_histogram_dispersion(cube_hist.ravel())
+    print("entropy: " + str(entropy))
+    print("shape: " + str(shape))
+    #TODO: this threshold needs to change later
+
     ShowHist(cube_hist)
 
-    peak_idx = FindPeak(cube_hist)
+    peak_top = -1
+    peak_idx, peak_top= FindPeak(cube_hist)
 
+    if(entropy < 8 or shape[0] < 8 or shape[1] < 8 or shape[2] < 8):
+        block_center  = start_pos + np.array(shape) * 0.5
+        centers.append(block_center)
+        vectors.append(get3dCoords(peak_top, cubemap_size))
+        return
     #if the mask is 1, it means this grid is in the peak.
     
     d_mask = np.zeros(d_idx.shape, order='F')
@@ -280,11 +401,11 @@ def Split(d_idx, cubemap_size):
     dim = d_idx.shape
     
     imax = np.argmax(dim)
-    print(imax)
+#    print(imax)
     #oneslice = d_mask.sum(axis = ((imax + 1) % 3))
     #oneline = oneslice.sum(axis = ((imax + 1) % 3))
     histAxis = np.apply_over_axes(np.sum, d_mask, [(imax + 1) % 3,(imax + 2) % 3]).ravel()
-    print(histAxis)
+#    print(histAxis)
     plt.figure()
     plt.plot(histAxis)
     
@@ -299,45 +420,34 @@ def Split(d_idx, cubemap_size):
     sigma = n * 0.5 #np.sum(y*(x-mean)**2)/n
     peak = histAxis[mean]
     popt,pcov = curve_fit(gaus, x, y, p0=[peak,mean,sigma])
+    print("mid point:" + str(shape[imax] * 0.5))
+    if(popt[1] > (shape[imax] * 0.5)):
+        spl_pt = popt[1] - 1 * popt[2]
+    else:
+        spl_pt = popt[1] + 1 * popt[2]
     plt.plot(x,gaus(x,*popt),'ro:',label='fit')
-    plt.axvline(x=(popt[1] + 2 * popt[2]))
-    print(popt)
+    plt.axvline(x=spl_pt)
+#    print(popt)
+#    plt.show()
+
+    side1 = []
+    side2 = []    
+    if(imax == 0):
+        side1 = d_idx[:spl_pt, :, :]
+        side2 = d_idx[spl_pt:, :, :]
+    elif(imax == 1):
+        side1 = d_idx[:, :spl_pt, :]
+        side2 = d_idx[:, spl_pt:, :]
+    else:
+        side1 = d_idx[:, :, :spl_pt]
+        side2 = d_idx[:, :, spl_pt:]
+    
+#    ret.insertLeft(ret)
+#    ret.insertRight(ret)
+    
     plt.show()
-#    Split()
-
-        
-#    d_nx = d[np.array(d[:,0] < - abs(d[:,1])) & np.array(d[:,0] < - abs(d[:,2]))]
-#    d_px = d[np.array(d[:,0] > abs(d[:,1])) & np.array(d[:,0] > abs(d[:,2]))]
-#    d_ny = d[np.array(d[:,1] < - abs(d[:,0])) & np.array(d[:,1] < - abs(d[:,2]))]
-#    d_py = d[np.array(d[:,1] > abs(d[:,0])) & np.array(d[:,1] > abs(d[:,2]))]
-#    d_nz = d[np.array(d[:,2] < - abs(d[:,0])) & np.array(d[:,2] < - abs(d[:,1]))]
-#    d_pz = d[np.array(d[:,2] > abs(d[:,0])) & np.array(d[:,2] > abs(d[:,1]))]
-#    
-#    total = len(d_px) + len(d_nx) + len(d_py) + len(d_ny) + len(d_pz) + len(d_nz)
-#    
-#    texCoords_nx = np.zeros((len(d_nx), 2))
-#    texCoords_nx[:, 0] = d_nx[:,1] / d_nx[:,0]
-#    texCoords_nx[:, 1] = d_nx[:,2] / d_nx[:,0]
-#    
-#    texCoords_px = np.zeros((len(d_px), 2))
-#    texCoords_px[:, 0] = d_px[:,1] / d_px[:,0]
-#    texCoords_px[:, 1] = d_px[:,2] / d_px[:,0]
-#    
-#    texCoords_ny = np.zeros((len(d_ny), 2))
-#    texCoords_ny[:, 0] = d_ny[:,2] / d_ny[:,1]
-#    texCoords_ny[:, 1] = d_ny[:,0] / d_ny[:,1]
-#    
-#    texCoords_py = np.zeros((len(d_py), 2))
-#    texCoords_py[:, 0] = d_py[:,2] / d_py[:,1]
-#    texCoords_py[:, 1] = d_py[:,0] / d_py[:,1]
-#    
-#    texCoords_nz = np.zeros((len(d_nz), 2))
-#    texCoords_nz[:, 0] = d_nz[:,0] / d_nz[:,2]
-#    texCoords_nz[:, 1] = d_nz[:,1] / d_nz[:,2]
-#    
-#    texCoords_pz = np.zeros((len(d_pz), 2))
-#    texCoords_pz[:, 0] = d_pz[:,0] / d_pz[:,2]
-#    texCoords_pz[:, 1] = d_pz[:,1] / d_pz[:,2]
-
+    
+    Split(centers, vectors, side1, cubemap_size, start_pos)
+    Split(centers, vectors, side2, cubemap_size, start_pos + side1.shape)
     
                 
