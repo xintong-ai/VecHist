@@ -15,22 +15,30 @@ from scipy.optimize import curve_fit
 
 #Definition for a  binary tree node
 class TreeNode:
-    def __init__(self):
+    def __init__(self, start, dim, entropy, eig_val, eig_vec):
 #        self.val = x
         self.left = None
         self.right = None
-        self.center = np.array([0, 0, 0])
+        #self.center = center
+        #self.vector = vector
+        #self.center = np.array([0.0, 0.0, 0.0])
+        #self.vector = np.array([0.0, 0.0, 0.0])
+        self.start = start
+        self.dim = dim
+        self.entropy = entropy
+        self.eig_val = eig_val
+        self.eig_vec = eig_vec
         
     def SetCenter(p):
         self.center = p
     
-    def insertRight(self):
-        if self.right == None:
-            self.right = TreeNode()
+    #def insertRight(self):
+    #    if self.right == None:
+    #        self.right = TreeNode()
     
-    def insertLeft(self):
-        if self.left == None:
-            self.left = TreeNode()
+    #def insertLeft(self):
+    #    if self.left == None:
+    #        self.left = TreeNode()
 
 #class Solution:
     # @param root, a tree node
@@ -154,7 +162,7 @@ def FindPeak(hist):
 #    print(x)
 #    print(type(x))
 #    print(y)
-    plt.scatter(x, y, s = 2, color='white')
+    #plt.scatter(x, y, s = 2, color='white')
     #seeds = list1.append()
 #    print(list1)
 #    hist.tofile('hist.dat', sep=" ", format="%s")
@@ -267,12 +275,16 @@ def GenCubemap(d, size):
 #    hist = np.ones((6 * size, size))
     
     #normalize by solid angles
+    scale_factor = 1000
     sol_ang = SolidAngles(size)
     for i in range(0, 6):
-        hist[i*size:(i+1)*size, :] = hist[i*size:(i+1)*size, :] / sol_ang
+        hist[i*size:(i+1)*size, :] = hist[i*size:(i+1)*size, :] / (sol_ang * scale_factor)
     
     #normalize to be a histogram
     hist_sum = np.sum(hist)
+    #print(hist_sum)
+    if(hist_sum < 0):
+        print("error: bin sum is negative...")
     hist = hist / hist_sum
 #    ShowHist(hist)
     
@@ -308,9 +320,15 @@ def get3dCoords(idx, size):
     #coef = size * 0.5
     print("idx: "+str(idx))
     print("f: "+str(f))
-    v = np.array([1,1,1])    
-    a = a - size * 0.5
-    b = b - size * 0.5    
+    
+    #when f = 0, 1, 2, the dominant direction is negative, otherwise they are positive
+    if(f <3):
+        v = np.array([-1.0,-1.0,-1.0])    
+    else:
+        v = np.array([1.0,1.0,1.0])    
+
+    a = float(a) / (size * 0.5) - 1
+    b = float(b) / (size * 0.5) - 1    
     
     if(f == 0):
         v[0] = - v[2] * a
@@ -351,30 +369,21 @@ def get3dCoords(idx, size):
 #    return idx3d[0] * size * size + idx3d[1] * size + idx3d[2]
 
 
-def get_histogram_dispersion(histogram):
+def get_histogram_entropy(histogram):
     log2 = lambda x:math.log(x)/math.log(2)
-
-    total = len(histogram)
-    counts = {}
-    for item in histogram:
-        counts.setdefault(item,0)
-        counts[item]+=1
-
     ent = 0
-    for i in counts:
-        if(counts[i]>0):
-            p = float(counts[i])/total
+    for p in histogram:
+        if(p>0):
             ent-=p*log2(p)
-    return -ent*log2(1/ent)
+    return ent
     
-def Split(centers, vectors, _d_idx, cubemap_size, _start_pos):
+def Split(ret, _d_idx, cubemap_size, _start_pos, tree_depth):
     d_idx = copy.deepcopy(_d_idx)
-#    ret = TreeNode
+    #ret = TreeNode
     start_pos = copy.deepcopy(_start_pos)
     
     shape = d_idx.shape
     print(type(shape))
-#    ret.center = start_pos + np.array(shape) * 0.5
     
     cube_hist = GenCubemap(d_idx.ravel(), cubemap_size)
     entropy = get_histogram_dispersion(cube_hist.ravel())
@@ -382,21 +391,24 @@ def Split(centers, vectors, _d_idx, cubemap_size, _start_pos):
     print("shape: " + str(shape))
     #TODO: this threshold needs to change later
 
-    ShowHist(cube_hist)
+    #ShowHist(cube_hist)
 
     peak_top = -1
     peak_idx, peak_top= FindPeak(cube_hist)
 
-    if(entropy < 8 or shape[0] < 8 or shape[1] < 8 or shape[2] < 8):
+    #if(entropy < 8 or shape[0] < 8 or shape[1] < 8 or shape[2] < 8):
+    if(tree_depth == 0):
         block_center  = start_pos + np.array(shape) * 0.5
-        centers.append(block_center)
-        vectors.append(get3dCoords(peak_top, cubemap_size))
+        ret.center = block_center
+        #centers.append(block_center)
+        ret.vector = get3dCoords(peak_top, cubemap_size)
+        #vectors.append(get3dCoords(peak_top, cubemap_size))
         return
     #if the mask is 1, it means this grid is in the peak.
     
     d_mask = np.zeros(d_idx.shape, order='F')
     SetMask(d_idx, d_mask, peak_idx)
-    PlotMask(d_mask)
+    #PlotMask(d_mask)
     
     dim = d_idx.shape
     
@@ -406,8 +418,8 @@ def Split(centers, vectors, _d_idx, cubemap_size, _start_pos):
     #oneline = oneslice.sum(axis = ((imax + 1) % 3))
     histAxis = np.apply_over_axes(np.sum, d_mask, [(imax + 1) % 3,(imax + 2) % 3]).ravel()
 #    print(histAxis)
-    plt.figure()
-    plt.plot(histAxis)
+    #plt.figure()
+    #plt.plot(histAxis)
     
     
     def gaus(x,a,x0,sigma):
@@ -425,29 +437,147 @@ def Split(centers, vectors, _d_idx, cubemap_size, _start_pos):
         spl_pt = popt[1] - 1 * popt[2]
     else:
         spl_pt = popt[1] + 1 * popt[2]
-    plt.plot(x,gaus(x,*popt),'ro:',label='fit')
-    plt.axvline(x=spl_pt)
+    #plt.plot(x,gaus(x,*popt),'ro:',label='fit')
+    #plt.axvline(x=spl_pt)
 #    print(popt)
 #    plt.show()
 
     side1 = []
-    side2 = []    
+    side2 = []
+    start_pos_2 = copy.deepcopy(start_pos)    
     if(imax == 0):
         side1 = d_idx[:spl_pt, :, :]
         side2 = d_idx[spl_pt:, :, :]
+        start_pos_2[0] += spl_pt
     elif(imax == 1):
         side1 = d_idx[:, :spl_pt, :]
         side2 = d_idx[:, spl_pt:, :]
+        start_pos_2[1] += spl_pt
     else:
         side1 = d_idx[:, :, :spl_pt]
         side2 = d_idx[:, :, spl_pt:]
+        start_pos_2[2] += spl_pt
     
-#    ret.insertLeft(ret)
-#    ret.insertRight(ret)
+    #ret.insertLeft()
+    #ret.insertRight()
+    ret.left = TreeNode(start_pos, side1.shape)
+    ret.right = TreeNode(start_pos_2, side2.shape)
     
-    plt.show()
+    #plt.show()
     
-    Split(centers, vectors, side1, cubemap_size, start_pos)
-    Split(centers, vectors, side2, cubemap_size, start_pos + side1.shape)
+    Split(ret.left, side1, cubemap_size, start_pos, tree_depth - 1)
+    Split(ret.right, side2, cubemap_size, start_pos_2, tree_depth - 1)
+
+def PCA(d):
+    cov_mat = np.cov([d[:, 2],d[:, 1],d[:, 0]])
+    eig_val, eig_vec = np.linalg.eig(cov_mat)
+    return eig_val, eig_vec
+
+#d is the original data array with dimension [z, y, x, v] with C order
+def SplitEntropy(ret, _d_idx, d_3d, cubemap_size):
+    #d_idx = copy.deepcopy(_d_idx)
+    #start_pos = copy.deepcopy(ret.start)
+ #   shape = ret.dim#d_idx.shape
+    imax = np.argmax(ret.dim)
+
+    side1 = []
+    side2 = []
+
+    entropy_sum = []
+    m_idx = _d_idx[ret.start[0]:(ret.start[0]+ret.dim[0]), 
+                   ret.start[1]:(ret.start[1]+ret.dim[1]), 
+                   ret.start[2]:(ret.start[2]+ret.dim[2])]
+
+    m_3d = d_3d[ret.start[2]:(ret.start[2]+ret.dim[2]), 
+                ret.start[1]:(ret.start[1]+ret.dim[1]), 
+                ret.start[0]:(ret.start[0]+ret.dim[0]), 
+                :]
+
+
+    for spl_pt in range(1, ret.dim[imax]):
+        if(imax == 0):
+            side1 = m_idx[:spl_pt, :, :]
+            side2 = m_idx[spl_pt:, :, :]
+            #start_pos_2[0] += spl_pt
+        elif(imax == 1):
+            side1 = m_idx[:, :spl_pt, :]
+            side2 = m_idx[:, spl_pt:, :]
+            #start_pos_2[1] += spl_pt
+        else:
+            side1 = m_idx[:, :, :spl_pt]
+            side2 = m_idx[:, :, spl_pt:]
+            #start_pos_2[2] += spl_pt
+        print("percentage: " + str(float(spl_pt) / ret.dim[imax]))
+        cube_hist_1 = GenCubemap(side1.ravel(), cubemap_size)
+        cube_hist_2 = GenCubemap(side2.ravel(), cubemap_size)
+        entropy_1 = get_histogram_entropy(cube_hist_1.ravel())
+        entropy_2 = get_histogram_entropy(cube_hist_2.ravel())
+        p1 = float(spl_pt) / ret.dim[imax]
+        entropy_sum.append(entropy_1 * p1 + entropy_2 * ( 1.0 - p1)) 
+
+    spl_pt = np.argmin(np.array(entropy_sum)) + 1
+
+    #plt.plot(entropy_sum)
+    #plt.show()
+    start_pos_2 = copy.deepcopy(ret.start)    
+    if(imax == 0):
+        side1 = m_idx[:spl_pt, :, :]
+        side2 = m_idx[spl_pt:, :, :]
+        side1_3d = m_3d[:, :, :spl_pt, :]
+        side2_3d = m_3d[:, :, spl_pt:, :]
+        start_pos_2[0] += spl_pt
+    elif(imax == 1):
+        side1 = m_idx[:, :spl_pt, :]
+        side2 = m_idx[:, spl_pt:, :]
+        side1_3d = m_3d[:, :spl_pt, :, :]
+        side2_3d = m_3d[:, spl_pt:, :, :]
+        start_pos_2[1] += spl_pt
+    else:
+        side1 = m_idx[:, :, :spl_pt]
+        side2 = m_idx[:, :, spl_pt:]
+        side1_3d = m_3d[:spl_pt, :, :, :]
+        side2_3d = m_3d[spl_pt:, :, :, :]
+        start_pos_2[2] += spl_pt
+
+    side1_3d = np.reshape(side1_3d, (-1,3))
+    side2_3d = np.reshape(side2_3d, (-1,3))
     
-                
+    eig_val_1, eig_vec_1 = PCA(side1_3d)
+    eig_val_2, eig_vec_2 = PCA(side2_3d)
+
+    cube_hist_1 = GenCubemap(side1.ravel(), cubemap_size)
+    cube_hist_2 = GenCubemap(side2.ravel(), cubemap_size)
+    #plt.imshow(cube_hist_1)
+    #plt.show()
+    #plt.imshow(cube_hist_2)
+    #plt.show()
+    entropy_1 = get_histogram_entropy(cube_hist_1.ravel())
+    entropy_2 = get_histogram_entropy(cube_hist_2.ravel())
+
+    threshold = 8
+    print("entropy_1: " + str(entropy_1))
+    print("entropy_2: " + str(entropy_2))
+    ret.left = TreeNode(ret.start, side1.shape, entropy_1, eig_val_1, eig_vec_1)
+    ret.right = TreeNode(start_pos_2, side2.shape, entropy_2, eig_val_2, eig_vec_2)
+    if ret.left.entropy > threshold:
+        SplitEntropy(ret.left, _d_idx, d_3d, cubemap_size)
+    if ret.right.entropy > threshold:
+        SplitEntropy(ret.right, _d_idx, d_3d, cubemap_size)
+    
+    
+def writeBinaryTree(node, f, starts, dims, entropys, eig_vals, eig_vecs, node_id):
+    if node == None:
+        f.write("-1 ")
+    else:
+        #f.write(str(node.center[0]) + " " + str(node.center[1]) + " " + str(node.center[2]) + " ")
+        #f.write(str(node.vector[0]) + " " + str(node.vector[1]) + " " + str(node.vector[2]) + " ")
+        f.write(str(node_id[0]) + " ")
+        starts.append(node.start)
+        dims.append(node.dim)
+        entropys.append(node.entropy)
+        eig_vals.append(node.eig_val)
+        eig_vecs.append(node.eig_vec)
+        node_id[0] += 1
+        #out << p->data << " ";
+        writeBinaryTree(node.left, f, starts, dims, entropys, eig_vals, eig_vecs, node_id)
+        writeBinaryTree(node.right, f, starts, dims, entropys, eig_vals, eig_vecs, node_id)

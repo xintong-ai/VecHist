@@ -24,7 +24,7 @@ def read(filename):
     #    print(dim[0] * dim[1] * dim[2] * 3)
     #    print((dim[0], dim[1], dim[2], 3))
     #    print(d.shape)
-        d= np.reshape(d, (dim[0], dim[1], dim[2], 3))
+        d= np.reshape(d, (dim[2], dim[1], dim[0], 3))
     #        for x in range(dim[0]):
     #            for y in range(dim[1]):
     #                for z in range(dim[2]):

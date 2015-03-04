@@ -314,7 +314,7 @@ private:
 	GLuint m_depthTexture;
 
 	//
-	vector<Node*> leafNodes;
+	vector<NodeBi*> leafNodes;
 	vector<float3> colorMap;
 	vector<CutPlane> cutplanes;
 };

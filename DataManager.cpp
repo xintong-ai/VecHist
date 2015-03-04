@@ -8,6 +8,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <vector_functions.h>
+#include <fstream>
 
 //inline void TruncateVolume(int3* in, int3* out,
 //	int dim0, int dim1, int dim2,
@@ -138,16 +139,25 @@ inline void ComputeCubeMap(int3* data, int nCells, float* cubemap, const int siz
 
 	vector<float> solAng = ComputePatchSolidAngle(size);
 
-	const float den_uniform = nCells / (4 * M_PI);
+	//const float den_uniform = nCells / (4 * M_PI);
 
 	//const float scale = 0.03;	//for isabel
 	//const float scale = 0.3;	//for plume
+	float scale_factor = 1000;
 	for (int i = 0; i < size2; i++)	{
 		for (int j = 0; j < 6; j++)	{
 			int idx = j * size2 + i;
-			cubemap[idx] = (float)binCnt[idx] / solAng[i] / den_uniform;// *scale;
+			cubemap[idx] = (float)binCnt[idx] / (solAng[i] * scale_factor);// / den_uniform;// *scale;
 		}
 	}
+	float sum = 0;
+
+	//normalize the histogram
+	for (int i = 0; i < size3; i++)
+		sum += cubemap[i];
+
+	for (int i = 0; i < size3; i++)
+		cubemap[i] /= (sum / scale_factor);
 }
 
 inline float entropy(float *hist, int histlen){
@@ -294,6 +304,15 @@ void DataManager::SplitTopNode()
 }
 
 void DataManager::ComputeCubemapNode(Node *&nd)
+{
+	int blockDimTotal = nd->dim[0] * nd->dim[1] * nd->dim[2];
+	std::unique_ptr<int3[]> datablock(new int3[blockDimTotal]);
+	GetBlock(datablock.get(), nd->start[0], nd->start[1], nd->start[2], nd->dim[0], nd->dim[1], nd->dim[2]);
+	nd->cubemap = new float[cubemap_size * cubemap_size * 6];
+	ComputeCubeMap(datablock.get(), blockDimTotal, nd->cubemap, cubemap_size);
+}
+
+void DataManager::ComputeCubemapNode(NodeBi *&nd)
 {
 	int blockDimTotal = nd->dim[0] * nd->dim[1] * nd->dim[2];
 	std::unique_ptr<int3[]> datablock(new int3[blockDimTotal]);
@@ -540,72 +559,75 @@ void DataManager::LoadOSUFlow(char* filename)
 //	LOG(printf("read file %s\n", argv[1]));
 
 	osuflow->LoadData(filename, true); //true: a steady flow field 
+	osuflow->NormalizeField(true);
 
 	////szVecFilePath = argv[1];	// ADD-BY-LEETEN 09/29/2012
 
-	//// comptue the bounding box of the streamlines 
-	//VECTOR3 minB, maxB;
-	//VECTOR3 minLen, maxLen;
-	//float center[3], len[3];
-	//osuflow->Boundary(minLen, maxLen); // get the boundary 
-	//minB[0] = minLen[0]; minB[1] = minLen[1];  minB[2] = minLen[2];
-	//maxB[0] = maxLen[0]; maxB[1] = maxLen[1];  maxB[2] = maxLen[2];
-	////  osuflow->SetBoundary(minB, maxB);  // set the boundary. just to test
-	//// the subsetting feature of OSUFlow
-	//printf(" volume boundary X: [%f %f] Y: [%f %f] Z: [%f %f]\n",
-	//	minLen[0], maxLen[0], minLen[1], maxLen[1],
-	//	minLen[2], maxLen[2]);
+	// comptue the bounding box of the streamlines 
+	VECTOR3 minB, maxB;
+	VECTOR3 minLen, maxLen;
+	float center[3], len[3];
+	osuflow->Boundary(minLen, maxLen); // get the boundary 
+	minB[0] = minLen[0]; minB[1] = minLen[1];  minB[2] = minLen[2];
+	maxB[0] = maxLen[0]; maxB[1] = maxLen[1];  maxB[2] = maxLen[2];
+	//  osuflow->SetBoundary(minB, maxB);  // set the boundary. just to test
+	// the subsetting feature of OSUFlow
+	printf(" volume boundary X: [%f %f] Y: [%f %f] Z: [%f %f]\n",
+		minLen[0], maxLen[0], minLen[1], maxLen[1],
+		minLen[2], maxLen[2]);
 
-	//center[0] = (minLen[0] + maxLen[0]) / 2.0;
-	//center[1] = (minLen[1] + maxLen[1]) / 2.0;
-	//center[2] = (minLen[2] + maxLen[2]) / 2.0;
-	//printf("center is at %f %f %f \n", center[0], center[1], center[2]);
-	//len[0] = maxLen[0] - minLen[0];
-	//len[1] = maxLen[1] - minLen[1];
-	//len[2] = maxLen[2] - minLen[2];
+	center[0] = (minLen[0] + maxLen[0]) / 2.0;
+	center[1] = (minLen[1] + maxLen[1]) / 2.0;
+	center[2] = (minLen[2] + maxLen[2]) / 2.0;
+	printf("center is at %f %f %f \n", center[0], center[1], center[2]);
+	len[0] = maxLen[0] - minLen[0];
+	len[1] = maxLen[1] - minLen[1];
+	len[2] = maxLen[2] - minLen[2];
 
 
-	//float from[3], to[3];
+	float from[3], to[3];
 
-	//from[0] = minLen[0];   from[1] = minLen[1];   from[2] = minLen[2];
-	//to[0] = maxLen[0];   to[1] = maxLen[1];   to[2] = maxLen[2];
+	from[0] = minLen[0];   from[1] = minLen[1];   from[2] = minLen[2];
+	to[0] = maxLen[0];   to[1] = maxLen[1];   to[2] = maxLen[2];
 
-	//printf("generating seeds...\n");
-	//osuflow->SetRandomSeedPoints(from, to, 100);
-	//int nSeeds;
-	//VECTOR3* seeds = osuflow->GetSeeds(nSeeds);
-	//for (int i = 0; i<nSeeds; i++)
-	//	printf(" seed no. %d : [%f %f %f]\n", i, seeds[i][0],
-	//	seeds[i][1], seeds[i][2]);
+	printf("generating seeds...\n");
+	size_t seedDim[3] = {20,20,20};
+	osuflow->SetRegularSeedPoints(from, to, seedDim);
+	int nSeeds;
+	VECTOR3* seeds = osuflow->GetSeeds(nSeeds);
+	for (int i = 0; i<nSeeds; i++)
+		printf(" seed no. %d : [%f %f %f]\n", i, seeds[i][0],
+		seeds[i][1], seeds[i][2]);
 
-	//sl_list.clear();
+	sl_list.clear();
 
-	//printf("compute streamlines..\n");
-	//osuflow->SetIntegrationParams(1, 5);
-	////osuflow->GenStreamLines(sl_list, BACKWARD_AND_FORWARD, 200, 0);
-	//osuflow->GenStreamLines(sl_list, FORWARD_DIR, 100, 0);
-	//printf(" done integrations\n");
-	//printf("list size = %d\n", (int)sl_list.size());
+	printf("compute streamlines..\n");
+	osuflow->SetIntegrationParams(1, 5);
+	//osuflow->GenStreamLines(sl_list, BACKWARD_AND_FORWARD, 200, 0);
+	osuflow->GenStreamLines(sl_list, FORWARD_DIR, 100, 0);
+	printf(" done integrations\n");
+	printf("list size = %d\n", (int)sl_list.size());
 
-	//int iT = 0;
-	//for (list<vtListSeedTrace*>::const_iterator
-	//	pIter = sl_list.begin();
-	//	pIter != sl_list.end();
-	//pIter++, iT++)
-	//{
-	//	const vtListSeedTrace *trace = *pIter;
-	//	int iP = 0;
-	//	vector<float4> line;
-	//	for (list<VECTOR3*>::const_iterator
-	//		pnIter = trace->begin();
-	//		pnIter != trace->end();
-	//	pnIter++, iP++)
-	//	{
-	//		VECTOR3 p = **pnIter;
-	//		line.push_back(make_float4(p[0], p[1], p[2], 1.0f));
-	//	}
-	//	streamlines.push_back(line);
-	//}
+	int iT = 0;
+	for (list<vtListSeedTrace*>::const_iterator
+		pIter = sl_list.begin();
+		pIter != sl_list.end();
+	pIter++, iT++)
+	{
+		const vtListSeedTrace *trace = *pIter;
+		int iP = 0;
+		vector<float4> line;
+		for (list<VECTOR3*>::const_iterator
+			pnIter = trace->begin();
+			pnIter != trace->end();
+		pnIter++, iP++)
+		{
+			VECTOR3 p = **pnIter;
+			line.push_back(make_float4(p[0], p[1], p[2], 1.0f));
+		}
+		if (line.size() > 16)
+			streamlines.push_back(line);
+	}
 }
 
 void DataManager::GenStreamInCube()
@@ -900,20 +922,91 @@ void DataManager::Segmentation()
 	cout << "number of cubic blocks: " << numBlocks << endl;
 }
 
-vector<Node*> DataManager::GetAllNode()
+inline bool readNextToken(std::istream &in, int &token, bool &isNumber)
 {
-	vector<Node*> ret;
-	GetDescendantNodes(ret, topNode);
+	//char c;
+	//isNumber = false;
+
+	//if (in.eof()) return false;
+
+	//// skipping the space
+	//while ((c = in.get()) == ' ')
+	//	if (in.eof()) return false;
+
+	//if (c >= '0' && c > token)
+	//	isNumber = true;
+	in >> token;
+	//cout << token;
+	isNumber = (token != -1);
+	return isNumber;
+}
+
+void DataManager::readBinaryTree(NodeBi *&p, ifstream &fin, vector<float3> starts, vector<float3> dims) {
+	int token;
+	bool isNumber;
+	if (!readNextToken(fin, token, isNumber))
+		return;
+	if (isNumber) {
+		p = new NodeBi(
+			starts[token].x, starts[token].y, starts[token].z, 
+			dims[token].x, dims[token].y, dims[token].z,
+			0, 0);
+		ComputeCubemapNode(p);
+		readBinaryTree(p->left, fin, starts, dims);
+		readBinaryTree(p->right, fin, starts, dims);
+	}
+}
+
+inline vector<float3> ReadAttribute(char* filename)
+{
+	vector<float3> ret;
+	std::ifstream fin(filename, std::fstream::in);
+	while (!fin.eof())
+	{
+		float v0, v1, v2;
+		fin >> v0;
+		fin >> v1;
+		fin >> v2;
+		ret.push_back(make_float3(v0, v1, v2));
+	}
 	return ret;
 }
 
-void DataManager::GetDescendantNodes(vector<Node*> &ret, Node* nd)
+void DataManager::LoadSegmentation()
 {
-	for (auto child : nd->children){
-		if (child->children.size() > 0)
-			GetDescendantNodes(ret, child);
-		else
-			ret.push_back(child);
+	vector<float3> starts = ReadAttribute("D:\\Dropbox\\hist\\VecHist\\python\\vechist\\starts.txt");
+	vector<float3> dims = ReadAttribute("D:\\Dropbox\\hist\\VecHist\\python\\vechist\\dims.txt");
+	int token;
+	bool isNumber;
+	std::ifstream fin("D:\\Dropbox\\hist\\VecHist\\python\\vechist\\binary_tree.txt", std::fstream::in);
+	readBinaryTree(rootNode, fin, starts, dims);
+}
+
+
+vector<NodeBi*> DataManager::GetAllNode()
+{
+	vector<NodeBi*> ret;
+	GetDescendantNodes(ret, rootNode);
+	return ret;
+}
+
+void DataManager::GetDescendantNodes(vector<NodeBi*> &ret, NodeBi* nd)
+{
+	//vector<NodeBi*> children;
+	//children.push_back(nd->left);
+	//children.push_back(nd->right);
+	//for (auto child : children){
+	//	if (child->left != nullptr)
+	//		GetDescendantNodes(ret, child);
+	//	else
+	//		ret.push_back(child);
+	//}
+	if (nd->left == nullptr)
+		ret.push_back(nd);
+	else
+	{
+		GetDescendantNodes(ret, nd->left);
+		GetDescendantNodes(ret, nd->right);
 	}
 }
 

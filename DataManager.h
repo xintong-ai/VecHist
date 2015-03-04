@@ -5,6 +5,8 @@
 #include <vector_functions.h>
 #include "OSUFlow.h"
 
+
+
 using namespace std;
 struct Node
 {
@@ -77,6 +79,82 @@ struct Node
 	}
 };
 
+struct NodeBi
+{
+	float *cubemap;
+	int cube_size;
+
+	int start[3];
+	int dim[3];
+	int level;	//hierarchy level
+	//int3 *data;
+	//vector<Node*> children;
+	float entropy;
+	//only outgoing flux is recorded, so that we only draw the link once for the two neighboring nodes
+	float flux[6];	//0: -x  1: +x   2: -y   3: +y   4: -z   5:+z
+
+	NodeBi* left;
+	NodeBi* right;
+
+	NodeBi(
+		int _start0, int _start1, int _start2,
+		int _dim0, int _dim1, int _dim2,
+		int _cube_size, int _level)
+	{
+		//cubemap = _cubemap;
+		cube_size = _cube_size;
+		//data = _data;
+
+		start[0] = _start0;
+		start[1] = _start1;
+		start[2] = _start2;
+
+		dim[0] = _dim0;
+		dim[1] = _dim1;
+		dim[2] = _dim2;
+		//left = nullptr;
+		//right = nullptr;
+		cubemap = nullptr;
+
+		level = _level;
+
+		left = nullptr;
+		right = nullptr;
+
+		//for (int i = 0; i < 6; i++)	{
+		//	neighbor[i] = nullptr;
+		//	flux[6] = 0;
+		//}
+	}
+
+	NodeBi(int *_start, int *_dim, int _cube_size, int _level) :
+		NodeBi(_start[0], _start[1], _start[2],
+		_dim[0], _dim[1], _dim[2],
+		_cube_size, _level)
+	{}
+
+
+	NodeBi(){
+		cubemap = nullptr;
+	};
+
+	~NodeBi()
+	{
+		//delete[] data;
+		if (cubemap != nullptr)
+		{
+			delete[] cubemap;
+			//cubemap = nullptr;
+		}
+		//for (auto nd : children)	{
+		//	delete[] nd;
+		//}
+		//delete[] left;
+		//delete[] right;
+	}
+};
+
+
 class DataManager
 {
 	float* data;
@@ -102,11 +180,14 @@ class DataManager
 	//
 	const float entropyThreshold = 9;// 6;// 10.2;	//592 cubes for plume
 	Node *topNode;
+	NodeBi *rootNode;
 	int numBlocks;
 	void SplitNode(Node* parent);
 	void ComputeCubemapNode(Node *&nd);
-	void GetDescendantNodes(vector<Node*> &ret, Node* nd);
+	void ComputeCubemapNode(NodeBi *&nd);
+	void GetDescendantNodes(vector<NodeBi*> &ret, NodeBi* nd);
 	void LoadOSUFlow(char* filename);
+	void readBinaryTree(NodeBi *&p, ifstream &fin, vector<float3> starts, vector<float3> dims);
 
 
 public:
@@ -136,9 +217,10 @@ public:
 	int GetCubemapSize();
 	int GetNumOfCells();
 	void Segmentation();
+	void LoadSegmentation();
 	void SplitTopNode();
 	void BuildOctree(Node *nd);
-	vector<Node*> GetAllNode();
+	vector<NodeBi*> GetAllNode();
 	vector<vector<float4>> GetStreamlines();
 	vector<vector<float4>> GetStreamlinesInCube();
 	void GenStreamInCube();

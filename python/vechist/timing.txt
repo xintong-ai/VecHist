@@ -1,0 +1,5 @@
+entropy threshold: 10  ; cubemap_size = 32
+segmentation time (without computing index) : 1340.35 sec 
+
+entropy threshold: 5 ; cubemap_size = 16
+segmentation time (without computing index) : 1861.62 sec 

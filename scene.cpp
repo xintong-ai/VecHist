@@ -898,7 +898,7 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 //	m_programs["distribution"]->setUniformValue("tex", GLint(0));
 	m_programs["distribution"]->setUniformValue("env", GLint(0));
 
-
+#if 0
 	//draw sphere by the side
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_FRONT);
@@ -924,13 +924,13 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 	glPopMatrix();
 
 	glDisable(GL_CULL_FACE);
-
 	//draw sphere at the queried region
 	glPushMatrix();
 	glTranslatef(qnx / 2 + qx, qny / 2 + qy, qnz / 2 + qz);
 	glScalef(minqsize, minqsize, minqsize);
 	m_vecWidget->draw();
 	glPopMatrix();
+#endif
 
 
 	if (glActiveTexture) {
@@ -946,7 +946,8 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 			nd->dim[0] / 2 + nd->start[0], 
 			nd->dim[1] / 2 + nd->start[1], 
 			nd->dim[2] / 2 + nd->start[2]);
-		glScalef(nd->dim[0], nd->dim[0], nd->dim[0]);
+		float min_dim = min(min(nd->dim[0], nd->dim[1]), nd->dim[2]);
+		glScalef(min_dim, min_dim, min_dim);
 		glScalef(0.5, 0.5, 0.5);
 		tex->bind();
 		m_vecWidget->draw();
@@ -1141,8 +1142,9 @@ void Scene::defaultStates()
 
 void Scene::drawBackground(QPainter *painter, const QRectF &)
 {
-    float width = float(painter->device()->width());
-    float height = float(painter->device()->height());
+	//TODO: remove the hard code
+	float width = float(painter->device()->width());
+	float height = float(painter->device()->height());
 
     painter->beginNativePainting();
     setStates();
@@ -1668,13 +1670,15 @@ float3 Scene::ReadPixel(unsigned int x, unsigned int y)
 
 void Scene::Segmentation()
 {
-	dataManager->Segmentation();
+	//dataManager->Segmentation();
+	dataManager->LoadSegmentation();
 	leafNodes = dataManager->GetAllNode();
 
 
 	for (auto nd : leafNodes)	{
 		GLTextureCube *texCube = new GLTextureCube(qMin(1024, m_maxTextureSize), 1);
-		texCube->load(nd->cubemap, nd->cube_size);
+		texCube->load(nd->cubemap, dataManager->GetCubemapSize());
+		glColor3d(1.0, 1.0, 1.0);
 		blockTex << texCube;
 	}
 }
