@@ -268,7 +268,7 @@ def SolidAngles(nbin):
 
 
 def GenCubemap(d, size):
-    [hist, bin_edges] = np.histogram(d, np.arange(0, size * size * 6 + 1)) 
+    [hist, bin_edges] = np.histogram(d, np.arange(0, size * size * 6 + 1))
 #    hist = np.arange(0, size * size * 6)       
 #    print(hist.shape)
     hist = np.reshape(hist, (6 * size, size))
@@ -285,7 +285,7 @@ def GenCubemap(d, size):
     #print(hist_sum)
     if(hist_sum < 0):
         print("error: bin sum is negative...")
-    hist = hist / hist_sum
+    hist = hist / (hist_sum * 1.0)
 #    ShowHist(hist)
     
     return hist
@@ -510,6 +510,10 @@ def SplitEntropy(ret, _d_idx, d_3d, cubemap_size):
         print("percentage: " + str(float(spl_pt) / ret.dim[imax]))
         cube_hist_1 = GenCubemap(side1.ravel(), cubemap_size)
         cube_hist_2 = GenCubemap(side2.ravel(), cubemap_size)
+        #print("Cube hist 1:")
+        #print(cube_hist_1)
+        #print("Cube hist 2:")
+        #print(cube_hist_2)
         entropy_1 = get_histogram_entropy(cube_hist_1.ravel())
         entropy_2 = get_histogram_entropy(cube_hist_2.ravel())
         p1 = float(spl_pt) / ret.dim[imax]
