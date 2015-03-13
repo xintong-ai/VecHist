@@ -11,7 +11,9 @@ import matplotlib.pyplot as plt
 import copy
 from scipy import asarray as ar,exp
 from scipy.optimize import curve_fit
+import time
 #from mayavi import mlab
+
 
 #Definition for a  binary tree node
 class TreeNode:
@@ -520,6 +522,7 @@ def SplitEntropy(ret, _d_idx, d_3d, cubemap_size):
                 :]
 
 
+    startT = time.time()
     print ('Unoptimized Version:')
     print('-------------------------------------------------------------------')
     #for spl_pt in range(1, ret.dim[imax]):
@@ -556,9 +559,12 @@ def SplitEntropy(ret, _d_idx, d_3d, cubemap_size):
 
     print('Final Entropy Sum:')
     print(entropy_sum)
+    endT = time.time()
+    print('Total time for unoptimized version is: ' + str(endT - startT))
 
     entropy_sum = []
 
+    startT = time.time()
     print ('Optimized Version:')
     print('-------------------------------------------------------------------')
     if(imax == 0):
@@ -657,6 +663,8 @@ def SplitEntropy(ret, _d_idx, d_3d, cubemap_size):
 
     print('Final Entropy Sum:')
     print(entropy_sum)
+    endT = time.time()
+    print('Total time for optimized version is: ' + str(endT - startT))
 
     print('--------------------------------------------------------------')
 
