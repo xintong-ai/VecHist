@@ -494,7 +494,10 @@ def SplitEntropy(ret, _d_idx, d_3d, cubemap_size):
                 :]
 
 
-    for spl_pt in range(1, ret.dim[imax]):
+    print ('Unoptimized Version:')
+    print('-------------------------------------------------------------------')
+    #for spl_pt in range(1, ret.dim[imax]):
+    for spl_pt in range(1, 5):
         if(imax == 0):
             side1 = m_idx[:spl_pt, :, :]
             side2 = m_idx[spl_pt:, :, :]
@@ -510,14 +513,54 @@ def SplitEntropy(ret, _d_idx, d_3d, cubemap_size):
         print("percentage: " + str(float(spl_pt) / ret.dim[imax]))
         cube_hist_1 = GenCubemap(side1.ravel(), cubemap_size)
         cube_hist_2 = GenCubemap(side2.ravel(), cubemap_size)
-        #print("Cube hist 1:")
-        #print(cube_hist_1)
-        #print("Cube hist 2:")
-        #print(cube_hist_2)
+        print("Cube hist 1:")
+        print(cube_hist_1)
+        print("Cube hist 2:")
+        print(cube_hist_2)
         entropy_1 = get_histogram_entropy(cube_hist_1.ravel())
         entropy_2 = get_histogram_entropy(cube_hist_2.ravel())
         p1 = float(spl_pt) / ret.dim[imax]
-        entropy_sum.append(entropy_1 * p1 + entropy_2 * ( 1.0 - p1)) 
+        entropy_sum.append(entropy_1 * p1 + entropy_2 * ( 1.0 - p1))
+
+
+
+    print ('Optimized Version:')
+    print('-------------------------------------------------------------------')
+    if(imax == 0):
+        side1 = m_idx[:1, :, :]
+        side2 = m_idx[1:, :, :]
+    elif(imax == 1):
+        side1 = m_idx[:, :1, :]
+        side2 = m_idx[:, 1:, :]
+    else:
+        side1 = m_idx[:, :, :1]
+        side2 = m_idx[:, :, 1:]
+    print("percentage: " + str(float(1) / ret.dim[imax]))
+    cube_hist_1 = GenCubemap(side1.ravel(), cubemap_size)
+    cube_hist_2 = GenCubemap(side2.ravel(), cubemap_size)
+    #for spl_pt in range(2, ret.dim[imax]):
+    for spl_pt in range(1,5):
+        if(imax == 0):
+            side = m_idx[spl_pt, :, :]
+        elif(imax == 1):
+            side = m_idx[:, spl_pt, :]
+        else:
+            side = m_idx[:, :, spl_pt]
+        print("percentage: " + str(float(spl_pt) / ret.dim[imax]))
+        cube_hist_single = GenCubemap(side.ravel(), cubemap_size)
+        cube_hist_1 = cube_hist_1 + cube_hist_single
+        cube_hist_2 = cube_hist_2 - cube_hist_single
+        print("Cube hist 1:")
+        print(cube_hist_1)
+        print("Cube hist 2:")
+        print(cube_hist_2)
+        entropy_1 = get_histogram_entropy(cube_hist_1.ravel())
+        entropy_2 = get_histogram_entropy(cube_hist_2.ravel())
+        p1 = float(spl_pt) / ret.dim[imax]
+        entropy_sum.append(entropy_1 * p1 + entropy_2 * ( 1.0 - p1))
+
+
+    print('--------------------------------------------------------------')
 
     spl_pt = np.argmin(np.array(entropy_sum)) + 1
 

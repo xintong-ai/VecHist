@@ -14,11 +14,14 @@ time_start = time.time()
 #d = read_vec.read("D:/data/isabel/UVWf01.vec")
 #d = read_vec.read("D:/data/plume/15plume3d421.vec")
 #d = read_vec.read("D:/data/sample/test3.vec")
+
 cubemap_size = 16
+#cubemap_size = 4
+
 d_idx = np.load('d_idx.npy')
 shape = d_idx.shape
 
-d_3d = read_vec.read("D:/data/brain_dti/vector-field-new.vec")
+d_3d = read_vec.read("/home/datahead/research/rawData/15plume3d430.vec")
 print(d_3d.shape)
 
 root = cube.TreeNode(np.array([0, 0, 0]), np.array([shape[0], shape[1], shape[2]]), 0, 0, (0,0,0))#np.array(d_idx.shape) / 2, np.array([0.0, 0.0, 0.0]))
