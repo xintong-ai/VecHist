@@ -545,11 +545,19 @@ def SplitEntropy(ret, _d_idx, d_3d, cubemap_size):
         print(cube_hist_2)
 
         entropy_1 = get_histogram_entropy(cube_hist_1.ravel())
+        print "Entropy 1: " + str(entropy_1)
         entropy_2 = get_histogram_entropy(cube_hist_2.ravel())
+        print "Entropy 2: " + str(entropy_2)
         p1 = float(spl_pt) / ret.dim[imax]
         entropy_sum.append(entropy_1 * p1 + entropy_2 * ( 1.0 - p1))
+        print('p1: ' + str(p1))
+        print('Current entropy sum:')
+        print(entropy_sum)
 
+    print('Final Entropy Sum:')
+    print(entropy_sum)
 
+    entropy_sum = []
 
     print ('Optimized Version:')
     print('-------------------------------------------------------------------')
@@ -591,9 +599,15 @@ def SplitEntropy(ret, _d_idx, d_3d, cubemap_size):
     print("Cube hist 2:")
     print(norm_hist2)
     entropy_1 = get_histogram_entropy(norm_hist1.ravel())
+    print "Entropy 1: " + str(entropy_1)
     entropy_2 = get_histogram_entropy(norm_hist2.ravel())
-    p1 = float(spl_pt) / ret.dim[imax]
+    print "Entropy 2: " + str(entropy_2)
+    p1 = float(1) / ret.dim[imax]
     entropy_sum.append(entropy_1 * p1 + entropy_2 * ( 1.0 - p1))
+    print('p1: ' + str(p1))
+    print('Current entropy sum:')
+    print(entropy_sum)
+
     #for spl_pt in range(2, ret.dim[imax]):
     for spl_pt in range(2,5):
         if(imax == 0):
@@ -632,10 +646,17 @@ def SplitEntropy(ret, _d_idx, d_3d, cubemap_size):
         print("Cube hist 2:")
         print(norm_hist2)
         entropy_1 = get_histogram_entropy(norm_hist1.ravel())
+        print "Entropy 1: " + str(entropy_1)
         entropy_2 = get_histogram_entropy(norm_hist2.ravel())
+        print "Entropy 2: " + str(entropy_2)
         p1 = float(spl_pt) / ret.dim[imax]
         entropy_sum.append(entropy_1 * p1 + entropy_2 * ( 1.0 - p1))
+        print('p1: ' + str(p1))
+        print('Current entropy sum:')
+        print(entropy_sum)
 
+    print('Final Entropy Sum:')
+    print(entropy_sum)
 
     print('--------------------------------------------------------------')
 
