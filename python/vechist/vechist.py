@@ -15,10 +15,11 @@ time_start = time.time()
 #d = read_vec.read("D:/data/plume/15plume3d421.vec")
 #d = read_vec.read("D:/data/sample/test3.vec")
 
-cubemap_size = 16
-#cubemap_size = 4
+#cubemap_size = 16
+cubemap_size = 4
 
 d_idx = np.load('d_idx.npy')
+d_idx = d_idx / 4
 shape = d_idx.shape
 
 d_3d = read_vec.read("/home/datahead/research/rawData/15plume3d430.vec")
