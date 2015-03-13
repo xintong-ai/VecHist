@@ -1,2 +1,9 @@
 *.suo
 *.pyc
+
+#Auto generated eigen value / vector files
+eig_vals.txt
+eig_vecs.txt
+
+#Vi swap files
+*.swp
