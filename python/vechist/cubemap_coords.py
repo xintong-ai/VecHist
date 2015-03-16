@@ -13,6 +13,17 @@ from scipy import asarray as ar,exp
 from scipy.optimize import curve_fit
 #from mayavi import mlab
 
+def sum_of_squares_of_digits(value):
+    return sum(int(c) ** 2 for c in str(value))
+
+def normalize(d):
+    shape = d.shape
+    d = np.reshape(d, (shape[0] * shape[1] * shape[2], 3))
+    norm = np.linalg.norm(d, ord = 2, axis = 1)
+    d = d / norm[:, np.newaxis]
+    d = np.reshape(d, shape)
+    return d
+
 #Definition for a  binary tree node
 class TreeNode:
     def __init__(self, start, dim, entropy, eig_val, eig_vec):
@@ -221,35 +232,35 @@ def ShowHist(hist):
 #    plt.gca().invert_yaxis()
 #    plt.colorbar()
     
-    
-
-
-    
 def SolidAngles(nbin):
     #compute the solid angle for each patch and 
     #scale the histogram by the solid angle to get the sample density
     delta = 2.0 / nbin
     solAng = np.zeros((nbin, nbin))
     
-    for i in range(nbin):
-        for j in range(nbin):
-            a1 = 1 - i * delta
-            a2 = 1 - j * delta
+    nbin_half = math.floor(nbin / 2)
+    for i in range(nbin_half):
+        for j in range(nbin_half):
+            a1 = abs(1 - i * delta)
+            a2 = abs(1 - j * delta)
             sa = 4 * np.arcsin(np.sin(np.arctan(a1)) * np.sin(np.arctan(a2)))
             
-            b1 = 1 - (i + 1) * delta
-            b2 = 1 - j * delta
+            b1 = abs(1 - (i + 1) * delta)
+            b2 = abs(1 - j * delta)
             sb = 4 * np.arcsin(np.sin(np.arctan(b1)) * np.sin(np.arctan(b2)))
     
-            c1 = 1 - i * delta
-            c2 = 1 - (j + 1) * delta
+            c1 = abs(1 - i * delta)
+            c2 = abs(1 - (j + 1) * delta)
             sc = 4 * np.arcsin(np.sin(np.arctan(c1)) * np.sin(np.arctan(c2)))
     
-            d1 = 1 - (i + 1) * delta
-            d2 = 1 - (j + 1) * delta
+            d1 = abs(1 - (i + 1) * delta)
+            d2 = abs(1 - (j + 1) * delta)
             sd = 4 * np.arcsin(np.sin(np.arctan(d1)) * np.sin(np.arctan(d2)))
             
             solAng[i, j] = (sa - sb - sc + sd) * 0.25
+            solAng[nbin - 1 - i, j] = solAng[i, j]
+            solAng[i, nbin - 1 - j] = solAng[i, j]
+            solAng[nbin - 1 - i, nbin - 1 - j] = solAng[i, j]
     
     return solAng
             
@@ -269,6 +280,8 @@ def SolidAngles(nbin):
 
 def GenCubemap(d, size):
     [hist, bin_edges] = np.histogram(d, np.arange(0, size * size * 6 + 1)) 
+    #TODO: this is for the empty entries in DTI dataset
+    hist[0] = 0
 #    hist = np.arange(0, size * size * 6)       
 #    print(hist.shape)
     hist = np.reshape(hist, (6 * size, size))
@@ -277,6 +290,9 @@ def GenCubemap(d, size):
     #normalize by solid angles
     scale_factor = 1000
     sol_ang = SolidAngles(size)
+    #plt.imshow(sol_ang)
+    #plt.colorbar()
+    #plt.show()
     for i in range(0, 6):
         hist[i*size:(i+1)*size, :] = hist[i*size:(i+1)*size, :] / (sol_ang * scale_factor)
     
@@ -469,9 +485,15 @@ def Split(ret, _d_idx, cubemap_size, _start_pos, tree_depth):
     Split(ret.right, side2, cubemap_size, start_pos_2, tree_depth - 1)
 
 def PCA(d):
-    cov_mat = np.cov([d[:, 2],d[:, 1],d[:, 0]])
+    d2 = np.zeros((d.shape[0] * 2, 3));
+    d2[: d.shape[0], :] = copy.deepcopy(d)
+    d2[d.shape[0]:, :] = copy.deepcopy(d*(-1))
+    cov_mat = np.cov([d2[:, 0], d2[:, 1], d2[:, 2]])
     eig_val, eig_vec = np.linalg.eig(cov_mat)
-    return eig_val, eig_vec
+    eig_pairs = [(np.abs(eig_val[i]), eig_vec[:, i]) for i in range(len(eig_val))]
+    eig_pairs.sort()
+    eig_pairs.reverse()
+    return [eig_pairs[0][0], eig_pairs[1][0], eig_pairs[2][0]], np.array([eig_pairs[0][1], eig_pairs[1][1], eig_pairs[2][1]])
 
 #d is the original data array with dimension [z, y, x, v] with C order
 def SplitEntropy(ret, _d_idx, d_3d, cubemap_size):
@@ -494,6 +516,7 @@ def SplitEntropy(ret, _d_idx, d_3d, cubemap_size):
                 :]
 
 
+    #remove the stride
     for spl_pt in range(1, ret.dim[imax]):
         if(imax == 0):
             side1 = m_idx[:spl_pt, :, :]
@@ -514,6 +537,13 @@ def SplitEntropy(ret, _d_idx, d_3d, cubemap_size):
         entropy_2 = get_histogram_entropy(cube_hist_2.ravel())
         p1 = float(spl_pt) / ret.dim[imax]
         entropy_sum.append(entropy_1 * p1 + entropy_2 * ( 1.0 - p1)) 
+        max_val = np.max(cube_hist_1) * 0.2
+        #plt.imshow(cube_hist_1.transpose(), aspect='equal', interpolation='nearest', vmin=0, vmax=max_val)
+        #plt.show()
+
+        #max_val = np.max(cube_hist_2) * 0.1
+        #plt.imshow(cube_hist_2.transpose(), aspect='equal', interpolation='nearest', vmin=0, vmax=max_val)
+        #plt.show()
 
     spl_pt = np.argmin(np.array(entropy_sum)) + 1
 
@@ -547,10 +577,8 @@ def SplitEntropy(ret, _d_idx, d_3d, cubemap_size):
 
     cube_hist_1 = GenCubemap(side1.ravel(), cubemap_size)
     cube_hist_2 = GenCubemap(side2.ravel(), cubemap_size)
-    #plt.imshow(cube_hist_1)
-    #plt.show()
-    #plt.imshow(cube_hist_2)
-    #plt.show()
+
+
     entropy_1 = get_histogram_entropy(cube_hist_1.ravel())
     entropy_2 = get_histogram_entropy(cube_hist_2.ravel())
 
@@ -559,9 +587,9 @@ def SplitEntropy(ret, _d_idx, d_3d, cubemap_size):
     print("entropy_2: " + str(entropy_2))
     ret.left = TreeNode(ret.start, side1.shape, entropy_1, eig_val_1, eig_vec_1)
     ret.right = TreeNode(start_pos_2, side2.shape, entropy_2, eig_val_2, eig_vec_2)
-    if ret.left.entropy > threshold:
+    if ret.left.entropy > threshold:# or cube_hist_1[0, 0] > 0.999:
         SplitEntropy(ret.left, _d_idx, d_3d, cubemap_size)
-    if ret.right.entropy > threshold:
+    if ret.right.entropy > threshold:# or cube_hist_2[0, 0] > 0.999:
         SplitEntropy(ret.right, _d_idx, d_3d, cubemap_size)
     
     
@@ -576,7 +604,9 @@ def writeBinaryTree(node, f, starts, dims, entropys, eig_vals, eig_vecs, node_id
         dims.append(node.dim)
         entropys.append(node.entropy)
         eig_vals.append(node.eig_val)
-        eig_vecs.append(node.eig_vec)
+        eig_vecs.append(node.eig_vec[0, :])
+        eig_vecs.append(node.eig_vec[1, :])
+        eig_vecs.append(node.eig_vec[2, :])
         node_id[0] += 1
         #out << p->data << " ";
         writeBinaryTree(node.left, f, starts, dims, entropys, eig_vals, eig_vecs, node_id)

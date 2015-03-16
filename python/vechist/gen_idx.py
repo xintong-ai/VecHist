@@ -11,9 +11,11 @@ time_start = time.time()
 #d = sample_ball.sample(2**8)
 #d = sample_uniform.sample(2**20)
 #d = sample_random.sample(2**24)
-#d = read_vec.read("D:/data/isabel/UVWf01.vec")
-d = read_vec.read("D:/data/brain_dti/vector-field-new.vec")
+#d = read_vec.read("D:/data/nek/nek.d_4.vec")
+d = read_vec.read("D:/data/isabel/UVWf01.vec")
+#d = read_vec.read("D:/data/brain_dti/vector-field.vec")
 #d = read_vec.read("D:/data/sample/test3.vec")
+#d = read_vec.read("D:/data/plume/15plume3d421.vec")
 #dim = d.shape
 #d = np.reshape(d, (dim[2], dim[1], dim[0], 3))
 step = 1
@@ -21,7 +23,7 @@ step = 1
 d = d[::step, ::step, ::step,:]
 dim = d.shape
 #print(d.shape)
-#pv.plot(d, 4)
+#pv.plot(d, 16)
 
 d_idx = np.zeros(d.shape[0] * d.shape[1] * d.shape[2], dtype=np.float32)
 d = np.reshape(d, (d.shape[0] * d.shape[1] * d.shape[2], 3))
