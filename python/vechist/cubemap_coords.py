@@ -525,8 +525,8 @@ def SplitEntropy(ret, _d_idx, d_3d, cubemap_size):
     startT = time.time()
     print ('Unoptimized Version:')
     print('-------------------------------------------------------------------')
-    #for spl_pt in range(1, ret.dim[imax]):
-    for spl_pt in range(1, 5):
+    for spl_pt in range(1, ret.dim[imax]):
+    #for spl_pt in range(1, 5):
         if(imax == 0):
             side1 = m_idx[:spl_pt, :, :]
             side2 = m_idx[spl_pt:, :, :]
@@ -539,26 +539,26 @@ def SplitEntropy(ret, _d_idx, d_3d, cubemap_size):
             side1 = m_idx[:, :, :spl_pt]
             side2 = m_idx[:, :, spl_pt:]
             #start_pos_2[2] += spl_pt
-        print("percentage: " + str(float(spl_pt) / ret.dim[imax]))
+        ##########print("percentage: " + str(float(spl_pt) / ret.dim[imax]))
         cube_hist_1 = GenCubemap(side1.ravel(), cubemap_size)
         cube_hist_2 = GenCubemap(side2.ravel(), cubemap_size)
-        print("Cube hist 1:")
-        print(cube_hist_1)
-        print("Cube hist 2:")
-        print(cube_hist_2)
+        #print("Cube hist 1:")
+        #print(cube_hist_1)
+        #print("Cube hist 2:")
+        #print(cube_hist_2)
 
         entropy_1 = get_histogram_entropy(cube_hist_1.ravel())
-        print "Entropy 1: " + str(entropy_1)
+        #print "Entropy 1: " + str(entropy_1)
         entropy_2 = get_histogram_entropy(cube_hist_2.ravel())
-        print "Entropy 2: " + str(entropy_2)
+        #print "Entropy 2: " + str(entropy_2)
         p1 = float(spl_pt) / ret.dim[imax]
         entropy_sum.append(entropy_1 * p1 + entropy_2 * ( 1.0 - p1))
-        print('p1: ' + str(p1))
-        print('Current entropy sum:')
-        print(entropy_sum)
+        #print('p1: ' + str(p1))
+        #print('Current entropy sum:')
+        #print(entropy_sum)
 
-    print('Final Entropy Sum:')
-    print(entropy_sum)
+    #print('Final Entropy Sum:')
+    #print(entropy_sum)
     endT = time.time()
     print('Total time for unoptimized version is: ' + str(endT - startT))
 
@@ -576,7 +576,7 @@ def SplitEntropy(ret, _d_idx, d_3d, cubemap_size):
     else:
         side1 = m_idx[:, :, :1]
         side2 = m_idx[:, :, 1:]
-    print("percentage: " + str(float(1) / ret.dim[imax]))
+    ##########print("percentage: " + str(float(1) / ret.dim[imax]))
     cube_hist_1 = GenCubemapCut(side1.ravel(), cubemap_size)
     cube_hist_2 = GenCubemapCut(side2.ravel(), cubemap_size)
 
@@ -600,29 +600,29 @@ def SplitEntropy(ret, _d_idx, d_3d, cubemap_size):
         print("error: bin sum is negative...")
     norm_hist2 = norm_hist2 / (hist_sum * 1.0)
 
-    print("Cube hist 1:")
-    print(norm_hist1)
-    print("Cube hist 2:")
-    print(norm_hist2)
+    #print("Cube hist 1:")
+    #print(norm_hist1)
+    #print("Cube hist 2:")
+    #print(norm_hist2)
     entropy_1 = get_histogram_entropy(norm_hist1.ravel())
-    print "Entropy 1: " + str(entropy_1)
+    #print "Entropy 1: " + str(entropy_1)
     entropy_2 = get_histogram_entropy(norm_hist2.ravel())
-    print "Entropy 2: " + str(entropy_2)
+    #print "Entropy 2: " + str(entropy_2)
     p1 = float(1) / ret.dim[imax]
     entropy_sum.append(entropy_1 * p1 + entropy_2 * ( 1.0 - p1))
-    print('p1: ' + str(p1))
-    print('Current entropy sum:')
-    print(entropy_sum)
+    #print('p1: ' + str(p1))
+    #print('Current entropy sum:')
+    #print(entropy_sum)
 
-    #for spl_pt in range(2, ret.dim[imax]):
-    for spl_pt in range(2,5):
+    for spl_pt in range(2, ret.dim[imax]):
+    #for spl_pt in range(2,5):
         if(imax == 0):
             side = m_idx[spl_pt - 1, :, :]
         elif(imax == 1):
             side = m_idx[:, spl_pt - 1, :]
         else:
             side = m_idx[:, :, spl_pt - 1]
-        print("percentage: " + str(float(spl_pt) / ret.dim[imax]))
+        ##########print("percentage: " + str(float(spl_pt) / ret.dim[imax]))
         cube_hist_single = GenCubemapCut(side.ravel(), cubemap_size)
         cube_hist_1 = cube_hist_1 + cube_hist_single
         cube_hist_2 = cube_hist_2 - cube_hist_single
@@ -647,22 +647,22 @@ def SplitEntropy(ret, _d_idx, d_3d, cubemap_size):
             print("error: bin sum is negative...")
         norm_hist2 = norm_hist2 / (hist_sum * 1.0)
 
-        print("Cube hist 1:")
-        print(norm_hist1)
-        print("Cube hist 2:")
-        print(norm_hist2)
+        #print("Cube hist 1:")
+        #print(norm_hist1)
+        #print("Cube hist 2:")
+        #print(norm_hist2)
         entropy_1 = get_histogram_entropy(norm_hist1.ravel())
-        print "Entropy 1: " + str(entropy_1)
+        #print "Entropy 1: " + str(entropy_1)
         entropy_2 = get_histogram_entropy(norm_hist2.ravel())
-        print "Entropy 2: " + str(entropy_2)
+        #print "Entropy 2: " + str(entropy_2)
         p1 = float(spl_pt) / ret.dim[imax]
         entropy_sum.append(entropy_1 * p1 + entropy_2 * ( 1.0 - p1))
-        print('p1: ' + str(p1))
-        print('Current entropy sum:')
-        print(entropy_sum)
+        #print('p1: ' + str(p1))
+        #print('Current entropy sum:')
+        #print(entropy_sum)
 
-    print('Final Entropy Sum:')
-    print(entropy_sum)
+    #print('Final Entropy Sum:')
+    #print(entropy_sum)
     endT = time.time()
     print('Total time for optimized version is: ' + str(endT - startT))
 
