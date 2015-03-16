@@ -301,7 +301,7 @@ def GenCubemap(d, size):
     #print(hist_sum)
     if(hist_sum < 0):
         print("error: bin sum is negative...")
-    hist = hist / hist_sum
+    hist = hist / (hist_sum * 1.0)
 #    ShowHist(hist)
     
     return hist

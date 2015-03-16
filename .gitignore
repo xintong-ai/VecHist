@@ -1,2 +1,4 @@
 *.suo
 *.pyc
+*.txt
+*.npy

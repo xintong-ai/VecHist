@@ -27,6 +27,9 @@
     </Compile>
     <Compile Include="peakdetect.py" />
     <Compile Include="plot_vec.py" />
+    <Compile Include="polar_histogram.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="read_vec.py" />
     <Compile Include="vechist.py" />
   </ItemGroup>
