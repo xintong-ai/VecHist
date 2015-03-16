@@ -50,6 +50,7 @@
 #include <QtGui>
 
 #include "glsphere.h"
+#include "glSuperquadric.h"
 //#include "box.h"
 #include "gltrianglemesh.h"
 #include "trackball.h"
@@ -280,6 +281,7 @@ private:
     //ItemDialog *m_itemDialog;
     QTimer *m_timer;
 	GLSphere *m_vecWidget;
+	GLSuperquadric *m_superWidget;
     TrackBall m_trackBalls[3];
     //QVector<GLTexture *> m_textures;
     GLTextureCube *m_environment;	//the used cubemap

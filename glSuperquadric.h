@@ -39,26 +39,29 @@
 **
 ****************************************************************************/
 
-varying vec3 position, normal, texcoord;
-varying vec4 specular, ambient, diffuse, lightDirection;
+#ifndef GLSUPERQUADRIC_H
+#define GLSUPERQUADRIC_H
 
-uniform mat4 view;
-uniform float plane_normal;
+//#include <GL/glew.h>
+#include "glextensions.h"
 
-void main()
-{	
-    gl_TexCoord[0] = gl_MultiTexCoord0;
-//    gl_TexCoord[1] = gl_Vertex;
-    specular = gl_LightSource[0].specular;
-    ambient = gl_LightSource[0].ambient;
-    diffuse = gl_LightSource[0].diffuse;
-    lightDirection = view * gl_LightSource[0].position;
+#include <QtWidgets>
+#include <QtOpenGL>
 
-//    normal = gl_NormalMatrix * gl_Normal;
-    normal = gl_Normal;
-	texcoord = gl_TexCoord[0];
-    position = gl_Vertex.xyz;
+#include "gltrianglemesh.h"
+#include <QtGui/qvector3d.h>
+#include <QtGui/qvector2d.h>
+#include "glbuffers.h"
+#include "vector_types.h"
 
-    gl_FrontColor = gl_Color;
-    gl_Position = ftransform();
-}
+
+
+class GLSuperquadric : public GLTriangleMesh<P3T2N3Vertex, unsigned short>
+{
+	//Q_OBJECT
+public:
+    // 0 < r < 0.5, 0 <= n <= 125
+	explicit GLSuperquadric(float3 e_val, float3 e_vec_0, float3 e_vec_1, float3 e_vec_2, float r, float scale, int n);
+};
+
+#endif

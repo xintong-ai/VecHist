@@ -42,13 +42,6 @@
 #include "glsphere.h"
 
 
-VertexDescription P3T2N3Vertex::description[] = {
-	{ VertexDescription::Position, GL_FLOAT, SIZE_OF_MEMBER(P3T2N3Vertex, position) / sizeof(float), 0, 0 },
-	{ VertexDescription::TexCoord, GL_FLOAT, SIZE_OF_MEMBER(P3T2N3Vertex, texCoord) / sizeof(float), sizeof(QVector3D), 0 },
-	{ VertexDescription::Normal, GL_FLOAT, SIZE_OF_MEMBER(P3T2N3Vertex, normal) / sizeof(float), sizeof(QVector3D)+sizeof(QVector2D), 0 },
-
-	{ VertexDescription::Null, 0, 0, 0, 0 },
-};
 
 
 //float lerp(float a, float b, float t)
@@ -103,7 +96,7 @@ GLSphere::GLSphere(float r, float scale, int n)
 				//grid.push_back(v);
 				vp[vidx].normal = v.normalized();
 				vp[vidx].position = vp[vidx].normal * scale;
-				vp[vidx].texCoord = QVector2D(0.5f, 0.5f);
+				vp[vidx].texCoord = vp[vidx].normal;
 				vidx++;
 				//int first = (nSub + 1) * j + i;
 				if (i != n && j != n)	{

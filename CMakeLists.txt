@@ -38,12 +38,12 @@ set(SHARED_LIBRARIES
 #set(SHARED_SOURCES ${LIBIGL_SOURCES} ${GLEW_SOURCES})
 
 # Set your files and resources here
-set( Srcs main.cpp DataManager.cpp glsphere.cpp
+set( Srcs main.cpp DataManager.cpp glsphere.cpp glSuperquadric.cpp
 	scene.cpp glbuffers.cpp glextensions.cpp trackball.cpp 
 	Mouse3DInput.cpp MouseParameters.cpp
 	volumeRender_kernel.cu
 	)# 3rdparty/fbm.c) # box.cpp
-set( Hdrs DataManager.h vector_types.h glsphere.h gltrianglemesh.h
+set( Hdrs DataManager.h vector_types.h glsphere.h glSuperquadric.h gltrianglemesh.h
 	scene.h glbuffers.h glextensions.h trackball.h 
 	Mouse3DInput.h MouseParameters.h I3dMouseParams.h
     helper_cuda.h helper_cuda_gl.h helper_functions.h helper_image.h helper_string.h helper_timer.h

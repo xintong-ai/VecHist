@@ -53,14 +53,14 @@
 #include <QtGui/qvector2d.h>
 #include "glbuffers.h"
 
-
-struct P3T2N3Vertex
-{
-	QVector3D position;
-	QVector2D texCoord;
-	QVector3D normal;
-	static VertexDescription description[];
-};
+//
+//struct P3T2N3Vertex
+//{
+//	QVector3D position;
+//	QVector2D texCoord;
+//	QVector3D normal;
+//	static VertexDescription description[];
+//};
 
 class GLSphere : public GLTriangleMesh<P3T2N3Vertex, unsigned short>
 {
