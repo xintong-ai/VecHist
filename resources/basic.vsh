@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-varying vec3 position, normal;
+varying vec3 position, normal, texcoord;
 varying vec4 specular, ambient, diffuse, lightDirection;
 
 uniform mat4 view;
@@ -48,7 +48,7 @@ uniform float plane_normal;
 void main()
 {	
     gl_TexCoord[0] = gl_MultiTexCoord0;
-    gl_TexCoord[1] = gl_Vertex;
+//    gl_TexCoord[1] = gl_Vertex;
     specular = gl_LightSource[0].specular;
     ambient = gl_LightSource[0].ambient;
     diffuse = gl_LightSource[0].diffuse;
@@ -56,6 +56,7 @@ void main()
 
 //    normal = gl_NormalMatrix * gl_Normal;
     normal = gl_Normal;
+	texcoord = gl_TexCoord[0];
     position = gl_Vertex.xyz;
 
     gl_FrontColor = gl_Color;

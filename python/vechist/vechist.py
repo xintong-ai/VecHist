@@ -5,6 +5,7 @@ import cubemap_coords as cube
 import plot_vec as pv
 import matplotlib.pyplot as plt
 import time
+import math
 
 time_start = time.time()
 
@@ -18,12 +19,23 @@ time_start = time.time()
 cubemap_size = 16
 
 d_idx = np.load('d_idx.npy')
+#plt.imshow(d_idx[math.floor(d_idx.shape[0]/2), :, :])
+#plt.show()
+#plt.imshow(d_idx[:, math.floor(d_idx.shape[1]/2), :])
+#plt.show()
+#plt.imshow(d_idx[:, :, math.floor(d_idx.shape[2]/2)])
+#plt.show()
 shape = d_idx.shape
 
+#d_3d = read_vec.read("D:/data/isabel/UVWf01.vec")
 d_3d = read_vec.read("/home/datahead/research/rawData/15plume3d430.vec")
+d_3d = cube.normalize(d_3d)
+#d_3d = read_vec.read("D:/data/brain_dti/vector-field.vec")
+#d_3d = read_vec.read("D:/data/nek/nek.d_4.vec")
+
 print(d_3d.shape)
 
-root = cube.TreeNode(np.array([0, 0, 0]), np.array([shape[0], shape[1], shape[2]]), 0, 0, (0,0,0))#np.array(d_idx.shape) / 2, np.array([0.0, 0.0, 0.0]))
+root = cube.TreeNode(np.array([0, 0, 0]), np.array([shape[0], shape[1], shape[2]]), 0, [0, 0, 0], np.array([[0,0,0], [0,0,0], [0,0,0]]))#np.array(d_idx.shape) / 2, np.array([0.0, 0.0, 0.0]))
 #centers = []
 #vectors = []
 #tree_depth = 3;
@@ -37,14 +49,16 @@ entropys = []
 eig_vals = []
 eig_vecs = []
 cube.writeBinaryTree(root, f, centers, vectors, entropys, eig_vals, eig_vecs, node_id)
+eig_vals = np.array(eig_vals)
+eig_vecs = np.array(eig_vecs)
 f.write("\n")
 centers = np.array(centers)
 vectors = np.array(vectors)
 np.savetxt('starts.txt', centers, newline=" ")
 np.savetxt('dims.txt', vectors, newline=" ")
 np.savetxt('entropys.txt', entropys, newline=" ")
-np.savetxt('eig_vals.txt', entropys, newline=" ")
-np.savetxt('eig_vecs.txt', entropys, newline=" ")
+np.savetxt('eig_vals.txt', eig_vals, newline=" ")
+np.savetxt('eig_vecs.txt', eig_vecs, newline=" ")
 
 time_end = time.time()
 print(str(time_end - time_start) + " seconds")

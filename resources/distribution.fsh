@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-varying vec3 position, normal;
+varying vec3 position, normal, texcoord;
 varying vec4 specular, ambient, diffuse, lightDirection;
 
 //uniform sampler2D tex;
@@ -76,6 +76,24 @@ vec4 GetColor(float v,float vmin,float vmax)
 void main()
 {
     //gl_FragColor = textureCube(env, normal);
-	float v = textureCube(env, normal).x;
-	gl_FragColor = GetColor(v, 0, 1); //vec4((normal.x + 1) * 0.5, (normal.y + 1), (normal.z + 1) * 0.5, 1.0f);
+	float v = textureCube(env, texcoord).x;
+	vec4 unlitColor = GetColor(v, 0, 1); //vec4((normal.x + 1) * 0.5, (normal.y + 1), (normal.z + 1) * 0.5, 1.0f);
+	
+	
+		
+    vec3 N = normalize(normal);
+    // assume directional light
+
+    gl_MaterialParameters M = gl_FrontMaterial;
+	
+	//vec3 tmp = vec3(0.0, 1.0, 0.0);
+    float NdotL = dot(N, lightDirection.xyz);
+    float RdotL = dot(reflect(normalize(position), N), lightDirection.xyz);
+
+    //vec4 unlitColor = mix(marbleColors[0], marbleColors[1], exp(-4.0 * abs(turbulence)));
+	ambient = vec4(0.3, 0.3, 0.3 ,1.0);
+	diffuse = vec4(0.3, 0.3, 0.3 ,1.0);
+	specular = vec4(0.3, 0.3, 0.3 ,1.0);
+    gl_FragColor = (ambient + diffuse * max(NdotL, 0.0)) * unlitColor +
+                    specular * pow(max(RdotL, 0.0), 20);//M.specular * //M.shininess
 }

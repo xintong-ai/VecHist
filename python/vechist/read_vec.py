@@ -4,6 +4,8 @@ Created on Tue Nov 11 17:38:33 2014
 
 @author: tong
 """
+
+
 def read(filename):
 #filename = "D:/data/plume/15plume3d421.vec"
 #    filename = "D:/data/isabel/UVWf01.vec"

@@ -591,7 +591,7 @@ void DataManager::LoadOSUFlow(char* filename)
 	to[0] = maxLen[0];   to[1] = maxLen[1];   to[2] = maxLen[2];
 
 	printf("generating seeds...\n");
-	size_t seedDim[3] = {20,20,20};
+	size_t seedDim[3] = {5,5,5};
 	osuflow->SetRegularSeedPoints(from, to, seedDim);
 	int nSeeds;
 	VECTOR3* seeds = osuflow->GetSeeds(nSeeds);
@@ -604,7 +604,7 @@ void DataManager::LoadOSUFlow(char* filename)
 	printf("compute streamlines..\n");
 	osuflow->SetIntegrationParams(1, 5);
 	//osuflow->GenStreamLines(sl_list, BACKWARD_AND_FORWARD, 200, 0);
-	osuflow->GenStreamLines(sl_list, FORWARD_DIR, 100, 0);
+	osuflow->GenStreamLines(sl_list, BACKWARD_AND_FORWARD, 100, 0);
 	printf(" done integrations\n");
 	printf("list size = %d\n", (int)sl_list.size());
 
@@ -936,12 +936,15 @@ inline bool readNextToken(std::istream &in, int &token, bool &isNumber)
 	//if (c >= '0' && c > token)
 	//	isNumber = true;
 	in >> token;
+	if (in.eof()) 
+		isNumber = false;
 	//cout << token;
 	isNumber = (token != -1);
 	return isNumber;
 }
 
-void DataManager::readBinaryTree(NodeBi *&p, ifstream &fin, vector<float3> starts, vector<float3> dims) {
+void DataManager::readBinaryTree(NodeBi *&p, ifstream &fin, vector<float3> starts, vector<float3> dims,
+	vector<float> entropys, vector<float3> eig_vals, vector<float3> eig_vecs) {
 	int token;
 	bool isNumber;
 	if (!readNextToken(fin, token, isNumber))
@@ -950,10 +953,12 @@ void DataManager::readBinaryTree(NodeBi *&p, ifstream &fin, vector<float3> start
 		p = new NodeBi(
 			starts[token].x, starts[token].y, starts[token].z, 
 			dims[token].x, dims[token].y, dims[token].z,
+			entropys[token], eig_vals[token], 
+			eig_vecs[3 * token], eig_vecs[3 * token + 1], eig_vecs[3 * token + 2],
 			0, 0);
 		ComputeCubemapNode(p);
-		readBinaryTree(p->left, fin, starts, dims);
-		readBinaryTree(p->right, fin, starts, dims);
+		readBinaryTree(p->left, fin, starts, dims, entropys, eig_vals, eig_vecs);
+		readBinaryTree(p->right, fin, starts, dims, entropys, eig_vals, eig_vecs);
 	}
 }
 
@@ -961,25 +966,91 @@ inline vector<float3> ReadAttribute(char* filename)
 {
 	vector<float3> ret;
 	std::ifstream fin(filename, std::fstream::in);
-	while (!fin.eof())
+	while (true)
 	{
 		float v0, v1, v2;
 		fin >> v0;
 		fin >> v1;
 		fin >> v2;
+		if (fin.eof())
+			break;
 		ret.push_back(make_float3(v0, v1, v2));
+	}
+	return ret;
+}
+
+inline vector<float> ReadAttribute1D(char* filename)
+{
+	vector<float> ret;
+	std::ifstream fin(filename, std::fstream::in);
+	while (true)
+	{
+		float v;
+		fin >> v;
+		if (fin.eof())
+			break;
+		ret.push_back(v);
 	}
 	return ret;
 }
 
 void DataManager::LoadSegmentation()
 {
+
+#if 0
+	std::ifstream fin("D:\\Dropbox\\hist\\VecHist\\python\\vechist\\binary_tree.txt", std::fstream::in);
 	vector<float3> starts = ReadAttribute("D:\\Dropbox\\hist\\VecHist\\python\\vechist\\starts.txt");
 	vector<float3> dims = ReadAttribute("D:\\Dropbox\\hist\\VecHist\\python\\vechist\\dims.txt");
+	vector<float> entropys = ReadAttribute1D("D:\\Dropbox\\hist\\VecHist\\python\\vechist\\entropys.txt");
+	vector<float3> eig_vals = ReadAttribute("D:\\Dropbox\\hist\\VecHist\\python\\vechist\\eig_vals.txt");
+	vector<float3> eig_vecs = ReadAttribute("D:\\Dropbox\\hist\\VecHist\\python\\vechist\\eig_vecs.txt");
+#elif 0
+	std::ifstream fin("D:\\data\\plume\\three_glyph\\binary_tree.txt", std::fstream::in);
+	vector<float3> starts = ReadAttribute("D:\\data\\plume\\three_glyph\\starts.txt");
+	vector<float3> dims = ReadAttribute("D:\\data\\plume\\three_glyph\\dims.txt");
+	vector<float> entropys = ReadAttribute1D("D:\\data\\plume\\three_glyph\\entropys.txt");
+	vector<float3> eig_vals = ReadAttribute("D:\\data\\plume\\three_glyph\\eig_vals.txt");
+	vector<float3> eig_vecs = ReadAttribute("D:\\data\\plume\\three_glyph\\eig_vecs.txt");
+#elif 0
+	std::ifstream fin("D:\\data\\plume\\entropy10\\binary_tree.txt", std::fstream::in);
+	vector<float3> starts = ReadAttribute("D:\\data\\plume\\entropy10\\starts.txt");
+	vector<float3> dims = ReadAttribute("D:\\data\\plume\\entropy10\\dims.txt");
+	vector<float> entropys = ReadAttribute1D("D:\\data\\plume\\entropy10\\entropys.txt");
+	vector<float3> eig_vals = ReadAttribute("D:\\data\\plume\\entropy10\\eig_vals.txt");
+	vector<float3> eig_vecs = ReadAttribute("D:\\data\\plume\\entropy10\\eig_vecs.txt");
+#elif 1
+	std::ifstream fin("D:\\data\\plume\\ent8\\binary_tree.txt", std::fstream::in);
+	vector<float3> starts = ReadAttribute("D:\\data\\plume\\ent8\\starts.txt");
+	vector<float3> dims = ReadAttribute("D:\\data\\plume\\ent8\\dims.txt");
+	vector<float> entropys = ReadAttribute1D("D:\\data\\plume\\ent8\\entropys.txt");
+	vector<float3> eig_vals = ReadAttribute("D:\\data\\plume\\ent8\\eig_vals.txt");
+	vector<float3> eig_vecs = ReadAttribute("D:\\data\\plume\\ent8\\eig_vecs.txt");
+#elif 0 
+	std::ifstream fin("D:\\Dropbox\\hist\\VecHist\\python\\vechist\\binary_tree.txt", std::fstream::in);
+	vector<float3> starts = ReadAttribute("D:\\data\\brain_dti\\entropy7\\starts.txt");
+	vector<float3> dims = ReadAttribute("D:\\data\\brain_dti\\entropy7\\dims.txt");
+	vector<float> entropys = ReadAttribute1D("D:\\data\\brain_dti\\entropy7\\entropys.txt");
+	vector<float3> eig_vals = ReadAttribute("D:\\data\\brain_dti\\entropy7\\eig_vals.txt");
+	vector<float3> eig_vecs = ReadAttribute("D:\\data\\brain_dti\\entropy7\\eig_vecs.txt");
+#elif 0
+	std::ifstream fin("D:\\Dropbox\\hist\\VecHist\\python\\vechist\\binary_tree.txt", std::fstream::in);
+	vector<float3> starts = ReadAttribute("D:\\data\\brain_dti\\entropy8\\starts.txt");
+	vector<float3> dims = ReadAttribute("D:\\data\\brain_dti\\entropy8\\dims.txt");
+	vector<float> entropys = ReadAttribute1D("D:\\data\\brain_dti\\entropy8\\entropys.txt");
+	vector<float3> eig_vals = ReadAttribute("D:\\data\\brain_dti\\entropy8\\eig_vals.txt");
+	vector<float3> eig_vecs = ReadAttribute("D:\\data\\brain_dti\\entropy8\\eig_vecs.txt");
+#elif 0
+	std::ifstream fin("D:\\Dropbox\\hist\\VecHist\\python\\vechist\\binary_tree.txt", std::fstream::in);
+	vector<float3> starts = ReadAttribute("D:\\data\\nek\\entropy8\\starts.txt");
+	vector<float3> dims = ReadAttribute("D:\\data\\nek\\entropy8\\dims.txt");
+	vector<float> entropys = ReadAttribute1D("D:\\data\\nek\\entropy8\\entropys.txt");
+	vector<float3> eig_vals = ReadAttribute("D:\\data\\nek\\entropy8\\eig_vals.txt");
+	vector<float3> eig_vecs = ReadAttribute("D:\\data\\nek\\entropy8\\eig_vecs.txt");
+
+#endif
 	int token;
 	bool isNumber;
-	std::ifstream fin("D:\\Dropbox\\hist\\VecHist\\python\\vechist\\binary_tree.txt", std::fstream::in);
-	readBinaryTree(rootNode, fin, starts, dims);
+	readBinaryTree(rootNode, fin, starts, dims, entropys, eig_vals, eig_vecs);
 }
 
 

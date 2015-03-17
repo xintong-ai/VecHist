@@ -588,8 +588,10 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	//dataManager->LoadVec("D:/data/sample/sample_two_halves.vec");
 		//dataManager->LoadVec("D:/data/sample/test1.vec");
 	//dataManager->LoadVec("C:/Users/tong.tong-idea/SkyDrive/share/15plume3d430.vec");
-	//dataManager->LoadVec("D:/data/plume/15plume3d421.vec");
-	dataManager->LoadVec("D:/data/brain_dti/vector-field.vec");
+	dataManager->LoadVec("D:/data/plume/15plume3d421.vec");
+	//dataManager->LoadVec("D:/data/nek/nek.d_4.vec");
+	
+	//dataManager->LoadVec("D:/data/brain_dti/vector-field.vec");
 	//dataManager->LoadVec("D:/data/isabel/UVWf01.vec");
 	//dataManager->LoadVec("D:/data/nek/nek.d_4.vec");
 	//dataManager->LoadVec("D:/data/tornado/1.vec");
@@ -678,6 +680,7 @@ void Scene::initGL()
 {
 	initializeGLFunctions();
 	m_vecWidget = new GLSphere(1.0f, 0.5f, 10);
+	//m_superWidget = new GLSuperquadric(make_float3(0.8, 0.45, 0.4), make_float3(1, 0, 0), 3, 0.5, 16);
 
     m_vertexShader = new QGLShader(QGLShader::Vertex);
     m_vertexShader->compileSourceFile(QLatin1String(":/res/boxes/basic.vsh"));
@@ -897,6 +900,7 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 	m_programs["distribution"]->bind();
 //	m_programs["distribution"]->setUniformValue("tex", GLint(0));
 	m_programs["distribution"]->setUniformValue("env", GLint(0));
+	m_programs["distribution"]->setUniformValue("view", view);
 
 #if 0
 	//draw sphere by the side
@@ -931,6 +935,8 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 	m_vecWidget->draw();
 	glPopMatrix();
 #endif
+	//glPolygonMode(GL_FRONT, GL_LINE);
+	//glPolygonMode(GL_BACK, GL_LINE);
 
 
 	if (glActiveTexture) {
@@ -948,9 +954,13 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 			nd->dim[2] / 2 + nd->start[2]);
 		float min_dim = min(min(nd->dim[0], nd->dim[1]), nd->dim[2]);
 		glScalef(min_dim, min_dim, min_dim);
-		glScalef(0.5, 0.5, 0.5);
+		//Scale the size of glyphs
+		//glScalef(0.5, 0.5, 0.5);
 		tex->bind();
-		m_vecWidget->draw();
+		//m_vecWidget->draw();
+		//m_superWidget->draw();
+		nd->glyph->draw();
+		
 		tex->unbind();
 		glPopMatrix();
 
@@ -980,12 +990,34 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 	glPushMatrix();
 	glTranslatef(qnx / 2 + qx, qny / 2 + qy, qnz / 2 + qz);
 	glScalef(minqsize, minqsize, minqsize);
+	//this following line has to be called
 	m_vecWidget->draw();
 	glPopMatrix();
 
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	/********end******/
 	m_programs["sphere_brush"]->release();
+
+	glLineWidth(8.0f);
+	float axis_len = 32;
+	glColor3f(1.0f, 0.0f, 0.0f);
+	glBegin(GL_LINES);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glVertex3f(1.0f * axis_len, 0.0f, 0.0f);
+	glEnd();
+
+	glColor3f(0.0f, 1.0f, 0.0f);
+	glBegin(GL_LINES);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 2.0f * axis_len, 0.0f);
+	glEnd();
+
+	glColor3f(0.0f, 0.0f, 1.0f);
+	glBegin(GL_LINES);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 3.0f * axis_len);
+	glEnd();
+	glLineWidth(1.0f);
 
 	//draw streamlines
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -1083,9 +1115,9 @@ void Scene::setStates()
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    //glEnable(GL_LIGHTING);
-    //glEnable(GL_COLOR_MATERIAL);
+    //glEnable(GL_CULL_FACE);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_COLOR_MATERIAL);
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_NORMALIZE);
 
@@ -1121,12 +1153,12 @@ void Scene::defaultStates()
     //glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     glDisable(GL_DEPTH_TEST);
-    glDisable(GL_CULL_FACE);
+    //glDisable(GL_CULL_FACE);
     //glDisable(GL_LIGHTING);
     //glDisable(GL_COLOR_MATERIAL);
     glDisable(GL_TEXTURE_2D);
-    glDisable(GL_LIGHT0);
-    glDisable(GL_NORMALIZE);
+   // glDisable(GL_LIGHT0);
+    //glDisable(GL_NORMALIZE);
 
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();

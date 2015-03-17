@@ -4,7 +4,7 @@
 #include <vector_types.h>
 #include <vector_functions.h>
 #include "OSUFlow.h"
-
+#include "glSuperquadric.h"
 
 
 using namespace std;
@@ -96,9 +96,13 @@ struct NodeBi
 	NodeBi* left;
 	NodeBi* right;
 
+	GLSuperquadric* glyph;
+
 	NodeBi(
 		int _start0, int _start1, int _start2,
 		int _dim0, int _dim1, int _dim2,
+		float entropy,
+		float3 eig_vals, float3 eig_vec_0, float3 eig_vec_1, float3 eig_vec_2,
 		int _cube_size, int _level)
 	{
 		//cubemap = _cubemap;
@@ -121,17 +125,18 @@ struct NodeBi
 		left = nullptr;
 		right = nullptr;
 
+		glyph = new GLSuperquadric(eig_vals, eig_vec_0, eig_vec_1, eig_vec_2, 3, 0.5, 16);
 		//for (int i = 0; i < 6; i++)	{
 		//	neighbor[i] = nullptr;
 		//	flux[6] = 0;
 		//}
 	}
 
-	NodeBi(int *_start, int *_dim, int _cube_size, int _level) :
-		NodeBi(_start[0], _start[1], _start[2],
-		_dim[0], _dim[1], _dim[2],
-		_cube_size, _level)
-	{}
+	//NodeBi(int *_start, int *_dim, int _cube_size, int _level) :
+	//	NodeBi(_start[0], _start[1], _start[2],
+	//	_dim[0], _dim[1], _dim[2],
+	//	_cube_size, _level)
+	//{}
 
 
 	NodeBi(){
@@ -187,7 +192,8 @@ class DataManager
 	void ComputeCubemapNode(NodeBi *&nd);
 	void GetDescendantNodes(vector<NodeBi*> &ret, NodeBi* nd);
 	void LoadOSUFlow(char* filename);
-	void readBinaryTree(NodeBi *&p, ifstream &fin, vector<float3> starts, vector<float3> dims);
+	void readBinaryTree(NodeBi *&p, ifstream &fin, vector<float3> starts, vector<float3> dims,
+		vector<float> entropys, vector<float3> eig_vals, vector<float3> eig_vecs);
 
 
 public:

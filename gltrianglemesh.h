@@ -58,6 +58,13 @@
 //============================================================================//
 //                                GLRoundedBox                                //
 //============================================================================//
+struct P3T2N3Vertex
+{
+	QVector3D position;
+	QVector3D texCoord;
+	QVector3D normal;
+	static VertexDescription description[];
+};
 
 
 template<class TVertex, class TIndex>
