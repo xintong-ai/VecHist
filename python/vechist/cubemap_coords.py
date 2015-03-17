@@ -522,47 +522,8 @@ def SplitEntropy(ret, _d_idx, d_3d, cubemap_size):
                 :]
 
 
-    startT = time.time()
-    print ('Unoptimized Version:')
-    print('-------------------------------------------------------------------')
-    for spl_pt in range(1, ret.dim[imax]):
-    #for spl_pt in range(1, 5):
-        if(imax == 0):
-            side1 = m_idx[:spl_pt, :, :]
-            side2 = m_idx[spl_pt:, :, :]
-            #start_pos_2[0] += spl_pt
-        elif(imax == 1):
-            side1 = m_idx[:, :spl_pt, :]
-            side2 = m_idx[:, spl_pt:, :]
-            #start_pos_2[1] += spl_pt
-        else:
-            side1 = m_idx[:, :, :spl_pt]
-            side2 = m_idx[:, :, spl_pt:]
-            #start_pos_2[2] += spl_pt
-        ##########print("percentage: " + str(float(spl_pt) / ret.dim[imax]))
-        cube_hist_1 = GenCubemap(side1.ravel(), cubemap_size)
-        cube_hist_2 = GenCubemap(side2.ravel(), cubemap_size)
-        #print("Cube hist 1:")
-        #print(cube_hist_1)
-        #print("Cube hist 2:")
-        #print(cube_hist_2)
-
-        entropy_1 = get_histogram_entropy(cube_hist_1.ravel())
-        #print "Entropy 1: " + str(entropy_1)
-        entropy_2 = get_histogram_entropy(cube_hist_2.ravel())
-        #print "Entropy 2: " + str(entropy_2)
-        p1 = float(spl_pt) / ret.dim[imax]
-        entropy_sum.append(entropy_1 * p1 + entropy_2 * ( 1.0 - p1))
-        #print('p1: ' + str(p1))
-        #print('Current entropy sum:')
-        #print(entropy_sum)
-
     #print('Final Entropy Sum:')
     #print(entropy_sum)
-    endT = time.time()
-    print('Total time for unoptimized version is: ' + str(endT - startT))
-
-    entropy_sum = []
 
     startT = time.time()
     print ('Optimized Version:')
@@ -666,7 +627,9 @@ def SplitEntropy(ret, _d_idx, d_3d, cubemap_size):
     endT = time.time()
     print('Total time for optimized version is: ' + str(endT - startT))
 
-    print('--------------------------------------------------------------')
+    # print('--------------------------------------------------------------')
+    # print('End of Optimized Version')
+    # print('--------------------------------------------------------------')
 
     spl_pt = np.argmin(np.array(entropy_sum)) + 1
 
