@@ -47,8 +47,10 @@
 
 //#include "3rdparty/fbm.h"
 #include <memory>
-#include <driver_types.h>
-#include <driver_functions.h>
+//#include <driver_types.h>
+//#include <driver_functions.h>
+//#include <helper_cuda.h>
+#include <helper_math.h>
 
 //#include <qopenglext.h>
 
@@ -64,143 +66,143 @@ extern "C" void render_kernel(dim3 gridSize, dim3 blockSize, uint *d_output, uin
 extern "C" void copyInvProjMulViewMatrix(float *InvProjMulViewMatrix, size_t sizeofMatrix);
 extern "C" void copyDataDim(int *dataDim, size_t size);
 
-#define SWAP_ROWS_FLOAT(a, b) { float *_tmp = a; (a) = (b); (b) = _tmp; }
-#define MAT(m,r,c) (m)[(c)*4+(r)]
+//#define SWAP_ROWS_FLOAT(a, b) { float *_tmp = a; (a) = (b); (b) = _tmp; }
+//#define MAT(m,r,c) (m)[(c)*4+(r)]
 
-inline float3 operator*(const float3 &a, const float &b) {
-	return make_float3(a.x * b, a.y * b, a.z * b);
-}
+//inline float3 operator*(const float3 &a, const float &b) {
+//	return make_float3(a.x * b, a.y * b, a.z * b);
+//}
 
-inline float3 operator+(const float3 &a, const float3 &b) {
-	return make_float3(a.x + b.x, a.y + b.y, a.z + b.z);
-}
+//inline float3 operator+(const float3 &a, const float3 &b) {
+//	return make_float3(a.x + b.x, a.y + b.y, a.z + b.z);
+//}
+//
+//inline float3 operator-(const float3 &a, const float3 &b) {
+//	return make_float3(a.x - b.x, a.y - b.y, a.z - b.z);
+//}
+//
+//inline float3 cross(float3 a, float3 b)
+//{
+//	return make_float3(a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x);
+//}
+//
+//inline float dot(float3 a, float3 b)
+//{
+//	return a.x * b.x + a.y * b.y + a.z * b.z;
+//}
+//
+//
 
-inline float3 operator-(const float3 &a, const float3 &b) {
-	return make_float3(a.x - b.x, a.y - b.y, a.z - b.z);
-}
-
-inline float3 cross(float3 a, float3 b)
-{
-	return make_float3(a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x);
-}
-
-inline float dot(float3 a, float3 b)
-{
-	return a.x * b.x + a.y * b.y + a.z * b.z;
-}
-
-
-
-void sort_points(float3 *points, unsigned point_count, const float4 &plane)
-{
-	if (point_count == 0) return;
-
-	const float3 plane_normal = make_float3(plane.x, plane.y, plane.z);
-	const float3 origin = points[0];
-
-	std::sort(points, points + point_count, [&](const float3 &lhs, const float3 &rhs) -> bool {
-		float3 v;
-		v = cross((lhs - origin), (rhs - origin));
-		return dot(v, plane_normal) > 0;
-	});
-}
-
-bool ray_to_plane(const float3 &RayOrig, const float3 &RayDir, const float4 &Plane, float *OutT, float *OutVD)
-{
-	*OutVD = Plane.x * RayDir.x + Plane.y * RayDir.y + Plane.z * RayDir.z;
-	if (*OutVD == 0.0f)
-		return false;
-	*OutT = -(Plane.x * RayOrig.x + Plane.y * RayOrig.y + Plane.z * RayOrig.z + Plane.w) / *OutVD;
-	return true;
-}
-
-void calc_plane_aabb_intersection_points(const float4 &plane,
-	const float3 &aabb_min, const float3 &aabb_max,
-	float3 *out_points, unsigned &out_point_count)
-{
-	out_point_count = 0;
-	float vd, t;
-
-	// Test edges along X axis, pointing right.
-	float3 dir = make_float3(aabb_max.x - aabb_min.x, 0.f, 0.f);
-	float3 orig = aabb_min;
-	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
-		out_points[out_point_count++] = orig + dir * t;
-	orig = make_float3(aabb_min.x, aabb_max.y, aabb_min.z);
-	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
-		out_points[out_point_count++] = orig + dir * t;
-	orig = make_float3(aabb_min.x, aabb_min.y, aabb_max.z);
-	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
-		out_points[out_point_count++] = orig + dir * t;
-	orig = make_float3(aabb_min.x, aabb_max.y, aabb_max.z);
-	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
-		out_points[out_point_count++] = orig + dir * t;
-
-	// Test edges along Y axis, pointing up.
-	dir = make_float3(0.f, aabb_max.y - aabb_min.y, 0.f);
-	orig = make_float3(aabb_min.x, aabb_min.y, aabb_min.z);
-	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
-		out_points[out_point_count++] = orig + dir * t;
-	orig = make_float3(aabb_max.x, aabb_min.y, aabb_min.z);
-	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
-		out_points[out_point_count++] = orig + dir * t;
-	orig = make_float3(aabb_min.x, aabb_min.y, aabb_max.z);
-	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
-		out_points[out_point_count++] = orig + dir * t;
-	orig = make_float3(aabb_max.x, aabb_min.y, aabb_max.z);
-	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
-		out_points[out_point_count++] = orig + dir * t;
-
-	// Test edges along Z axis, pointing forward.
-	dir = make_float3(0.f, 0.f, aabb_max.z - aabb_min.z);
-	orig = make_float3(aabb_min.x, aabb_min.y, aabb_min.z);
-	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
-		out_points[out_point_count++] = orig + dir * t;
-	orig = make_float3(aabb_max.x, aabb_min.y, aabb_min.z);
-	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
-		out_points[out_point_count++] = orig + dir * t;
-	orig = make_float3(aabb_min.x, aabb_max.y, aabb_min.z);
-	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
-		out_points[out_point_count++] = orig + dir * t;
-	orig = make_float3(aabb_max.x, aabb_max.y, aabb_min.z);
-	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
-		out_points[out_point_count++] = orig + dir * t;
-}
-
-typedef struct {
-	double r, g, b;
-} COLOUR;
-
-COLOUR GetColour(double v, double vmin, double vmax)
-{
-	COLOUR c = { 1.0, 1.0, 1.0 }; // white
-	double dv;
-
-	if (v < vmin)
-		v = vmin;
-	if (v > vmax)
-		v = vmax;
-	dv = vmax - vmin;
-
-	if (v < (vmin + 0.25 * dv)) {
-		c.r = 0;
-		c.g = 4 * (v - vmin) / dv;
-	}
-	else if (v < (vmin + 0.5 * dv)) {
-		c.r = 0;
-		c.b = 1 + 4 * (vmin + 0.25 * dv - v) / dv;
-	}
-	else if (v < (vmin + 0.75 * dv)) {
-		c.r = 4 * (v - vmin - 0.5 * dv) / dv;
-		c.b = 0;
-	}
-	else {
-		c.g = 1 + 4 * (vmin + 0.75 * dv - v) / dv;
-		c.b = 0;
-	}
-
-	return(c);
-}
+//void sort_points(float3 *points, unsigned point_count, const float4 &plane)
+//{
+//	if (point_count == 0) return;
+//
+//	const float3 plane_normal = make_float3(plane.x, plane.y, plane.z);
+//	const float3 origin = points[0];
+//
+//	std::sort(points, points + point_count, [&](const float3 &lhs, const float3 &rhs) -> bool {
+//		float3 v;
+//		v = cross((lhs - origin), (rhs - origin));
+//		return dot(v, plane_normal) > 0;
+//	});
+//}
+//
+//bool ray_to_plane(const float3 &RayOrig, const float3 &RayDir, const float4 &Plane, float *OutT, float *OutVD)
+//{
+//	*OutVD = Plane.x * RayDir.x + Plane.y * RayDir.y + Plane.z * RayDir.z;
+//	if (*OutVD == 0.0f)
+//		return false;
+//	*OutT = -(Plane.x * RayOrig.x + Plane.y * RayOrig.y + Plane.z * RayOrig.z + Plane.w) / *OutVD;
+//	return true;
+//}
+//
+//void calc_plane_aabb_intersection_points(const float4 &plane,
+//	const float3 &aabb_min, const float3 &aabb_max,
+//	float3 *out_points, unsigned &out_point_count)
+//{
+//	out_point_count = 0;
+//	float vd, t;
+//
+//	// Test edges along X axis, pointing right.
+//	float3 dir = make_float3(aabb_max.x - aabb_min.x, 0.f, 0.f);
+//	float3 orig = aabb_min;
+//	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
+//		out_points[out_point_count++] = orig + dir * t;
+//	orig = make_float3(aabb_min.x, aabb_max.y, aabb_min.z);
+//	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
+//		out_points[out_point_count++] = orig + dir * t;
+//	orig = make_float3(aabb_min.x, aabb_min.y, aabb_max.z);
+//	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
+//		out_points[out_point_count++] = orig + dir * t;
+//	orig = make_float3(aabb_min.x, aabb_max.y, aabb_max.z);
+//	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
+//		out_points[out_point_count++] = orig + dir * t;
+//
+//	// Test edges along Y axis, pointing up.
+//	dir = make_float3(0.f, aabb_max.y - aabb_min.y, 0.f);
+//	orig = make_float3(aabb_min.x, aabb_min.y, aabb_min.z);
+//	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
+//		out_points[out_point_count++] = orig + dir * t;
+//	orig = make_float3(aabb_max.x, aabb_min.y, aabb_min.z);
+//	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
+//		out_points[out_point_count++] = orig + dir * t;
+//	orig = make_float3(aabb_min.x, aabb_min.y, aabb_max.z);
+//	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
+//		out_points[out_point_count++] = orig + dir * t;
+//	orig = make_float3(aabb_max.x, aabb_min.y, aabb_max.z);
+//	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
+//		out_points[out_point_count++] = orig + dir * t;
+//
+//	// Test edges along Z axis, pointing forward.
+//	dir = make_float3(0.f, 0.f, aabb_max.z - aabb_min.z);
+//	orig = make_float3(aabb_min.x, aabb_min.y, aabb_min.z);
+//	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
+//		out_points[out_point_count++] = orig + dir * t;
+//	orig = make_float3(aabb_max.x, aabb_min.y, aabb_min.z);
+//	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
+//		out_points[out_point_count++] = orig + dir * t;
+//	orig = make_float3(aabb_min.x, aabb_max.y, aabb_min.z);
+//	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
+//		out_points[out_point_count++] = orig + dir * t;
+//	orig = make_float3(aabb_max.x, aabb_max.y, aabb_min.z);
+//	if (ray_to_plane(orig, dir, plane, &t, &vd) && t >= 0.f && t <= 1.f)
+//		out_points[out_point_count++] = orig + dir * t;
+//}
+//
+//typedef struct {
+//	double r, g, b;
+//} COLOUR;
+//
+//COLOUR GetColour(double v, double vmin, double vmax)
+//{
+//	COLOUR c = { 1.0, 1.0, 1.0 }; // white
+//	double dv;
+//
+//	if (v < vmin)
+//		v = vmin;
+//	if (v > vmax)
+//		v = vmax;
+//	dv = vmax - vmin;
+//
+//	if (v < (vmin + 0.25 * dv)) {
+//		c.r = 0;
+//		c.g = 4 * (v - vmin) / dv;
+//	}
+//	else if (v < (vmin + 0.5 * dv)) {
+//		c.r = 0;
+//		c.b = 1 + 4 * (vmin + 0.25 * dv - v) / dv;
+//	}
+//	else if (v < (vmin + 0.75 * dv)) {
+//		c.r = 4 * (v - vmin - 0.5 * dv) / dv;
+//		c.b = 0;
+//	}
+//	else {
+//		c.g = 1 + 4 * (vmin + 0.75 * dv - v) / dv;
+//		c.b = 0;
+//	}
+//
+//	return(c);
+//}
 
 void checkGLErrors(const QString& prefix)
 {
@@ -232,93 +234,93 @@ void checkGLErrors(const QString& prefix)
     }
 }
 
-void renderCylinder(float x1, float y1, float z1, float x2, float y2, float z2, float radius, int subdivisions, GLUquadricObj *quadric)
-{
-	float vx = x2 - x1;
-	float vy = y2 - y1;
-	float vz = z2 - z1;
-
-	//handle the degenerate case of z1 == z2 with an approximation
-	if (vz == 0)
-		vz = .0001;
-
-	float v = sqrt(vx*vx + vy*vy + vz*vz);
-	float ax = 57.2957795*acos(vz / v);
-	if (vz < 0.0)
-		ax = -ax;
-	float rx = -vy*vz;
-	float ry = vx*vz;
-	glPushMatrix();
-
-	//draw the cylinder body
-	glTranslatef(x1, y1, z1);
-	glRotatef(ax, rx, ry, 0.0);
-	gluQuadricOrientation(quadric, GLU_OUTSIDE);
-	gluCylinder(quadric, radius, radius, v, subdivisions, 1);
-
-	////draw the first cap
-	//gluQuadricOrientation(quadric, GLU_INSIDE);
-	//gluDisk(quadric, 0.0, radius, subdivisions, 1);
-	//glTranslatef(0, 0, v);
-
-	////draw the second cap
-	//gluQuadricOrientation(quadric, GLU_OUTSIDE);
-	//gluDisk(quadric, 0.0, radius, subdivisions, 1);
-	glPopMatrix();
-}
-
-void renderCylinder_convenient(float x1, float y1, float z1, float x2, float y2, float z2, float radius, int subdivisions)
-{
-	//the same quadric can be re-used for drawing many cylinders
-	GLUquadricObj *quadric = gluNewQuadric();
-	gluQuadricNormals(quadric, GLU_SMOOTH);
-	renderCylinder(x1, y1, z1, x2, y2, z2, radius, subdivisions, quadric);
-	gluDeleteQuadric(quadric);
-}
-
-void renderCone(float x1, float y1, float z1, float x2, float y2, float z2, float radius, int subdivisions, GLUquadricObj *quadric)
-{
-	float vx = x2 - x1;
-	float vy = y2 - y1;
-	float vz = z2 - z1;
-
-	//handle the degenerate case of z1 == z2 with an approximation
-	if (vz == 0)
-		vz = .0001;
-
-	float v = sqrt(vx*vx + vy*vy + vz*vz);
-	float ax = 57.2957795*acos(vz / v);
-	if (vz < 0.0)
-		ax = -ax;
-	float rx = -vy*vz;
-	float ry = vx*vz;
-	glPushMatrix();
-
-	//draw the cylinder body
-	glTranslatef(x1, y1, z1);
-	glRotatef(ax, rx, ry, 0.0);
-	gluQuadricOrientation(quadric, GLU_OUTSIDE);
-	gluCylinder(quadric, radius, radius * 0.1, v, subdivisions, 1);
-
-	////draw the first cap
-	//gluQuadricOrientation(quadric, GLU_INSIDE);
-	//gluDisk(quadric, 0.0, radius, subdivisions, 1);
-	//glTranslatef(0, 0, v);
-
-	////draw the second cap
-	//gluQuadricOrientation(quadric, GLU_OUTSIDE);
-	//gluDisk(quadric, 0.0, radius, subdivisions, 1);
-	glPopMatrix();
-}
-
-void renderCone_convenient(float x1, float y1, float z1, float x2, float y2, float z2, float radius, int subdivisions)
-{
-	//the same quadric can be re-used for drawing many cylinders
-	GLUquadricObj *quadric = gluNewQuadric();
-	gluQuadricNormals(quadric, GLU_SMOOTH);
-	renderCone(x1, y1, z1, x2, y2, z2, radius, subdivisions, quadric);
-	gluDeleteQuadric(quadric);
-}
+//void renderCylinder(float x1, float y1, float z1, float x2, float y2, float z2, float radius, int subdivisions, GLUquadricObj *quadric)
+//{
+//	float vx = x2 - x1;
+//	float vy = y2 - y1;
+//	float vz = z2 - z1;
+//
+//	//handle the degenerate case of z1 == z2 with an approximation
+//	if (vz == 0)
+//		vz = .0001;
+//
+//	float v = sqrt(vx*vx + vy*vy + vz*vz);
+//	float ax = 57.2957795*acos(vz / v);
+//	if (vz < 0.0)
+//		ax = -ax;
+//	float rx = -vy*vz;
+//	float ry = vx*vz;
+//	glPushMatrix();
+//
+//	//draw the cylinder body
+//	glTranslatef(x1, y1, z1);
+//	glRotatef(ax, rx, ry, 0.0);
+//	gluQuadricOrientation(quadric, GLU_OUTSIDE);
+//	gluCylinder(quadric, radius, radius, v, subdivisions, 1);
+//
+//	////draw the first cap
+//	//gluQuadricOrientation(quadric, GLU_INSIDE);
+//	//gluDisk(quadric, 0.0, radius, subdivisions, 1);
+//	//glTranslatef(0, 0, v);
+//
+//	////draw the second cap
+//	//gluQuadricOrientation(quadric, GLU_OUTSIDE);
+//	//gluDisk(quadric, 0.0, radius, subdivisions, 1);
+//	glPopMatrix();
+//}
+//
+//void renderCylinder_convenient(float x1, float y1, float z1, float x2, float y2, float z2, float radius, int subdivisions)
+//{
+//	//the same quadric can be re-used for drawing many cylinders
+//	GLUquadricObj *quadric = gluNewQuadric();
+//	gluQuadricNormals(quadric, GLU_SMOOTH);
+//	renderCylinder(x1, y1, z1, x2, y2, z2, radius, subdivisions, quadric);
+//	gluDeleteQuadric(quadric);
+//}
+//
+//void renderCone(float x1, float y1, float z1, float x2, float y2, float z2, float radius, int subdivisions, GLUquadricObj *quadric)
+//{
+//	float vx = x2 - x1;
+//	float vy = y2 - y1;
+//	float vz = z2 - z1;
+//
+//	//handle the degenerate case of z1 == z2 with an approximation
+//	if (vz == 0)
+//		vz = .0001;
+//
+//	float v = sqrt(vx*vx + vy*vy + vz*vz);
+//	float ax = 57.2957795*acos(vz / v);
+//	if (vz < 0.0)
+//		ax = -ax;
+//	float rx = -vy*vz;
+//	float ry = vx*vz;
+//	glPushMatrix();
+//
+//	//draw the cylinder body
+//	glTranslatef(x1, y1, z1);
+//	glRotatef(ax, rx, ry, 0.0);
+//	gluQuadricOrientation(quadric, GLU_OUTSIDE);
+//	gluCylinder(quadric, radius, radius * 0.1, v, subdivisions, 1);
+//
+//	////draw the first cap
+//	//gluQuadricOrientation(quadric, GLU_INSIDE);
+//	//gluDisk(quadric, 0.0, radius, subdivisions, 1);
+//	//glTranslatef(0, 0, v);
+//
+//	////draw the second cap
+//	//gluQuadricOrientation(quadric, GLU_OUTSIDE);
+//	//gluDisk(quadric, 0.0, radius, subdivisions, 1);
+//	glPopMatrix();
+//}
+//
+//void renderCone_convenient(float x1, float y1, float z1, float x2, float y2, float z2, float radius, int subdivisions)
+//{
+//	//the same quadric can be re-used for drawing many cylinders
+//	GLUquadricObj *quadric = gluNewQuadric();
+//	gluQuadricNormals(quadric, GLU_SMOOTH);
+//	renderCone(x1, y1, z1, x2, y2, z2, radius, subdivisions, quadric);
+//	gluDeleteQuadric(quadric);
+//}
 
 //============================================================================//
 //                           TwoSidedGraphicsWidget                           //
@@ -576,7 +578,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
     //, m_currentTexture(0)
     , m_dynamicCubemap(false)
     //, m_updateAllCubemaps(true)
-    , m_vecWidget(0)
+    //, m_vecWidget(0)
     , m_vertexShader(0)
     //, m_environmentShader(0)
     //, m_environmentProgram(0)
@@ -599,18 +601,18 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
 	m_width = width;
 	m_height = height;
-	blockSize.x = 16;
-	blockSize.y = 16;
-	gridSize = dim3(iDivUp(width, blockSize.x), iDivUp(height, blockSize.y));
+	//blockSize.x = 16;
+	//blockSize.y = 16;
+	//gridSize = dim3(iDivUp(width, blockSize.x), iDivUp(height, blockSize.y));
 
 
     setSceneRect(0, 0, width, height);
 
     m_trackBalls[0] = TrackBall(0.05f, QVector3D(0, 1, 0), TrackBall::Sphere);
     //m_trackBalls[1] = TrackBall(0.005f, QVector3D(0, 0, 1), TrackBall::Sphere);
-    m_trackBalls[2] = TrackBall(0.0f, QVector3D(0, 1, 0), TrackBall::Plane);
+    //m_trackBalls[2] = TrackBall(0.0f, QVector3D(0, 1, 0), TrackBall::Plane);
 
-    m_renderOptions = new RenderOptionsDialog;
+    m_renderOptions = new RenderOptionsDialog();
     m_renderOptions->move(20, 120);
     m_renderOptions->resize(m_renderOptions->sizeHint());
 
@@ -618,28 +620,29 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	dataManager->GetVolumeSize(nx, ny, nz);
 	m_renderOptions->setBlock(0, 0, 0, nx, ny, nz);
 
-	ShowGpuMemInfo();
-	m_vec3DTex = new GLTexture3D(nx, ny, nz);
-	m_vec3DTex->load(nx, ny, nz, dataManager->GetVecDataXFirst());
+	//ShowGpuMemInfo();
+	//m_vec3DTex = new GLTexture3D(nx, ny, nz);
+	//m_vec3DTex->load(nx, ny, nz, dataManager->GetVecDataXFirst());
 	cout << "Loading 3D texture..." << endl;
-	ShowGpuMemInfo();
+	//ShowGpuMemInfo();
 
-	initPixelBuffer();
+	//initPixelBuffer();
 	
-    connect(m_renderOptions, SIGNAL(colorParameterChanged(QString,QRgb)), this, SLOT(setColorParameter(QString,QRgb)));
+    //connect(m_renderOptions, SIGNAL(colorParameterChanged(QString,QRgb)), this, SLOT(setColorParameter(QString,QRgb)));
     connect(m_renderOptions, SIGNAL(floatParameterChanged(QString,float)), this, SLOT(setFloatParameter(QString,float)));
-    connect(m_renderOptions, SIGNAL(shaderChanged(int)), this, SLOT(setShader(int)));
+    //connect(m_renderOptions, SIGNAL(shaderChanged(int)), this, SLOT(setShader(int)));
 	connect(m_renderOptions, SIGNAL(blockChanged(int, int, int, int, int, int)), 
 		this, SLOT(UpdateBlock(int, int, int, int, int, int)));
 	connect(m_renderOptions, SIGNAL(queryChanged(int, int, int)), this, SLOT(UpdateQuery(int, int, int)));
 	connect(m_renderOptions, SIGNAL(segmentationRequested()), this, SLOT(Segmentation()));
 
     TwoSidedGraphicsWidget *twoSided = new TwoSidedGraphicsWidget(this);
+	//QDockWidget *dock = new QDockWidget(QString(tr("Parameters")), this);
     twoSided->setWidget(0, m_renderOptions);
 
     initGL();
 	//TODO: when width and height changes, this function should be called again
-	InitPicking(m_width, m_height);
+	//InitPicking(m_width, m_height);
 
 
     m_timer = new QTimer(this);
@@ -650,10 +653,10 @@ Scene::Scene(int width, int height, int maxTextureSize)
     m_time.start();
 
 
-	for (int i = 0; i < 500; i++)	{
-		COLOUR tmp = GetColour(i, 0, 500);
-		colorMap.push_back(make_float3(tmp.r, tmp.g, tmp.b));
-	}
+	//for (int i = 0; i < 500; i++)	{
+	//	COLOUR tmp = GetColour(i, 0, 500);
+	//	colorMap.push_back(make_float3(tmp.r, tmp.g, tmp.b));
+	//}
 }
 
 Scene::~Scene()
@@ -670,7 +673,7 @@ Scene::~Scene()
         if (shader) delete shader;
     //foreach (GLRenderTargetCube *rt, m_cubemaps)
     //    if (rt) delete rt;
-	delete m_vec3DTex;
+	//delete m_vec3DTex;
 
 	cudaDeviceReset();
 	cleanup();
@@ -865,7 +868,7 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 	int nx, ny, nz;
 	dataManager->GetVolumeSize(nx, ny, nz);
 	int dataDim[3] = { nx, ny, nz };
-	copyDataDim(dataDim, sizeof(int3));
+	//copyDataDim(dataDim, sizeof(int3));
 
 	int qx, qy, qz;
 	int qnx, qny, qnz;
@@ -886,16 +889,16 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 	float s = 1.0f / maxdim;
 	glScalef(s, s, s);
 	//glTranslatef(m_translate[0], m_translate[1], m_translate[2]);
-	glTranslatef(-(0 + nx / 2), -(0 + ny / 2), -(0 + nz / 2));
+	glTranslatef(-(nx - 1) * 0.5, -(ny - 1) * 0.5, -(nz - 1)* 0.5);
 
 	/****** Volume rendering ******/
 	//displayVolume();
 
-	/***** Draw sphere ****/
-	if (glActiveTexture) {
-		glActiveTexture(GL_TEXTURE0);
-		m_environment->bind();
-	}
+	///***** Draw sphere ****/
+	//if (glActiveTexture) {
+	//	glActiveTexture(GL_TEXTURE0);
+	//	m_environment->bind();
+	//}
 
 	m_programs["distribution"]->bind();
 //	m_programs["distribution"]->setUniformValue("tex", GLint(0));
@@ -939,9 +942,9 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 	//glPolygonMode(GL_BACK, GL_LINE);
 
 
-	if (glActiveTexture) {
-		m_environment->unbind();
-	}
+	//if (glActiveTexture) {
+	//	m_environment->unbind();
+	//}
 
 
 	for (int i = 0; i < leafNodes.size(); i++)	{
@@ -982,21 +985,21 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 	}
 	m_programs["distribution"]->release();
 
-	m_programs["sphere_brush"]->bind();
-	/********Draw for picking******/
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_fbo);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	//draw sphere at the queried region
-	glPushMatrix();
-	glTranslatef(qnx / 2 + qx, qny / 2 + qy, qnz / 2 + qz);
-	glScalef(minqsize, minqsize, minqsize);
-	//this following line has to be called
-	m_vecWidget->draw();
-	glPopMatrix();
-
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-	/********end******/
-	m_programs["sphere_brush"]->release();
+//	m_programs["sphere_brush"]->bind();
+//	/********Draw for picking******/
+//	//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_fbo);
+////	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//	//draw sphere at the queried region
+//	glPushMatrix();
+//	glTranslatef(qnx / 2 + qx, qny / 2 + qy, qnz / 2 + qz);
+//	glScalef(minqsize, minqsize, minqsize);
+//	//this following line has to be called
+//	m_vecWidget->draw();
+//	glPopMatrix();
+//
+//	//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+//	/********end******/
+//	m_programs["sphere_brush"]->release();
 
 	glLineWidth(8.0f);
 	float axis_len = 32;
@@ -1020,8 +1023,11 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 	glLineWidth(1.0f);
 
 	//draw streamlines
+	//glUseProgram(0);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	vector<vector<float4>> lines = dataManager->GetStreamlines();
+	//TODO: figure out why I have to put the following line
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	for (auto line : lines)
 	{
 		// activate and specify pointer to vertex array
@@ -1029,7 +1035,7 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 		glEnableClientState(GL_VERTEX_ARRAY);
 
 		//glColorPointer(3, GL_FLOAT, line.size() * sizeof(float3), &colorMap[0]);
-		glVertexPointer(4, GL_FLOAT, 0, &line[0].x);
+		glVertexPointer(4, GL_FLOAT, 0, &(line[0].x));
 
 		// draw a cube
 		//TODO: uncomment
@@ -1040,60 +1046,60 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 		//glDisableClientState(GL_COLOR_ARRAY);
 	}
 
-	glColor4f(1.0f, 0.0f, 0.0f, 1.0f);
-	vector<vector<float4>> linesInCube = dataManager->GetStreamlinesInCube();
-	for (auto line : linesInCube)
-	{
-		// activate and specify pointer to vertex array
-		//glEnableClientState(GL_COLOR_ARRAY);
-		glEnableClientState(GL_VERTEX_ARRAY);
+	//glColor4f(1.0f, 0.0f, 0.0f, 1.0f);
+	//vector<vector<float4>> linesInCube = dataManager->GetStreamlinesInCube();
+	//for (auto line : linesInCube)
+	//{
+	//	// activate and specify pointer to vertex array
+	//	//glEnableClientState(GL_COLOR_ARRAY);
+	//	glEnableClientState(GL_VERTEX_ARRAY);
 
-		//glColorPointer(3, GL_FLOAT, line.size() * sizeof(float3), &colorMap[0]);
-		glVertexPointer(4, GL_FLOAT, 0, &line[0]);
+	//	//glColorPointer(3, GL_FLOAT, line.size() * sizeof(float3), &colorMap[0]);
+	//	glVertexPointer(4, GL_FLOAT, 0, &line[0]);
 
-		// draw a cube
-		glDrawArrays(GL_LINE_STRIP, 0, line.size());
+	//	// draw a cube
+	//	glDrawArrays(GL_LINE_STRIP, 0, line.size());
 
-		// deactivate vertex arrays after drawing
-		glDisableClientState(GL_VERTEX_ARRAY);
-		//glDisableClientState(GL_COLOR_ARRAY);
-	}
+	//	// deactivate vertex arrays after drawing
+	//	glDisableClientState(GL_VERTEX_ARRAY);
+	//	//glDisableClientState(GL_COLOR_ARRAY);
+	//}
 
-	/**********draw plane********/
-//	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	/***** Draw sphere ****/
-	m_programs["cut_plane"]->bind();
-	if (glActiveTexture) {
-		glActiveTexture(GL_TEXTURE0);
-		m_vec3DTex->bind();
-	}
-	m_programs["cut_plane"]->setUniformValue("tex", GLint(0));
-	m_programs["cut_plane"]->setUniformValue("data_dim", GLfloat(nx), GLfloat(ny), GLfloat(nz));
+//	/**********draw plane********/
+////	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+//	/***** Draw sphere ****/
+//	m_programs["cut_plane"]->bind();
+//	if (glActiveTexture) {
+//		glActiveTexture(GL_TEXTURE0);
+//		m_vec3DTex->bind();
+//	}
+//	m_programs["cut_plane"]->setUniformValue("tex", GLint(0));
+//	m_programs["cut_plane"]->setUniformValue("data_dim", GLfloat(nx), GLfloat(ny), GLfloat(nz));
+//
+//	for (CutPlane p : cutplanes){
+//		//glDrawArrays(GL_TRIANGLE_FAN, 0, );
+//		vector<float3> vs = p.vertices;
+//		QVector3D plane_normal(p.normal.x, p.normal.y, p.normal.z);
+//
+//		m_programs["cut_plane"]->setUniformValue("plane_normal",
+//			GLfloat(plane_normal.x()), GLfloat(plane_normal.y()), GLfloat(plane_normal.z()));
+//
+//		glBegin(GL_TRIANGLE_FAN);
+//
+////	glUniform1fv(glGetUniformLocation(program, "v"), 10, v);
+//		for (auto v : vs)
+//			glVertex3fv(&v.x);
+//		glEnd();
+//	}
+//	if (glActiveTexture) {
+//		m_vec3DTex->unbind();
+//	}
+//	m_programs["cut_plane"]->release();
+//	//	glPolygonMode(GL_FRONT, GL_FILL);
 
-	for (CutPlane p : cutplanes){
-		//glDrawArrays(GL_TRIANGLE_FAN, 0, );
-		vector<float3> vs = p.vertices;
-		QVector3D plane_normal(p.normal.x, p.normal.y, p.normal.z);
 
-		m_programs["cut_plane"]->setUniformValue("plane_normal",
-			GLfloat(plane_normal.x()), GLfloat(plane_normal.y()), GLfloat(plane_normal.z()));
-
-		glBegin(GL_TRIANGLE_FAN);
-
-//	glUniform1fv(glGetUniformLocation(program, "v"), 10, v);
-		for (auto v : vs)
-			glVertex3fv(&v.x);
-		glEnd();
-	}
-	if (glActiveTexture) {
-		m_vec3DTex->unbind();
-	}
-	m_programs["cut_plane"]->release();
-	//	glPolygonMode(GL_FRONT, GL_FILL);
-
-
-	renderQCube(view);
-	renderBBox(view);
+//	renderQCube(view);
+//	renderBBox(view);
 
 	//glPopMatrix();
 
@@ -1113,40 +1119,41 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 void Scene::setStates()
 {
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
-
+	glClearDepth(1.0);
     glEnable(GL_DEPTH_TEST);
+	//glDisable(GL_DEPTH_TEST);
     //glEnable(GL_CULL_FACE);
-    glEnable(GL_LIGHTING);
-    glEnable(GL_COLOR_MATERIAL);
-    glEnable(GL_TEXTURE_2D);
+    //glEnable(GL_LIGHTING);
+    //glEnable(GL_COLOR_MATERIAL);
+    //glEnable(GL_TEXTURE_2D);
     glEnable(GL_NORMALIZE);
 
     glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
+    //glPushMatrix();
     glLoadIdentity();
 
     glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
+    //glPushMatrix();
     glLoadIdentity();
 
-    setLights();
+    //setLights();
 
-    float materialSpecular[] = {0.5f, 0.5f, 0.5f, 1.0f};
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, materialSpecular);
-    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 32.0f);
+    //float materialSpecular[] = {0.5f, 0.5f, 0.5f, 1.0f};
+    //glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, materialSpecular);
+    //glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 32.0f);
 }
 
-void Scene::setLights()
-{
-    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-    //float lightColour[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    float lightDir[] = {0.0f, 0.0f, 1.0f, 0.0f};
-    //glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColour);
-    //glLightfv(GL_LIGHT0, GL_SPECULAR, lightColour);
-    glLightfv(GL_LIGHT0, GL_POSITION, lightDir);
-    glLightModelf(GL_LIGHT_MODEL_LOCAL_VIEWER, 1.0f);
-    glEnable(GL_LIGHT0);
-}
+//void Scene::setLights()
+//{
+//    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+//    //float lightColour[] = {1.0f, 1.0f, 1.0f, 1.0f};
+//    float lightDir[] = {0.0f, 0.0f, 1.0f, 0.0f};
+//    //glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColour);
+//    //glLightfv(GL_LIGHT0, GL_SPECULAR, lightColour);
+//    glLightfv(GL_LIGHT0, GL_POSITION, lightDir);
+//    glLightModelf(GL_LIGHT_MODEL_LOCAL_VIEWER, 1.0f);
+//    glEnable(GL_LIGHT0);
+//}
 
 void Scene::defaultStates()
 {
@@ -1156,20 +1163,20 @@ void Scene::defaultStates()
     //glDisable(GL_CULL_FACE);
     //glDisable(GL_LIGHTING);
     //glDisable(GL_COLOR_MATERIAL);
-    glDisable(GL_TEXTURE_2D);
+    //glDisable(GL_TEXTURE_2D);
    // glDisable(GL_LIGHT0);
     //glDisable(GL_NORMALIZE);
 
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
+    //glMatrixMode(GL_MODELVIEW);
+    //glPopMatrix();
 
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
+    //glMatrixMode(GL_PROJECTION);
+    //glPopMatrix();
 
-    glLightModelf(GL_LIGHT_MODEL_LOCAL_VIEWER, 0.0f);
-    float defaultMaterialSpecular[] = {0.0f, 0.0f, 0.0f, 1.0f};
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, defaultMaterialSpecular);
-    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 0.0f);
+    //glLightModelf(GL_LIGHT_MODEL_LOCAL_VIEWER, 0.0f);
+    //float defaultMaterialSpecular[] = {0.0f, 0.0f, 0.0f, 1.0f};
+    //glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, defaultMaterialSpecular);
+    //glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 0.0f);
 }
 
 void Scene::drawBackground(QPainter *painter, const QRectF &)
@@ -1200,17 +1207,17 @@ void Scene::drawBackground(QPainter *painter, const QRectF &)
    // ++m_frame;
 
 
-	QString framesPerSecond;
-	framesPerSecond.setNum(m_frame / (m_time.elapsed() / 1000.0), 'f', 2);
+	//QString framesPerSecond;
+	//framesPerSecond.setNum(m_frame / (m_time.elapsed() / 1000.0), 'f', 2);
 
-	painter->setPen(Qt::white);
+	//painter->setPen(Qt::white);
 
-	painter->drawText(20, 40, framesPerSecond + " fps");
-	//cout << "FPS: " << framesPerSecond.toStdString() << endl;
+	//painter->drawText(20, 40, framesPerSecond + " fps");
+	////cout << "FPS: " << framesPerSecond.toStdString() << endl;
 
-	//painter->end();
+	////painter->end();
 
-	painter->endNativePainting();
+	//painter->endNativePainting();
 
 	if (!(m_frame % 100)) {
 		m_time.start();
@@ -1232,15 +1239,16 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         return;
 
     if (event->buttons() & Qt::LeftButton) {
+		//we have to use m_trackBalls[2]
         m_trackBalls[0].move(pixelPosToViewPos(event->scenePos()), m_trackBalls[2].rotation().conjugate());
         event->accept();
 	}
-	else if (event->buttons() & Qt::LeftButton) {
-		m_trackBalls[0].translate(pixelPosToViewPos(event->scenePos()), m_trackBalls[2].rotation().conjugate());
-		event->accept();
-	}
+	//else if (event->buttons() & Qt::RightButton) {
+	//	m_trackBalls[0].translate(pixelPosToViewPos(event->scenePos()), m_trackBalls[0].rotation().conjugate());
+	//	event->accept();
+	//}
 	else {
-        m_trackBalls[0].release(pixelPosToViewPos(event->scenePos()), m_trackBalls[2].rotation().conjugate());
+        m_trackBalls[0].release(pixelPosToViewPos(event->scenePos()), m_trackBalls[0].rotation().conjugate());
     }
 }
 
@@ -1255,23 +1263,23 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
         event->accept();
     }
 	else if (event->button() == Qt::RightButton)	{
-		float3 b = ReadPixel(event->scenePos().x(), event->scenePos().y());
-		//int3 dim = dataManager->GetVolumeDim();
-		//The boundary is from 0 to (dim - 1)
-		int qx, qy, qz;
-		int qnx, qny, qnz;
-		dataManager->GetQCube(qx, qy, qz, qnx, qny, qnz);
+		//float3 b = ReadPixel(event->scenePos().x(), event->scenePos().y());
+		////int3 dim = dataManager->GetVolumeDim();
+		////The boundary is from 0 to (dim - 1)
+		//int qx, qy, qz;
+		//int qnx, qny, qnz;
+		//dataManager->GetQCube(qx, qy, qz, qnx, qny, qnz);
 
-		float3 aabb_min = make_float3(qx, qy, qz);
-		float3 aabb_max = make_float3(qx + qnx - 1, qy + qny - 1, qz + qnz - 1);
-		float3 normal = make_float3(b.x * 2 - 1, b.y * 2 - 1, b.z * 2 - 1);
-		CutPlane cp(normal, dataManager->GetQCubeCenter(), aabb_min, aabb_max);
+		//float3 aabb_min = make_float3(qx, qy, qz);
+		//float3 aabb_max = make_float3(qx + qnx - 1, qy + qny - 1, qz + qnz - 1);
+		//float3 normal = make_float3(b.x * 2 - 1, b.y * 2 - 1, b.z * 2 - 1);
+		//CutPlane cp(normal, dataManager->GetQCubeCenter(), aabb_min, aabb_max);
 
-		if (cutplanes.size() == 0)
-			cutplanes.push_back(cp);
-		else
-			cutplanes.back() = cp;
-		cout << "(" << normal.x << "," << normal.y << "," << normal.z << endl;
+		//if (cutplanes.size() == 0)
+		//	cutplanes.push_back(cp);
+		//else
+		//	cutplanes.back() = cp;
+		//cout << "(" << normal.x << "," << normal.y << "," << normal.z << endl;
 	}
 }
 
@@ -1354,15 +1362,15 @@ void Scene::keyPressEvent(QKeyEvent *event)
 		UpdateBlock();
 		dataManager->GenStreamInCube();
 	}
-	switch (event->key())
-	{
-	case Qt::Key_Up:
-		cutplanes.back().MovePlane(1);
-		break;
-	case Qt::Key_Down:
-		cutplanes.back().MovePlane(-1);
-		break;
-	}
+	//switch (event->key())
+	//{
+	//case Qt::Key_Up:
+	//	cutplanes.back().MovePlane(1);
+	//	break;
+	//case Qt::Key_Down:
+	//	cutplanes.back().MovePlane(-1);
+	//	break;
+	//}
 }
 
 void Scene::OnMove(std::vector<float>& motionData)
@@ -1381,11 +1389,11 @@ void Scene::OnMove(std::vector<float>& motionData)
 	//dataManager->GenStreamInCube();
 }
 
-void Scene::setShader(int index)
-{
-    //if (index >= 0 && index < m_fragmentShaders.size())
-    //    m_currentShader = index;
-}
+//void Scene::setShader(int index)
+//{
+//    //if (index >= 0 && index < m_fragmentShaders.size())
+//    //    m_currentShader = index;
+//}
 
 void Scene::setColorParameter(const QString &name, QRgb color)
 {
@@ -1459,40 +1467,40 @@ void RenderOptionsDialog::changeBlockLoc(const int idx, const int val)
 	m_blockLoc[idx]->setText(QString::number(m_blockLoc[idx]->text().toInt() + val));
 }
 
-void Scene::initPixelBuffer()
-{
-	if (pbo)
-	{
-		// unregister this buffer object from CUDA C
-		checkCudaErrors(cudaGraphicsUnregisterResource(cuda_pbo_resource));
-
-		// delete old buffer
-		glDeleteBuffers(1, &pbo);
-		glDeleteTextures(1, &tex);
-	}
-	// create pixel buffer object for display
-	glGenBuffers(1, &pbo);
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, pbo);
-	glBufferData(GL_PIXEL_UNPACK_BUFFER_ARB, m_width*m_height*sizeof(GLubyte)* 4, 0, GL_STREAM_DRAW_ARB);
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
-
-	// register this buffer object with CUDA
-	checkCudaErrors(cudaGraphicsGLRegisterBuffer(&cuda_pbo_resource, pbo, cudaGraphicsMapFlagsWriteDiscard));
-
-	// create texture for display
-	glGenTextures(1, &tex);
-	glBindTexture(GL_TEXTURE_2D, tex);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glBindTexture(GL_TEXTURE_2D, 0);
-}
+//void Scene::initPixelBuffer()
+//{
+//	if (pbo)
+//	{
+//		// unregister this buffer object from CUDA C
+//		checkCudaErrors(cudaGraphicsUnregisterResource(cuda_pbo_resource));
+//
+//		// delete old buffer
+//		glDeleteBuffers(1, &pbo);
+//		glDeleteTextures(1, &tex);
+//	}
+//	// create pixel buffer object for display
+//	glGenBuffers(1, &pbo);
+//	glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, pbo);
+//	glBufferData(GL_PIXEL_UNPACK_BUFFER_ARB, m_width*m_height*sizeof(GLubyte)* 4, 0, GL_STREAM_DRAW_ARB);
+//	glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+//
+//	// register this buffer object with CUDA
+//	checkCudaErrors(cudaGraphicsGLRegisterBuffer(&cuda_pbo_resource, pbo, cudaGraphicsMapFlagsWriteDiscard));
+//
+//	// create texture for display
+//	glGenTextures(1, &tex);
+//	glBindTexture(GL_TEXTURE_2D, tex);
+//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+//	glBindTexture(GL_TEXTURE_2D, 0);
+//}
 
 void Scene::cleanup()
 {
 	//sdkDeleteTimer(&timer);
 
-	freeCudaBuffers();
+	//freeCudaBuffers();
 
 	if (pbo)
 	{
@@ -1532,173 +1540,173 @@ void Scene::renderVolume()
 }
 
 
-// display results using OpenGL (called by GLUT)
-void Scene::displayVolume()
-{
-	//sdkStartTimer(&timer);
+//// display results using OpenGL (called by GLUT)
+//void Scene::displayVolume()
+//{
+//	//sdkStartTimer(&timer);
+//
+//	// use OpenGL to build view matrix
+//	GLfloat modelView[16];
+//	glGetFloatv(GL_MODELVIEW_MATRIX, modelView);
+//
+//	GLfloat projection[16];
+//	glGetFloatv(GL_PROJECTION_MATRIX, projection);
+//
+//	QMatrix4x4 q_modelview(
+//		modelView[0], modelView[4], modelView[8], modelView[12], 
+//		modelView[1], modelView[5], modelView[9], modelView[13],
+//		modelView[2], modelView[6], modelView[10], modelView[14],
+//		modelView[3], modelView[7], modelView[11], modelView[15]
+//		);
+//
+//	QMatrix4x4 q_projection(
+//		projection[0], projection[4], projection[8], projection[12],
+//		projection[1], projection[5], projection[9], projection[13],
+//		projection[2], projection[6], projection[10], projection[14],
+//		projection[3], projection[7], projection[11], projection[15]
+//		);
+//
+//	QMatrix4x4 q_invProjMulView = (q_projection * q_modelview).inverted();
+//	//GLfloat projMulView[16];
+//	//MultiplyMatrices4by4OpenGL_FLOAT(projMulView, projection, modelView);
+//
+//	//glhInvertMatrixf2(projMulView, invProjMulView);
+//	q_invProjMulView.copyDataTo(invProjMulView);
+//	//invProjMulView 
+//
+//	glMatrixMode(GL_MODELVIEW);
+//	glPushMatrix();
+//	glLoadIdentity();
+//	//glRotatef(-viewRotation.x, 1.0, 0.0, 0.0);
+//	//glRotatef(-viewRotation.y, 0.0, 1.0, 0.0);
+//	//glTranslatef(-viewTranslation.x, -viewTranslation.y, -viewTranslation.z);
+//
+//	glMatrixMode(GL_PROJECTION);
+//	glPushMatrix();
+//	glLoadIdentity();
+//	glOrtho(0.0, 1.0, 0.0, 1.0, 0.0, 1.0);
+//
+//
+//	renderVolume();
+//
+//	// display results
+//	glClear(GL_COLOR_BUFFER_BIT);
+//
+//	glPushAttrib(GL_DEPTH_TEST);
+//	// draw image from PBO
+//	glDisable(GL_DEPTH_TEST);
+//
+//	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+//#if 0
+//	// draw using glDrawPixels (slower)
+//	glRasterPos2i(0, 0);
+//	glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, pbo);
+//	glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+//	glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+//#else
+//	// draw using texture
+//
+//	// copy from pbo to texture
+//	glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, pbo);
+//	glBindTexture(GL_TEXTURE_2D, tex);
+//	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_width, m_height, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+//	glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+//
+//	// draw textured quad
+//	glEnable(GL_TEXTURE_2D);
+//	glBegin(GL_QUADS);
+//	glTexCoord2f(0, 0);
+//	glVertex2f(0, 0);
+//	glTexCoord2f(1, 0);
+//	glVertex2f(1, 0);
+//	glTexCoord2f(1, 1);
+//	glVertex2f(1, 1);
+//	glTexCoord2f(0, 1);
+//	glVertex2f(0, 1);
+//	glEnd();
+//
+//	glDisable(GL_TEXTURE_2D);
+//	glBindTexture(GL_TEXTURE_2D, 0);
+//
+//	glPopAttrib();
+//#endif
+//
+//	//glutSwapBuffers();
+//	//glutReportErrors();
+//
+//	//sdkStopTimer(&timer);
+//	//glMatrixMode(GL_PROJECTION);
+//	glPopMatrix();
+//
+//	glMatrixMode(GL_MODELVIEW);
+//	glPopMatrix();
+//
+//	//computeFPS();
+//}
+//
+//void Scene::DrawPicking()
+//{
+//
+//}
 
-	// use OpenGL to build view matrix
-	GLfloat modelView[16];
-	glGetFloatv(GL_MODELVIEW_MATRIX, modelView);
 
-	GLfloat projection[16];
-	glGetFloatv(GL_PROJECTION_MATRIX, projection);
-
-	QMatrix4x4 q_modelview(
-		modelView[0], modelView[4], modelView[8], modelView[12], 
-		modelView[1], modelView[5], modelView[9], modelView[13],
-		modelView[2], modelView[6], modelView[10], modelView[14],
-		modelView[3], modelView[7], modelView[11], modelView[15]
-		);
-
-	QMatrix4x4 q_projection(
-		projection[0], projection[4], projection[8], projection[12],
-		projection[1], projection[5], projection[9], projection[13],
-		projection[2], projection[6], projection[10], projection[14],
-		projection[3], projection[7], projection[11], projection[15]
-		);
-
-	QMatrix4x4 q_invProjMulView = (q_projection * q_modelview).inverted();
-	//GLfloat projMulView[16];
-	//MultiplyMatrices4by4OpenGL_FLOAT(projMulView, projection, modelView);
-
-	//glhInvertMatrixf2(projMulView, invProjMulView);
-	q_invProjMulView.copyDataTo(invProjMulView);
-	//invProjMulView 
-
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-	//glRotatef(-viewRotation.x, 1.0, 0.0, 0.0);
-	//glRotatef(-viewRotation.y, 0.0, 1.0, 0.0);
-	//glTranslatef(-viewTranslation.x, -viewTranslation.y, -viewTranslation.z);
-
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	glOrtho(0.0, 1.0, 0.0, 1.0, 0.0, 1.0);
-
-
-	renderVolume();
-
-	// display results
-	glClear(GL_COLOR_BUFFER_BIT);
-
-	glPushAttrib(GL_DEPTH_TEST);
-	// draw image from PBO
-	glDisable(GL_DEPTH_TEST);
-
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-#if 0
-	// draw using glDrawPixels (slower)
-	glRasterPos2i(0, 0);
-	glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, pbo);
-	glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-	glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
-#else
-	// draw using texture
-
-	// copy from pbo to texture
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, pbo);
-	glBindTexture(GL_TEXTURE_2D, tex);
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_width, m_height, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
-
-	// draw textured quad
-	glEnable(GL_TEXTURE_2D);
-	glBegin(GL_QUADS);
-	glTexCoord2f(0, 0);
-	glVertex2f(0, 0);
-	glTexCoord2f(1, 0);
-	glVertex2f(1, 0);
-	glTexCoord2f(1, 1);
-	glVertex2f(1, 1);
-	glTexCoord2f(0, 1);
-	glVertex2f(0, 1);
-	glEnd();
-
-	glDisable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	glPopAttrib();
-#endif
-
-	//glutSwapBuffers();
-	//glutReportErrors();
-
-	//sdkStopTimer(&timer);
-	//glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
-
-	//computeFPS();
-}
-
-void Scene::DrawPicking()
-{
-
-}
-
-
-//color picking: http://ogldev.atspace.co.uk/www/tutorial29/tutorial29.html
-bool Scene::InitPicking(unsigned int WindowWidth, unsigned int WindowHeight)
-{
-	// Create the FBO
-	glGenFramebuffersEXT(1, &m_fbo);
-	glBindFramebufferEXT(GL_FRAMEBUFFER, m_fbo);
-
-	// Create the texture object for the primitive information buffer
-	glGenTextures(1, &m_pickingTexture);
-	glBindTexture(GL_TEXTURE_2D, m_pickingTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, WindowWidth, WindowHeight,
-		0, GL_RGB, GL_FLOAT, NULL);
-	glFramebufferTexture2DEXT(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-		m_pickingTexture, 0);
-
-	// Create the texture object for the depth buffer
-	glGenTextures(1, &m_depthTexture);
-	glBindTexture(GL_TEXTURE_2D, m_depthTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, WindowWidth, WindowHeight,
-		0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	glFramebufferTexture2DEXT(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
-		m_depthTexture, 0);
-
-	// Disable reading to avoid problems with older GPUs
-	glReadBuffer(GL_NONE);
-
-	glDrawBuffer(GL_COLOR_ATTACHMENT0);
-
-	// Verify that the FBO is correct
-	GLenum Status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
-
-	if (Status != GL_FRAMEBUFFER_COMPLETE) {
-		printf("FB error, status: 0x%x\n", Status);
-		return false;
-	}
-
-	// Restore the default framebuffer
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
-
-	return 0;// GLCheckError();
-}
-
-float3 Scene::ReadPixel(unsigned int x, unsigned int y)
-{
-	glBindFramebufferEXT(GL_READ_FRAMEBUFFER, m_fbo);
-	glReadBuffer(GL_COLOR_ATTACHMENT0);
-	cout << "x,y: " << x << "," << y << endl;
-
-	float3 Pixel;
-	glReadPixels(x, m_height - y - 1, 1, 1, GL_RGB, GL_FLOAT, &Pixel);
-
-	glReadBuffer(GL_NONE);
-	glBindFramebufferEXT(GL_READ_FRAMEBUFFER, 0);
-
-	return Pixel;
-}
+////color picking: http://ogldev.atspace.co.uk/www/tutorial29/tutorial29.html
+//bool Scene::InitPicking(unsigned int WindowWidth, unsigned int WindowHeight)
+//{
+//	// Create the FBO
+//	glGenFramebuffersEXT(1, &m_fbo);
+//	glBindFramebufferEXT(GL_FRAMEBUFFER, m_fbo);
+//
+//	// Create the texture object for the primitive information buffer
+//	glGenTextures(1, &m_pickingTexture);
+//	glBindTexture(GL_TEXTURE_2D, m_pickingTexture);
+//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, WindowWidth, WindowHeight,
+//		0, GL_RGB, GL_FLOAT, NULL);
+//	glFramebufferTexture2DEXT(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+//		m_pickingTexture, 0);
+//
+//	// Create the texture object for the depth buffer
+//	glGenTextures(1, &m_depthTexture);
+//	glBindTexture(GL_TEXTURE_2D, m_depthTexture);
+//	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, WindowWidth, WindowHeight,
+//		0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+//	glFramebufferTexture2DEXT(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
+//		m_depthTexture, 0);
+//
+//	// Disable reading to avoid problems with older GPUs
+//	glReadBuffer(GL_NONE);
+//
+//	glDrawBuffer(GL_COLOR_ATTACHMENT0);
+//
+//	// Verify that the FBO is correct
+//	GLenum Status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
+//
+//	if (Status != GL_FRAMEBUFFER_COMPLETE) {
+//		printf("FB error, status: 0x%x\n", Status);
+//		return false;
+//	}
+//
+//	// Restore the default framebuffer
+//	glBindTexture(GL_TEXTURE_2D, 0);
+//	glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+//
+//	return 0;// GLCheckError();
+//}
+//
+//float3 Scene::ReadPixel(unsigned int x, unsigned int y)
+//{
+//	glBindFramebufferEXT(GL_READ_FRAMEBUFFER, m_fbo);
+//	glReadBuffer(GL_COLOR_ATTACHMENT0);
+//	cout << "x,y: " << x << "," << y << endl;
+//
+//	float3 Pixel;
+//	glReadPixels(x, m_height - y - 1, 1, 1, GL_RGB, GL_FLOAT, &Pixel);
+//
+//	glReadBuffer(GL_NONE);
+//	glBindFramebufferEXT(GL_READ_FRAMEBUFFER, 0);
+//
+//	return Pixel;
+//}
 
 void Scene::Segmentation()
 {
@@ -1715,36 +1723,36 @@ void Scene::Segmentation()
 	}
 }
 
-CutPlane::CutPlane(float3 _normal, float3 _vertex, float3 _aabb_min, float3 _aabb_max)
-{
-	this->normal = _normal;
-	this->aabb_min = _aabb_min;
-	this->aabb_max = _aabb_max;
-	plane_coef = make_float4(normal.x, normal.y, normal.z, 
-		- normal.x * _vertex.x - normal.y * _vertex.y - normal.z * _vertex.z);
-	float3 out_points[6];
-	unsigned int out_point_count = 0;
-	calc_plane_aabb_intersection_points(plane_coef, aabb_min, aabb_max, out_points, out_point_count);
-	sort_points(out_points, out_point_count, plane_coef);
-	for (int i = 0; i < out_point_count; i++)	{
-		vertices.push_back(out_points[i]);
-	}
-}
-
-void CutPlane::MovePlane(float v)
-{
-	float3 out_points[6];
-	unsigned int out_point_count = 0;
-	plane_coef.w += v;
-	calc_plane_aabb_intersection_points(plane_coef, aabb_min, aabb_max, out_points, out_point_count);
-	sort_points(out_points, out_point_count, plane_coef);
-	vertices.clear();
-	for (int i = 0; i < out_point_count; i++)	{
-		vertices.push_back(out_points[i]);
-	}
-
-}
-
+//CutPlane::CutPlane(float3 _normal, float3 _vertex, float3 _aabb_min, float3 _aabb_max)
+//{
+//	this->normal = _normal;
+//	this->aabb_min = _aabb_min;
+//	this->aabb_max = _aabb_max;
+//	plane_coef = make_float4(normal.x, normal.y, normal.z, 
+//		- normal.x * _vertex.x - normal.y * _vertex.y - normal.z * _vertex.z);
+//	float3 out_points[6];
+//	unsigned int out_point_count = 0;
+//	calc_plane_aabb_intersection_points(plane_coef, aabb_min, aabb_max, out_points, out_point_count);
+//	sort_points(out_points, out_point_count, plane_coef);
+//	for (int i = 0; i < out_point_count; i++)	{
+//		vertices.push_back(out_points[i]);
+//	}
+//}
+//
+//void CutPlane::MovePlane(float v)
+//{
+//	float3 out_points[6];
+//	unsigned int out_point_count = 0;
+//	plane_coef.w += v;
+//	calc_plane_aabb_intersection_points(plane_coef, aabb_min, aabb_max, out_points, out_point_count);
+//	sort_points(out_points, out_point_count, plane_coef);
+//	vertices.clear();
+//	for (int i = 0; i < out_point_count; i++)	{
+//		vertices.push_back(out_points[i]);
+//	}
+//
+//}
+//
 
 void Scene::ShowGpuMemInfo()
 {

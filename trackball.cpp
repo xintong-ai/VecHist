@@ -77,10 +77,10 @@ void TrackBall::push(const QPointF& p, const QQuaternion &)
     m_angularVelocity = 0.0f;
 }
 
-void TrackBall::translate(const QPointF& p, const QQuaternion &transformation)
-{
-
-}
+//void TrackBall::translate(const QPointF& p, const QQuaternion &transformation)
+//{
+//
+//}
 
 void TrackBall::move(const QPointF& p, const QQuaternion &transformation)
 {

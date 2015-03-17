@@ -88,17 +88,17 @@ struct Bin {
 	}
 };
 
-struct CutPlane{
-	//float3 center;
-	float dis2orig;
-	float3 normal;
-	float3 aabb_min, aabb_max;
-	vector < float3 > vertices;
-	float4 plane_coef;
-	CutPlane(float3 _normal, float3 _vertex, float3 _aabb_min, float3 _aabb_max);
-	void MovePlane(float v);
-};
-
+//struct CutPlane{
+//	//float3 center;
+//	float dis2orig;
+//	float3 normal;
+//	float3 aabb_min, aabb_max;
+//	vector < float3 > vertices;
+//	float4 plane_coef;
+//	CutPlane(float3 _normal, float3 _vertex, float3 _aabb_min, float3 _aabb_max);
+//	void MovePlane(float v);
+//};
+//
 
 class ParameterEdit : public QWidget
 {
@@ -229,7 +229,7 @@ public:
 	void UpdateBlock();
 
 public slots:
-    void setShader(int index);
+    //void setShader(int index);
     //void setTexture(int index);
     //void toggleDynamicCubemap(int state);
     void setColorParameter(const QString &name, QRgb color);
@@ -244,7 +244,7 @@ protected:
 	void renderBBox(const QMatrix4x4 &view);
 	void renderQCube(const QMatrix4x4 &view);	//render the queried cube
 	void setStates();
-    void setLights();
+    //void setLights();
     void defaultStates();
     //void renderCubemaps();
 
@@ -256,13 +256,13 @@ protected:
 private:
     void initGL();
     QPointF pixelPosToViewPos(const QPointF& p);
-	void initPixelBuffer();
+	//void initPixelBuffer();
 	void cleanup();
-	void displayVolume();
+	//void displayVolume();
 	void renderVolume();
-	bool InitPicking(unsigned int WindowWidth, unsigned int WindowHeight);
-	float3 ReadPixel(unsigned int x, unsigned int y);
-	void DrawPicking();
+	//bool InitPicking(unsigned int WindowWidth, unsigned int WindowHeight);
+	//float3 ReadPixel(unsigned int x, unsigned int y);
+	//void DrawPicking();
 	void ShowGpuMemInfo();
 
     QTime m_time;
@@ -286,7 +286,7 @@ private:
     //QVector<GLTexture *> m_textures;
     GLTextureCube *m_environment;	//the used cubemap
 	QVector<GLTextureCube*> blockTex;
-	GLTexture3D *m_vec3DTex;
+	//GLTexture3D *m_vec3DTex;
     //GLTexture3D *m_noise;
     //GLRenderTargetCube *m_mainCubemap;
     //QVector<GLRenderTargetCube *> m_cubemaps;
@@ -310,15 +310,15 @@ private:
 	dim3 blockSize;
 	GLfloat invProjMulView[16];
 
-	//picking
-	GLuint m_fbo;
-	GLuint m_pickingTexture;
-	GLuint m_depthTexture;
+	////picking
+	//GLuint m_fbo;
+	//GLuint m_pickingTexture;
+	//GLuint m_depthTexture;
 
 	//
 	vector<NodeBi*> leafNodes;
 	vector<float3> colorMap;
-	vector<CutPlane> cutplanes;
+	//vector<CutPlane> cutplanes;
 };
 
 #endif

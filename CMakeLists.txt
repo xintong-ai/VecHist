@@ -22,7 +22,7 @@ find_package(Qt5Widgets)
 #include(${VTK_USE_FILE})
 #include_directories(${VTK_INCLUDE_DIRS})
 
-include_directories( ${CUDA_INCLUDE_DIRS} ${CUDA_TOOLKIT_INCLUDE} ${CMAKE_CURRENT_SOURCE_DIR} ${OSUFLOW_INCLUDE_DIR} required)
+include_directories( ${CUDA_INCLUDE_DIRS} ${CUDA_TOOLKIT_INCLUDE} ${CUDA_SDK_ROOT_DIR}/common/inc ${CMAKE_CURRENT_SOURCE_DIR} ${OSUFLOW_INCLUDE_DIR} required)
 
 set(SHARED_LIBRARIES
 #		${LIBIGL_LIBRARIES}
@@ -46,8 +46,7 @@ set( Srcs main.cpp DataManager.cpp glsphere.cpp glSuperquadric.cpp
 set( Hdrs DataManager.h vector_types.h glsphere.h glSuperquadric.h gltrianglemesh.h
 	scene.h glbuffers.h glextensions.h trackball.h 
 	Mouse3DInput.h MouseParameters.h I3dMouseParams.h
-    helper_cuda.h helper_cuda_gl.h helper_functions.h helper_image.h helper_string.h helper_timer.h
-	helper_math.h)# 3rdparty/fbm.h) #box.h 
+    )# 3rdparty/fbm.h) #box.h 
 set( Rcs resources/boxes.qrc)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
