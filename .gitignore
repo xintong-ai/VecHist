@@ -1,9 +1,16 @@
 *.suo
 *.pyc
 
-#Auto generated eigen value / vector files
+#Auto generated application data files
 eig_vals.txt
 eig_vecs.txt
+timing.txt
+starts.txt
+entropys.txt
+dims.txt
+binary_tree.txt
+d_idx.npy
 
-#Vi swap files
+#Swap files
 *.swp
+*.swo
