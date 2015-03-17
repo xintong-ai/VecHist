@@ -10,6 +10,7 @@ entropys.txt
 dims.txt
 binary_tree.txt
 d_idx.npy
+build
 
 #Swap files
 *.swp
