@@ -6,13 +6,14 @@ import plot_vec as pv
 import matplotlib.pyplot as plt
 import time
 
+print ('Starting the gen ids script\n')
 time_start = time.time()
 
 #d = sample_ball.sample(2**8)
 #d = sample_uniform.sample(2**20)
 #d = sample_random.sample(2**24)
 #d = read_vec.read("D:/data/isabel/UVWf01.vec")
-d = read_vec.read("D:/data/brain_dti/vector-field-new.vec")
+d = read_vec.read("/home/datahead/research/rawData/15plume3d430.vec")
 #d = read_vec.read("D:/data/sample/test3.vec")
 #dim = d.shape
 #d = np.reshape(d, (dim[2], dim[1], dim[0], 3))

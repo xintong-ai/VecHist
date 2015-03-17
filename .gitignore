@@ -1,2 +1,19 @@
 *.suo
 *.pyc
+
+#Auto generated application data files - I think these are part of the repository already - gitignore refuses to ignore them
+#eig_vals.txt
+#eig_vecs.txt
+#timing.txt
+#starts.txt
+#entropys.txt
+#dims.txt
+#binary_tree.txt
+#d_idx.npy
+
+#Build directory
+build
+
+#Swap files
+*.swp
+*.swo
