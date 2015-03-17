@@ -1,3 +1,14 @@
 *.suo
 *.pyc
+
+#Build directory
+build
+
+#Swap files
+*.swp
+*.swo
+
+#Auto generated application .txt and .npy data files
+*.txt
 *.npy
+>>>>>>> origin/master

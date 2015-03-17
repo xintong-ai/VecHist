@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import copy
 from scipy import asarray as ar,exp
 from scipy.optimize import curve_fit
+import time
 #from mayavi import mlab
 
 def sum_of_squares_of_digits(value):
@@ -53,7 +54,7 @@ class TreeNode:
 
 #class Solution:
     # @param root, a tree node
-    # @return a list of integers
+    # @return a list of intenrs
 def inorderTraversal(root):
     stack = []
     node = root
@@ -238,7 +239,7 @@ def SolidAngles(nbin):
     delta = 2.0 / nbin
     solAng = np.zeros((nbin, nbin))
     
-    nbin_half = math.floor(nbin / 2)
+    nbin_half = int(math.floor(nbin / 2))
     for i in range(nbin_half):
         for j in range(nbin_half):
             a1 = abs(1 - i * delta)
@@ -295,6 +296,8 @@ def GenCubemap(d, size):
     #plt.show()
     for i in range(0, 6):
         hist[i*size:(i+1)*size, :] = hist[i*size:(i+1)*size, :] / (sol_ang * scale_factor)
+    #print('Solid Angle (size' + str(size) + '):')
+    #print(sol_ang)
     
     #normalize to be a histogram
     hist_sum = np.sum(hist)
@@ -306,6 +309,30 @@ def GenCubemap(d, size):
     
     return hist
 
+def GenCubemapCut(d, size):
+    [hist, bin_edges] = np.histogram(d, np.arange(0, size * size * 6 + 1))
+#    hist = np.arange(0, size * size * 6)
+#    print(hist.shape)
+    hist = np.reshape(hist, (6 * size, size))
+#    hist = np.ones((6 * size, size))
+
+    #normalize by solid angles
+    #scale_factor = 1000
+    #sol_ang = SolidAngles(size)
+    ###for i in range(0, 6):
+    ###    hist[i*size:(i+1)*size, :] = hist[i*size:(i+1)*size, :] / (sol_ang * scale_factor)
+    #print('Solid Angle (size' + str(size) + '):')
+    #print(sol_ang)
+
+    #normalize to be a histogram
+    #hist_sum = np.sum(hist)
+    #print(hist_sum)
+    #if(hist_sum < 0):
+    #    print("error: bin sum is negative...")
+    ###hist = hist / (hist_sum * 1.0)
+#    ShowHist(hist)
+
+    return hist
 
    
 def get(v, size):
@@ -515,35 +542,114 @@ def SplitEntropy(ret, _d_idx, d_3d, cubemap_size):
                 ret.start[0]:(ret.start[0]+ret.dim[0]), 
                 :]
 
+    #print('Final Entropy Sum:')
+    #print(entropy_sum)
 
-    #remove the stride
-    for spl_pt in range(1, ret.dim[imax]):
+    startT = time.time()
+    if(imax == 0):
+        side1 = m_idx[:1, :, :]
+        side2 = m_idx[1:, :, :]
+    elif(imax == 1):
+        side1 = m_idx[:, :1, :]
+        side2 = m_idx[:, 1:, :]
+    else:
+        side1 = m_idx[:, :, :1]
+        side2 = m_idx[:, :, 1:]
+    print("percentage: " + str(float(1) / ret.dim[imax]))
+    cube_hist_1 = GenCubemapCut(side1.ravel(), cubemap_size)
+    cube_hist_2 = GenCubemapCut(side2.ravel(), cubemap_size)
+
+    scale_factor = 1000
+    sol_ang = SolidAngles(cubemap_size)
+    norm_hist1 = copy.deepcopy(cube_hist_1)
+    for i in range(0, 6):
+        norm_hist1[i*cubemap_size:(i+1)*cubemap_size, :] = cube_hist_1[i*cubemap_size:(i+1)*cubemap_size, :] / (sol_ang * scale_factor)
+    hist_sum = np.sum(norm_hist1)
+    if(hist_sum < 0):
+        print("error: bin sum is negative...")
+    norm_hist1 = norm_hist1 / (hist_sum * 1.0)
+
+    scale_factor = 1000
+    sol_ang = SolidAngles(cubemap_size)
+    norm_hist2 = copy.deepcopy(cube_hist_2)
+    for i in range(0, 6):
+        norm_hist2[i*cubemap_size:(i+1)*cubemap_size, :] = cube_hist_2[i*cubemap_size:(i+1)*cubemap_size, :] / (sol_ang * scale_factor)
+    hist_sum = np.sum(norm_hist2)
+    if(hist_sum < 0):
+        print("error: bin sum is negative...")
+    norm_hist2 = norm_hist2 / (hist_sum * 1.0)
+
+    #print("Cube hist 1:")
+    #print(norm_hist1)
+    #print("Cube hist 2:")
+    #print(norm_hist2)
+    entropy_1 = get_histogram_entropy(norm_hist1.ravel())
+    #print "Entropy 1: " + str(entropy_1)
+    entropy_2 = get_histogram_entropy(norm_hist2.ravel())
+    #print "Entropy 2: " + str(entropy_2)
+    p1 = float(1) / ret.dim[imax]
+    entropy_sum.append(entropy_1 * p1 + entropy_2 * ( 1.0 - p1))
+    #print('p1: ' + str(p1))
+    #print('Current entropy sum:')
+    #print(entropy_sum)
+
+    for spl_pt in range(2, ret.dim[imax]):
         if(imax == 0):
-            side1 = m_idx[:spl_pt, :, :]
-            side2 = m_idx[spl_pt:, :, :]
-            #start_pos_2[0] += spl_pt
+            side = m_idx[spl_pt - 1, :, :]
         elif(imax == 1):
-            side1 = m_idx[:, :spl_pt, :]
-            side2 = m_idx[:, spl_pt:, :]
-            #start_pos_2[1] += spl_pt
+            side = m_idx[:, spl_pt - 1, :]
         else:
-            side1 = m_idx[:, :, :spl_pt]
-            side2 = m_idx[:, :, spl_pt:]
-            #start_pos_2[2] += spl_pt
+            side = m_idx[:, :, spl_pt - 1]
         print("percentage: " + str(float(spl_pt) / ret.dim[imax]))
-        cube_hist_1 = GenCubemap(side1.ravel(), cubemap_size)
-        cube_hist_2 = GenCubemap(side2.ravel(), cubemap_size)
-        entropy_1 = get_histogram_entropy(cube_hist_1.ravel())
-        entropy_2 = get_histogram_entropy(cube_hist_2.ravel())
-        p1 = float(spl_pt) / ret.dim[imax]
-        entropy_sum.append(entropy_1 * p1 + entropy_2 * ( 1.0 - p1)) 
-        max_val = np.max(cube_hist_1) * 0.2
-        #plt.imshow(cube_hist_1.transpose(), aspect='equal', interpolation='nearest', vmin=0, vmax=max_val)
-        #plt.show()
+        cube_hist_single = GenCubemapCut(side.ravel(), cubemap_size)
+        cube_hist_1 = cube_hist_1 + cube_hist_single
+        cube_hist_2 = cube_hist_2 - cube_hist_single
 
-        #max_val = np.max(cube_hist_2) * 0.1
-        #plt.imshow(cube_hist_2.transpose(), aspect='equal', interpolation='nearest', vmin=0, vmax=max_val)
-        #plt.show()
+        scale_factor = 1000
+        sol_ang = SolidAngles(cubemap_size)
+        norm_hist1 = copy.deepcopy(cube_hist_1)
+        for i in range(0, 6):
+            norm_hist1[i*cubemap_size:(i+1)*cubemap_size, :] = cube_hist_1[i*cubemap_size:(i+1)*cubemap_size, :] / (sol_ang * scale_factor)
+        hist_sum = np.sum(norm_hist1)
+        if(hist_sum < 0):
+            print("error: bin sum is negative...")
+        norm_hist1 = norm_hist1 / (hist_sum * 1.0)
+
+        scale_factor = 1000
+        sol_ang = SolidAngles(cubemap_size)
+        norm_hist2 = copy.deepcopy(cube_hist_2)
+        for i in range(0, 6):
+            norm_hist2[i*cubemap_size:(i+1)*cubemap_size, :] = cube_hist_2[i*cubemap_size:(i+1)*cubemap_size, :] / (sol_ang * scale_factor)
+        hist_sum = np.sum(norm_hist2)
+        if(hist_sum < 0):
+            print("error: bin sum is negative...")
+        norm_hist2 = norm_hist2 / (hist_sum * 1.0)
+
+        #print("Cube hist 1:")
+        #print(norm_hist1)
+        #print("Cube hist 2:")
+        #print(norm_hist2)
+        entropy_1 = get_histogram_entropy(norm_hist1.ravel())
+        #print "Entropy 1: " + str(entropy_1)
+        entropy_2 = get_histogram_entropy(norm_hist2.ravel())
+        #print "Entropy 2: " + str(entropy_2)
+        p1 = float(spl_pt) / ret.dim[imax]
+        entropy_sum.append(entropy_1 * p1 + entropy_2 * ( 1.0 - p1))
+        max_val = np.max(cube_hist_1) * 0.2
+        #print('p1: ' + str(p1))
+        #print('Current entropy sum:')
+        #print(entropy_sum)
+
+    #print('Final Entropy Sum:')
+    #print(entropy_sum)
+    endT = time.time()
+    print('Total time for optimized split is: ' + str(endT - startT))
+
+    # print('--------------------------------------------------------------')
+    # print('End of Optimized Version')
+    # print('--------------------------------------------------------------')
+
+
 
     spl_pt = np.argmin(np.array(entropy_sum)) + 1
 
