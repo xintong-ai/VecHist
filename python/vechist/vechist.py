@@ -28,7 +28,9 @@ d_idx = np.load('d_idx.npy')
 shape = d_idx.shape
 
 #d_3d = read_vec.read("D:/data/isabel/UVWf01.vec")
-d_3d = read_vec.read("/home/datahead/research/rawData/15plume3d430.vec")
+#d_3d = read_vec.read("/home/datahead/research/rawData/15plume3d430.vec")
+d_3d = read_vec.read("D:/data/plume/15plume3d421.vec")
+
 d_3d = cube.normalize(d_3d)
 #d_3d = read_vec.read("D:/data/brain_dti/vector-field.vec")
 #d_3d = read_vec.read("D:/data/nek/nek.d_4.vec")

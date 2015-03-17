@@ -281,9 +281,12 @@ public:
     {
         GLBUFFERS_ASSERT_OPENGL("GLVertexBuffer::unlock", glBindBuffer && glUnmapBuffer, return)
 
-        glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
+		glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
         glUnmapBuffer(GL_ARRAY_BUFFER);
-    }
+		//Xin:I have to bind the buffer to 0 before proceed
+		//otherwise a lot of other visualization does not work
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
 
     bool failed()
     {

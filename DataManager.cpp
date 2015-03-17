@@ -997,7 +997,7 @@ inline vector<float> ReadAttribute1D(char* filename)
 void DataManager::LoadSegmentation()
 {
 
-#if 0
+#if 1
 	std::ifstream fin("D:\\Dropbox\\hist\\VecHist\\python\\vechist\\binary_tree.txt", std::fstream::in);
 	vector<float3> starts = ReadAttribute("D:\\Dropbox\\hist\\VecHist\\python\\vechist\\starts.txt");
 	vector<float3> dims = ReadAttribute("D:\\Dropbox\\hist\\VecHist\\python\\vechist\\dims.txt");
@@ -1018,7 +1018,7 @@ void DataManager::LoadSegmentation()
 	vector<float> entropys = ReadAttribute1D("D:\\data\\plume\\entropy10\\entropys.txt");
 	vector<float3> eig_vals = ReadAttribute("D:\\data\\plume\\entropy10\\eig_vals.txt");
 	vector<float3> eig_vecs = ReadAttribute("D:\\data\\plume\\entropy10\\eig_vecs.txt");
-#elif 1
+#elif 0
 	std::ifstream fin("D:\\data\\plume\\ent8\\binary_tree.txt", std::fstream::in);
 	vector<float3> starts = ReadAttribute("D:\\data\\plume\\ent8\\starts.txt");
 	vector<float3> dims = ReadAttribute("D:\\data\\plume\\ent8\\dims.txt");

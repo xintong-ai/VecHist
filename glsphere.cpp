@@ -118,7 +118,9 @@ GLSphere::GLSphere(float r, float scale, int n)
 			//		grid.push_back(row);
 		}
 	}
+
 	m_ib.unlock();
 	m_vb.unlock();
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 

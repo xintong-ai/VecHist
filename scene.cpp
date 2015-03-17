@@ -1027,7 +1027,6 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	vector<vector<float4>> lines = dataManager->GetStreamlines();
 	//TODO: figure out why I have to put the following line
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	for (auto line : lines)
 	{
 		// activate and specify pointer to vertex array
@@ -1118,7 +1117,7 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 
 void Scene::setStates()
 {
-    glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 	glClearDepth(1.0);
     glEnable(GL_DEPTH_TEST);
 	//glDisable(GL_DEPTH_TEST);
