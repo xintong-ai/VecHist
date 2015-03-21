@@ -57,7 +57,7 @@ set(CMAKE_AUTOMOC ON)
 # qt5_wrap_ui(UI_Srcs ${UIs})
 qt5_add_resources(QtApp_RCC_SRCS ${Rcs})
 cuda_add_executable(VecHist ${Srcs} ${Hdrs} ${SHARED_SOURCES} ${QtApp_RCC_SRCS})#${UI_Srcs})# ${MOC_Hdrs})
-qt5_use_modules(VecHist OpenGL GUI)
+qt5_use_modules(VecHist OpenGL Gui)
 target_link_libraries(VecHist  Qt5::Widgets opengl32.lib ${SHARED_LIBRARIES} ${OSUFLOW_LIBRARY_DEBUG}) 
 
 # if(VTK_LIBRARIES)
