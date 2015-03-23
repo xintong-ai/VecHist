@@ -299,7 +299,7 @@ private:
 
 	DataManager* dataManager;
 
-	GLuint pbo = 0;     // OpenGL pixel buffer object
+    GLuint pbo =GLuint(0);     // OpenGL pixel buffer object
 	GLuint tex = 0;     // OpenGL texture object
 	struct cudaGraphicsResource *cuda_pbo_resource; // CUDA Graphics Resource (to transfer PBO)
 	int m_width;

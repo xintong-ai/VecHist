@@ -594,7 +594,11 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		//dataManager->LoadVec("D:/data/sample/test1.vec");
 	//dataManager->LoadVec("C:/Users/tong.tong-idea/SkyDrive/share/15plume3d430.vec");
     //dataManager->LoadVec("D:/data/plume/15plume3d421.vec");
-    dataManager->LoadVec("/media/User/data/plume/15plume3d421.vec");
+    ///////dataManager->LoadVec("/media/User/data/plume/15plume3d421.vec");
+   
+
+    dataManager->LoadVec("/home/datahead/research/rawData/15plume3d430.vec");
+ 
 	//dataManager->LoadVec("D:/data/nek/nek.d_4.vec");
 	
 	//dataManager->LoadVec("D:/data/brain_dti/vector-field.vec");

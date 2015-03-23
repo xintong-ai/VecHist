@@ -3,7 +3,7 @@ project(VecHist)
 cmake_minimum_required(VERSION 2.6)
 # find_package(ANTTWEAKBAR REQUIRED)
 if(UNIX)
-set(CMAKE_MODULE_PATH "/usr/share/cmake-2.8/Modules")
+############set(CMAKE_MODULE_PATH "/usr/share/cmake-2.8/Modules")
 set(CUDA_SDK_ROOT_DIR "/usr/local/cuda/samples")
 endif()
 find_package(OpenGL REQUIRED)
@@ -27,7 +27,7 @@ find_package(Qt5Widgets)
 #include_directories(${VTK_INCLUDE_DIRS})
 
 #list( APPEND ${CMAKE_CXX_FLAGS} "-std=c++0x ${CMAKE_CXX_FLAGS} -g -ftest-coverage -fprofile-arcs")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
 include_directories( ${CUDA_INCLUDE_DIRS} ${CUDA_TOOLKIT_INCLUDE} ${CUDA_SDK_ROOT_DIR}/common/inc ${CMAKE_CURRENT_SOURCE_DIR} ${OSUFLOW_INCLUDE_DIR} required)
 
@@ -63,7 +63,8 @@ qt5_add_resources(QtApp_RCC_SRCS ${Rcs})
 add_executable(VecHist ${Srcs} ${Hdrs} ${SHARED_SOURCES} ${QtApp_RCC_SRCS})#${UI_Srcs})# ${MOC_Hdrs})
 # ${OPENGL_LIBRARIES}
 qt5_use_modules(VecHist OpenGL Gui)
-target_link_libraries(VecHist  Qt5::Widgets  ${SHARED_LIBRARIES} ${OSUFLOW_LIBRARY_DEBUG}) 
+message("${osuflow_LIBRARIES}")
+target_link_libraries(VecHist  Qt5::Widgets  ${SHARED_LIBRARIES} ${OSUFLOW_LIBRARY_DEBUG} )
 #opengl32
 # if(VTK_LIBRARIES)
   # target_link_libraries(VecHist ${VTK_LIBRARIES})

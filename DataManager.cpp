@@ -1032,12 +1032,12 @@ void DataManager::LoadSegmentation()
     vector<float3> eig_vals = ReadAttribute("D:\\data\\plume\\ent9\\eig_vals.txt");
     vector<float3> eig_vecs = ReadAttribute("D:\\data\\plume\\ent9\\eig_vecs.txt");
 #elif 1
-    std::ifstream fin("/media/User/data/plume/ent9/binary_tree.txt", std::fstream::in);
-    vector<float3> starts = ReadAttribute("/media/User/data/plume/ent9/starts.txt");
-    vector<float3> dims = ReadAttribute("/media/User/data/plume/ent9/dims.txt");
-    vector<float> entropys = ReadAttribute1D("/media/User/data/plume/ent9/entropys.txt");
-    vector<float3> eig_vals = ReadAttribute("/media/User/data/plume/ent9/eig_vals.txt");
-    vector<float3> eig_vecs = ReadAttribute("/media/User/data/plume/ent9/eig_vecs.txt");
+    std::ifstream fin("/home/datahead/XinCode/VecHist/data/binary_tree.txt", std::fstream::in);
+    vector<float3> starts = ReadAttribute("/home/datahead/XinCode/VecHist/data/starts.txt");
+    vector<float3> dims = ReadAttribute("/home/datahead/XinCode/VecHist/data/dims.txt");
+    vector<float> entropys = ReadAttribute1D("/home/datahead/XinCode/VecHist/data/entropys.txt");
+    vector<float3> eig_vals = ReadAttribute("/home/datahead/XinCode/VecHist/data/eig_vals.txt");
+    vector<float3> eig_vecs = ReadAttribute("/home/datahead/XinCode/VecHist/data/eig_vecs.txt");
 #elif 0
 	std::ifstream fin("D:\\Dropbox\\hist\\VecHist\\python\\vechist\\binary_tree.txt", std::fstream::in);
 	vector<float3> starts = ReadAttribute("D:\\data\\brain_dti\\entropy7\\starts.txt");
