@@ -46,7 +46,7 @@
 
 #include <QtWidgets>
 #include <QGLWidget>
-#include <Mouse3DInput.h>
+//#include <Mouse3DInput.h>
 
 class GraphicsView : public QGraphicsView
 {
@@ -141,15 +141,16 @@ int main(int argc, char **argv)
     widget->makeCurrent(); // The current context must be set before calling Scene's constructor
     Scene scene(800, 600, maxTextureSize);
 	
-	Mouse3DInput mouse(widget);
-
-	QObject::connect(&mouse, SIGNAL(Move3d(std::vector<float>&)), &scene, SLOT(OnMove(std::vector<float>&)));
+//	adding these following two line will make the program crash when closing the window.
+//	Mouse3DInput mouse(widget);
+//	QObject::connect(&mouse, SIGNAL(Move3d(std::vector<float>&)), &scene, SLOT(OnMove(std::vector<float>&)));
 
     GraphicsView view;
     view.setViewport(widget);
     view.setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
     view.setScene(&scene);
     view.show();
+	//app.setQuitOnLastWindowClosed(false);
 
     return app.exec();
 }

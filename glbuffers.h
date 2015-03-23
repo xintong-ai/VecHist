@@ -285,6 +285,7 @@ public:
         glUnmapBuffer(GL_ARRAY_BUFFER);
 		//Xin:I have to bind the buffer to 0 before proceed
 		//otherwise a lot of other visualization does not work
+		//however, we cannot paint the fps with this following line.
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 

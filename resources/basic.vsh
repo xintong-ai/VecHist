@@ -52,12 +52,16 @@ void main()
     specular = gl_LightSource[0].specular;
     ambient = gl_LightSource[0].ambient;
     diffuse = gl_LightSource[0].diffuse;
-    lightDirection = view * gl_LightSource[0].position;
+	vec4 lightDir = vec4(0.0f, 0.0f, 1.0f, 1.0f);
+    lightDirection = view * lightDir;//gl_LightSource[0].position;
 
 //    normal = gl_NormalMatrix * gl_Normal;
     normal = gl_Normal;
-	texcoord = gl_TexCoord[0];
-    position = gl_Vertex.xyz;
+	texcoord = vec3(gl_TexCoord[0].x, gl_TexCoord[0].y, gl_TexCoord[0].z);
+	
+	
+	
+    position = vec3(gl_Vertex.x, gl_Vertex.y, gl_Vertex.z);//gl_Vertex.xyz;
 
     gl_FrontColor = gl_Color;
     gl_Position = ftransform();

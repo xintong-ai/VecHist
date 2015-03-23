@@ -240,7 +240,7 @@ public slots:
 	void OnMove(std::vector<float>& motionData);
 //    void newItem(ItemDialog::ItemType type);
 protected:
-	void render3D(const QMatrix4x4 &view, int excludeBox = -2);
+	void render3D(const QMatrix4x4 &view);
 	void renderBBox(const QMatrix4x4 &view);
 	void renderQCube(const QMatrix4x4 &view);	//render the queried cube
 	void setStates();

@@ -2,8 +2,6 @@
     <qresource prefix="/res/boxes">
         <file>basic.vsh</file>
         <file>distribution.fsh</file>
-		<file>sphere_brush.fsh</file>
-		<file>cut_plane.fsh</file>
         <file>parameters.par</file>
     </qresource>
 </RCC>

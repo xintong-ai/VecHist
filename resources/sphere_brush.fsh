@@ -57,17 +57,17 @@ vec4 GetColor(float v,float vmin,float vmax)
    dv = vmax - vmin;
 
    if (v < (vmin + 0.25 * dv)) {
-      c.r = 0;
+      c.r = 0.0f;
       c.g = 4 * (v - vmin) / dv;
    } else if (v < (vmin + 0.5 * dv)) {
-      c.r = 0;
+      c.r = 0.0f;
       c.b = 1 + 4 * (vmin + 0.25 * dv - v) / dv;
    } else if (v < (vmin + 0.75 * dv)) {
       c.r = 4 * (v - vmin - 0.5 * dv) / dv;
-      c.b = 0;
+      c.b = 0.0f;
    } else {
       c.g = 1 + 4 * (vmin + 0.75 * dv - v) / dv;
-      c.b = 0;
+      c.b = 0.0f;
    }
 
    return(c);

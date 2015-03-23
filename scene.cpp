@@ -54,6 +54,7 @@
 
 //#include <qopenglext.h>
 
+/*
 extern "C" void inputMask(void *h_volume, cudaExtent volumeSize);
 
 extern "C" void setTextureFilterMode(bool bLinearFilter);
@@ -65,7 +66,7 @@ extern "C" void render_kernel(dim3 gridSize, dim3 blockSize, uint *d_output, uin
 //extern "C" void copyInvProjMatrix(float *invProjMatrix, size_t sizeofMatrix);
 extern "C" void copyInvProjMulViewMatrix(float *InvProjMulViewMatrix, size_t sizeofMatrix);
 extern "C" void copyDataDim(int *dataDim, size_t size);
-
+*/
 //#define SWAP_ROWS_FLOAT(a, b) { float *_tmp = a; (a) = (b); (b) = _tmp; }
 //#define MAT(m,r,c) (m)[(c)*4+(r)]
 
@@ -583,14 +584,17 @@ Scene::Scene(int width, int height, int maxTextureSize)
     //, m_environmentShader(0)
     //, m_environmentProgram(0)
 {
+
 	dataManager = new DataManager();
+
 	//$$$
 	
 	//dataManager->LoadVec("D:/data/sample/test2.vec");
 	//dataManager->LoadVec("D:/data/sample/sample_two_halves.vec");
 		//dataManager->LoadVec("D:/data/sample/test1.vec");
 	//dataManager->LoadVec("C:/Users/tong.tong-idea/SkyDrive/share/15plume3d430.vec");
-	dataManager->LoadVec("D:/data/plume/15plume3d421.vec");
+    //dataManager->LoadVec("D:/data/plume/15plume3d421.vec");
+    dataManager->LoadVec("/media/User/data/plume/15plume3d421.vec");
 	//dataManager->LoadVec("D:/data/nek/nek.d_4.vec");
 	
 	//dataManager->LoadVec("D:/data/brain_dti/vector-field.vec");
@@ -633,7 +637,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
     //connect(m_renderOptions, SIGNAL(shaderChanged(int)), this, SLOT(setShader(int)));
 	connect(m_renderOptions, SIGNAL(blockChanged(int, int, int, int, int, int)), 
 		this, SLOT(UpdateBlock(int, int, int, int, int, int)));
-	connect(m_renderOptions, SIGNAL(queryChanged(int, int, int)), this, SLOT(UpdateQuery(int, int, int)));
+    connect(m_renderOptions, SIGNAL(queryChanged(int, int, int)), this, SLOT(UpdateQuery(int, int, int)));
 	connect(m_renderOptions, SIGNAL(segmentationRequested()), this, SLOT(Segmentation()));
 
     TwoSidedGraphicsWidget *twoSided = new TwoSidedGraphicsWidget(this);
@@ -651,7 +655,6 @@ Scene::Scene(int width, int height, int maxTextureSize)
     m_timer->start();
 
     m_time.start();
-
 
 	//for (int i = 0; i < 500; i++)	{
 	//	COLOUR tmp = GetColour(i, 0, 500);
@@ -675,8 +678,10 @@ Scene::~Scene()
     //    if (rt) delete rt;
 	//delete m_vec3DTex;
 
-	cudaDeviceReset();
-	cleanup();
+	delete m_renderOptions;
+
+//	cudaDeviceReset();
+//	cleanup();
 }
 
 void Scene::initGL()
@@ -857,13 +862,11 @@ void Scene::renderQCube(const QMatrix4x4 &view)
 
 // If one of the boxes should not be rendered, set excludeBox to its index.
 // If the main box should not be rendered, set excludeBox to -1.
-void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
+void Scene::render3D(const QMatrix4x4 &view)
 {
 	QMatrix4x4 m;
 	m.rotate(m_trackBalls[0].rotation());
 	loadMatrix(view);
-
-
 
 	int nx, ny, nz;
 	dataManager->GetVolumeSize(nx, ny, nz);
@@ -883,6 +886,14 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 	/****** transform********/
 	glMultMatrixf(m.constData());
 
+	GLfloat mv[16];
+	glGetFloatv(GL_MODELVIEW_MATRIX, mv);
+	QMatrix4x4 qModelview(
+		mv[0], mv[1], mv[2], mv[3],
+		mv[4], mv[5], mv[6], mv[7],
+		mv[8], mv[9], mv[10], mv[11],
+		mv[12], mv[13], mv[14], mv[15]);
+	qModelview = qModelview.transposed();
 
 	//glPushMatrix();
 
@@ -900,10 +911,11 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 	//	m_environment->bind();
 	//}
 
+
 	m_programs["distribution"]->bind();
 //	m_programs["distribution"]->setUniformValue("tex", GLint(0));
 	m_programs["distribution"]->setUniformValue("env", GLint(0));
-	m_programs["distribution"]->setUniformValue("view", view);
+	m_programs["distribution"]->setUniformValue("view", qModelview);
 
 #if 0
 	//draw sphere by the side
@@ -1097,8 +1109,8 @@ void Scene::render3D(const QMatrix4x4 &view, int excludeBox)
 //	//	glPolygonMode(GL_FRONT, GL_FILL);
 
 
-//	renderQCube(view);
-//	renderBBox(view);
+	renderQCube(view);
+	renderBBox(view);
 
 	//glPopMatrix();
 
@@ -1180,12 +1192,11 @@ void Scene::defaultStates()
 
 void Scene::drawBackground(QPainter *painter, const QRectF &)
 {
-	//TODO: remove the hard code
 	float width = float(painter->device()->width());
 	float height = float(painter->device()->height());
 
-    painter->beginNativePainting();
-    setStates();
+	painter->beginNativePainting();
+	setStates();
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -1202,27 +1213,22 @@ void Scene::drawBackground(QPainter *painter, const QRectF &)
 
 	render3D(view);
 
-    defaultStates();
-   // ++m_frame;
 
-
-	//QString framesPerSecond;
-	//framesPerSecond.setNum(m_frame / (m_time.elapsed() / 1000.0), 'f', 2);
-
-	//painter->setPen(Qt::white);
-
-	//painter->drawText(20, 40, framesPerSecond + " fps");
+	QString framesPerSecond;
+	framesPerSecond.setNum(m_frame / (m_time.elapsed() / 1000.0), 'f', 2);
+	painter->setPen(Qt::white);
+	//this following line cannot be called when the fix in "glbuffer.h" is made
+	//painter->drawText(20, 40, " fps");
 	////cout << "FPS: " << framesPerSecond.toStdString() << endl;
-
-	////painter->end();
-
-	//painter->endNativePainting();
+	//painter->end();
 
 	if (!(m_frame % 100)) {
 		m_time.start();
 		m_frame = 0;
 	}
 	m_frame++;
+	defaultStates();
+	painter->endNativePainting();
 }
 
 QPointF Scene::pixelPosToViewPos(const QPointF& p)
@@ -1426,15 +1432,15 @@ void Scene::UpdateBlock(int x, int y, int z, int nx, int ny, int nz)
 
 void Scene::UpdateQuery(int f, int x, int y)
 {
-//	std::unique_ptr<bool[]> result(new bool[size * size * 6]);
-	int size = dataManager->GetNumOfCells();
-	unsigned char* result = new unsigned char[size];
-//	int size = 0;
-	dataManager->QueryByBin(f, x, y, result);
-	int nx, ny, nz;
-	dataManager->GetVolumeSize(nx, ny, nz);
-	cudaExtent volumeSize = make_cudaExtent(nx, ny, nz);
-	inputMask(result, volumeSize);
+////	std::unique_ptr<bool[]> result(new bool[size * size * 6]);
+//	int size = dataManager->GetNumOfCells();
+//	unsigned char* result = new unsigned char[size];
+////	int size = 0;
+//	dataManager->QueryByBin(f, x, y, result);
+//	int nx, ny, nz;
+//	dataManager->GetVolumeSize(nx, ny, nz);
+//	cudaExtent volumeSize = make_cudaExtent(nx, ny, nz);
+//	inputMask(result, volumeSize);
 }
 
 void Scene::UpdateBlock()
@@ -1497,45 +1503,45 @@ void RenderOptionsDialog::changeBlockLoc(const int idx, const int val)
 
 void Scene::cleanup()
 {
-	//sdkDeleteTimer(&timer);
+//	//sdkDeleteTimer(&timer);
 
-	//freeCudaBuffers();
+//	//freeCudaBuffers();
 
-	if (pbo)
-	{
-		cudaGraphicsUnregisterResource(cuda_pbo_resource);
-		glDeleteBuffers(1, &pbo);
-		glDeleteTextures(1, &tex);
-	}
+//	if (pbo)
+//	{
+//		cudaGraphicsUnregisterResource(cuda_pbo_resource);
+//		glDeleteBuffers(1, &pbo);
+//		glDeleteTextures(1, &tex);
+//	}
 }
 
 // render image using CUDA
 void Scene::renderVolume()
 {
-	//copyInvViewMatrix(invViewMatrix, sizeof(float4)* 4);
-	//copyInvProjMatrix(invProjMatrix, sizeof(float4)* 3);
-	copyInvProjMulViewMatrix(invProjMulView, sizeof(float4)* 4);
+//	//copyInvViewMatrix(invViewMatrix, sizeof(float4)* 4);
+//	//copyInvProjMatrix(invProjMatrix, sizeof(float4)* 3);
+//	copyInvProjMulViewMatrix(invProjMulView, sizeof(float4)* 4);
 
 
 
-	// map PBO to get CUDA device pointer
-	uint *d_output;
-	// map PBO to get CUDA device pointer
-	checkCudaErrors(cudaGraphicsMapResources(1, &cuda_pbo_resource, 0));
-	size_t num_bytes;
-	checkCudaErrors(cudaGraphicsResourceGetMappedPointer((void **)&d_output, &num_bytes,
-		cuda_pbo_resource));
-	//printf("CUDA mapped PBO: May access %ld bytes\n", num_bytes);
+//	// map PBO to get CUDA device pointer
+//	uint *d_output;
+//	// map PBO to get CUDA device pointer
+//	checkCudaErrors(cudaGraphicsMapResources(1, &cuda_pbo_resource, 0));
+//	size_t num_bytes;
+//	checkCudaErrors(cudaGraphicsResourceGetMappedPointer((void **)&d_output, &num_bytes,
+//		cuda_pbo_resource));
+//	//printf("CUDA mapped PBO: May access %ld bytes\n", num_bytes);
 
-	// clear image
-	checkCudaErrors(cudaMemset(d_output, 0, m_width*m_height * 4));
+//	// clear image
+//	checkCudaErrors(cudaMemset(d_output, 0, m_width*m_height * 4));
 
-	// call CUDA kernel, writing results to PBO
-	render_kernel(gridSize, blockSize, d_output, m_width, m_height);// , density, brightness, transferOffset, transferScale);
+//	// call CUDA kernel, writing results to PBO
+//	render_kernel(gridSize, blockSize, d_output, m_width, m_height);// , density, brightness, transferOffset, transferScale);
 
-	getLastCudaError("kernel failed");
+//	getLastCudaError("kernel failed");
 
-	checkCudaErrors(cudaGraphicsUnmapResources(1, &cuda_pbo_resource, 0));
+//	checkCudaErrors(cudaGraphicsUnmapResources(1, &cuda_pbo_resource, 0));
 }
 
 
@@ -1758,32 +1764,32 @@ void Scene::ShowGpuMemInfo()
 
 
 
-	// show memory usage of GPU
+//	// show memory usage of GPU
 
-	size_t free_byte;
+//	size_t free_byte;
 
-	size_t total_byte;
-
-
-	cudaError_t cuda_status = cudaMemGetInfo(&free_byte, &total_byte);
-
-	if (cudaSuccess != cuda_status){
-
-		printf("Error: cudaMemGetInfo fails, %s \n", cudaGetErrorString(cuda_status));
-
-		exit(1);
-
-	}
+//	size_t total_byte;
 
 
+//	cudaError_t cuda_status = cudaMemGetInfo(&free_byte, &total_byte);
 
-	double free_db = (double)free_byte;
+//	if (cudaSuccess != cuda_status){
 
-	double total_db = (double)total_byte;
+//		printf("Error: cudaMemGetInfo fails, %s \n", cudaGetErrorString(cuda_status));
 
-	double used_db = total_db - free_db;
+//		exit(1);
 
-	printf("GPU memory usage: used = %f, free = %f MB, total = %f MB\n",
+//	}
 
-		used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
+
+
+//	double free_db = (double)free_byte;
+
+//	double total_db = (double)total_byte;
+
+//	double used_db = total_db - free_db;
+
+//	printf("GPU memory usage: used = %f, free = %f MB, total = %f MB\n",
+
+//		used_db / 1024.0 / 1024.0, free_db / 1024.0 / 1024.0, total_db / 1024.0 / 1024.0);
 }

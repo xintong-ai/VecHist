@@ -2,6 +2,10 @@ project(VecHist)
 
 cmake_minimum_required(VERSION 2.6)
 # find_package(ANTTWEAKBAR REQUIRED)
+if(UNIX)
+set(CMAKE_MODULE_PATH "/usr/share/cmake-2.8/Modules")
+set(CUDA_SDK_ROOT_DIR "/usr/local/cuda/samples")
+endif()
 find_package(OpenGL REQUIRED)
 #find_package(EIGEN REQUIRED)
 #find_package(LIBIGL REQUIRED)
@@ -22,6 +26,9 @@ find_package(Qt5Widgets)
 #include(${VTK_USE_FILE})
 #include_directories(${VTK_INCLUDE_DIRS})
 
+#list( APPEND ${CMAKE_CXX_FLAGS} "-std=c++0x ${CMAKE_CXX_FLAGS} -g -ftest-coverage -fprofile-arcs")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
 include_directories( ${CUDA_INCLUDE_DIRS} ${CUDA_TOOLKIT_INCLUDE} ${CUDA_SDK_ROOT_DIR}/common/inc ${CMAKE_CURRENT_SOURCE_DIR} ${OSUFLOW_INCLUDE_DIR} required)
 
 set(SHARED_LIBRARIES
@@ -40,12 +47,9 @@ set(SHARED_LIBRARIES
 # Set your files and resources here
 set( Srcs main.cpp DataManager.cpp glsphere.cpp glSuperquadric.cpp
 	scene.cpp glbuffers.cpp glextensions.cpp trackball.cpp 
-	Mouse3DInput.cpp MouseParameters.cpp
-	volumeRender_kernel.cu
 	)# 3rdparty/fbm.c) # box.cpp
-set( Hdrs DataManager.h vector_types.h glsphere.h glSuperquadric.h gltrianglemesh.h
+set( Hdrs DataManager.h glsphere.h glSuperquadric.h gltrianglemesh.h
 	scene.h glbuffers.h glextensions.h trackball.h 
-	Mouse3DInput.h MouseParameters.h I3dMouseParams.h
     )# 3rdparty/fbm.h) #box.h 
 set( Rcs resources/boxes.qrc)
 
@@ -56,10 +60,12 @@ set(CMAKE_AUTOMOC ON)
 
 # qt5_wrap_ui(UI_Srcs ${UIs})
 qt5_add_resources(QtApp_RCC_SRCS ${Rcs})
-cuda_add_executable(VecHist ${Srcs} ${Hdrs} ${SHARED_SOURCES} ${QtApp_RCC_SRCS})#${UI_Srcs})# ${MOC_Hdrs})
-qt5_use_modules(VecHist OpenGL GUI)
-target_link_libraries(VecHist  Qt5::Widgets opengl32.lib ${SHARED_LIBRARIES} ${OSUFLOW_LIBRARY_DEBUG}) 
-
+add_executable(VecHist ${Srcs} ${Hdrs} ${SHARED_SOURCES} ${QtApp_RCC_SRCS})#${UI_Srcs})# ${MOC_Hdrs})
+# ${OPENGL_LIBRARIES}
+qt5_use_modules(VecHist OpenGL Gui)
+target_link_libraries(VecHist  Qt5::Widgets  ${SHARED_LIBRARIES} ${OSUFLOW_LIBRARY_DEBUG}) 
+#opengl32
+#target_compile_features(VecHist PRIVATE cxx_range_for)
 # if(VTK_LIBRARIES)
   # target_link_libraries(VecHist ${VTK_LIBRARIES})
 # else()
