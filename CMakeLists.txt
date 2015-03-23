@@ -65,7 +65,6 @@ add_executable(VecHist ${Srcs} ${Hdrs} ${SHARED_SOURCES} ${QtApp_RCC_SRCS})#${UI
 qt5_use_modules(VecHist OpenGL Gui)
 target_link_libraries(VecHist  Qt5::Widgets  ${SHARED_LIBRARIES} ${OSUFLOW_LIBRARY_DEBUG}) 
 #opengl32
-#target_compile_features(VecHist PRIVATE cxx_range_for)
 # if(VTK_LIBRARIES)
   # target_link_libraries(VecHist ${VTK_LIBRARIES})
 # else()
