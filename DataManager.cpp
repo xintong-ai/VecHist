@@ -10,6 +10,12 @@
 #include <vector_functions.h>
 #include <fstream>
 
+double Log2( double n )  
+{  
+    // log(n)/log(2) is log2.  
+    return log( n ) / log( 2 );  
+}
+
 //inline void TruncateVolume(int3* in, int3* out,
 //	int dim0, int dim1, int dim2,
 //	int x, int y, int z,
@@ -166,7 +172,7 @@ inline float entropy(float *hist, int histlen){
 	H = 0;
 	for (i = 0; i<histlen; i++){
 		if (hist[i] > 0)
-			H -= (double)hist[i] * log2((double)hist[i]);
+			H -= (double)hist[i] * Log2((double)hist[i]);
 	}
 	return H;
 }
@@ -884,6 +890,8 @@ void DataManager::UpdateCubeMap(float* cubemap)
 DataManager::DataManager()
 {
 	numBlocks = 0;
+	osuflow = new OSUFlow();
+	entropyThreshold = 9;
 }
 
 DataManager::~DataManager()

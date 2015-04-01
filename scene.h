@@ -60,13 +60,13 @@
 #include <cuda_runtime.h>
 #include <cuda_gl_interop.h>
 // CUDA utilities
-#include <helper_cuda.h>
-#include <helper_cuda_gl.h>
+//#include <helper_cuda.h>
+//#include <helper_cuda_gl.h>
 
 // Helper functions
 //#include <helper_cuda.h>
-#include <helper_functions.h>
-#include <helper_timer.h>
+//#include <helper_functions.h>
+//#include <helper_timer.h>
 
 #define PI 3.14159265358979
 
@@ -299,8 +299,8 @@ private:
 
 	DataManager* dataManager;
 
-    GLuint pbo =GLuint(0);     // OpenGL pixel buffer object
-	GLuint tex = 0;     // OpenGL texture object
+    GLuint pbo;     // OpenGL pixel buffer object
+	GLuint tex;     // OpenGL texture object
 	struct cudaGraphicsResource *cuda_pbo_resource; // CUDA Graphics Resource (to transfer PBO)
 	int m_width;
 	int m_height;

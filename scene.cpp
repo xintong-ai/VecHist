@@ -50,7 +50,7 @@
 //#include <driver_types.h>
 //#include <driver_functions.h>
 //#include <helper_cuda.h>
-#include <helper_math.h>
+//#include <helper_math.h>
 
 //#include <qopenglext.h>
 
@@ -587,6 +587,8 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
 	dataManager = new DataManager();
 
+	pbo = GLuint(0);
+	tex = 0;
 	//$$$
 	
 	//dataManager->LoadVec("D:/data/sample/test2.vec");
