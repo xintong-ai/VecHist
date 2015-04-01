@@ -1,5 +1,7 @@
 *.suo
 *.pyc
+*~
+*.user
 
 #Build directory
 build
