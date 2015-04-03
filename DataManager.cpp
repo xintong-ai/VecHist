@@ -509,7 +509,7 @@ void DataManager::ResizeCube(int x, int y, int z)
 }
 
 
-void DataManager::LoadVec(char* filename)
+void DataManager::LoadVec(const char* filename)
 {
 	using namespace std;
 	FILE* file;
@@ -563,7 +563,7 @@ void DataManager::LoadVec(char* filename)
 	LoadOSUFlow(filename);
 }
 
-void DataManager::LoadOSUFlow(char* filename)
+void DataManager::LoadOSUFlow(const char* filename)
 {
 	list<vtListSeedTrace*> sl_list;
 
@@ -892,6 +892,7 @@ DataManager::DataManager()
 	numBlocks = 0;
 	osuflow = new OSUFlow();
 	entropyThreshold = 9;
+	LoadParameters();
 }
 
 DataManager::~DataManager()
@@ -976,7 +977,7 @@ void DataManager::readBinaryTree(NodeBi *&p, ifstream &fin, vector<float3> start
 	}
 }
 
-inline vector<float3> ReadAttribute(char* filename)
+inline vector<float3> ReadAttribute(const char* filename)
 {
 	vector<float3> ret;
 	std::ifstream fin(filename, std::fstream::in);
@@ -993,7 +994,7 @@ inline vector<float3> ReadAttribute(char* filename)
 	return ret;
 }
 
-inline vector<float> ReadAttribute1D(char* filename)
+inline vector<float> ReadAttribute1D(const char* filename)
 {
 	vector<float> ret;
 	std::ifstream fin(filename, std::fstream::in);
@@ -1010,65 +1011,13 @@ inline vector<float> ReadAttribute1D(char* filename)
 
 void DataManager::LoadSegmentation()
 {
+    std::ifstream fin(filenames["tree"], std::fstream::in);
+    vector<float3> starts = ReadAttribute(filenames["starts"].c_str());
+	vector<float3> dims = ReadAttribute(filenames["dims"].c_str());
+	vector<float> entropys = ReadAttribute1D(filenames["entropy"].c_str());
+	vector<float3> eig_vals = ReadAttribute(filenames["eigval"].c_str());
+	vector<float3> eig_vecs = ReadAttribute(filenames["eigvec"].c_str());
 
-#if 0
-	std::ifstream fin("D:\\Dropbox\\hist\\VecHist\\python\\vechist\\binary_tree.txt", std::fstream::in);
-	vector<float3> starts = ReadAttribute("D:\\Dropbox\\hist\\VecHist\\python\\vechist\\starts.txt");
-	vector<float3> dims = ReadAttribute("D:\\Dropbox\\hist\\VecHist\\python\\vechist\\dims.txt");
-	vector<float> entropys = ReadAttribute1D("D:\\Dropbox\\hist\\VecHist\\python\\vechist\\entropys.txt");
-	vector<float3> eig_vals = ReadAttribute("D:\\Dropbox\\hist\\VecHist\\python\\vechist\\eig_vals.txt");
-	vector<float3> eig_vecs = ReadAttribute("D:\\Dropbox\\hist\\VecHist\\python\\vechist\\eig_vecs.txt");
-#elif 0
-	std::ifstream fin("D:\\data\\plume\\three_glyph\\binary_tree.txt", std::fstream::in);
-	vector<float3> starts = ReadAttribute("D:\\data\\plume\\three_glyph\\starts.txt");
-	vector<float3> dims = ReadAttribute("D:\\data\\plume\\three_glyph\\dims.txt");
-	vector<float> entropys = ReadAttribute1D("D:\\data\\plume\\three_glyph\\entropys.txt");
-	vector<float3> eig_vals = ReadAttribute("D:\\data\\plume\\three_glyph\\eig_vals.txt");
-	vector<float3> eig_vecs = ReadAttribute("D:\\data\\plume\\three_glyph\\eig_vecs.txt");
-#elif 0
-	std::ifstream fin("D:\\data\\plume\\entropy10\\binary_tree.txt", std::fstream::in);
-	vector<float3> starts = ReadAttribute("D:\\data\\plume\\entropy10\\starts.txt");
-	vector<float3> dims = ReadAttribute("D:\\data\\plume\\entropy10\\dims.txt");
-	vector<float> entropys = ReadAttribute1D("D:\\data\\plume\\entropy10\\entropys.txt");
-	vector<float3> eig_vals = ReadAttribute("D:\\data\\plume\\entropy10\\eig_vals.txt");
-	vector<float3> eig_vecs = ReadAttribute("D:\\data\\plume\\entropy10\\eig_vecs.txt");
-#elif 1
-    std::ifstream fin("D:\\data\\plume\\ent9\\binary_tree.txt", std::fstream::in);
-    vector<float3> starts = ReadAttribute("D:\\data\\plume\\ent9\\starts.txt");
-    vector<float3> dims = ReadAttribute("D:\\data\\plume\\ent9\\dims.txt");
-    vector<float> entropys = ReadAttribute1D("D:\\data\\plume\\ent9\\entropys.txt");
-    vector<float3> eig_vals = ReadAttribute("D:\\data\\plume\\ent9\\eig_vals.txt");
-    vector<float3> eig_vecs = ReadAttribute("D:\\data\\plume\\ent9\\eig_vecs.txt");
-#elif 0
-    std::ifstream fin("/home/datahead/XinCode/VecHist/data/binary_tree.txt", std::fstream::in);
-    vector<float3> starts = ReadAttribute("/home/datahead/XinCode/VecHist/data/starts.txt");
-    vector<float3> dims = ReadAttribute("/home/datahead/XinCode/VecHist/data/dims.txt");
-    vector<float> entropys = ReadAttribute1D("/home/datahead/XinCode/VecHist/data/entropys.txt");
-    vector<float3> eig_vals = ReadAttribute("/home/datahead/XinCode/VecHist/data/eig_vals.txt");
-    vector<float3> eig_vecs = ReadAttribute("/home/datahead/XinCode/VecHist/data/eig_vecs.txt");
-#elif 0
-	std::ifstream fin("D:\\Dropbox\\hist\\VecHist\\python\\vechist\\binary_tree.txt", std::fstream::in);
-	vector<float3> starts = ReadAttribute("D:\\data\\brain_dti\\entropy7\\starts.txt");
-	vector<float3> dims = ReadAttribute("D:\\data\\brain_dti\\entropy7\\dims.txt");
-	vector<float> entropys = ReadAttribute1D("D:\\data\\brain_dti\\entropy7\\entropys.txt");
-	vector<float3> eig_vals = ReadAttribute("D:\\data\\brain_dti\\entropy7\\eig_vals.txt");
-	vector<float3> eig_vecs = ReadAttribute("D:\\data\\brain_dti\\entropy7\\eig_vecs.txt");
-#elif 0
-	std::ifstream fin("D:\\Dropbox\\hist\\VecHist\\python\\vechist\\binary_tree.txt", std::fstream::in);
-	vector<float3> starts = ReadAttribute("D:\\data\\brain_dti\\entropy8\\starts.txt");
-	vector<float3> dims = ReadAttribute("D:\\data\\brain_dti\\entropy8\\dims.txt");
-	vector<float> entropys = ReadAttribute1D("D:\\data\\brain_dti\\entropy8\\entropys.txt");
-	vector<float3> eig_vals = ReadAttribute("D:\\data\\brain_dti\\entropy8\\eig_vals.txt");
-	vector<float3> eig_vecs = ReadAttribute("D:\\data\\brain_dti\\entropy8\\eig_vecs.txt");
-#elif 0
-	std::ifstream fin("D:\\Dropbox\\hist\\VecHist\\python\\vechist\\binary_tree.txt", std::fstream::in);
-	vector<float3> starts = ReadAttribute("D:\\data\\nek\\entropy8\\starts.txt");
-	vector<float3> dims = ReadAttribute("D:\\data\\nek\\entropy8\\dims.txt");
-	vector<float> entropys = ReadAttribute1D("D:\\data\\nek\\entropy8\\entropys.txt");
-	vector<float3> eig_vals = ReadAttribute("D:\\data\\nek\\entropy8\\eig_vals.txt");
-	vector<float3> eig_vecs = ReadAttribute("D:\\data\\nek\\entropy8\\eig_vecs.txt");
-
-#endif
 	int token;
 	bool isNumber;
 	readBinaryTree(rootNode, fin, starts, dims, entropys, eig_vals, eig_vecs);
@@ -1122,3 +1071,71 @@ float* DataManager::GetVecDataXFirst()
 	return (float*)data_x_first;
 }
 
+void DataManager::LoadParameters()
+{
+	QList<QString> filter = QStringList("*.par");
+    QList<QFileInfo> files = QDir(":/res/vechist/").entryInfoList(filter, QDir::Files | QDir::Readable);
+
+    foreach (QFileInfo fileInfo, files) {
+        QFile file(fileInfo.absoluteFilePath());
+        if (file.open(QIODevice::ReadOnly)) {
+            while (!file.atEnd()) {
+                QList<QByteArray> tokens = file.readLine().simplified().split(' ');
+                QList<QByteArray>::const_iterator it = tokens.begin();
+                if (it == tokens.end())
+                    continue;
+                QByteArray type = *it;
+                if (++it == tokens.end())
+                    continue;
+                QByteArray name = *it;
+                bool singleElement = (tokens.size() == 3); // type, name and one value
+                char counter[10] = "000000000";
+                int counterPos = 8; // position of last digit
+                while (++it != tokens.end()) {
+					if (type == "filename") {
+						filenames[name.toStdString()] = it->toStdString();
+					}
+                    //m_parameterNames << name;
+                    //if (!singleElement) {
+                    //    m_parameterNames.back() += "[";
+                    //    m_parameterNames.back() += counter + counterPos;
+                    //    m_parameterNames.back() += "]";
+                    //    int j = 8; // position of last digit
+                    //    ++counter[j];
+                    //    while (j > 0 && counter[j] > '9') {
+                    //        counter[j] = '0';
+                    //        ++counter[--j];
+                    //    }
+                    //    if (j < counterPos)
+                    //        counterPos = j;
+                    //}
+
+                    //if (type == "color") {
+                    //    layout->addWidget(new QLabel(m_parameterNames.back()));
+                    //    bool ok;
+                    //    ColorEdit *colorEdit = new ColorEdit(it->toUInt(&ok, 16), m_parameterNames.size() - 1);
+                    //    m_parameterEdits << colorEdit;
+                    //    layout->addWidget(colorEdit);
+                    //    connect(colorEdit, SIGNAL(colorChanged(QRgb,int)), this, SLOT(setColorParameter(QRgb,int)));
+                    //    ++row;
+                    //} else if (type == "float") {
+                    //    layout->addWidget(new QLabel(m_parameterNames.back()));
+                    //    bool ok;
+                    //    FloatEdit *floatEdit = new FloatEdit(it->toFloat(&ok), m_parameterNames.size() - 1);
+                    //    m_parameterEdits << floatEdit;
+                    //    layout->addWidget(floatEdit);
+                    //    connect(floatEdit, SIGNAL(valueChanged(float,int)), this, SLOT(setFloatParameter(float,int)));
+                    //    ++row;
+                    //}
+                }
+            }
+            file.close();
+        }
+    }
+
+}
+
+string DataManager::GetFilename(string name)
+{
+	return filenames[name];
+}

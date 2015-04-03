@@ -599,7 +599,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
     ///////dataManager->LoadVec("/media/User/data/plume/15plume3d421.vec");
    
 
-    dataManager->LoadVec("/home/datahead/research/rawData/15plume3d430.vec");
+	dataManager->LoadVec(dataManager->GetFilename("vectorfield").c_str());
  
 	//dataManager->LoadVec("D:/data/nek/nek.d_4.vec");
 	
@@ -697,7 +697,7 @@ void Scene::initGL()
 	//m_superWidget = new GLSuperquadric(make_float3(0.8, 0.45, 0.4), make_float3(1, 0, 0), 3, 0.5, 16);
 
     m_vertexShader = new QGLShader(QGLShader::Vertex);
-    m_vertexShader->compileSourceFile(QLatin1String(":/res/boxes/basic.vsh"));
+    m_vertexShader->compileSourceFile(QLatin1String(":/res/vechist/basic.vsh"));
 
 	m_environment = new GLTextureCube(qMin(1024, m_maxTextureSize), 1);
 
@@ -707,7 +707,7 @@ void Scene::initGL()
     // Load all .fsh files as fragment shaders
    // "distribution" = 0;
     filter = QStringList("*.fsh");
-    files = QDir(":/res/boxes/").entryInfoList(filter, QDir::Files | QDir::Readable);
+    files = QDir(":/res/vechist/").entryInfoList(filter, QDir::Files | QDir::Readable);
     foreach (QFileInfo file, files) {
         QGLShaderProgram *program = new QGLShaderProgram;
         QGLShader* shader = new QGLShader(QGLShader::Fragment);

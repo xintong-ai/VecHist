@@ -20,7 +20,7 @@ set( Srcs main.cpp DataManager.cpp glsphere.cpp glSuperquadric.cpp
 set( Hdrs DataManager.h glsphere.h glSuperquadric.h gltrianglemesh.h
 	scene.h glbuffers.h glextensions.h trackball.h 
     )
-set( Rcs resources/boxes.qrc)
+set( Rcs resources/vechist.qrc)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)

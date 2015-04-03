@@ -203,17 +203,20 @@ class DataManager
 	Node *topNode;
 	NodeBi *rootNode;
 	int numBlocks;
+	map<string, string> filenames;
+	
 	void SplitNode(Node* parent);
 	void ComputeCubemapNode(Node *&nd);
 	void ComputeCubemapNode(NodeBi *&nd);
 	void GetDescendantNodes(vector<NodeBi*> &ret, NodeBi* nd);
-	void LoadOSUFlow(char* filename);
+	void LoadOSUFlow(const char* filename);
 	void readBinaryTree(NodeBi *&p, ifstream &fin, vector<float3> starts, vector<float3> dims,
 		vector<float> entropys, vector<float3> eig_vals, vector<float3> eig_vecs);
+	void LoadParameters();
 
 
 public:
-	void LoadVec(char* filename);
+	void LoadVec(const char* filename);
 	std::vector<std::vector<double> > GetVertexPos();
 	std::vector<std::vector<double> > GetScaledVertexPos();
 	std::vector<std::vector<int> > GetFaceVertices();
@@ -248,6 +251,8 @@ public:
 	void GenStreamInCube();
 	float* GetVecData();
 	float* GetVecDataXFirst();
+	string GetFilename(string name);
+
 	DataManager();
 	~DataManager();
 };
