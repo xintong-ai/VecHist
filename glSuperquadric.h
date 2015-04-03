@@ -43,7 +43,7 @@
 #define GLSUPERQUADRIC_H
 
 //#include <GL/glew.h>
-#include "glextensions.h"
+//#include "glextensions.h"
 
 #include <QtWidgets>
 #include <QtOpenGL>
@@ -52,7 +52,7 @@
 #include <QtGui/qvector3d.h>
 #include <QtGui/qvector2d.h>
 #include "glbuffers.h"
-#include "vector_types.h"
+#include "cuda/vector_types.h"
 
 
 

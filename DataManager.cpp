@@ -7,7 +7,7 @@
 
 #define _USE_MATH_DEFINES
 #include <math.h>
-#include <vector_functions.h>
+#include <cuda/vector_functions.h>
 #include <fstream>
 
 double Log2( double n )  
@@ -1032,14 +1032,14 @@ void DataManager::LoadSegmentation()
 	vector<float> entropys = ReadAttribute1D("D:\\data\\plume\\entropy10\\entropys.txt");
 	vector<float3> eig_vals = ReadAttribute("D:\\data\\plume\\entropy10\\eig_vals.txt");
 	vector<float3> eig_vecs = ReadAttribute("D:\\data\\plume\\entropy10\\eig_vecs.txt");
-#elif 0
+#elif 1
     std::ifstream fin("D:\\data\\plume\\ent9\\binary_tree.txt", std::fstream::in);
     vector<float3> starts = ReadAttribute("D:\\data\\plume\\ent9\\starts.txt");
     vector<float3> dims = ReadAttribute("D:\\data\\plume\\ent9\\dims.txt");
     vector<float> entropys = ReadAttribute1D("D:\\data\\plume\\ent9\\entropys.txt");
     vector<float3> eig_vals = ReadAttribute("D:\\data\\plume\\ent9\\eig_vals.txt");
     vector<float3> eig_vecs = ReadAttribute("D:\\data\\plume\\ent9\\eig_vecs.txt");
-#elif 1
+#elif 0
     std::ifstream fin("/home/datahead/XinCode/VecHist/data/binary_tree.txt", std::fstream::in);
     vector<float3> starts = ReadAttribute("/home/datahead/XinCode/VecHist/data/starts.txt");
     vector<float3> dims = ReadAttribute("/home/datahead/XinCode/VecHist/data/dims.txt");

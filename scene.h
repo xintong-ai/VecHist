@@ -57,8 +57,8 @@
 #include "glbuffers.h"
 #include "DataManager.h"
 //#include "qtbox.h"
-#include <cuda_runtime.h>
-#include <cuda_gl_interop.h>
+//#include <cuda_runtime.h>
+//#include <cuda_gl_interop.h>
 // CUDA utilities
 //#include <helper_cuda.h>
 //#include <helper_cuda_gl.h>

@@ -1,8 +1,8 @@
 #ifndef DATA_MANAGER_H
 #define DATA_MANAGER_H
 #include <vector>
-#include <vector_types.h>
-#include <vector_functions.h>
+#include <cuda/vector_types.h>
+#include <cuda/vector_functions.h>
 #include "OSUFlow.h"
 #include "glSuperquadric.h"
 
