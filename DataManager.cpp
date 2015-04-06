@@ -1032,12 +1032,12 @@ void DataManager::LoadSegmentation()
     vector<float3> eig_vals = ReadAttribute("D:\\data\\plume\\ent9\\eig_vals.txt");
     vector<float3> eig_vecs = ReadAttribute("D:\\data\\plume\\ent9\\eig_vecs.txt");
 #elif 1
-    std::ifstream fin("/home/datahead/XinCode/VecHist/data/binary_tree.txt", std::fstream::in);
-    vector<float3> starts = ReadAttribute("/home/datahead/XinCode/VecHist/data/starts.txt");
-    vector<float3> dims = ReadAttribute("/home/datahead/XinCode/VecHist/data/dims.txt");
-    vector<float> entropys = ReadAttribute1D("/home/datahead/XinCode/VecHist/data/entropys.txt");
-    vector<float3> eig_vals = ReadAttribute("/home/datahead/XinCode/VecHist/data/eig_vals.txt");
-    vector<float3> eig_vecs = ReadAttribute("/home/datahead/XinCode/VecHist/data/eig_vecs.txt");
+    std::ifstream fin("C:\\Documents and Settings\\datahead8888\\Documents\\XinCode\\VecHist\\python\\vechist\\binary_tree.txt", std::fstream::in);
+    vector<float3> starts = ReadAttribute("C:\\Documents and Settings\\datahead8888\\Documents\\XinCode\\VecHist\\python\\vechist\\starts.txt");
+    vector<float3> dims = ReadAttribute("C:\\Documents and Settings\\datahead8888\\Documents\\XinCode\\VecHist\\python\\vechist\\dims.txt");
+    vector<float> entropys = ReadAttribute1D("C:\\Documents and Settings\\datahead8888\\Documents\\XinCode\\VecHist\\python\\vechist\\entropys.txt");
+	vector<float3> eig_vals = ReadAttribute("C:\\Documents and Settings\\datahead8888\\Documents\\XinCode\\VecHist\\python\\vechist\\eig_vals.txt");
+    vector<float3> eig_vecs = ReadAttribute("C:\\Documents and Settings\\datahead8888\\Documents\\XinCode\\VecHist\\python\\vechist\\eig_vecs.txt");
 #elif 0
 	std::ifstream fin("D:\\Dropbox\\hist\\VecHist\\python\\vechist\\binary_tree.txt", std::fstream::in);
 	vector<float3> starts = ReadAttribute("D:\\data\\brain_dti\\entropy7\\starts.txt");

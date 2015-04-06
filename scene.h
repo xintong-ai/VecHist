@@ -44,6 +44,7 @@
 
 //#include <GL/glew.h>
 #include "glextensions.h"
+#include "graphWidget.h"
 
 #include <QtWidgets>
 #include <QtOpenGL>
@@ -146,7 +147,7 @@ public slots:
 protected slots:
     void animateFlip();
 private:
-    GraphicsWidget *m_proxyWidgets[2];
+    GraphicsWidget *m_proxyWidgets[3];
     int m_current;
     int m_angle; // angle in degrees
     int m_delta;
@@ -278,6 +279,7 @@ private:
     //bool m_updateAllCubemaps;
 
     RenderOptionsDialog *m_renderOptions;
+	GraphWidget * m_graphWidget;
     //ItemDialog *m_itemDialog;
     QTimer *m_timer;
 	GLSphere *m_vecWidget;
