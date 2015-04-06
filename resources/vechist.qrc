@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/res/boxes">
+    <qresource prefix="/res/vechist">
         <file>basic.vsh</file>
         <file>distribution.fsh</file>
         <file>parameters.par</file>

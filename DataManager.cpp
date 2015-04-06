@@ -7,8 +7,14 @@
 
 #define _USE_MATH_DEFINES
 #include <math.h>
-#include <vector_functions.h>
+#include <cuda/vector_functions.h>
 #include <fstream>
+
+double Log2( double n )  
+{  
+    // log(n)/log(2) is log2.  
+    return log( n ) / log( 2 );  
+}
 
 //inline void TruncateVolume(int3* in, int3* out,
 //	int dim0, int dim1, int dim2,
@@ -166,7 +172,7 @@ inline float entropy(float *hist, int histlen){
 	H = 0;
 	for (i = 0; i<histlen; i++){
 		if (hist[i] > 0)
-			H -= (double)hist[i] * log2((double)hist[i]);
+			H -= (double)hist[i] * Log2((double)hist[i]);
 	}
 	return H;
 }
@@ -503,7 +509,7 @@ void DataManager::ResizeCube(int x, int y, int z)
 }
 
 
-void DataManager::LoadVec(char* filename)
+void DataManager::LoadVec(const char* filename)
 {
 	using namespace std;
 	FILE* file;
@@ -557,7 +563,7 @@ void DataManager::LoadVec(char* filename)
 	LoadOSUFlow(filename);
 }
 
-void DataManager::LoadOSUFlow(char* filename)
+void DataManager::LoadOSUFlow(const char* filename)
 {
 	list<vtListSeedTrace*> sl_list;
 
@@ -884,6 +890,9 @@ void DataManager::UpdateCubeMap(float* cubemap)
 DataManager::DataManager()
 {
 	numBlocks = 0;
+	osuflow = new OSUFlow();
+	entropyThreshold = 9;
+	LoadParameters();
 }
 
 DataManager::~DataManager()
@@ -968,7 +977,7 @@ void DataManager::readBinaryTree(NodeBi *&p, ifstream &fin, vector<float3> start
 	}
 }
 
-inline vector<float3> ReadAttribute(char* filename)
+inline vector<float3> ReadAttribute(const char* filename)
 {
 	vector<float3> ret;
 	std::ifstream fin(filename, std::fstream::in);
@@ -985,7 +994,7 @@ inline vector<float3> ReadAttribute(char* filename)
 	return ret;
 }
 
-inline vector<float> ReadAttribute1D(char* filename)
+inline vector<float> ReadAttribute1D(const char* filename)
 {
 	vector<float> ret;
 	std::ifstream fin(filename, std::fstream::in);
@@ -1002,6 +1011,12 @@ inline vector<float> ReadAttribute1D(char* filename)
 
 void DataManager::LoadSegmentation()
 {
+    std::ifstream fin(filenames["tree"], std::fstream::in);
+    vector<float3> starts = ReadAttribute(filenames["starts"].c_str());
+	vector<float3> dims = ReadAttribute(filenames["dims"].c_str());
+	vector<float> entropys = ReadAttribute1D(filenames["entropy"].c_str());
+	vector<float3> eig_vals = ReadAttribute(filenames["eigval"].c_str());
+	vector<float3> eig_vecs = ReadAttribute(filenames["eigvec"].c_str());
 
 #if 0
 	std::ifstream fin("D:\\Dropbox\\hist\\VecHist\\python\\vechist\\binary_tree.txt", std::fstream::in);
@@ -1114,3 +1129,71 @@ float* DataManager::GetVecDataXFirst()
 	return (float*)data_x_first;
 }
 
+void DataManager::LoadParameters()
+{
+	QList<QString> filter = QStringList("*.par");
+    QList<QFileInfo> files = QDir(":/res/vechist/").entryInfoList(filter, QDir::Files | QDir::Readable);
+
+    foreach (QFileInfo fileInfo, files) {
+        QFile file(fileInfo.absoluteFilePath());
+        if (file.open(QIODevice::ReadOnly)) {
+            while (!file.atEnd()) {
+                QList<QByteArray> tokens = file.readLine().simplified().split(' ');
+                QList<QByteArray>::const_iterator it = tokens.begin();
+                if (it == tokens.end())
+                    continue;
+                QByteArray type = *it;
+                if (++it == tokens.end())
+                    continue;
+                QByteArray name = *it;
+                bool singleElement = (tokens.size() == 3); // type, name and one value
+                char counter[10] = "000000000";
+                int counterPos = 8; // position of last digit
+                while (++it != tokens.end()) {
+					if (type == "filename") {
+						filenames[name.toStdString()] = it->toStdString();
+					}
+                    //m_parameterNames << name;
+                    //if (!singleElement) {
+                    //    m_parameterNames.back() += "[";
+                    //    m_parameterNames.back() += counter + counterPos;
+                    //    m_parameterNames.back() += "]";
+                    //    int j = 8; // position of last digit
+                    //    ++counter[j];
+                    //    while (j > 0 && counter[j] > '9') {
+                    //        counter[j] = '0';
+                    //        ++counter[--j];
+                    //    }
+                    //    if (j < counterPos)
+                    //        counterPos = j;
+                    //}
+
+                    //if (type == "color") {
+                    //    layout->addWidget(new QLabel(m_parameterNames.back()));
+                    //    bool ok;
+                    //    ColorEdit *colorEdit = new ColorEdit(it->toUInt(&ok, 16), m_parameterNames.size() - 1);
+                    //    m_parameterEdits << colorEdit;
+                    //    layout->addWidget(colorEdit);
+                    //    connect(colorEdit, SIGNAL(colorChanged(QRgb,int)), this, SLOT(setColorParameter(QRgb,int)));
+                    //    ++row;
+                    //} else if (type == "float") {
+                    //    layout->addWidget(new QLabel(m_parameterNames.back()));
+                    //    bool ok;
+                    //    FloatEdit *floatEdit = new FloatEdit(it->toFloat(&ok), m_parameterNames.size() - 1);
+                    //    m_parameterEdits << floatEdit;
+                    //    layout->addWidget(floatEdit);
+                    //    connect(floatEdit, SIGNAL(valueChanged(float,int)), this, SLOT(setFloatParameter(float,int)));
+                    //    ++row;
+                    //}
+                }
+            }
+            file.close();
+        }
+    }
+
+}
+
+string DataManager::GetFilename(string name)
+{
+	return filenames[name];
+}

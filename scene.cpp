@@ -50,7 +50,7 @@
 //#include <driver_types.h>
 //#include <driver_functions.h>
 //#include <helper_cuda.h>
-#include <helper_math.h>
+//#include <helper_math.h>
 
 //#include <qopenglext.h>
 
@@ -588,6 +588,8 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
 	dataManager = new DataManager();
 
+	pbo = GLuint(0);
+	tex = 0;
 	//$$$
 	
 	//dataManager->LoadVec("D:/data/sample/test2.vec");
@@ -602,6 +604,9 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	//dataManager->LoadVec("C:\\Users\\datahead8888\\Documents\\sciVis\\data\\15plume3d430.vec");
 	//dataManager->LoadVec("C:\\Users\\datahead8888\\Documents\\sciVis\\data\\UVWf01.vec");
 	
+
+	//TO DO: Make this work:
+	dataManager->LoadVec(dataManager->GetFilename("vectorfield").c_str());
 
 	//dataManager->LoadVec("D:/data/nek/nek.d_4.vec");
 	
@@ -707,7 +712,7 @@ void Scene::initGL()
 	//m_superWidget = new GLSuperquadric(make_float3(0.8, 0.45, 0.4), make_float3(1, 0, 0), 3, 0.5, 16);
 
     m_vertexShader = new QGLShader(QGLShader::Vertex);
-    m_vertexShader->compileSourceFile(QLatin1String(":/res/boxes/basic.vsh"));
+    m_vertexShader->compileSourceFile(QLatin1String(":/res/vechist/basic.vsh"));
 
 	m_environment = new GLTextureCube(qMin(1024, m_maxTextureSize), 1);
 
@@ -717,7 +722,7 @@ void Scene::initGL()
     // Load all .fsh files as fragment shaders
    // "distribution" = 0;
     filter = QStringList("*.fsh");
-    files = QDir(":/res/boxes/").entryInfoList(filter, QDir::Files | QDir::Readable);
+    files = QDir(":/res/vechist/").entryInfoList(filter, QDir::Files | QDir::Readable);
     foreach (QFileInfo file, files) {
         QGLShaderProgram *program = new QGLShaderProgram;
         QGLShader* shader = new QGLShader(QGLShader::Fragment);

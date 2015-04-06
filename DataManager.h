@@ -1,8 +1,8 @@
 #ifndef DATA_MANAGER_H
 #define DATA_MANAGER_H
 #include <vector>
-#include <vector_types.h>
-#include <vector_functions.h>
+#include <cuda/vector_types.h>
+#include <cuda/vector_functions.h>
 #include "OSUFlow.h"
 #include "glSuperquadric.h"
 
@@ -24,7 +24,7 @@ struct Node
 
 	Node* neighbor[6];
 
-	Node(
+	void init(
 		int _start0, int _start1, int _start2, 
 		int _dim0, int _dim1, int _dim2,
 		int _cube_size, int _level)
@@ -52,16 +52,30 @@ struct Node
 		}
 	}
 
-	Node(int *_start, int *_dim, int _cube_size, int _level):
-		Node(_start[0], _start[1], _start[2],
-		_dim[0], _dim[1], _dim[2],
-		_cube_size, _level)
-	{}
 
 
 	Node(){
 		cubemap = nullptr;
 	};
+
+	Node(
+		int _start0, int _start1, int _start2, 
+		int _dim0, int _dim1, int _dim2,
+		int _cube_size, int _level)
+	{
+		init(_start0, _start1, _start2, 
+		_dim0, _dim1, _dim2,
+		_cube_size, _level);
+	}
+
+//	Node(int *_start, int *_dim, int _cube_size, int _level);
+	Node(int *_start, int *_dim, int _cube_size, int _level)
+	{
+		init(_start[0], _start[1], _start[2],
+		_dim[0], _dim[1], _dim[2],
+		_cube_size, _level);
+	}
+
 
 	~Node()
 	{
@@ -78,6 +92,8 @@ struct Node
 		//delete[] right;
 	}
 };
+
+
 
 struct NodeBi
 {
@@ -178,26 +194,29 @@ class DataManager
 	float* cubemap_data;// (new float[size * size * 6]);
 	int cubemap_size;
 
-	OSUFlow *osuflow = new OSUFlow();
+	OSUFlow *osuflow;
 	vector < vector<float4> > streamlines;
 	vector < vector<float4> > streamlinesInCube;
 	//9.5 is for nek
 	//
-	const float entropyThreshold = 9;// 6;// 10.2;	//592 cubes for plume
+	float entropyThreshold;// 6;// 10.2;	//592 cubes for plume
 	Node *topNode;
 	NodeBi *rootNode;
 	int numBlocks;
+	map<string, string> filenames;
+	
 	void SplitNode(Node* parent);
 	void ComputeCubemapNode(Node *&nd);
 	void ComputeCubemapNode(NodeBi *&nd);
 	void GetDescendantNodes(vector<NodeBi*> &ret, NodeBi* nd);
-	void LoadOSUFlow(char* filename);
+	void LoadOSUFlow(const char* filename);
 	void readBinaryTree(NodeBi *&p, ifstream &fin, vector<float3> starts, vector<float3> dims,
 		vector<float> entropys, vector<float3> eig_vals, vector<float3> eig_vecs);
+	void LoadParameters();
 
 
 public:
-	void LoadVec(char* filename);
+	void LoadVec(const char* filename);
 	std::vector<std::vector<double> > GetVertexPos();
 	std::vector<std::vector<double> > GetScaledVertexPos();
 	std::vector<std::vector<int> > GetFaceVertices();
@@ -232,6 +251,8 @@ public:
 	void GenStreamInCube();
 	float* GetVecData();
 	float* GetVecDataXFirst();
+	string GetFilename(string name);
+
 	DataManager();
 	~DataManager();
 };
