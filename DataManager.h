@@ -252,6 +252,7 @@ public:
 	float* GetVecData();
 	float* GetVecDataXFirst();
 	string GetFilename(string name);
+	NodeBi * getRootNode(){ return rootNode; }
 
 	DataManager();
 	~DataManager();

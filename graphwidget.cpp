@@ -46,7 +46,9 @@
 
 #include <QKeyEvent>
 
-GraphWidget::GraphWidget(QWidget *parent)
+//using Widget::Node;
+
+GraphWidget::GraphWidget(QWidget *parent, NodeBi *p)
 	: QGraphicsView(parent), timerId(0)
 {
 	QGraphicsScene *scene = new QGraphicsScene(this);
@@ -59,17 +61,22 @@ GraphWidget::GraphWidget(QWidget *parent)
 	setTransformationAnchor(AnchorUnderMouse);
 	scale(qreal(0.8), qreal(0.8));
 	setMinimumSize(400, 400);
-	setWindowTitle(tr("Elastic Nodes"));
+	setWindowTitle(tr("Tree Widget"));
 
-	Node *node1 = new Node(this);
-	Node *node2 = new Node(this);
-	Node *node3 = new Node(this);
-	Node *node4 = new Node(this);
-	centerNode = new Node(this);
-	Node *node6 = new Node(this);
-	Node *node7 = new Node(this);
-	Node *node8 = new Node(this);
-	Node *node9 = new Node(this);
+	if (p != nullptr) {
+		buildGraphFromTree(p, 0, 0, 0);
+	}
+
+	/*
+	Widget::Node *node1 = new Widget::Node(this);
+	Widget::Node *node2 = new Widget::Node(this);
+	Widget::Node *node3 = new Widget::Node(this);
+	Widget::Node *node4 = new Widget::Node(this);
+	centerNode = new Widget::Node(this);
+	Widget::Node *node6 = new Widget::Node(this);
+	Widget::Node *node7 = new Widget::Node(this);
+	Widget::Node *node8 = new Widget::Node(this);
+	Widget::Node *node9 = new Widget::Node(this);
 	scene->addItem(node1);
 	scene->addItem(node2);
 	scene->addItem(node3);
@@ -101,6 +108,32 @@ GraphWidget::GraphWidget(QWidget *parent)
 	node7->setPos(-50, 50);
 	node8->setPos(0, 50);
 	node9->setPos(50, 50);
+	*/
+}
+
+Widget::Node * GraphWidget::buildGraphFromTree(NodeBi * p, int currentDepth, double x, double y)
+{
+	Widget::Node *currentNode = new Widget::Node(this);
+	currentNode->setPos(x, y);
+	scene()->addItem(currentNode);
+
+	//Temp hack to visualize current, smaller tree
+	if (currentDepth > 1)
+	{
+		return currentNode;
+	}
+
+	Widget::Node *childNode = nullptr;
+	if (p->left != nullptr) {
+		childNode = buildGraphFromTree(p->left, currentDepth + 1, x - 50 / (currentDepth + 1), y + 20);
+		scene()->addItem(new Edge(currentNode, childNode));
+	}
+	if (p->right != nullptr) {
+		childNode = buildGraphFromTree(p->right, currentDepth + 1, x + 50 / (currentDepth + 1), y + 20);
+		scene()->addItem(new Edge(currentNode, childNode));
+	}
+
+	return currentNode;
 }
 
 void GraphWidget::itemMoved()
@@ -143,17 +176,17 @@ void GraphWidget::timerEvent(QTimerEvent *event)
 {
 	Q_UNUSED(event);
 
-	QList<Node *> nodes;
+	QList<Widget::Node *> nodes;
 	foreach(QGraphicsItem *item, scene()->items()) {
-		if (Node *node = qgraphicsitem_cast<Node *>(item))
+		if (Widget::Node *node = qgraphicsitem_cast<Widget::Node *>(item))
 			nodes << node;
 	}
 
-	foreach(Node *node, nodes)
+	foreach(Widget::Node *node, nodes)
 		node->calculateForces();
 
 	bool itemsMoved = false;
-	foreach(Node *node, nodes) {
+	foreach(Widget::Node *node, nodes) {
 		if (node->advance())
 			itemsMoved = true;
 	}
@@ -220,7 +253,7 @@ void GraphWidget::scaleView(qreal scaleFactor)
 void GraphWidget::shuffle()
 {
 	foreach(QGraphicsItem *item, scene()->items()) {
-		if (qgraphicsitem_cast<Node *>(item))
+		if (qgraphicsitem_cast<Widget::Node *>(item))
 			item->setPos(-150 + qrand() % 300, -150 + qrand() % 300);
 	}
 }

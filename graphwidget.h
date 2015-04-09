@@ -42,15 +42,19 @@
 #define GRAPHWIDGET_H
 
 #include <QGraphicsView>
+#include <DataManager.h>
+#include <node.h>
 
-class Node;
+class Widget::Node;
 
 class GraphWidget : public QGraphicsView
 {
 	//Q_OBJECT
 
 public:
-	GraphWidget(QWidget *parent = 0);
+	GraphWidget(QWidget *parent = 0, NodeBi *p = 0);
+	
+	Widget::Node * buildGraphFromTree(NodeBi * p, int currentDepth, double x, double y);
 
 	void itemMoved();
 
@@ -71,7 +75,8 @@ protected:
 
 private:
 	int timerId;
-	Node *centerNode;
+	Widget::Node *centerNode;
+	
 };
 
 #endif // GRAPHWIDGET_H

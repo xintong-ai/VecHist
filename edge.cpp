@@ -48,7 +48,9 @@
 static const double Pi = 3.14159265358979323846264338327950288419717;
 static double TwoPi = 2.0 * Pi;
 
-Edge::Edge(Node *sourceNode, Node *destNode)
+//using Widget::Node;
+
+Edge::Edge(Widget::Node *sourceNode, Widget::Node *destNode)
 	: arrowSize(10)
 {
 	setAcceptedMouseButtons(0);
@@ -59,12 +61,12 @@ Edge::Edge(Node *sourceNode, Node *destNode)
 	adjust();
 }
 
-Node *Edge::sourceNode() const
+Widget::Node *Edge::sourceNode() const
 {
 	return source;
 }
 
-Node *Edge::destNode() const
+Widget::Node *Edge::destNode() const
 {
 	return dest;
 }

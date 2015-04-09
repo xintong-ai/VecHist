@@ -47,7 +47,11 @@
 #include <QPainter>
 #include <QStyleOption>
 
-Node::Node(GraphWidget *graphWidget)
+//using Widget::Node;
+
+//using namespace Widget;
+
+Widget::Node::Node(GraphWidget *graphWidget)
 	: graph(graphWidget)
 {
 	setFlag(ItemIsMovable);
@@ -56,18 +60,18 @@ Node::Node(GraphWidget *graphWidget)
 	setZValue(-1);
 }
 
-void Node::addEdge(Edge *edge)
+void Widget::Node::addEdge(Edge *edge)
 {
 	edgeList << edge;
 	edge->adjust();
 }
 
-QList<Edge *> Node::edges() const
+QList<Edge *> Widget::Node::edges() const
 {
 	return edgeList;
 }
 
-void Node::calculateForces()
+void Widget::Node::calculateForces()
 {
 	if (!scene() || scene()->mouseGrabberItem() == this) {
 		newPos = pos();
@@ -78,7 +82,7 @@ void Node::calculateForces()
 	qreal xvel = 0;
 	qreal yvel = 0;
 	foreach(QGraphicsItem *item, scene()->items()) {
-		Node *node = qgraphicsitem_cast<Node *>(item);
+		Widget::Node *node = qgraphicsitem_cast<Widget::Node *>(item);
 		if (!node)
 			continue;
 
@@ -113,7 +117,7 @@ void Node::calculateForces()
 	newPos.setY(qMin(qMax(newPos.y(), sceneRect.top() + 10), sceneRect.bottom() - 10));
 }
 
-bool Node::advance()
+bool Widget::Node::advance()
 {
 	if (newPos == pos())
 		return false;
@@ -122,20 +126,20 @@ bool Node::advance()
 	return true;
 }
 
-QRectF Node::boundingRect() const
+QRectF Widget::Node::boundingRect() const
 {
 	qreal adjust = 2;
 	return QRectF(-10 - adjust, -10 - adjust, 23 + adjust, 23 + adjust);
 }
 
-QPainterPath Node::shape() const
+QPainterPath Widget::Node::shape() const
 {
 	QPainterPath path;
 	path.addEllipse(-10, -10, 20, 20);
 	return path;
 }
 
-void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
+void Widget::Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
 {
 	painter->setPen(Qt::NoPen);
 	painter->setBrush(Qt::darkGray);
@@ -158,7 +162,7 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 	painter->drawEllipse(-10, -10, 20, 20);
 }
 
-QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value)
+QVariant Widget::Node::itemChange(GraphicsItemChange change, const QVariant &value)
 {
 	switch (change) {
 	case ItemPositionHasChanged:
@@ -173,13 +177,13 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value)
 	return QGraphicsItem::itemChange(change, value);
 }
 
-void Node::mousePressEvent(QGraphicsSceneMouseEvent *event)
+void Widget::Node::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
 	update();
 	QGraphicsItem::mousePressEvent(event);
 }
 
-void Node::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+void Widget::Node::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
 	update();
 	QGraphicsItem::mouseReleaseEvent(event);

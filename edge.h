@@ -42,16 +42,17 @@
 #define EDGE_H
 
 #include <QGraphicsItem>
+#include <node.h>
 
-class Node;
+class Widget::Node;
 
 class Edge : public QGraphicsItem
 {
 public:
-	Edge(Node *sourceNode, Node *destNode);
+	Edge(Widget::Node *sourceNode, Widget::Node *destNode);
 
-	Node *sourceNode() const;
-	Node *destNode() const;
+	Widget::Node *sourceNode() const;
+	Widget::Node *destNode() const;
 
 	void adjust();
 
@@ -63,7 +64,7 @@ protected:
 	void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) Q_DECL_OVERRIDE;
 
 private:
-	Node *source, *dest;
+	Widget::Node *source, *dest;
 
 	QPointF sourcePoint;
 	QPointF destPoint;

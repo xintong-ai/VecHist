@@ -1742,7 +1742,7 @@ void Scene::Segmentation()
 	//dataManager->Segmentation();
 	dataManager->LoadSegmentation();
 	leafNodes = dataManager->GetAllNode();
-
+	m_graphWidget->buildGraphFromTree(dataManager -> getRootNode(), 0, 0, 0);
 
 	for (auto nd : leafNodes)	{
 		GLTextureCube *texCube = new GLTextureCube(qMin(1024, m_maxTextureSize), 1);
