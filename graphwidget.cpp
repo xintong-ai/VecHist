@@ -53,7 +53,7 @@ GraphWidget::GraphWidget(QWidget *parent, NodeBi *p)
 {
 	QGraphicsScene *scene = new QGraphicsScene(this);
 	scene->setItemIndexMethod(QGraphicsScene::NoIndex);
-	scene->setSceneRect(-200, -200, 400, 400);
+	scene->setSceneRect(0, 0, 800, 800);
 	//scene->setSceneRect(-200, -200, 3000, 3000);
 	setScene(scene);
 	setCacheMode(CacheBackground);
@@ -141,11 +141,13 @@ void GraphWidget::getTreeStats(NodeBi * p, int currentDepth, int currentPos)
 	}
 }
 
+//This method launches the recursive graph building method
 Widget::Node * GraphWidget::buildGraphFromTree(NodeBi * p)
 {
-	return buildGraphFromTree(p, 0, 0, 0, -sceneRect().height() / 2);
+	return buildGraphFromTree(p, 0, 0, sceneRect().width() / 2, 10); //Shove down by 10 units - for some reason the topmost node was slightly out of the scene rectangle
 }
 
+//This method builds the displayed graph from the tree data structure, using recursion to do an in order traversal
 Widget::Node * GraphWidget::buildGraphFromTree(NodeBi * p, int currentDepth, int currentPos, double x, double y)
 {
 	Widget::Node *currentNode = new Widget::Node(this);
@@ -153,14 +155,8 @@ Widget::Node * GraphWidget::buildGraphFromTree(NodeBi * p, int currentDepth, int
 	currentNode->setPos(x, y);
 	scene()->addItem(currentNode);
 
-	//Temp hack to visualize current, smaller tree
-	//if (currentDepth > 2)
-	//{
-	//	return currentNode;
-	//}
-
-	double nodeWidth = sceneRect().width() / double(abs(minPos) + maxPos);
-	double nodeHeight = sceneRect().height() / double(maxTreeDepth);
+	double nodeWidth = sceneRect().width() / double(abs(minPos) + maxPos) * 2;
+	double nodeHeight = sceneRect().height() / double(maxTreeDepth) * 0.975;  //97.5% to compensate for slight y shift mentioned in launcher method above
 
 	//cout << nodeWidth << " " << nodeHeight << endl;
 
