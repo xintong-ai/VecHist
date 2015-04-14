@@ -212,6 +212,7 @@ class DataManager
 	void SplitNode(Node* parent);
 	void ComputeCubemapNode(Node *&nd);
 	void ComputeCubemapNode(NodeBi *&nd);
+	
 	void GetDescendantNodes(vector<NodeBi*> &ret, NodeBi* nd);
 	void LoadOSUFlow(const char* filename);
 	void readBinaryTree(NodeBi *&p, ifstream &fin, vector<float3> starts, vector<float3> dims,

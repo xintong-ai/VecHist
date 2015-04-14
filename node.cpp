@@ -59,8 +59,8 @@ Widget::Node::Node(GraphWidget *graphWidget)
 	setCacheMode(DeviceCoordinateCache);
 	setZValue(-1);
 	nodeBiPtr = nullptr;
-	foreColor = Qt::yellow;
-	backColor = Qt::darkYellow;
+	//foreColor = Qt::yellow;
+	//backColor = Qt::darkYellow;
 
 }
 
@@ -153,6 +153,23 @@ void Widget::Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
 	painter->drawEllipse(-7, -7, RADIUS, RADIUS);
 	//painter->drawEllipse(-7, -7, 30, 30);
 
+	//foreColor = Qt::yellow;
+	//backColor = Qt::darkYellow;
+	Qt::GlobalColor foreColor;
+	Qt::GlobalColor backColor;
+	if (nodeBiPtr->isVisible)
+	{
+		foreColor = Qt::yellow;
+		backColor = Qt::darkYellow;
+	}
+	else
+	{
+		foreColor = Qt::red;
+		backColor = Qt::darkRed;
+
+	}
+
+
 	QRadialGradient gradient(-3, -3, 10);
 	if (option->state & QStyle::State_Sunken) {
 		gradient.setCenter(3, 3);
@@ -192,17 +209,19 @@ void Widget::Node::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	QGraphicsItem::mousePressEvent(event);
 	//Toggle visibility
 	nodeBiPtr->isVisible = !nodeBiPtr->isVisible;
-	if (nodeBiPtr->isVisible)
-	{
-		foreColor = Qt::yellow;
-		backColor = Qt::darkYellow;
-	}
-	else
-	{
-		foreColor = Qt::red;
-		backColor = Qt::darkRed;
+	SetChildrenVisibility(nodeBiPtr, nodeBiPtr->isVisible);
+}
 
+void Widget::Node::SetChildrenVisibility(NodeBi *nd, bool _isVisible)
+{
+	nd->isVisible = _isVisible;
+	if (nd->left != nullptr) {
+		SetChildrenVisibility(nd->left, _isVisible);
 	}
+	if (nd->right != nullptr) {
+		SetChildrenVisibility(nd->right, _isVisible);
+	}
+
 
 }
 

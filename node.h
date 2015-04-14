@@ -72,6 +72,7 @@ namespace Widget
 		QRectF boundingRect() const Q_DECL_OVERRIDE;
 		QPainterPath shape() const Q_DECL_OVERRIDE;
 		void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) Q_DECL_OVERRIDE;
+		void SetChildrenVisibility(NodeBi *nd, bool _isVisible);
 
 	protected:
 		QVariant itemChange(GraphicsItemChange change, const QVariant &value) Q_DECL_OVERRIDE;
@@ -84,8 +85,8 @@ namespace Widget
 		QPointF newPos;
 		GraphWidget *graph;
 		NodeBi * nodeBiPtr;
-		Qt::GlobalColor foreColor;
-		Qt::GlobalColor backColor;
+		//Qt::GlobalColor foreColor;
+		//Qt::GlobalColor backColor;
 	};
 };
 
