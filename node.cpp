@@ -58,6 +58,10 @@ Widget::Node::Node(GraphWidget *graphWidget)
 	setFlag(ItemSendsGeometryChanges);
 	setCacheMode(DeviceCoordinateCache);
 	setZValue(-1);
+	nodeBiPtr = nullptr;
+	foreColor = Qt::yellow;
+	backColor = Qt::darkYellow;
+
 }
 
 void Widget::Node::addEdge(Edge *edge)
@@ -122,6 +126,7 @@ bool Widget::Node::advance()
 	if (newPos == pos())
 		return false;
 
+	//This is commented out for now - we have disabled movement physics
 	//setPos(newPos);
 	return true;
 }
@@ -152,12 +157,12 @@ void Widget::Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
 	if (option->state & QStyle::State_Sunken) {
 		gradient.setCenter(3, 3);
 		gradient.setFocalPoint(3, 3);
-		gradient.setColorAt(1, QColor(Qt::yellow).light(120));
-		gradient.setColorAt(0, QColor(Qt::darkYellow).light(120));
+		gradient.setColorAt(1, QColor(foreColor).light(120));
+		gradient.setColorAt(0, QColor(backColor).light(120));
 	}
 	else {
-		gradient.setColorAt(0, Qt::yellow);
-		gradient.setColorAt(1, Qt::darkYellow);
+		gradient.setColorAt(0, foreColor);
+		gradient.setColorAt(1, backColor);
 	}
 	painter->setBrush(gradient);
 
@@ -185,6 +190,20 @@ void Widget::Node::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
 	update();
 	QGraphicsItem::mousePressEvent(event);
+	//Toggle visibility
+	nodeBiPtr->isVisible = !nodeBiPtr->isVisible;
+	if (nodeBiPtr->isVisible)
+	{
+		foreColor = Qt::yellow;
+		backColor = Qt::darkYellow;
+	}
+	else
+	{
+		foreColor = Qt::red;
+		backColor = Qt::darkRed;
+
+	}
+
 }
 
 void Widget::Node::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)

@@ -114,6 +114,8 @@ struct NodeBi
 
 	GLSuperquadric* glyph;
 
+	bool isVisible;
+
 	NodeBi(
 		int _start0, int _start1, int _start2,
 		int _dim0, int _dim1, int _dim2,
@@ -146,6 +148,8 @@ struct NodeBi
 		//	neighbor[i] = nullptr;
 		//	flux[6] = 0;
 		//}
+
+		isVisible = true;
 	}
 
 	//NodeBi(int *_start, int *_dim, int _cube_size, int _level) :

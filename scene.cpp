@@ -998,7 +998,10 @@ void Scene::render3D(const QMatrix4x4 &view)
 		tex->bind();
 		//m_vecWidget->draw();
 		//m_superWidget->draw();
-		nd->glyph->draw();
+		if (nd->isVisible) {
+			nd->glyph->draw();
+		}
+		//nd->
 		
 		tex->unbind();
 		glPopMatrix();

@@ -43,6 +43,7 @@
 
 #include <QGraphicsItem>
 #include <QList>
+#include "DataManager.h"
 
 class Edge;
 class GraphWidget;
@@ -57,6 +58,8 @@ namespace Widget
 
 		Node(GraphWidget *graphWidget);
 
+		void setNodeBiPtr(NodeBi * _nodeBiPtr) { this->nodeBiPtr = _nodeBiPtr; }
+		NodeBi * getNodeBiPtr() { return nodeBiPtr; }
 		void addEdge(Edge *edge);
 		QList<Edge *> edges() const;
 
@@ -80,6 +83,9 @@ namespace Widget
 		QList<Edge *> edgeList;
 		QPointF newPos;
 		GraphWidget *graph;
+		NodeBi * nodeBiPtr;
+		Qt::GlobalColor foreColor;
+		Qt::GlobalColor backColor;
 	};
 };
 
