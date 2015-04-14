@@ -215,6 +215,11 @@ void Widget::Node::mousePressEvent(QGraphicsSceneMouseEvent *event)
 void Widget::Node::SetChildrenVisibility(NodeBi *nd, bool _isVisible)
 {
 	nd->isVisible = _isVisible;
+
+	if (nd->graphNode != nullptr) {
+		nd->graphNode->update();
+	}
+
 	if (nd->left != nullptr) {
 		SetChildrenVisibility(nd->left, _isVisible);
 	}

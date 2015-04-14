@@ -153,6 +153,7 @@ Widget::Node * GraphWidget::buildGraphFromTree(NodeBi * p, int currentDepth, int
 {
 	Widget::Node *currentNode = new Widget::Node(this);
 	currentNode->setNodeBiPtr(p);
+	p->graphNode = currentNode;
 	
 	currentNode->setPos(x, y);
 	scene()->addItem(currentNode);

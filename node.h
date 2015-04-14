@@ -48,6 +48,7 @@
 class Edge;
 class GraphWidget;
 class QGraphicsSceneMouseEvent;
+class NodeBi;
 
 namespace Widget
 {

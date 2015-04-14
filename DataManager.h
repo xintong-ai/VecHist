@@ -5,7 +5,12 @@
 #include <cuda/vector_functions.h>
 #include "OSUFlow.h"
 #include "glSuperquadric.h"
+#include "node.h"
 
+namespace Widget
+{
+	class Node;
+}
 
 using namespace std;
 struct Node
@@ -112,6 +117,9 @@ struct NodeBi
 	NodeBi* left;
 	NodeBi* right;
 
+	Widget::Node * graphNode;
+	//Widget::Node
+
 	GLSuperquadric* glyph;
 
 	bool isVisible;
@@ -150,6 +158,7 @@ struct NodeBi
 		//}
 
 		isVisible = true;
+		graphNode = nullptr;
 	}
 
 	//NodeBi(int *_start, int *_dim, int _cube_size, int _level) :
@@ -212,7 +221,6 @@ class DataManager
 	void SplitNode(Node* parent);
 	void ComputeCubemapNode(Node *&nd);
 	void ComputeCubemapNode(NodeBi *&nd);
-	
 	void GetDescendantNodes(vector<NodeBi*> &ret, NodeBi* nd);
 	void LoadOSUFlow(const char* filename);
 	void readBinaryTree(NodeBi *&p, ifstream &fin, vector<float3> starts, vector<float3> dims,
