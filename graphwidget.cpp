@@ -53,8 +53,8 @@ GraphWidget::GraphWidget(QWidget *parent, NodeBi *p)
 {
 	QGraphicsScene *scene = new QGraphicsScene(this);
 	scene->setItemIndexMethod(QGraphicsScene::NoIndex);
-	scene->setSceneRect(0, 0, 800, 800);
-	//scene->setSceneRect(-200, -200, 3000, 3000);
+	//scene->setSceneRect(0, 0, 800, 800);
+	scene->setSceneRect(0, 0, 800 * 4, 800 * 2);
 	setScene(scene);
 	setCacheMode(CacheBackground);
 	setViewportUpdateMode(BoundingRectViewportUpdate);
@@ -63,7 +63,7 @@ GraphWidget::GraphWidget(QWidget *parent, NodeBi *p)
 	scale(qreal(0.8), qreal(0.8));
 	setMinimumSize(400, 400);
 	//setMinimumSize(100, 100);
-	//setMaximumSize(200, 200);
+	setMaximumSize(800, 800);
 	setWindowTitle(tr("Tree Widget"));
 
 	if (p != nullptr) {
@@ -115,6 +115,7 @@ GraphWidget::GraphWidget(QWidget *parent, NodeBi *p)
 	*/
 }
 
+//Method to find max tree depth and max tree "width"
 void GraphWidget::getTreeStats(NodeBi * p, int currentDepth, int currentPos)
 {
 	if (currentDepth > maxTreeDepth)
@@ -151,22 +152,22 @@ Widget::Node * GraphWidget::buildGraphFromTree(NodeBi * p)
 Widget::Node * GraphWidget::buildGraphFromTree(NodeBi * p, int currentDepth, int currentPos, double x, double y)
 {
 	Widget::Node *currentNode = new Widget::Node(this);
-	//x = 0; y = 0;
+	
 	currentNode->setPos(x, y);
 	scene()->addItem(currentNode);
 
-	double nodeWidth = sceneRect().width() / double(abs(minPos) + maxPos) * 2;
+	double nodeWidth = sceneRect().width() / double(abs(minPos) + maxPos) * 4;
 	double nodeHeight = sceneRect().height() / double(maxTreeDepth) * 0.975;  //97.5% to compensate for slight y shift mentioned in launcher method above
 
 	//cout << nodeWidth << " " << nodeHeight << endl;
 
 	Widget::Node *childNode = nullptr;
 	if (p->left != nullptr) {
-		childNode = buildGraphFromTree(p->left, currentDepth + 1, currentPos - 1, x - nodeWidth / (currentDepth + 1), y + nodeHeight);
+		childNode = buildGraphFromTree(p->left, currentDepth + 1, currentPos - 1, x - nodeWidth * (pow(0.5,currentDepth + 1)), y + nodeHeight); //The distance between nodes is cut to fraction 0.5 ^ (currentDepth + 1) to prevent node overlap
 		scene()->addItem(new Edge(currentNode, childNode));
 	}
 	if (p->right != nullptr) {
-		childNode = buildGraphFromTree(p->right, currentDepth + 1, currentPos + 1, x + nodeWidth / (currentDepth + 1), y + nodeHeight);
+		childNode = buildGraphFromTree(p->right, currentDepth + 1, currentPos + 1, x + nodeWidth * (pow(0.5,currentDepth + 1)), y + nodeHeight);
 		scene()->addItem(new Edge(currentNode, childNode));
 	}
 
