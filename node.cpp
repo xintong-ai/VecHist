@@ -122,7 +122,7 @@ bool Widget::Node::advance()
 	if (newPos == pos())
 		return false;
 
-	setPos(newPos);
+	//setPos(newPos);
 	return true;
 }
 
@@ -141,9 +141,12 @@ QPainterPath Widget::Node::shape() const
 
 void Widget::Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
 {
+	const int RADIUS = 10;
+
 	painter->setPen(Qt::NoPen);
 	painter->setBrush(Qt::darkGray);
-	painter->drawEllipse(-7, -7, 20, 20);
+	painter->drawEllipse(-7, -7, RADIUS, RADIUS);
+	//painter->drawEllipse(-7, -7, 30, 30);
 
 	QRadialGradient gradient(-3, -3, 10);
 	if (option->state & QStyle::State_Sunken) {
@@ -159,7 +162,8 @@ void Widget::Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
 	painter->setBrush(gradient);
 
 	painter->setPen(QPen(Qt::black, 0));
-	painter->drawEllipse(-10, -10, 20, 20);
+	painter->drawEllipse(-10, -10, RADIUS, RADIUS);
+	//painter->drawEllipse(-10, -10, 30, 30);
 }
 
 QVariant Widget::Node::itemChange(GraphicsItemChange change, const QVariant &value)

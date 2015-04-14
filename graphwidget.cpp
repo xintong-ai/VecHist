@@ -54,6 +54,7 @@ GraphWidget::GraphWidget(QWidget *parent, NodeBi *p)
 	QGraphicsScene *scene = new QGraphicsScene(this);
 	scene->setItemIndexMethod(QGraphicsScene::NoIndex);
 	scene->setSceneRect(-200, -200, 400, 400);
+	//scene->setSceneRect(-200, -200, 3000, 3000);
 	setScene(scene);
 	setCacheMode(CacheBackground);
 	setViewportUpdateMode(BoundingRectViewportUpdate);
@@ -61,10 +62,13 @@ GraphWidget::GraphWidget(QWidget *parent, NodeBi *p)
 	setTransformationAnchor(AnchorUnderMouse);
 	scale(qreal(0.8), qreal(0.8));
 	setMinimumSize(400, 400);
+	//setMinimumSize(100, 100);
+	//setMaximumSize(200, 200);
 	setWindowTitle(tr("Tree Widget"));
 
 	if (p != nullptr) {
-		buildGraphFromTree(p, 0, 0, 0);
+		getTreeStats(p, 0, 0);
+		buildGraphFromTree(p);
 	}
 
 	/*
@@ -111,25 +115,62 @@ GraphWidget::GraphWidget(QWidget *parent, NodeBi *p)
 	*/
 }
 
-Widget::Node * GraphWidget::buildGraphFromTree(NodeBi * p, int currentDepth, double x, double y)
+void GraphWidget::getTreeStats(NodeBi * p, int currentDepth, int currentPos)
+{
+	if (currentDepth > maxTreeDepth)
+	{
+		maxTreeDepth = currentDepth;
+	}
+
+	if (currentPos < minPos)
+	{
+		minPos = currentPos;
+	}
+	if (currentPos > maxPos)
+	{
+		maxPos = currentPos;
+	}
+
+	if (p->left != nullptr) {
+		getTreeStats(p->left, currentDepth + 1, currentPos - 1);
+		
+	}
+	if (p->right != nullptr) {
+		getTreeStats(p->right, currentDepth + 1, currentPos + 1);
+		
+	}
+}
+
+Widget::Node * GraphWidget::buildGraphFromTree(NodeBi * p)
+{
+	return buildGraphFromTree(p, 0, 0, 0, -sceneRect().height() / 2);
+}
+
+Widget::Node * GraphWidget::buildGraphFromTree(NodeBi * p, int currentDepth, int currentPos, double x, double y)
 {
 	Widget::Node *currentNode = new Widget::Node(this);
+	//x = 0; y = 0;
 	currentNode->setPos(x, y);
 	scene()->addItem(currentNode);
 
 	//Temp hack to visualize current, smaller tree
-	if (currentDepth > 1)
-	{
-		return currentNode;
-	}
+	//if (currentDepth > 2)
+	//{
+	//	return currentNode;
+	//}
+
+	double nodeWidth = sceneRect().width() / double(abs(minPos) + maxPos);
+	double nodeHeight = sceneRect().height() / double(maxTreeDepth);
+
+	//cout << nodeWidth << " " << nodeHeight << endl;
 
 	Widget::Node *childNode = nullptr;
 	if (p->left != nullptr) {
-		childNode = buildGraphFromTree(p->left, currentDepth + 1, x - 50 / (currentDepth + 1), y + 20);
+		childNode = buildGraphFromTree(p->left, currentDepth + 1, currentPos - 1, x - nodeWidth / (currentDepth + 1), y + nodeHeight);
 		scene()->addItem(new Edge(currentNode, childNode));
 	}
 	if (p->right != nullptr) {
-		childNode = buildGraphFromTree(p->right, currentDepth + 1, x + 50 / (currentDepth + 1), y + 20);
+		childNode = buildGraphFromTree(p->right, currentDepth + 1, currentPos + 1, x + nodeWidth / (currentDepth + 1), y + nodeHeight);
 		scene()->addItem(new Edge(currentNode, childNode));
 	}
 
@@ -228,8 +269,7 @@ void GraphWidget::drawBackground(QPainter *painter, const QRectF &rect)
 	// Text
 	QRectF textRect(sceneRect.left() + 4, sceneRect.top() + 4,
 		sceneRect.width() - 4, sceneRect.height() - 4);
-	QString message(tr("Click and drag the nodes around, and zoom with the mouse "
-		"wheel or the '+' and '-' keys"));
+	QString message(tr(""));
 
 	QFont font = painter->font();
 	font.setBold(true);

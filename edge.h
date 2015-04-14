@@ -49,6 +49,7 @@ class Widget::Node;
 class Edge : public QGraphicsItem
 {
 public:
+	const double ARROW_SIZE = 0.25;
 	Edge(Widget::Node *sourceNode, Widget::Node *destNode);
 
 	Widget::Node *sourceNode() const;

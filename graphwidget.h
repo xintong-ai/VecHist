@@ -54,7 +54,9 @@ class GraphWidget : public QGraphicsView
 public:
 	GraphWidget(QWidget *parent = 0, NodeBi *p = 0);
 	
-	Widget::Node * buildGraphFromTree(NodeBi * p, int currentDepth, double x, double y);
+	void getTreeStats(NodeBi * p, int currentDepth, int currentPos);
+	Widget::Node * buildGraphFromTree(NodeBi * p);
+	Widget::Node * buildGraphFromTree(NodeBi * p, int currentDepth, int currentPos, double x, double y);
 
 	void itemMoved();
 
@@ -76,6 +78,10 @@ protected:
 private:
 	int timerId;
 	Widget::Node *centerNode;
+
+	int maxTreeDepth = 0;
+	int minPos = 0;
+	int maxPos = 0;
 	
 };
 

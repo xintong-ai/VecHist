@@ -51,7 +51,7 @@ static double TwoPi = 2.0 * Pi;
 //using Widget::Node;
 
 Edge::Edge(Widget::Node *sourceNode, Widget::Node *destNode)
-	: arrowSize(10)
+	: arrowSize(ARROW_SIZE)
 {
 	setAcceptedMouseButtons(0);
 	source = sourceNode;
