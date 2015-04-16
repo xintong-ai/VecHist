@@ -15,10 +15,10 @@ set(SHARED_LIBRARIES
 )
 
 set( Srcs main.cpp DataManager.cpp glsphere.cpp glSuperquadric.cpp
-	scene.cpp glbuffers.cpp glextensions.cpp trackball.cpp 
+	scene.cpp glbuffers.cpp glextensions.cpp trackball.cpp edge.cpp graphwidget.cpp node.cpp
 	)
 set( Hdrs DataManager.h glsphere.h glSuperquadric.h gltrianglemesh.h
-	scene.h glbuffers.h glextensions.h trackball.h 
+	scene.h glbuffers.h glextensions.h trackball.h edge.h graphwidget.h node.h
     )
 set( Rcs resources/vechist.qrc)
 

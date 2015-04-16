@@ -333,7 +333,7 @@ TwoSidedGraphicsWidget::TwoSidedGraphicsWidget(QGraphicsScene *scene)
     , m_angle(0)
     , m_delta(0)
 {
-    for (int i = 0; i < 2; ++i)
+    for (int i = 0; i < 3; ++i)
         m_proxyWidgets[i] = 0;
 }
 
@@ -355,15 +355,16 @@ void TwoSidedGraphicsWidget::setWidget(int index, QWidget *widget)
     proxy->setCacheMode(QGraphicsItem::ItemCoordinateCache);
     proxy->setZValue(1e30); // Make sure the dialog is drawn on top of all other (OpenGL) items
 
-    if (index != m_current)
-        proxy->setVisible(false);
+    //if (index != m_current)
+    //    proxy->setVisible(false);
+	proxy->setVisible(true);
 
     qobject_cast<QGraphicsScene *>(parent())->addItem(proxy);
 }
 
 QWidget *TwoSidedGraphicsWidget::widget(int index)
 {
-    if (index < 0 || index >= 2)
+    if (index < 0 || index >= 3)
     {
         qWarning("TwoSidedGraphicsWidget::widget: Index out of bounds, index == %d", index);
         return 0;
@@ -599,8 +600,14 @@ Scene::Scene(int width, int height, int maxTextureSize)
     ///////dataManager->LoadVec("/media/User/data/plume/15plume3d421.vec");
    
 
+    dataManager->LoadVec("C:\\Users\\datahead8888\\Documents\\sciVis\\data\\15plume3d421.vec");
+	//dataManager->LoadVec("C:\\Users\\datahead8888\\Documents\\sciVis\\data\\15plume3d430.vec");
+	//dataManager->LoadVec("C:\\Users\\datahead8888\\Documents\\sciVis\\data\\UVWf01.vec");
+	
+
+	//TO DO: Make this work:
 	dataManager->LoadVec(dataManager->GetFilename("vectorfield").c_str());
- 
+
 	//dataManager->LoadVec("D:/data/nek/nek.d_4.vec");
 	
 	//dataManager->LoadVec("D:/data/brain_dti/vector-field.vec");
@@ -626,9 +633,15 @@ Scene::Scene(int width, int height, int maxTextureSize)
     m_renderOptions->move(20, 120);
     m_renderOptions->resize(m_renderOptions->sizeHint());
 
+	m_graphWidget = new GraphWidget();
+	m_graphWidget->move(60, 120);
+	m_graphWidget->resize(m_graphWidget->sizeHint());
+
+
 	int nx, ny, nz;
 	dataManager->GetVolumeSize(nx, ny, nz);
 	m_renderOptions->setBlock(0, 0, 0, nx, ny, nz);
+
 
 	//ShowGpuMemInfo();
 	//m_vec3DTex = new GLTexture3D(nx, ny, nz);
@@ -648,7 +661,9 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
     TwoSidedGraphicsWidget *twoSided = new TwoSidedGraphicsWidget(this);
 	//QDockWidget *dock = new QDockWidget(QString(tr("Parameters")), this);
-    twoSided->setWidget(0, m_renderOptions);
+    //twoSided->setWidget(0, m_renderOptions);
+	twoSided->setWidget(0, m_graphWidget);
+	twoSided->setWidget(1, m_renderOptions);
 
     initGL();
 	//TODO: when width and height changes, this function should be called again
@@ -711,7 +726,10 @@ void Scene::initGL()
     foreach (QFileInfo file, files) {
         QGLShaderProgram *program = new QGLShaderProgram;
         QGLShader* shader = new QGLShader(QGLShader::Fragment);
-		cout << "Loading shader: "<< file.absoluteFilePath().toStdString();
+		//cout << "Loading shader: " << &file.absoluteFilePath();
+		//cout << "Loading shader: "<< file.absoluteFilePath().toStdString();
+		QString myString = file.absoluteFilePath();
+		//cout << myString.toStdString() << endl;
 		shader->compileSourceFile(file.absoluteFilePath());
         // The program does not take ownership over the shaders, so store them in a vector so they can be deleted afterwards.
         program->addShader(m_vertexShader);
@@ -980,7 +998,10 @@ void Scene::render3D(const QMatrix4x4 &view)
 		tex->bind();
 		//m_vecWidget->draw();
 		//m_superWidget->draw();
-		nd->glyph->draw();
+		if (nd->isVisible) {
+			nd->glyph->draw();
+		}
+		//nd->
 		
 		tex->unbind();
 		glPopMatrix();
@@ -1724,7 +1745,8 @@ void Scene::Segmentation()
 	//dataManager->Segmentation();
 	dataManager->LoadSegmentation();
 	leafNodes = dataManager->GetAllNode();
-
+	m_graphWidget->getTreeStats(dataManager->getRootNode(),0,0);
+	m_graphWidget->buildGraphFromTree(dataManager -> getRootNode());
 
 	for (auto nd : leafNodes)	{
 		GLTextureCube *texCube = new GLTextureCube(qMin(1024, m_maxTextureSize), 1);

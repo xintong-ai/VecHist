@@ -981,6 +981,7 @@ inline vector<float3> ReadAttribute(const char* filename)
 {
 	vector<float3> ret;
 	std::ifstream fin(filename, std::fstream::in);
+	cout << filename << endl;
 	while (true)
 	{
 		float v0, v1, v2;
