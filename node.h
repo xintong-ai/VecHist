@@ -84,10 +84,8 @@ namespace Widget
 	private:
 		QList<Edge *> edgeList;
 		QPointF newPos;
-		GraphWidget *graph;
-		NodeBi * nodeBiPtr;
-		//Qt::GlobalColor foreColor;
-		//Qt::GlobalColor backColor;
+		GraphWidget *graph;  //Pointer to the larger graph widget
+		NodeBi * nodeBiPtr;  //Pointer to our interal tree data structure - used for either an entropy tree or a merger tree
 	};
 };
 

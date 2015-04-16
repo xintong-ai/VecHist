@@ -46,8 +46,6 @@
 
 #include <QKeyEvent>
 
-//using Widget::Node;
-
 GraphWidget::GraphWidget(QWidget *parent, NodeBi *p)
 	: QGraphicsView(parent), timerId(0)
 {
@@ -71,53 +69,12 @@ GraphWidget::GraphWidget(QWidget *parent, NodeBi *p)
 		buildGraphFromTree(p);
 	}
 
-	/*
-	Widget::Node *node1 = new Widget::Node(this);
-	Widget::Node *node2 = new Widget::Node(this);
-	Widget::Node *node3 = new Widget::Node(this);
-	Widget::Node *node4 = new Widget::Node(this);
-	centerNode = new Widget::Node(this);
-	Widget::Node *node6 = new Widget::Node(this);
-	Widget::Node *node7 = new Widget::Node(this);
-	Widget::Node *node8 = new Widget::Node(this);
-	Widget::Node *node9 = new Widget::Node(this);
-	scene->addItem(node1);
-	scene->addItem(node2);
-	scene->addItem(node3);
-	scene->addItem(node4);
-	scene->addItem(centerNode);
-	scene->addItem(node6);
-	scene->addItem(node7);
-	scene->addItem(node8);
-	scene->addItem(node9);
-	scene->addItem(new Edge(node1, node2));
-	scene->addItem(new Edge(node2, node3));
-	scene->addItem(new Edge(node2, centerNode));
-	scene->addItem(new Edge(node3, node6));
-	scene->addItem(new Edge(node4, node1));
-	scene->addItem(new Edge(node4, centerNode));
-	scene->addItem(new Edge(centerNode, node6));
-	scene->addItem(new Edge(centerNode, node8));
-	scene->addItem(new Edge(node6, node9));
-	scene->addItem(new Edge(node7, node4));
-	scene->addItem(new Edge(node8, node7));
-	scene->addItem(new Edge(node9, node8));
-
-	node1->setPos(-50, -50);
-	node2->setPos(0, -50);
-	node3->setPos(50, -50);
-	node4->setPos(-50, 0);
-	centerNode->setPos(0, 0);
-	node6->setPos(50, 0);
-	node7->setPos(-50, 50);
-	node8->setPos(0, 50);
-	node9->setPos(50, 50);
-	*/
 }
 
 //Method to find max tree depth and max tree "width"
 void GraphWidget::getTreeStats(NodeBi * p, int currentDepth, int currentPos)
 {
+	//Manage tree statistics
 	if (currentDepth > maxTreeDepth)
 	{
 		maxTreeDepth = currentDepth;
@@ -132,6 +89,7 @@ void GraphWidget::getTreeStats(NodeBi * p, int currentDepth, int currentPos)
 		maxPos = currentPos;
 	}
 
+	//Recurse
 	if (p->left != nullptr) {
 		getTreeStats(p->left, currentDepth + 1, currentPos - 1);
 		
@@ -158,11 +116,11 @@ Widget::Node * GraphWidget::buildGraphFromTree(NodeBi * p, int currentDepth, int
 	currentNode->setPos(x, y);
 	scene()->addItem(currentNode);
 
-	double nodeWidth = sceneRect().width() / double(abs(minPos) + maxPos) * 4;
+	//Use the maximum depth and maximum width of the tree to set the amount of space that each tree node takes up
+	double nodeWidth = sceneRect().width() / double(abs(minPos) + maxPos) * 4;  //The 4 constant is basically "hacked" now - we may look for a better way to do this...
 	double nodeHeight = sceneRect().height() / double(maxTreeDepth) * 0.975;  //97.5% to compensate for slight y shift mentioned in launcher method above
 
-	//cout << nodeWidth << " " << nodeHeight << endl;
-
+	//Recurse to the next level in the tree, and then add a new graph edge for the child node
 	Widget::Node *childNode = nullptr;
 	if (p->left != nullptr) {
 		childNode = buildGraphFromTree(p->left, currentDepth + 1, currentPos - 1, x - nodeWidth * (pow(0.5,currentDepth + 1)), y + nodeHeight); //The distance between nodes is cut to fraction 0.5 ^ (currentDepth + 1) to prevent node overlap

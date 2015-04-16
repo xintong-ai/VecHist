@@ -47,10 +47,7 @@
 #include <QPainter>
 #include <QStyleOption>
 
-//using Widget::Node;
-
-//using namespace Widget;
-
+//Node constructor
 Widget::Node::Node(GraphWidget *graphWidget)
 	: graph(graphWidget)
 {
@@ -59,9 +56,6 @@ Widget::Node::Node(GraphWidget *graphWidget)
 	setCacheMode(DeviceCoordinateCache);
 	setZValue(-1);
 	nodeBiPtr = nullptr;
-	//foreColor = Qt::yellow;
-	//backColor = Qt::darkYellow;
-
 }
 
 void Widget::Node::addEdge(Edge *edge)
@@ -121,6 +115,8 @@ void Widget::Node::calculateForces()
 	newPos.setY(qMin(qMax(newPos.y(), sceneRect.top() + 10), sceneRect.bottom() - 10));
 }
 
+//This method causes a node to advance its state based on the physics
+//The logic for this is currently DISABLED
 bool Widget::Node::advance()
 {
 	if (newPos == pos())
@@ -144,6 +140,7 @@ QPainterPath Widget::Node::shape() const
 	return path;
 }
 
+//This is the QT Paint method for graph nodes
 void Widget::Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
 {
 	const int RADIUS = 10;
@@ -153,8 +150,6 @@ void Widget::Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
 	painter->drawEllipse(-7, -7, RADIUS, RADIUS);
 	//painter->drawEllipse(-7, -7, 30, 30);
 
-	//foreColor = Qt::yellow;
-	//backColor = Qt::darkYellow;
 	Qt::GlobalColor foreColor;
 	Qt::GlobalColor backColor;
 	if (nodeBiPtr->isVisible)
@@ -168,7 +163,6 @@ void Widget::Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
 		backColor = Qt::darkRed;
 
 	}
-
 
 	QRadialGradient gradient(-3, -3, 10);
 	if (option->state & QStyle::State_Sunken) {
