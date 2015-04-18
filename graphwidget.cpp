@@ -117,8 +117,8 @@ Widget::Node * GraphWidget::buildGraphFromTree(NodeBi * p, int currentDepth, int
 	scene()->addItem(currentNode);
 
 	//Use the maximum depth and maximum width of the tree to set the amount of space that each tree node takes up
-	double nodeWidth = sceneRect().width() / double(abs(minPos) + maxPos) * 4;  //The 4 constant is basically "hacked" now - we may look for a better way to do this...
 	double nodeHeight = sceneRect().height() / double(maxTreeDepth) * 0.975;  //97.5% to compensate for slight y shift mentioned in launcher method above
+	double nodeWidth = sceneRect().width() / 2;
 
 	//Recurse to the next level in the tree, and then add a new graph edge for the child node
 	Widget::Node *childNode = nullptr;
