@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{390a092e-e39d-4682-87e7-e67e14f4976b}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>vechist.py</StartupFile>
+    <StartupFile>gen_idx.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
