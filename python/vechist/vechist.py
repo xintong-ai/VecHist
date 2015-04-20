@@ -20,6 +20,7 @@ cubemap_size = 16
 #######Load data#########
 d_idx = np.load('d_idx.npy')
 shape = d_idx.shape
+
 d_3d = np.load('d_vec.npy')
 d_3d = cube.normalize(d_3d)
 

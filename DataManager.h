@@ -5,7 +5,12 @@
 #include <cuda/vector_functions.h>
 #include "OSUFlow.h"
 #include "glSuperquadric.h"
+#include "node.h"
 
+namespace Widget
+{
+	class Node;
+}
 
 using namespace std;
 struct Node
@@ -112,7 +117,12 @@ struct NodeBi
 	NodeBi* left;
 	NodeBi* right;
 
+	Widget::Node * graphNode;
+	//Widget::Node
+
 	GLSuperquadric* glyph;
+
+	bool isVisible;
 
 	NodeBi(
 		int _start0, int _start1, int _start2,
@@ -146,6 +156,9 @@ struct NodeBi
 		//	neighbor[i] = nullptr;
 		//	flux[6] = 0;
 		//}
+
+		isVisible = true;
+		graphNode = nullptr;
 	}
 
 	//NodeBi(int *_start, int *_dim, int _cube_size, int _level) :
@@ -252,6 +265,7 @@ public:
 	float* GetVecData();
 	float* GetVecDataXFirst();
 	string GetFilename(string name);
+	NodeBi * getRootNode(){ return rootNode; }
 
 	DataManager();
 	~DataManager();
