@@ -951,8 +951,10 @@ inline bool readNextToken(std::istream &in, int &token, bool &isNumber)
 	//if (c >= '0' && c > token)
 	//	isNumber = true;
 	in >> token;
-	if (in.eof()) 
+	if (in.eof()) {
 		isNumber = false;
+		return isNumber;
+	}
 	//cout << token;
 	isNumber = (token != -1);
 	return isNumber;
@@ -975,6 +977,37 @@ void DataManager::readBinaryTree(NodeBi *&p, ifstream &fin, vector<float3> start
 		readBinaryTree(p->left, fin, starts, dims, entropys, eig_vals, eig_vecs);
 		readBinaryTree(p->right, fin, starts, dims, entropys, eig_vals, eig_vecs);
 	}
+}
+
+//This method recursively reads the contents of a merge tree listed from an in-order traversal
+//The input is a preprocessed version of the merge tree data from the Dark Sky data
+MergeNode * DataManager::readMergeTree(ifstream &fin)
+{
+	int haloId = 0, numChildren = 0;  //Halo id and number of children for current node
+	bool isNumber = true; //True if entry read is a number
+
+	if (!readNextToken(fin, haloId, isNumber)) {
+		cerr << "Did not have data to load as expected for halo id in readMergeTree method" << endl;
+		return nullptr;
+	}
+
+	if (!readNextToken(fin, numChildren, isNumber)) {
+		cerr << "Did not have data to load as expected for num children in readMergeTree method" << endl;
+		return nullptr;
+	}
+
+	//Construct the current node
+	MergeNode * currentNode = new MergeNode(); //TO DO: Destructor
+	currentNode->haloId = haloId;
+	currentNode->children.resize(numChildren);
+	
+	//Construct the children recursively
+	for (int i = 0; i < numChildren; i++) {
+		currentNode->children[i] = readMergeTree(fin);
+	}
+
+	return currentNode;
+
 }
 
 inline vector<float3> ReadAttribute(const char* filename)
@@ -1022,6 +1055,39 @@ void DataManager::LoadSegmentation()
 	int token;
 	bool isNumber;
 	readBinaryTree(rootNode, fin, starts, dims, entropys, eig_vals, eig_vecs);
+
+	//For now we are doing this in the LoadSegmentation() method.  We may move this to a better part of the architecture a little later.
+	//TO DO: Use the parm file
+	std::ifstream fMergeTreeIn("C:\\XinCode\\VecHist\\python\\vechist\\merge_tree.txt", std::fstream::in);  //Prprocessed Merge Tree data from Dark Sky data
+
+	if (!fMergeTreeIn)
+	{
+		cerr << "Merge Tree Input file did not load succedssfully" << endl;
+		return;
+	}
+
+	int treeId = 0;  //Id of current merge tree read from preprocessed Dark Sky data
+	isNumber = true; //True if current record was not -1 and did not reach end of file
+
+	//Iterate through each merge tree in the preprocessed data
+	while (readNextToken(fMergeTreeIn, treeId, isNumber)) {
+		cout << "Reading tree structure for tree id " << treeId << endl;
+		//Read the current merge tree from the file
+		MergeNode * root = readMergeTree(fMergeTreeIn);
+
+		MergeTree * mergeTree = new MergeTree;
+		mergeTree -> treeId = treeId;
+		mergeTree -> root = root;
+		//TO DO: Destructor
+
+		//Add the new tree to the forest.  This push_back doesn't happen too often, but we still might consider storing the number of trees in the file.
+		forest.push_back(mergeTree);
+	}
+
+	
+
+	cout << "The Merge Tree Forest has been read" << endl;
+
 }
 
 
