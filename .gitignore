@@ -13,4 +13,6 @@ build
 #Auto generated application .txt and .npy data files
 *.txt
 *.npy
->>>>>>> origin/master
+
+#Pycharm
+.idea
