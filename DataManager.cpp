@@ -1057,8 +1057,7 @@ void DataManager::LoadSegmentation()
 	readBinaryTree(rootNode, fin, starts, dims, entropys, eig_vals, eig_vecs);
 
 	//For now we are doing this in the LoadSegmentation() method.  We may move this to a better part of the architecture a little later.
-	//TO DO: Use the parm file
-	std::ifstream fMergeTreeIn("C:\\XinCode\\VecHist\\python\\vechist\\merge_tree.txt", std::fstream::in);  //Prprocessed Merge Tree data from Dark Sky data
+	std::ifstream fMergeTreeIn(filenames["mergerTree"], std::fstream::in);  //Prprocessed Merge Tree data from Dark Sky data
 
 	if (!fMergeTreeIn)
 	{
