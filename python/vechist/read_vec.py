@@ -56,13 +56,15 @@ class MergeTreeNode:
 
 #This routine will read the merger tree file at the specified location and load it into a basic data structure
 def readMergerTree(filename):
-    f = open(filename, "r")
+    fin = open(filename, "r")
 
     treeId = 0 #Default value for treeId
     dictionary = {} #Empty dictionary to hold references to the merger tree nodes
     root = None
 
-    for line in f:
+    fout = open('merge_tree.txt', 'w')
+
+    for line in fin:
         #Ignore Comments
         if line[0] == '#':
             if len(line) >= 5 and line[0:5] == "#tree":
@@ -74,6 +76,12 @@ def readMergerTree(filename):
                 #    print("--------Printing current merge tree---------")
                 #    printMergerTree(root, 0)
                 #    print("--------Finished printing merge tree---------")
+                if root != None:
+                    print("--------Outputting merge tree to file---------")
+                    fout.write(str(treeId) + " ")
+                    writeMergerTreeToFile(root, fout)
+                    print("--------Finished outputting merge tree to file---------")
+
                 root = None
             continue
         #Test the entry for the number of trees in the forest
@@ -115,6 +123,13 @@ def readMergerTree(filename):
             else:
                 print("WARNING!!!!!!!   Descendant id " + str(descendant_id) + " does not have a halo entry already in the dictionary!!!!!!")
 
+    #Write the final, tree to the file.  Otherws were written when a new tree definition was found, but this one must be done manually at the end
+    if root != None:
+        print("--------Outputting merge tree to file---------")
+        fout.write(str(treeId) + " ")
+        writeMergerTreeToFile(root, fout)
+        print("--------Finished outputting merge tree to file---------")
+
 #Uitility function to print the contents of the merge tree
 #It currently only prints through 4 depth levels (starting from 0)
 def printMergerTree(node, level):
@@ -124,6 +139,15 @@ def printMergerTree(node, level):
     for childNode in node.children:
         if level <= 2:
             printMergerTree(childNode, level + 1)
+
+def writeMergerTreeToFile(node, fout):
+    print("New Node from tree:")
+    print("Halo id: " + str(node.haloId))
+    print("Number of children: " + str(len(node.children)))
+    fout.write(str(node.haloId) + " ")
+    fout.write(str(len(node.children)) + " ")
+    for childNode in node.children:
+        writeMergerTreeToFile(childNode, fout)
 
 
 
