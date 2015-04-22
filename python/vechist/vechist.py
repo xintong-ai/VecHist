@@ -6,6 +6,9 @@ import matplotlib.pyplot as plt
 import time
 import math
 
+cube.loadHaloComputeSuperquadric()
+pause
+
 time_start = time.time()
 
 #d = sample_ball.sample(2**8)
