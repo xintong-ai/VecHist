@@ -790,11 +790,11 @@ def loadHaloComputeSuperquadric():
 
     optData = np.zeros( (6500, 16 + 1536) )
 
-    print "num of halo: " + str(halosize)
+    print("num of halo: " + str(halosize))
 
     partCnt = 0
     for i in range(0, 6500):
-        print i
+        print(i)
         #print partCnt
         x = halox[i]
         y = haloy[i]
