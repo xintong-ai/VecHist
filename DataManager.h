@@ -189,6 +189,27 @@ struct NodeBi
 };
 
 
+
+//This class represents one node from the merger tree from the Dark Sky data
+struct MergeNode
+{
+	vector<MergeNode *> children;  //Each node has an array of children
+	int haloId = 0;	//The id of the halo corresponding to this node
+};
+
+struct MergeTree
+{
+	MergeNode * root;
+	int treeId;
+
+	MergeTree()
+	{
+		root = nullptr;
+		treeId = 0;
+	}
+};
+
+
 class DataManager
 {
 	float* data;
@@ -215,6 +236,7 @@ class DataManager
 	float entropyThreshold;// 6;// 10.2;	//592 cubes for plume
 	Node *topNode;
 	NodeBi *rootNode;
+	vector<MergeTree *> forest;  //A forest of merge trees from the Dark Sky data
 	int numBlocks;
 	map<string, string> filenames;
 	
@@ -225,6 +247,7 @@ class DataManager
 	void LoadOSUFlow(const char* filename);
 	void readBinaryTree(NodeBi *&p, ifstream &fin, vector<float3> starts, vector<float3> dims,
 		vector<float> entropys, vector<float3> eig_vals, vector<float3> eig_vecs);
+	MergeNode * readMergeTree(ifstream &fin);
 	void LoadParameters();
 
 
