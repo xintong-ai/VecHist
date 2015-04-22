@@ -14,6 +14,15 @@ from scipy.optimize import curve_fit
 import time
 #from mayavi import mlab
 
+#Ko-Chih add
+from sdfpy import load_sdf
+from thingking import loadtxt
+import numpy as np
+import math
+import matplotlib.cm as cm
+import matplotlib.pylab as pl
+#Ko-Chih add -END
+
 def sum_of_squares_of_digits(value):
     return sum(int(c) ** 2 for c in str(value))
 
@@ -280,7 +289,7 @@ def SolidAngles(nbin):
 
 
 def GenCubemap(d, size):
-    [hist, bin_edges] = np.histogram(d, np.arange(0, size * size * 6 + 1)) 
+    [hist, bin_edges] = np.histogram(d, np.arange(0, size * size * 6 + 1))
     #TODO: this is for the empty entries in DTI dataset
     hist[0] = 0
 #    hist = np.arange(0, size * size * 6)       
@@ -298,7 +307,8 @@ def GenCubemap(d, size):
         hist[i*size:(i+1)*size, :] = hist[i*size:(i+1)*size, :] / (sol_ang * scale_factor)
     #print('Solid Angle (size' + str(size) + '):')
     #print(sol_ang)
-    
+
+
     #normalize to be a histogram
     hist_sum = np.sum(hist)
     #print(hist_sum)
@@ -352,7 +362,8 @@ def get(v, size):
         idx3d = [5, math.floor((-v[2] / abs(v[1]) + 1) * coef) , math.floor((-v[0] / abs(v[1]) + 1) * coef)]
     else:
         idx3d = [0,0,0]
-        
+
+
     return idx3d[0] * size * size + idx3d[1] * size + idx3d[2]
 
 def get3dCoords(idx, size):
@@ -556,6 +567,7 @@ def SplitEntropy(ret, _d_idx, d_3d, cubemap_size):
         side1 = m_idx[:, :, :1]
         side2 = m_idx[:, :, 1:]
     print("percentage: " + str(float(1) / ret.dim[imax]))
+
     cube_hist_1 = GenCubemapCut(side1.ravel(), cubemap_size)
     cube_hist_2 = GenCubemapCut(side2.ravel(), cubemap_size)
 
@@ -675,15 +687,18 @@ def SplitEntropy(ret, _d_idx, d_3d, cubemap_size):
         side2_3d = m_3d[spl_pt:, :, :, :]
         start_pos_2[2] += spl_pt
 
+
     side1_3d = np.reshape(side1_3d, (-1,3))
     side2_3d = np.reshape(side2_3d, (-1,3))
+
+
     
     eig_val_1, eig_vec_1 = PCA(side1_3d)
     eig_val_2, eig_vec_2 = PCA(side2_3d)
 
+
     cube_hist_1 = GenCubemap(side1.ravel(), cubemap_size)
     cube_hist_2 = GenCubemap(side2.ravel(), cubemap_size)
-
 
     entropy_1 = get_histogram_entropy(cube_hist_1.ravel())
     entropy_2 = get_histogram_entropy(cube_hist_2.ravel())
@@ -717,3 +732,108 @@ def writeBinaryTree(node, f, starts, dims, entropys, eig_vals, eig_vecs, node_id
         #out << p->data << " ";
         writeBinaryTree(node.left, f, starts, dims, entropys, eig_vals, eig_vecs, node_id)
         writeBinaryTree(node.right, f, starts, dims, entropys, eig_vals, eig_vecs, node_id)
+
+
+#Ko-Chih add
+
+def haloVectorNormalized(d):
+    norm = np.linalg.norm(d, ord = 2, axis = 1)
+    d = d / norm[:, np.newaxis]
+    return d
+
+def loadHaloComputeSuperquadric():
+    cubemap_size = 16
+
+    #load data
+    fn = "halox.npy"
+    halox = np.load( fn )
+    fn = "haloy.npy"
+    haloy = np.load( fn )
+    fn = "haloz.npy"
+    haloz = np.load( fn )
+    fn = "halorvir.npy"
+    halorvir = np.load( fn )
+
+    fn = "partx.npy"
+    partx = np.load( fn )
+    fn = "party.npy"
+    party = np.load( fn )
+    fn = "partz.npy"
+    partz = np.load( fn )
+    fn = "partvx.npy"
+    partvx = np.load( fn )
+    fn = "partvy.npy"
+    partvy = np.load( fn )
+    fn = "partvz.npy"
+    partvz = np.load( fn )
+
+
+    #load data, only use the parameters
+    prefix = "http://darksky.slac.stanford.edu/scivis2015/data/ds14_scivis_0128/"
+    particles = load_sdf(prefix+"ds14_scivis_0128_e4_dt04_1.0000")
+
+    h_100 = particles.parameters['h_100']
+    width = particles.parameters['L0']
+    cosmo_a = particles.parameters['a']
+    kpc_to_Mpc = 1./1000
+
+    convert_to_cMpc = lambda proper: (proper) * h_100 * kpc_to_Mpc / cosmo_a
+    halorvir = convert_to_cMpc( halorvir )
+
+    halosize = halox.size
+
+    pl.figure(figsize=[10,10])
+    #pl.scatter(partx, party, color='r', s=1.0, alpha=0.05)
+
+    #partVelocity = np.zeros( [partx.size, 3] )
+    numPart = np.zeros( halosize )
+
+    optData = np.zeros( (6500, 16 + 1536) )
+
+    print "num of halo: " + str(halosize)
+
+    partCnt = 0
+    for i in range(0, 6500):
+        print i
+        #print partCnt
+        x = halox[i]
+        y = haloy[i]
+        z = haloz[i]
+        rvir = halorvir[i]
+
+        d = np.sqrt( np.power( ( partx - x ), 2 ) + np.power( ( party - y ), 2 ) + np.power( ( partz - z ), 2 ) )
+
+        result = np.array( np.where( d<rvir ) )
+        result = np.reshape( result, result.size )
+
+        partVelocity = np.zeros( [result.size, 3] )
+
+        #pl.scatter(partx[result], party[result], color=cm.jet(i/float(500)), s=1.0, alpha=0.05)
+
+        for j in range( 0, result.size ):
+            partVelocity[ j, : ] = np.array( [ partvx[result[j]], partvy[result[j]], partvz[result[j]] ] )
+        #     partCnt += 1
+
+        #numPart[i] = result.size
+
+        partVelocity = haloVectorNormalized( partVelocity )
+        eig_val, eig_vec = PCA(partVelocity)
+
+        optData[i, 0] = x
+        optData[i, 1] = y
+        optData[i, 2] = z
+        optData[i, 3] = rvir
+        optData[i, 4] = eig_val[0]
+        optData[i, 5] = eig_val[1]
+        optData[i, 6] = eig_val[2]
+        optData[i, 7:10] = eig_vec[0,:]
+        optData[i, 10:13] = eig_vec[1,:]
+        optData[i, 13:16] = eig_vec[2,:]
+
+        d_idx = np.apply_along_axis( get, axis=1, arr=partVelocity, size=cubemap_size)
+        cube_hist = GenCubemap(d_idx.ravel(), cubemap_size)
+        optData[i, 16: 16+1536] = cube_hist.ravel()
+
+        #print cube_hist_1
+
+    np.savetxt('haloEigen.txt', optData, newline=" \n")
