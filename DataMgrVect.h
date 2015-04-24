@@ -24,7 +24,6 @@ class DataMgrVect:public DataManager
 	Node *topNode;
 	NodeBi *rootNode;
 	int numBlocks;
-	map<string, string> filenames;
 
 	void SplitNode(Node* parent);
 	void ComputeCubemapNode(Node *&nd);
@@ -33,7 +32,6 @@ class DataMgrVect:public DataManager
 	void LoadOSUFlow(const char* filename);
 	void readBinaryTree(NodeBi *&p, ifstream &fin, vector<float3> starts, vector<float3> dims,
 		vector<float> entropys, vector<float3> eig_vals, vector<float3> eig_vecs);
-	void LoadParameters();
 
 
 public:
@@ -67,7 +65,6 @@ public:
 	void GenStreamInCube();
 	float* GetVecData();
 	float* GetVecDataXFirst();
-	string GetFilename(string name);
 
 	virtual vector<NodeBi*> GetAllNode();
 	virtual NodeBi* getRootNode();

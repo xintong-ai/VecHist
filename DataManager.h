@@ -216,6 +216,7 @@ protected:
 	int cubemap_size;
 	int dim[3];
 	int qCubePos[3], qCubeSize[3];	//queried cube position and sizes
+	map<string, string> valStrings;
 
 	bool CubeInsideVolumeX(int x, int nx);
 	bool CubeInsideVolumeY(int x, int nx);
@@ -236,6 +237,8 @@ public:
 	void GetQCube(int &x, int &y, int &z, int &nx, int &ny, int &nz);
 	void SetQCube(int x, int y, int z, int nx, int ny, int nz);
 	void MoveCube(int x, int y, int z);
+	void LoadParameters();
+	string GetStringVal(string name);
 
 
 	DataManager();

@@ -461,7 +461,7 @@ void DataMgrVect::ResizeCube(int x, int y, int z)
 
 void DataMgrVect::LoadData()
 {
-	LoadVec(GetFilename("vectorfield").c_str());
+	LoadVec(GetStringVal("vectorfield").c_str());
 	LoadSegmentation();
 }
 
@@ -815,7 +815,6 @@ DataMgrVect::DataMgrVect()
 	numBlocks = 0;
 	osuflow = new OSUFlow();
 	entropyThreshold = 9;
-	LoadParameters();
 }
 
 DataMgrVect::~DataMgrVect()
@@ -935,12 +934,12 @@ inline vector<float> ReadAttribute1D(const char* filename)
 
 void DataMgrVect::LoadSegmentation()
 {
-	std::ifstream fin(filenames["tree"], std::fstream::in);
-	vector<float3> starts = ReadAttribute(filenames["starts"].c_str());
-	vector<float3> dims = ReadAttribute(filenames["dims"].c_str());
-	vector<float> entropys = ReadAttribute1D(filenames["entropy"].c_str());
-	vector<float3> eig_vals = ReadAttribute(filenames["eigval"].c_str());
-	vector<float3> eig_vecs = ReadAttribute(filenames["eigvec"].c_str());
+	std::ifstream fin(valStrings["tree"], std::fstream::in);
+	vector<float3> starts = ReadAttribute(valStrings["starts"].c_str());
+	vector<float3> dims = ReadAttribute(valStrings["dims"].c_str());
+	vector<float> entropys = ReadAttribute1D(valStrings["entropy"].c_str());
+	vector<float3> eig_vals = ReadAttribute(valStrings["eigval"].c_str());
+	vector<float3> eig_vecs = ReadAttribute(valStrings["eigvec"].c_str());
 
 	int token;
 	bool isNumber;
@@ -999,75 +998,6 @@ float* DataMgrVect::GetVecData()
 float* DataMgrVect::GetVecDataXFirst()
 {
 	return (float*)data_x_first;
-}
-
-void DataMgrVect::LoadParameters()
-{
-	QList<QString> filter = QStringList("*.par");
-	QList<QFileInfo> files = QDir(":/res/vechist/").entryInfoList(filter, QDir::Files | QDir::Readable);
-
-	foreach(QFileInfo fileInfo, files) {
-		QFile file(fileInfo.absoluteFilePath());
-		if (file.open(QIODevice::ReadOnly)) {
-			while (!file.atEnd()) {
-				QList<QByteArray> tokens = file.readLine().simplified().split(' ');
-				QList<QByteArray>::const_iterator it = tokens.begin();
-				if (it == tokens.end())
-					continue;
-				QByteArray type = *it;
-				if (++it == tokens.end())
-					continue;
-				QByteArray name = *it;
-				bool singleElement = (tokens.size() == 3); // type, name and one value
-				char counter[10] = "000000000";
-				int counterPos = 8; // position of last digit
-				while (++it != tokens.end()) {
-					if (type == "filename") {
-						filenames[name.toStdString()] = it->toStdString();
-					}
-					//m_parameterNames << name;
-					//if (!singleElement) {
-					//    m_parameterNames.back() += "[";
-					//    m_parameterNames.back() += counter + counterPos;
-					//    m_parameterNames.back() += "]";
-					//    int j = 8; // position of last digit
-					//    ++counter[j];
-					//    while (j > 0 && counter[j] > '9') {
-					//        counter[j] = '0';
-					//        ++counter[--j];
-					//    }
-					//    if (j < counterPos)
-					//        counterPos = j;
-					//}
-
-					//if (type == "color") {
-					//    layout->addWidget(new QLabel(m_parameterNames.back()));
-					//    bool ok;
-					//    ColorEdit *colorEdit = new ColorEdit(it->toUInt(&ok, 16), m_parameterNames.size() - 1);
-					//    m_parameterEdits << colorEdit;
-					//    layout->addWidget(colorEdit);
-					//    connect(colorEdit, SIGNAL(colorChanged(QRgb,int)), this, SLOT(setColorParameter(QRgb,int)));
-					//    ++row;
-					//} else if (type == "float") {
-					//    layout->addWidget(new QLabel(m_parameterNames.back()));
-					//    bool ok;
-					//    FloatEdit *floatEdit = new FloatEdit(it->toFloat(&ok), m_parameterNames.size() - 1);
-					//    m_parameterEdits << floatEdit;
-					//    layout->addWidget(floatEdit);
-					//    connect(floatEdit, SIGNAL(valueChanged(float,int)), this, SLOT(setFloatParameter(float,int)));
-					//    ++row;
-					//}
-				}
-			}
-			file.close();
-		}
-	}
-
-}
-
-string DataMgrVect::GetFilename(string name)
-{
-	return filenames[name];
 }
 
 //

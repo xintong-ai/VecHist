@@ -585,8 +585,11 @@ Scene::Scene(int width, int height, int maxTextureSize)
     //, m_environmentShader(0)
     //, m_environmentProgram(0)
 {
-
-	dataManager = new DataMgrVect();
+//	if (dataManager->GetStringVal("datatype").compare("flow") == 0)
+	if (1)
+		dataManager = new DataMgrVect();
+	else //if (dataManager->GetStringVal("datatype").compare("cosmology") == 0)
+		dataManager = new DataMgrCosm();
 
 	pbo = GLuint(0);
 	tex = 0;
@@ -653,7 +656,6 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	int nx, ny, nz;
 	dataManager->GetVolumeSize(nx, ny, nz);
 	m_renderOptions->setBlock(0, 0, 0, nx, ny, nz);
-
 
 	//ShowGpuMemInfo();
 	//m_vec3DTex = new GLTexture3D(nx, ny, nz);

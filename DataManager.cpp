@@ -12,8 +12,75 @@
 
 DataManager::DataManager()
 {
+	LoadParameters();
+}
+
+void DataManager::LoadParameters()
+{
+	QList<QString> filter = QStringList("*.par");
+	QList<QFileInfo> files = QDir(":/res/vechist/").entryInfoList(filter, QDir::Files | QDir::Readable);
+
+	foreach(QFileInfo fileInfo, files) {
+		QFile file(fileInfo.absoluteFilePath());
+		if (file.open(QIODevice::ReadOnly)) {
+			while (!file.atEnd()) {
+				QList<QByteArray> tokens = file.readLine().simplified().split(' ');
+				QList<QByteArray>::const_iterator it = tokens.begin();
+				if (it == tokens.end())
+					continue;
+				QByteArray type = *it;
+				if (++it == tokens.end())
+					continue;
+				QByteArray name = *it;
+				bool singleElement = (tokens.size() == 3); // type, name and one value
+				char counter[10] = "000000000";
+				int counterPos = 8; // position of last digit
+				while (++it != tokens.end()) {
+					if (type == "string") {
+						valStrings[name.toStdString()] = it->toStdString();
+					}
+
+					//m_parameterNames << name;
+					//if (!singleElement) {
+					//    m_parameterNames.back() += "[";
+					//    m_parameterNames.back() += counter + counterPos;
+					//    m_parameterNames.back() += "]";
+					//    int j = 8; // position of last digit
+					//    ++counter[j];
+					//    while (j > 0 && counter[j] > '9') {
+					//        counter[j] = '0';
+					//        ++counter[--j];
+					//    }
+					//    if (j < counterPos)
+					//        counterPos = j;
+					//}
+
+					//if (type == "color") {
+					//    layout->addWidget(new QLabel(m_parameterNames.back()));
+					//    bool ok;
+					//    ColorEdit *colorEdit = new ColorEdit(it->toUInt(&ok, 16), m_parameterNames.size() - 1);
+					//    m_parameterEdits << colorEdit;
+					//    layout->addWidget(colorEdit);
+					//    connect(colorEdit, SIGNAL(colorChanged(QRgb,int)), this, SLOT(setColorParameter(QRgb,int)));
+					//    ++row;
+					//} else if (type == "float") {
+					//    layout->addWidget(new QLabel(m_parameterNames.back()));
+					//    bool ok;
+					//    FloatEdit *floatEdit = new FloatEdit(it->toFloat(&ok), m_parameterNames.size() - 1);
+					//    m_parameterEdits << floatEdit;
+					//    layout->addWidget(floatEdit);
+					//    connect(floatEdit, SIGNAL(valueChanged(float,int)), this, SLOT(setFloatParameter(float,int)));
+					//    ++row;
+					//}
+				}
+			}
+			file.close();
+		}
+	}
 
 }
+
+
 
 DataManager::~DataManager()
 {
@@ -84,4 +151,9 @@ bool DataManager::CubeInsideVolumeZ(int x, int nx)
 	return x >= 0 && (x + nx) <= dim[2];
 }
 
+
+string DataManager::GetStringVal(string name)
+{
+	return valStrings[name];
+}
 
