@@ -10,6 +10,7 @@
 #include <QTextDocument>
 #include <QDebug>
 #include <QToolTip>
+#include "qjson.h"
 
 
 #define EXPANDABLE_MARGIN_LEFT 14

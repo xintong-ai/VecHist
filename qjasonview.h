@@ -5,6 +5,7 @@
 #include <QVariant>
 #include <QLabel>
 
+
 /**
 Widget to display JSON or QVariant data.
 This widget will display any JSON-encoded string or a hierarchically nested QVariant tree in an expandable way.
