@@ -586,7 +586,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
     //, m_environmentProgram(0)
 {
 
-	dataManager = new DataManager();
+	dataManager = new DataMgrVect();
 
 	pbo = GLuint(0);
 	tex = 0;
@@ -600,7 +600,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
     ///////dataManager->LoadVec("/media/User/data/plume/15plume3d421.vec");
    
 
-    dataManager->LoadVec("C:\\Users\\datahead8888\\Documents\\sciVis\\data\\15plume3d421.vec");
+    //dataManager->LoadVec("C:\\Users\\datahead8888\\Documents\\sciVis\\data\\15plume3d421.vec");
 	//dataManager->LoadVec("C:\\Users\\datahead8888\\Documents\\sciVis\\data\\15plume3d430.vec");
 	//dataManager->LoadVec("C:\\Users\\datahead8888\\Documents\\sciVis\\data\\UVWf01.vec");
 	

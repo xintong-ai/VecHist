@@ -56,7 +56,7 @@
 #include "gltrianglemesh.h"
 #include "trackball.h"
 #include "glbuffers.h"
-#include "DataManager.h"
+#include "DataMgrVect.h"
 //#include "qtbox.h"
 //#include <cuda_runtime.h>
 //#include <cuda_gl_interop.h>
@@ -299,7 +299,7 @@ private:
     //QGLShader *m_environmentShader;
     //QGLShaderProgram *m_environmentProgram;
 
-	DataManager* dataManager;
+	DataMgrVect* dataManager;
 
     GLuint pbo;     // OpenGL pixel buffer object
 	GLuint tex;     // OpenGL texture object
