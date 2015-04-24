@@ -644,12 +644,16 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		"\"types\" : [1337, 13.37, true, null]"
 		"}";
 
+	cout << "Data contents: " << endl;
+	cout << data.toStdString() << endl;
+
 
 	QGraphicsView * view = new QGraphicsView();
 	m_jsonView = new QJsonView(view);
 	view->move(60, 120);
 	m_jsonView->move(60, 120);
-	m_jsonView->resize(m_jsonView->sizeHint());
+	//m_jsonView->resize(m_jsonView->sizeHint());
+	m_jsonView->resize(1000, 500);
 	m_jsonView->setJsonValue(data);
 
 	int nx, ny, nz;

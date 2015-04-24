@@ -11,6 +11,9 @@
 #include <QDebug>
 #include <QToolTip>
 #include "qjson.h"
+#include <iostream>
+
+using namespace std;
 
 
 #define EXPANDABLE_MARGIN_LEFT 14
@@ -43,8 +46,18 @@ void QJsonView::setValue(QVariant value)
 	if (expanded) collapse();
 
 	v = value;
+	
+	
+	
+
 	lblSingle->setText(QString("<span style=\"font-family: monospace; overflow: hidden\">%1</span>")
 		.arg(variantToHtml(v)));
+	
+	QString myHtml(variantToHtml(v));
+	cout << myHtml.toStdString() << endl;
+
+	cout << endl;
+	
 	layout()->setContentsMargins(isExpandable() ? EXPANDABLE_MARGIN_LEFT : 0, 0, 0, 0);
 
 	//show hand cursor if expandable
