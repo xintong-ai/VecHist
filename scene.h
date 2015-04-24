@@ -45,6 +45,7 @@
 //#include <GL/glew.h>
 #include "glextensions.h"
 #include "graphWidget.h"
+#include "qjasonview.h"
 
 #include <QtWidgets>
 #include <QtOpenGL>
@@ -280,6 +281,7 @@ private:
 
     RenderOptionsDialog *m_renderOptions;
 	GraphWidget * m_graphWidget;
+	QJsonView * m_jsonView;
     //ItemDialog *m_itemDialog;
     QTimer *m_timer;
 	GLSphere *m_vecWidget;

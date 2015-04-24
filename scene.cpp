@@ -637,6 +637,10 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	m_graphWidget->move(60, 120);
 	m_graphWidget->resize(m_graphWidget->sizeHint());
 
+	QGraphicsView * view = new QGraphicsView();
+	m_jsonView = new QJsonView(view);
+	m_jsonView->move(60, 120);
+	m_jsonView->resize(m_graphWidget->sizeHint());
 
 	int nx, ny, nz;
 	dataManager->GetVolumeSize(nx, ny, nz);
@@ -662,7 +666,8 @@ Scene::Scene(int width, int height, int maxTextureSize)
     TwoSidedGraphicsWidget *twoSided = new TwoSidedGraphicsWidget(this);
 	//QDockWidget *dock = new QDockWidget(QString(tr("Parameters")), this);
     //twoSided->setWidget(0, m_renderOptions);
-	twoSided->setWidget(0, m_graphWidget);
+	//twoSided->setWidget(0, m_graphWidget);
+	twoSided->setWidget(1, m_jsonView);
 	twoSided->setWidget(1, m_renderOptions);
 
     initGL();
@@ -700,6 +705,8 @@ Scene::~Scene()
 	//delete m_vec3DTex;
 
 	delete m_renderOptions;
+	delete m_graphWidget;
+	delete m_jsonView;
 
 //	cudaDeviceReset();
 //	cleanup();
