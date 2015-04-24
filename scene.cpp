@@ -637,10 +637,20 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	m_graphWidget->move(60, 120);
 	m_graphWidget->resize(m_graphWidget->sizeHint());
 
+	//Example from http://codereview.stackexchange.com/questions/11849/qjsonview-a-qwidget-based-json-explorer-for-qt
+	QString data = "{"
+		"\"test\" :  [\"this\", \"is\", \"a\", "
+		"{\"test\" : [\"with\", \"nested\", \"items\"]}],"
+		"\"types\" : [1337, 13.37, true, null]"
+		"}";
+
+
 	QGraphicsView * view = new QGraphicsView();
 	m_jsonView = new QJsonView(view);
+	view->move(60, 120);
 	m_jsonView->move(60, 120);
-	m_jsonView->resize(m_graphWidget->sizeHint());
+	m_jsonView->resize(m_jsonView->sizeHint());
+	m_jsonView->setJsonValue(data);
 
 	int nx, ny, nz;
 	dataManager->GetVolumeSize(nx, ny, nz);
@@ -667,7 +677,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	//QDockWidget *dock = new QDockWidget(QString(tr("Parameters")), this);
     //twoSided->setWidget(0, m_renderOptions);
 	//twoSided->setWidget(0, m_graphWidget);
-	twoSided->setWidget(1, m_jsonView);
+	twoSided->setWidget(0, view);
 	twoSided->setWidget(1, m_renderOptions);
 
     initGL();
@@ -706,7 +716,7 @@ Scene::~Scene()
 
 	delete m_renderOptions;
 	delete m_graphWidget;
-	delete m_jsonView;
+	//delete m_jsonView;
 
 //	cudaDeviceReset();
 //	cleanup();
