@@ -606,7 +606,17 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	
 
 	//TO DO: Make this work:
-	dataManager->LoadVec(dataManager->GetFilename("vectorfield").c_str());
+	//dataManager->LoadVec(dataManager->GetFilename("vectorfield").c_str());
+	dataManager->LoadData();
+	leafNodes = dataManager->GetAllNode();
+
+	for (auto nd : leafNodes)	{
+		GLTextureCube *texCube = new GLTextureCube(qMin(1024, m_maxTextureSize), 1);
+		texCube->load(nd->cubemap, dataManager->GetCubemapSize());
+		glColor3d(1.0, 1.0, 1.0);
+		blockTex << texCube;
+	}
+
 
 	//dataManager->LoadVec("D:/data/nek/nek.d_4.vec");
 	
@@ -637,6 +647,8 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	m_graphWidget->move(60, 120);
 	m_graphWidget->resize(m_graphWidget->sizeHint());
 
+	m_graphWidget->getTreeStats(dataManager->getRootNode(), 0, 0);
+	m_graphWidget->buildGraphFromTree(dataManager->getRootNode());
 
 	int nx, ny, nz;
 	dataManager->GetVolumeSize(nx, ny, nz);
@@ -1743,17 +1755,7 @@ void Scene::renderVolume()
 void Scene::Segmentation()
 {
 	//dataManager->Segmentation();
-	dataManager->LoadSegmentation();
-	leafNodes = dataManager->GetAllNode();
-	m_graphWidget->getTreeStats(dataManager->getRootNode(),0,0);
-	m_graphWidget->buildGraphFromTree(dataManager -> getRootNode());
-
-	for (auto nd : leafNodes)	{
-		GLTextureCube *texCube = new GLTextureCube(qMin(1024, m_maxTextureSize), 1);
-		texCube->load(nd->cubemap, dataManager->GetCubemapSize());
-		glColor3d(1.0, 1.0, 1.0);
-		blockTex << texCube;
-	}
+//	dataManager->LoadSegmentation();
 }
 
 //CutPlane::CutPlane(float3 _normal, float3 _vertex, float3 _aabb_min, float3 _aabb_max)

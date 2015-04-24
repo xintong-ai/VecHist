@@ -299,7 +299,7 @@ private:
     //QGLShader *m_environmentShader;
     //QGLShaderProgram *m_environmentProgram;
 
-	DataMgrVect* dataManager;
+	DataManager* dataManager;
 
     GLuint pbo;     // OpenGL pixel buffer object
 	GLuint tex;     // OpenGL texture object

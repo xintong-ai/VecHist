@@ -423,12 +423,6 @@ void DataMgrVect::BuildOctree(Node *nd)
 	//}
 }
 
-void DataMgrVect::GetVolumeSize(int &nx, int &ny, int&nz)
-{
-	nx = dim[0];
-	ny = dim[1];
-	nz = dim[2];
-}
 
 int3 DataMgrVect::GetVolumeDim()
 {
@@ -436,16 +430,6 @@ int3 DataMgrVect::GetVolumeDim()
 }
 
 
-void DataMgrVect::GetQCube(int &x, int &y, int &z, int &nx, int &ny, int &nz)
-{
-	x = qCubePos[0];
-	y = qCubePos[1];
-	z = qCubePos[2];
-
-	nx = qCubeSize[0];
-	ny = qCubeSize[1];
-	nz = qCubeSize[2];
-}
 
 float3 DataMgrVect::GetQCubeCenter()
 {
@@ -455,49 +439,12 @@ float3 DataMgrVect::GetQCubeCenter()
 		qCubePos[2] + qCubeSize[2] * 0.5);
 }
 
-void DataMgrVect::SetQCube(int x, int y, int z, int nx, int ny, int nz)
-{
-	qCubePos[0] = x;
-	qCubePos[1] = y;
-	qCubePos[2] = z;
-
-	qCubeSize[0] = nx;
-	qCubeSize[1] = ny;
-	qCubeSize[2] = nz;
-}
 
 bool DataMgrVect::CubeInsideVolume(int x, int y, int z, int nx, int ny, int nz)
 {
 	return x >= 0 && y >= 0 && z >= 0 && (x + nx) <= dim[0] && (y + ny) <= dim[1] && (z + nz) <= dim[2];
 }
 
-bool DataMgrVect::CubeInsideVolumeX(int x, int nx)
-{
-	return x >= 0 && (x + nx) <= dim[0];
-}
-
-bool DataMgrVect::CubeInsideVolumeY(int x, int nx)
-{
-	return x >= 0 && (x + nx) <= dim[1];
-}
-
-bool DataMgrVect::CubeInsideVolumeZ(int x, int nx)
-{
-	return x >= 0 && (x + nx) <= dim[2];
-}
-
-void DataMgrVect::MoveCube(int x, int y, int z)
-{
-	if (!CubeInsideVolumeX(qCubePos[0] + x, qCubeSize[0]))
-		x = 0;
-	if (!CubeInsideVolumeY(qCubePos[1] + y, qCubeSize[1]))
-		y = 0;
-	if (!CubeInsideVolumeZ(qCubePos[2] + z, qCubeSize[2]))
-		z = 0;
-	qCubePos[0] += x;
-	qCubePos[1] += y;
-	qCubePos[2] += z;
-}
 
 void DataMgrVect::ResizeCube(int x, int y, int z)
 {
@@ -826,11 +773,6 @@ void DataMgrVect::ComputeCurl()
 
 }
 
-int DataMgrVect::GetCubemapSize()
-{
-	return cubemap_size;
-}
-
 int DataMgrVect::GetNumOfCells()
 {
 	return dim[0] * dim[1] * dim[2];
@@ -866,35 +808,6 @@ void DataMgrVect::QueryByBin(int f, int x, int y, unsigned char* result)
 		}
 	}
 	std::cout << "perc:" << (float)cnt / (dim[0] * dim[1] * dim[2]) << std::endl;
-}
-
-
-void DataMgrVect::UpdateCubeMap(float* cubemap)
-{
-	//qCubePos[0] = x;
-	//qCubePos[1] = y;
-	//qCubePos[2] = z;
-	//qCubeSize[0] = nx;
-	//qCubeSize[1] = ny;
-	//qCubeSize[2] = nz;
-	int cubeSizeTotal = qCubeSize[0] * qCubeSize[1] * qCubeSize[2];
-	std::unique_ptr<int3[]> datablock(new int3[cubeSizeTotal]);
-
-	GetBlock(datablock.get(), qCubePos[0], qCubePos[1], qCubePos[2], qCubeSize[0], qCubeSize[1], qCubeSize[2]);
-	//int cnt = 0;
-	//for (int i = 0; i < datablock.size(); i++)
-	//{
-	//	int3 tmp = datablock[i];
-	//	if (tmp.x == 0 && tmp.y == 0 && tmp.z == 0)
-	//		cnt++;
-	//}
-	//std::cout << "cnt 2 ::" << cnt << std::endl;
-	//if (datablock.size() != (qCubeSize[0] * qCubeSize[1] * qCubeSize[2]))
-	//{
-	//	std::cout << "error" << std::endl;
-	//	exit(1);
-	//}
-	ComputeCubeMap(datablock.get(), cubeSizeTotal, cubemap, cubemap_size);
 }
 
 DataMgrVect::DataMgrVect()
@@ -1042,6 +955,12 @@ vector<NodeBi*> DataMgrVect::GetAllNode()
 	return ret;
 }
 
+NodeBi* DataMgrVect::getRootNode()
+{ 
+	return rootNode; 
+}
+
+
 void DataMgrVect::GetDescendantNodes(vector<NodeBi*> &ret, NodeBi* nd)
 {
 	//vector<NodeBi*> children;
@@ -1160,3 +1079,31 @@ string DataMgrVect::GetFilename(string name)
 //DataMgrVect::~DataMgrVect()
 //{
 //}
+
+void DataMgrVect::UpdateCubeMap(float* cubemap)
+{
+	//qCubePos[0] = x;
+	//qCubePos[1] = y;
+	//qCubePos[2] = z;
+	//qCubeSize[0] = nx;
+	//qCubeSize[1] = ny;
+	//qCubeSize[2] = nz;
+	int cubeSizeTotal = qCubeSize[0] * qCubeSize[1] * qCubeSize[2];
+	std::unique_ptr<int3[]> datablock(new int3[cubeSizeTotal]);
+
+	GetBlock(datablock.get(), qCubePos[0], qCubePos[1], qCubePos[2], qCubeSize[0], qCubeSize[1], qCubeSize[2]);
+	//int cnt = 0;
+	//for (int i = 0; i < datablock.size(); i++)
+	//{
+	//	int3 tmp = datablock[i];
+	//	if (tmp.x == 0 && tmp.y == 0 && tmp.z == 0)
+	//		cnt++;
+	//}
+	//std::cout << "cnt 2 ::" << cnt << std::endl;
+	//if (datablock.size() != (qCubeSize[0] * qCubeSize[1] * qCubeSize[2]))
+	//{
+	//	std::cout << "error" << std::endl;
+	//	exit(1);
+	//}
+	ComputeCubeMap(datablock.get(), cubeSizeTotal, cubemap, cubemap_size);
+}
