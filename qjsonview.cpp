@@ -1,3 +1,4 @@
+//From http://codereview.stackexchange.com/questions/11849/qjsonview-a-qwidget-based-json-explorer-for-qt
 #include "qjsonview.h"
 #include <QGridLayout>
 #include <QPainter>
@@ -47,17 +48,9 @@ void QJsonView::setValue(QVariant value)
 
 	v = value;
 	
-	
-	
-
 	lblSingle->setText(QString("<span style=\"font-family: monospace; overflow: hidden\">%1</span>")
 		.arg(variantToHtml(v)));
-	
-	QString myHtml(variantToHtml(v));
-	cout << myHtml.toStdString() << endl;
-
-	cout << endl;
-	
+			
 	layout()->setContentsMargins(isExpandable() ? EXPANDABLE_MARGIN_LEFT : 0, 0, 0, 0);
 
 	//show hand cursor if expandable
@@ -145,7 +138,7 @@ QString QJsonView::variantToHtml(QVariant data)
 		{
 			if (i != map.begin())
 				str += "<span style=\"color: #606060\"><b>, </b></span>";
-			str += i.key().toHtmlEscaped() + ": " + variantToHtml(i.value());
+			str += i.key().toHtmlEscaped() /*+ ": " + variantToHtml(i.value())*/;  //Chris Jacobsen - I commented this out, since we cannot render ALL the Dark Sky child data on one row!
 		}
 		//entry "children"
 		if (containsChildren) {

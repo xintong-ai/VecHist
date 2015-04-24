@@ -1,3 +1,4 @@
+//From http://codereview.stackexchange.com/questions/11927/yet-another-json-parser-and-serializer-for-qt-but-with-additional-features
 #include "qjson.h"
 #include <QStringList>
 

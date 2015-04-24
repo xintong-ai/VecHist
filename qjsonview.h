@@ -1,3 +1,4 @@
+//From http://codereview.stackexchange.com/questions/11849/qjsonview-a-qwidget-based-json-explorer-for-qt
 #ifndef QJSONVIEW_H
 #define QJSONVIEW_H
 
