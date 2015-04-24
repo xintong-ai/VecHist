@@ -1,4 +1,4 @@
-#include "qjasonview.h"
+#include "qjsonview.h"
 #include <QGridLayout>
 #include <QPainter>
 #include <QVariantMap>

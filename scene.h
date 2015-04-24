@@ -45,7 +45,7 @@
 //#include <GL/glew.h>
 #include "glextensions.h"
 #include "graphWidget.h"
-#include "qjasonview.h"
+#include "qjsonview.h"
 
 #include <QtWidgets>
 #include <QtOpenGL>
