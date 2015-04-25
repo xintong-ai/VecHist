@@ -608,6 +608,8 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	//TO DO: Make this work:
 	dataManager->LoadVec(dataManager->GetFilename("vectorfield").c_str());
 
+	dataManager->LoadMergeTree();
+
 	//dataManager->LoadVec("D:/data/nek/nek.d_4.vec");
 	
 	//dataManager->LoadVec("D:/data/brain_dti/vector-field.vec");
@@ -637,12 +639,11 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	m_graphWidget->move(60, 120);
 	m_graphWidget->resize(m_graphWidget->sizeHint());
 
+	//This is where we're putting this for now.  We will probably have to move it again soon to a better place
+	//dataManager->LoadMergeTree();
+
 	//Example from http://codereview.stackexchange.com/questions/11849/qjsonview-a-qwidget-based-json-explorer-for-qt
-	QString data = "{"
-		"\"test\" :  [\"this\", \"is\", \"a\", "
-		"{\"test\" : [\"with\", \"nested\", \"items\"]}],"
-		"\"types\" : [1337, 13.37, true, null]"
-		"}";
+	QString data = dataManager->getMergeTreeJSon();
 
 	//cout << "Data contents: " << endl;
 	//cout << data.toStdString() << endl;
@@ -651,10 +652,10 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	QGraphicsView * view = new QGraphicsView();
 	m_jsonView = new QJsonView(view);
 	view->move(180, 120);
-	view->resize(1000, 1000);
+	view->resize(1000, 2000);
 	m_jsonView->move(60, 120);
 	//m_jsonView->resize(m_jsonView->sizeHint());
-	m_jsonView->resize(1000, 500);
+	m_jsonView->resize(1000, 1000);
 	m_jsonView->setJsonValue(data);
 
 	int nx, ny, nz;

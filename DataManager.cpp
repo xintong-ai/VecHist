@@ -1043,6 +1043,40 @@ inline vector<float> ReadAttribute1D(const char* filename)
 	return ret;
 }
 
+void DataManager::LoadMergeTree()
+{
+	std::ifstream fMergeTreeIn(filenames["mergerTree"], std::fstream::in);  //Prprocessed Merge Tree data from Dark Sky data
+
+	if (!fMergeTreeIn)
+	{
+		cerr << "Merge Tree Input file did not load succedssfully" << endl;
+		return;
+	}
+
+	int treeId = 0;  //Id of current merge tree read from preprocessed Dark Sky data
+	bool isNumber = true; //True if current record was not -1 and did not reach end of file
+
+	//Iterate through each merge tree in the preprocessed data
+	while (readNextToken(fMergeTreeIn, treeId, isNumber)) {
+		cout << "Reading tree structure for tree id " << treeId << endl;
+		//Read the current merge tree from the file
+		MergeNode * root = readMergeTree(fMergeTreeIn);
+
+		MergeTree * mergeTree = new MergeTree;
+		mergeTree->treeId = treeId;
+		mergeTree->root = root;
+		//TO DO: Destructor
+
+		//Add the new tree to the forest.  This push_back doesn't happen too often, but we still might consider storing the number of trees in the file.
+		forest.push_back(mergeTree);
+	}
+
+
+
+	cout << "The Merge Tree Forest has been read" << endl;
+
+}
+
 void DataManager::LoadSegmentation()
 {
     std::ifstream fin(filenames["tree"], std::fstream::in);
@@ -1055,38 +1089,70 @@ void DataManager::LoadSegmentation()
 	int token;
 	bool isNumber;
 	readBinaryTree(rootNode, fin, starts, dims, entropys, eig_vals, eig_vecs);
+}
 
-	//For now we are doing this in the LoadSegmentation() method.  We may move this to a better part of the architecture a little later.
-	std::ifstream fMergeTreeIn(filenames["mergerTree"], std::fstream::in);  //Prprocessed Merge Tree data from Dark Sky data
+QString DataManager::getMergeTreeJSon()
+{
+    //QString data = "{"
+	//	"\"test\" :  [\"this\", \"is\", \"a\", "
+	//	"{\"test\" : [\"with\", \"nested\", \"items\"]}],"
+	//	"\"types\" : [1337, 13.37, true, null]"
+	//	"}";
 
-	if (!fMergeTreeIn)
-	{
-		cerr << "Merge Tree Input file did not load succedssfully" << endl;
-		return;
-	}
+	/*
+	QString data = "{"
+	"\"1\" :  "
+	"[{\"3\" : [null]}],"
+	"\"2\" : "
+	"[{\"4\" : [null]}],"
+	"}";
+	*/
 
-	int treeId = 0;  //Id of current merge tree read from preprocessed Dark Sky data
-	isNumber = true; //True if current record was not -1 and did not reach end of file
+	//QString data = "{"
+	//"\"halo1\" :  ["
+	
+	//"\"halo2\" : ["
+	
+	//}";
 
-	//Iterate through each merge tree in the preprocessed data
-	while (readNextToken(fMergeTreeIn, treeId, isNumber)) {
-		cout << "Reading tree structure for tree id " << treeId << endl;
-		//Read the current merge tree from the file
-		MergeNode * root = readMergeTree(fMergeTreeIn);
+	QString output = buildJsonFromTree(forest[0]->root, 0);
+	//cout << output.toStdString() << endl;
+	return output;
 
-		MergeTree * mergeTree = new MergeTree;
-		mergeTree -> treeId = treeId;
-		mergeTree -> root = root;
-		//TO DO: Destructor
+	//return data;
+}
 
-		//Add the new tree to the forest.  This push_back doesn't happen too often, but we still might consider storing the number of trees in the file.
-		forest.push_back(mergeTree);
-	}
+//This method recursively reads the contents of a merge tree listed from an in-order traversal
+//The input is a preprocessed version of the merge tree data from the Dark Sky data
+QString DataManager::buildJsonFromTree(MergeNode * currentNode, int level)
+{
+	int haloId = currentNode->haloId;  //Halo id for current node
 
+	QString currentString = QString("{ \"") + QString::number(haloId) + QString("\" : [");
 	
 
-	cout << "The Merge Tree Forest has been read" << endl;
 
+	//Construct the current node
+	
+	
+
+	//Construct the children recursively
+	if (currentNode -> children.size() == 0) {
+		currentString += QString("null");
+	}
+	else {
+		for (int i = 0; i < currentNode->children.size(); i++) {
+			currentString += buildJsonFromTree(currentNode->children[i], level +1);
+			if (i != currentNode->children.size() - 1) {
+				currentString += ",";
+			}
+		}
+	}
+	
+	currentString += QString("] }");
+
+	
+	return currentString;
 }
 
 

@@ -278,7 +278,10 @@ public:
 	int GetCubemapSize();
 	int GetNumOfCells();
 	void Segmentation();
+	void LoadMergeTree();
 	void LoadSegmentation();
+	QString getMergeTreeJSon();
+	QString buildJsonFromTree(MergeNode * currentNode, int level);
 	void SplitTopNode();
 	void BuildOctree(Node *nd);
 	vector<NodeBi*> GetAllNode();
