@@ -139,6 +139,8 @@ QString QJsonView::variantToHtml(QVariant data)
 			if (i != map.begin())
 				str += "<span style=\"color: #606060\"><b>, </b></span>";
 			str += i.key().toHtmlEscaped() /*+ ": " + variantToHtml(i.value())*/;  //Chris Jacobsen - I commented this out, since we cannot render ALL the Dark Sky child data on one row!
+			cout << "Html value for i: " << endl;
+			cout << str.toStdString() << endl;
 		}
 		//entry "children"
 		if (containsChildren) {
@@ -269,8 +271,36 @@ void QJsonView::setExpanded(bool expanded)
 		collapse();
 }
 
+//QT + button expand event
 void QJsonView::expand()
 {
+	//Obtain the clicked halo id from the user
+	if (v.type() == QVariant::Map) 
+	{
+		cout << "A map was clicked" << endl;
+		QVariantMap map(v.toMap());
+		QVariantMap::iterator i;
+		for (i = map.begin(); i != map.end(); ++i)
+		{
+			int haloId = i.key().toInt();
+			cout << "Halo id: " << haloId << endl;
+			cout << endl;
+		}
+
+
+	}
+	else if(v.type() == QVariant::List)
+	{
+		//They clicked a list.  They must drill down further in order to get a halo id.
+		cout << "A list was clicked" << endl;
+		
+	}
+	else
+	{
+		cerr << "Unable to extract halo id because this record is not a list or map" << endl;
+	}
+
+	//The original expand code from the JSon UI Component
 	if (isExpandable())
 	{
 		lblSingle->setVisible(false);
