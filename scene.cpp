@@ -651,11 +651,11 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
 	QGraphicsView * view = new QGraphicsView();
 	m_jsonView = new QJsonView(view);
-	view->move(180, 120);
-	view->resize(1000, 2000);
-	m_jsonView->move(60, 120);
+	view->move(20, 120);
+	view->resize(1000, 800);
+	//m_jsonView->move(60, 120);
 	//m_jsonView->resize(m_jsonView->sizeHint());
-	m_jsonView->resize(1000, 1000);
+	m_jsonView->resize(800, 800);
 	m_jsonView->setJsonValue(data);
 
 	int nx, ny, nz;
@@ -685,6 +685,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	//twoSided->setWidget(0, m_graphWidget);
 	twoSided->setWidget(0, view);
 	twoSided->setWidget(1, m_renderOptions);
+	//twoSided->setWidget(1, m_graphWidget);
 
     initGL();
 	//TODO: when width and height changes, this function should be called again

@@ -139,8 +139,6 @@ QString QJsonView::variantToHtml(QVariant data)
 			if (i != map.begin())
 				str += "<span style=\"color: #606060\"><b>, </b></span>";
 			str += i.key().toHtmlEscaped() /*+ ": " + variantToHtml(i.value())*/;  //Chris Jacobsen - I commented this out, since we cannot render ALL the Dark Sky child data on one row!
-			cout << "Html value for i: " << endl;
-			cout << str.toStdString() << endl;
 		}
 		//entry "children"
 		if (containsChildren) {
