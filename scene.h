@@ -56,7 +56,7 @@
 #include "gltrianglemesh.h"
 #include "trackball.h"
 #include "glbuffers.h"
-#include "DataMgrVect.h"
+//#include "DataMgrVect.h"
 #include "DataMgrCosm.h"
 //#include "qtbox.h"
 //#include <cuda_runtime.h>
@@ -319,7 +319,7 @@ private:
 	//GLuint m_depthTexture;
 
 	//
-	vector<NodeBi*> leafNodes;
+	vector<AbstractNode*> leafNodes;
 	vector<float3> colorMap;
 	//vector<CutPlane> cutplanes;
 };

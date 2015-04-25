@@ -344,22 +344,23 @@ void TwoSidedGraphicsWidget::setWidget(int index, QWidget *widget)
         qWarning("TwoSidedGraphicsWidget::setWidget: Index out of bounds, index == %d", index);
         return;
     }
+	if (1 == application)	{
+		GraphicsWidget *proxy = new GraphicsWidget;
+		proxy->setWidget(widget);
 
-    GraphicsWidget *proxy = new GraphicsWidget;
-    proxy->setWidget(widget);
+		if (m_proxyWidgets[index])
+			delete m_proxyWidgets[index];
+		m_proxyWidgets[index] = proxy;
 
-    if (m_proxyWidgets[index])
-        delete m_proxyWidgets[index];
-    m_proxyWidgets[index] = proxy;
+		proxy->setCacheMode(QGraphicsItem::ItemCoordinateCache);
+		proxy->setZValue(1e30); // Make sure the dialog is drawn on top of all other (OpenGL) items
 
-    proxy->setCacheMode(QGraphicsItem::ItemCoordinateCache);
-    proxy->setZValue(1e30); // Make sure the dialog is drawn on top of all other (OpenGL) items
+		//if (index != m_current)
+		//    proxy->setVisible(false);
+		proxy->setVisible(true);
 
-    //if (index != m_current)
-    //    proxy->setVisible(false);
-	proxy->setVisible(true);
-
-    qobject_cast<QGraphicsScene *>(parent())->addItem(proxy);
+		qobject_cast<QGraphicsScene *>(parent())->addItem(proxy);
+	}
 }
 
 QWidget *TwoSidedGraphicsWidget::widget(int index)
@@ -586,7 +587,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
     //, m_environmentProgram(0)
 {
 //	if (dataManager->GetStringVal("datatype").compare("flow") == 0)
-	if (1)
+	if (1 == application)
 		dataManager = new DataMgrVect();
 	else //if (dataManager->GetStringVal("datatype").compare("cosmology") == 0)
 		dataManager = new DataMgrCosm();
@@ -615,7 +616,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
 	for (auto nd : leafNodes)	{
 		GLTextureCube *texCube = new GLTextureCube(qMin(1024, m_maxTextureSize), 1);
-		texCube->load(nd->cubemap, dataManager->GetCubemapSize());
+		texCube->load(nd->GetCubemap(), dataManager->GetCubemapSize());
 		glColor3d(1.0, 1.0, 1.0);
 		blockTex << texCube;
 	}
@@ -646,12 +647,14 @@ Scene::Scene(int width, int height, int maxTextureSize)
     m_renderOptions->move(20, 120);
     m_renderOptions->resize(m_renderOptions->sizeHint());
 
-	m_graphWidget = new GraphWidget();
-	m_graphWidget->move(60, 120);
-	m_graphWidget->resize(m_graphWidget->sizeHint());
+	if (1 == application)	{
+		m_graphWidget = new GraphWidget();
+		m_graphWidget->move(60, 120);
+		m_graphWidget->resize(m_graphWidget->sizeHint());
 
-	m_graphWidget->getTreeStats(dataManager->getRootNode(), 0, 0);
-	m_graphWidget->buildGraphFromTree(dataManager->getRootNode());
+		m_graphWidget->getTreeStats((NodeBi*)dataManager->getRootNode(), 0, 0);
+		m_graphWidget->buildGraphFromTree((NodeBi*)dataManager->getRootNode());
+	}
 
 	int nx, ny, nz;
 	dataManager->GetVolumeSize(nx, ny, nz);
@@ -996,24 +999,27 @@ void Scene::render3D(const QMatrix4x4 &view)
 	//	m_environment->unbind();
 	//}
 
-
+	int dim[3];
+	int start[3];
 	for (int i = 0; i < leafNodes.size(); i++)	{
 		GLTextureCube* tex = blockTex[i];
 		auto nd = leafNodes[i];
+		nd->GetDim(dim);
+		nd->GetStart(start);
 		glPushMatrix();
 		glTranslatef(
-			nd->dim[0] / 2 + nd->start[0], 
-			nd->dim[1] / 2 + nd->start[1], 
-			nd->dim[2] / 2 + nd->start[2]);
-		float min_dim = min(min(nd->dim[0], nd->dim[1]), nd->dim[2]);
+			dim[0] / 2 + start[0], 
+			dim[1] / 2 + start[1], 
+			dim[2] / 2 + start[2]);
+		float min_dim = min(min(dim[0], dim[1]), dim[2]);
 		glScalef(min_dim, min_dim, min_dim);
 		//Scale the size of glyphs
 		//glScalef(0.5, 0.5, 0.5);
 		tex->bind();
 		//m_vecWidget->draw();
 		//m_superWidget->draw();
-		if (nd->isVisible) {
-			nd->glyph->draw();
+		if (nd->GetVisible()) {
+			nd->GetGlyph()->draw();
 		}
 		//nd->
 		

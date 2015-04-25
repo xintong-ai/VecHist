@@ -194,235 +194,240 @@ inline float CubemapEntropy(float *cubemap, int size)
 	}
 	return entropy(hist.get(), nBin);
 }
-
-void DataMgrVect::SplitTopNode()
-{
-	//$$$
-	//Node left, right;
-	for (int i = 0; i < 3; i++)	{
-		blockDim[i] = ceil((float)dim[i] / initBlockSize);
-	}
-	int numBlocks = blockDim[0] * blockDim[1] * blockDim[2];
-	Node **nd = new Node*[numBlocks];
-	for (int i = 0; i < blockDim[0]; i++)	{
-		for (int j = 0; j < blockDim[1]; j++)	{
-			for (int k = 0; k < blockDim[2]; k++)	{
-				int start[3] = { i * initBlockSize, j * initBlockSize, k * initBlockSize };
-				int blockSize[3] = {
-					min(initBlockSize, dim[0] - i * initBlockSize),
-					min(initBlockSize, dim[1] - j * initBlockSize),
-					min(initBlockSize, dim[2] - k * initBlockSize) };
-				nd[i * blockDim[1] * blockDim[2] + j * blockDim[2] + k] =
-					new Node(start, blockSize, cubemap_size, 1);
-			}
-		}
-	}
-	float3* idata = static_cast<float3*>((void *)data);
-	for (int i = 0; i < (blockDim[0] - 1); i++)	{
-		for (int j = 0; j < blockDim[1]; j++)	{
-			for (int k = 0; k < blockDim[2]; k++)	{
-				Node* thisNode = nd[i * blockDim[1] * blockDim[2] + j * blockDim[2] + k];
-				Node* nextNode = nd[(i + 1) * blockDim[1] * blockDim[2] + j * blockDim[2] + k];
-				int xa = thisNode->start[0] + thisNode->dim[0] - 1;
-				int xb = xa + 2;
-				int ya = thisNode->start[1];
-				int yb = thisNode->start[1] + thisNode->dim[1];
-				int za = thisNode->start[2];
-				int zb = thisNode->start[2] + thisNode->dim[2];
-				float sum = 0;
-				for (int x = xa; x < xb; x++)	{
-					for (int y = ya; y < yb; y++)	{
-						for (int z = za; z < zb; z++)	{
-							sum += idata[x * dim[1] * dim[2] + y * dim[2] + z].x;
-						}
-					}
-				}
-				if (sum > 0)
-					thisNode->flux[1] = sum;
-				else
-					nextNode->flux[0] = -sum;
-				thisNode->neighbor[1] = nextNode;
-				nextNode->neighbor[0] = thisNode;
-			}
-		}
-	}
-
-	for (int i = 0; i < blockDim[0]; i++)	{
-		for (int j = 0; j < (blockDim[1] - 1); j++)	{
-			for (int k = 0; k < blockDim[2]; k++)	{
-				Node* thisNode = nd[i * blockDim[1] * blockDim[2] + j * blockDim[2] + k];
-				Node* nextNode = nd[i * blockDim[1] * blockDim[2] + (j + 1) * blockDim[2] + k];
-				int xa = thisNode->start[0];
-				int xb = thisNode->start[0] + thisNode->dim[0];
-				int ya = thisNode->start[1] + thisNode->dim[1] - 1;
-				int yb = ya + 2;
-				int za = thisNode->start[2];
-				int zb = thisNode->start[2] + thisNode->dim[2];
-				float sum = 0;
-				for (int x = xa; x < xb; x++)	{
-					for (int y = ya; y < yb; y++)	{
-						for (int z = za; z < zb; z++)	{
-							sum += idata[x * dim[1] * dim[2] + y * dim[2] + z].y;
-						}
-					}
-				}
-				if (sum > 0)
-					thisNode->flux[3] = sum;
-				else
-					nextNode->flux[2] = -sum;
-				thisNode->neighbor[3] = nextNode;
-				nextNode->neighbor[2] = thisNode;
-			}
-		}
-	}
-
-	for (int i = 0; i < blockDim[0]; i++)	{
-		for (int j = 0; j < blockDim[1]; j++)	{
-			for (int k = 0; k < (blockDim[2] - 1); k++)	{
-				Node* thisNode = nd[i * blockDim[1] * blockDim[2] + j * blockDim[2] + k];
-				Node* nextNode = nd[i * blockDim[1] * blockDim[2] + j * blockDim[2] + k + 1];
-				int xa = thisNode->start[0];
-				int xb = thisNode->start[0] + thisNode->dim[0];
-				int ya = thisNode->start[1];
-				int yb = thisNode->start[1] + thisNode->dim[1];
-				int za = thisNode->start[2] + thisNode->dim[2] - 1;
-				int zb = za + 2;
-				float sum = 0;
-				for (int x = xa; x < xb; x++)	{
-					for (int y = ya; y < yb; y++)	{
-						for (int z = za; z < zb; z++)	{
-							sum += idata[x * dim[1] * dim[2] + y * dim[2] + z].z;
-						}
-					}
-				}
-				if (sum > 0)
-					thisNode->flux[5] = sum;
-				else
-					nextNode->flux[4] = -sum;
-				thisNode->neighbor[5] = nextNode;
-				nextNode->neighbor[4] = thisNode;
-			}
-		}
-	}
-
-	for (int i = 0; i < numBlocks; i++)
-	{
-		ComputeCubemapNode(nd[i]);
-		topNode->children.push_back(nd[i]);;
-	}
-	delete[] nd;
-}
-
-void DataMgrVect::ComputeCubemapNode(Node *&nd)
-{
-	int blockDimTotal = nd->dim[0] * nd->dim[1] * nd->dim[2];
-	std::unique_ptr<int3[]> datablock(new int3[blockDimTotal]);
-	GetBlock(datablock.get(), nd->start[0], nd->start[1], nd->start[2], nd->dim[0], nd->dim[1], nd->dim[2]);
-	nd->cubemap = new float[cubemap_size * cubemap_size * 6];
-	ComputeCubeMap(datablock.get(), blockDimTotal, nd->cubemap, cubemap_size);
-}
+//
+//void DataMgrVect::SplitTopNode()
+//{
+//	//$$$
+//	//Node left, right;
+//	for (int i = 0; i < 3; i++)	{
+//		blockDim[i] = ceil((float)dim[i] / initBlockSize);
+//	}
+//	int numBlocks = blockDim[0] * blockDim[1] * blockDim[2];
+//	Node **nd = new Node*[numBlocks];
+//	for (int i = 0; i < blockDim[0]; i++)	{
+//		for (int j = 0; j < blockDim[1]; j++)	{
+//			for (int k = 0; k < blockDim[2]; k++)	{
+//				int start[3] = { i * initBlockSize, j * initBlockSize, k * initBlockSize };
+//				int blockSize[3] = {
+//					min(initBlockSize, dim[0] - i * initBlockSize),
+//					min(initBlockSize, dim[1] - j * initBlockSize),
+//					min(initBlockSize, dim[2] - k * initBlockSize) };
+//				nd[i * blockDim[1] * blockDim[2] + j * blockDim[2] + k] =
+//					new Node(start, blockSize, cubemap_size, 1);
+//			}
+//		}
+//	}
+//	float3* idata = static_cast<float3*>((void *)data);
+//	for (int i = 0; i < (blockDim[0] - 1); i++)	{
+//		for (int j = 0; j < blockDim[1]; j++)	{
+//			for (int k = 0; k < blockDim[2]; k++)	{
+//				Node* thisNode = nd[i * blockDim[1] * blockDim[2] + j * blockDim[2] + k];
+//				Node* nextNode = nd[(i + 1) * blockDim[1] * blockDim[2] + j * blockDim[2] + k];
+//				int xa = thisNode->start[0] + thisNode->dim[0] - 1;
+//				int xb = xa + 2;
+//				int ya = thisNode->start[1];
+//				int yb = thisNode->start[1] + thisNode->dim[1];
+//				int za = thisNode->start[2];
+//				int zb = thisNode->start[2] + thisNode->dim[2];
+//				float sum = 0;
+//				for (int x = xa; x < xb; x++)	{
+//					for (int y = ya; y < yb; y++)	{
+//						for (int z = za; z < zb; z++)	{
+//							sum += idata[x * dim[1] * dim[2] + y * dim[2] + z].x;
+//						}
+//					}
+//				}
+//				if (sum > 0)
+//					thisNode->flux[1] = sum;
+//				else
+//					nextNode->flux[0] = -sum;
+//				thisNode->neighbor[1] = nextNode;
+//				nextNode->neighbor[0] = thisNode;
+//			}
+//		}
+//	}
+//
+//	for (int i = 0; i < blockDim[0]; i++)	{
+//		for (int j = 0; j < (blockDim[1] - 1); j++)	{
+//			for (int k = 0; k < blockDim[2]; k++)	{
+//				Node* thisNode = nd[i * blockDim[1] * blockDim[2] + j * blockDim[2] + k];
+//				Node* nextNode = nd[i * blockDim[1] * blockDim[2] + (j + 1) * blockDim[2] + k];
+//				int xa = thisNode->start[0];
+//				int xb = thisNode->start[0] + thisNode->dim[0];
+//				int ya = thisNode->start[1] + thisNode->dim[1] - 1;
+//				int yb = ya + 2;
+//				int za = thisNode->start[2];
+//				int zb = thisNode->start[2] + thisNode->dim[2];
+//				float sum = 0;
+//				for (int x = xa; x < xb; x++)	{
+//					for (int y = ya; y < yb; y++)	{
+//						for (int z = za; z < zb; z++)	{
+//							sum += idata[x * dim[1] * dim[2] + y * dim[2] + z].y;
+//						}
+//					}
+//				}
+//				if (sum > 0)
+//					thisNode->flux[3] = sum;
+//				else
+//					nextNode->flux[2] = -sum;
+//				thisNode->neighbor[3] = nextNode;
+//				nextNode->neighbor[2] = thisNode;
+//			}
+//		}
+//	}
+//
+//	for (int i = 0; i < blockDim[0]; i++)	{
+//		for (int j = 0; j < blockDim[1]; j++)	{
+//			for (int k = 0; k < (blockDim[2] - 1); k++)	{
+//				Node* thisNode = nd[i * blockDim[1] * blockDim[2] + j * blockDim[2] + k];
+//				Node* nextNode = nd[i * blockDim[1] * blockDim[2] + j * blockDim[2] + k + 1];
+//				int xa = thisNode->start[0];
+//				int xb = thisNode->start[0] + thisNode->dim[0];
+//				int ya = thisNode->start[1];
+//				int yb = thisNode->start[1] + thisNode->dim[1];
+//				int za = thisNode->start[2] + thisNode->dim[2] - 1;
+//				int zb = za + 2;
+//				float sum = 0;
+//				for (int x = xa; x < xb; x++)	{
+//					for (int y = ya; y < yb; y++)	{
+//						for (int z = za; z < zb; z++)	{
+//							sum += idata[x * dim[1] * dim[2] + y * dim[2] + z].z;
+//						}
+//					}
+//				}
+//				if (sum > 0)
+//					thisNode->flux[5] = sum;
+//				else
+//					nextNode->flux[4] = -sum;
+//				thisNode->neighbor[5] = nextNode;
+//				nextNode->neighbor[4] = thisNode;
+//			}
+//		}
+//	}
+//
+//	for (int i = 0; i < numBlocks; i++)
+//	{
+//		ComputeCubemapNode(nd[i]);
+//		topNode->children.push_back(nd[i]);;
+//	}
+//	delete[] nd;
+//}
+//
+//void DataMgrVect::ComputeCubemapNode(Node *&nd)
+//{
+//	int blockDimTotal = nd->dim[0] * nd->dim[1] * nd->dim[2];
+//	std::unique_ptr<int3[]> datablock(new int3[blockDimTotal]);
+//	GetBlock(datablock.get(), nd->start[0], nd->start[1], nd->start[2], nd->dim[0], nd->dim[1], nd->dim[2]);
+//	nd->cubemap = new float[cubemap_size * cubemap_size * 6];
+//	ComputeCubeMap(datablock.get(), blockDimTotal, nd->cubemap, cubemap_size);
+//}
 
 void DataMgrVect::ComputeCubemapNode(NodeBi *&nd)
 {
-	int blockDimTotal = nd->dim[0] * nd->dim[1] * nd->dim[2];
+
+	int dim[3];
+	int start[3];
+	nd->GetDim(dim);
+	nd->GetStart(start);
+
+	int blockDimTotal = dim[0] * dim[1] * dim[2];
 	std::unique_ptr<int3[]> datablock(new int3[blockDimTotal]);
-	GetBlock(datablock.get(), nd->start[0], nd->start[1], nd->start[2], nd->dim[0], nd->dim[1], nd->dim[2]);
-	nd->cubemap = new float[cubemap_size * cubemap_size * 6];
-	ComputeCubeMap(datablock.get(), blockDimTotal, nd->cubemap, cubemap_size);
+	GetBlock(datablock.get(), start[0], start[1], start[2], dim[0], dim[1], dim[2]);
+	ComputeCubeMap(datablock.get(), blockDimTotal, nd->GetCubemap(), cubemap_size);
 }
 
-void DataMgrVect::BuildOctree(Node *nd)
-{
-	//for (auto nd : node->children)	{
-	float entropy = CubemapEntropy(nd->cubemap, nd->cube_size);
-	nd->entropy = entropy;
-	cout << entropy << ",";
-	if (entropy > entropyThreshold)	{
-		//Node *node0 = new Node(...);
-		//BuildOctree(node0);
-		/////....
-		int childDimL[3], childDimR[3];
-		childDimL[0] = nd->dim[0] / 2;
-		childDimL[1] = nd->dim[1] / 2;
-		childDimL[2] = nd->dim[2] / 2;
-
-		childDimR[0] = nd->dim[0] - childDimL[0];
-		childDimR[1] = nd->dim[1] - childDimL[1];
-		childDimR[2] = nd->dim[2] - childDimL[2];
-
-		Node *child;
-
-		child = new Node(
-			nd->start[0], nd->start[1], nd->start[2],
-			childDimL[0], childDimL[1], childDimL[2],
-			cubemap_size, nd->level + 1);
-		ComputeCubemapNode(child);
-		nd->children.push_back(child);
-		BuildOctree(child);
-
-		child = new Node(
-			nd->start[0] + childDimL[0], nd->start[1], nd->start[2],
-			childDimR[0], childDimL[1], childDimL[2],
-			cubemap_size, nd->level + 1);
-		ComputeCubemapNode(child);
-		nd->children.push_back(child);
-		BuildOctree(child);
-
-		child = new Node(
-			nd->start[0], nd->start[1] + childDimL[1], nd->start[2],
-			childDimL[0], childDimR[1], childDimL[2],
-			cubemap_size, nd->level + 1);
-		ComputeCubemapNode(child);
-		nd->children.push_back(child);
-		BuildOctree(child);
-
-		child = new Node(
-			nd->start[0] + childDimL[0], nd->start[1] + childDimL[1], nd->start[2],
-			childDimR[0], childDimR[1], childDimL[2],
-			cubemap_size, nd->level + 1);
-		ComputeCubemapNode(child);
-		nd->children.push_back(child);
-		BuildOctree(child);
-
-		child = new Node(
-			nd->start[0], nd->start[1], nd->start[2] + childDimL[2],
-			childDimL[0], childDimL[1], childDimR[2],
-			cubemap_size, nd->level + 1);
-		ComputeCubemapNode(child);
-		nd->children.push_back(child);
-		BuildOctree(child);
-
-		child = new Node(
-			nd->start[0] + childDimL[0], nd->start[1], nd->start[2] + childDimL[2],
-			childDimR[0], childDimL[1], childDimR[2],
-			cubemap_size, nd->level + 1);
-		ComputeCubemapNode(child);
-		nd->children.push_back(child);
-		BuildOctree(child);
-
-		child = new Node(
-			nd->start[0], nd->start[1] + childDimL[1], nd->start[2] + childDimL[2],
-			childDimL[0], childDimR[1], childDimR[2],
-			cubemap_size, nd->level + 1);
-		ComputeCubemapNode(child);
-		nd->children.push_back(child);
-		BuildOctree(child);
-
-		child = new Node(
-			nd->start[0] + childDimL[0], nd->start[1] + childDimL[1], nd->start[2] + childDimL[2],
-			childDimR[0], childDimR[1], childDimR[2],
-			cubemap_size, nd->level + 1);
-		ComputeCubemapNode(child);
-		nd->children.push_back(child);
-		BuildOctree(child);
-	}
-	else
-	{
-		numBlocks += 1;
-	}
-	//}
-}
-
+//void DataMgrVect::BuildOctree(Node *nd)
+//{
+//	//for (auto nd : node->children)	{
+//	float entropy = CubemapEntropy(nd->cubemap, nd->cube_size);
+//	nd->entropy = entropy;
+//	cout << entropy << ",";
+//	if (entropy > entropyThreshold)	{
+//		//Node *node0 = new Node(...);
+//		//BuildOctree(node0);
+//		/////....
+//		int childDimL[3], childDimR[3];
+//		childDimL[0] = nd->dim[0] / 2;
+//		childDimL[1] = nd->dim[1] / 2;
+//		childDimL[2] = nd->dim[2] / 2;
+//
+//		childDimR[0] = nd->dim[0] - childDimL[0];
+//		childDimR[1] = nd->dim[1] - childDimL[1];
+//		childDimR[2] = nd->dim[2] - childDimL[2];
+//
+//		Node *child;
+//
+//		child = new Node(
+//			nd->start[0], nd->start[1], nd->start[2],
+//			childDimL[0], childDimL[1], childDimL[2],
+//			cubemap_size, nd->level + 1);
+//		ComputeCubemapNode(child);
+//		nd->children.push_back(child);
+//		BuildOctree(child);
+//
+//		child = new Node(
+//			nd->start[0] + childDimL[0], nd->start[1], nd->start[2],
+//			childDimR[0], childDimL[1], childDimL[2],
+//			cubemap_size, nd->level + 1);
+//		ComputeCubemapNode(child);
+//		nd->children.push_back(child);
+//		BuildOctree(child);
+//
+//		child = new Node(
+//			nd->start[0], nd->start[1] + childDimL[1], nd->start[2],
+//			childDimL[0], childDimR[1], childDimL[2],
+//			cubemap_size, nd->level + 1);
+//		ComputeCubemapNode(child);
+//		nd->children.push_back(child);
+//		BuildOctree(child);
+//
+//		child = new Node(
+//			nd->start[0] + childDimL[0], nd->start[1] + childDimL[1], nd->start[2],
+//			childDimR[0], childDimR[1], childDimL[2],
+//			cubemap_size, nd->level + 1);
+//		ComputeCubemapNode(child);
+//		nd->children.push_back(child);
+//		BuildOctree(child);
+//
+//		child = new Node(
+//			nd->start[0], nd->start[1], nd->start[2] + childDimL[2],
+//			childDimL[0], childDimL[1], childDimR[2],
+//			cubemap_size, nd->level + 1);
+//		ComputeCubemapNode(child);
+//		nd->children.push_back(child);
+//		BuildOctree(child);
+//
+//		child = new Node(
+//			nd->start[0] + childDimL[0], nd->start[1], nd->start[2] + childDimL[2],
+//			childDimR[0], childDimL[1], childDimR[2],
+//			cubemap_size, nd->level + 1);
+//		ComputeCubemapNode(child);
+//		nd->children.push_back(child);
+//		BuildOctree(child);
+//
+//		child = new Node(
+//			nd->start[0], nd->start[1] + childDimL[1], nd->start[2] + childDimL[2],
+//			childDimL[0], childDimR[1], childDimR[2],
+//			cubemap_size, nd->level + 1);
+//		ComputeCubemapNode(child);
+//		nd->children.push_back(child);
+//		BuildOctree(child);
+//
+//		child = new Node(
+//			nd->start[0] + childDimL[0], nd->start[1] + childDimL[1], nd->start[2] + childDimL[2],
+//			childDimR[0], childDimR[1], childDimR[2],
+//			cubemap_size, nd->level + 1);
+//		ComputeCubemapNode(child);
+//		nd->children.push_back(child);
+//		BuildOctree(child);
+//	}
+//	else
+//	{
+//		numBlocks += 1;
+//	}
+//	//}
+//}
+//
 
 int3 DataMgrVect::GetVolumeDim()
 {
@@ -461,6 +466,7 @@ void DataMgrVect::ResizeCube(int x, int y, int z)
 
 void DataMgrVect::LoadData()
 {
+	cubemap_size = 16;
 	LoadVec(GetStringVal("vectorfield").c_str());
 	LoadSegmentation();
 }
@@ -509,12 +515,11 @@ void DataMgrVect::LoadVec(const char* filename)
 	qCubeSize[1] = dim[1];
 	qCubeSize[2] = dim[2];
 
-	cubemap_size = 16;
 
 	IndexVolume(cubemap_size);
 
 	int start[3] = { 0, 0, 0 };
-	topNode = new Node(start, dim, cubemap_size, 0);
+	//topNode = new Node(start, dim, cubemap_size, 0);
 	//ComputeCurl();
 
 	LoadOSUFlow(filename);
@@ -824,7 +829,7 @@ DataMgrVect::~DataMgrVect()
 	delete[] data_x_first;
 	delete[] dataIdx;
 	delete[] curlIdx;
-	delete[] topNode;
+	//delete[] topNode;
 }
 
 std::vector<std::vector<double> > DataMgrVect::GetVertexPos()
@@ -847,17 +852,17 @@ std::vector<std::vector<double> > DataMgrVect::GetScaledVertexPos()
 	return vVScaled;
 }
 
-void DataMgrVect::Segmentation()
-{
-	//topNode = new Node(cubemap_data, cubemap_size, dataIdx, dim);
-	SplitTopNode();
-	//uncomment later
-	for (auto child : topNode->children)
-	{
-		BuildOctree(child);
-	}
-	cout << "number of cubic blocks: " << numBlocks << endl;
-}
+//void DataMgrVect::Segmentation()
+//{
+//	//topNode = new Node(cubemap_data, cubemap_size, dataIdx, dim);
+//	SplitTopNode();
+//	//uncomment later
+//	for (auto child : topNode->children)
+//	{
+//		BuildOctree(child);
+//	}
+//	cout << "number of cubic blocks: " << numBlocks << endl;
+//}
 
 inline bool readNextToken(std::istream &in, int &token, bool &isNumber)
 {
@@ -892,7 +897,7 @@ void DataMgrVect::readBinaryTree(NodeBi *&p, ifstream &fin, vector<float3> start
 			dims[token].x, dims[token].y, dims[token].z,
 			entropys[token], eig_vals[token],
 			eig_vecs[3 * token], eig_vecs[3 * token + 1], eig_vecs[3 * token + 2],
-			0, 0);
+			cubemap_size, 0);
 		ComputeCubemapNode(p);
 		readBinaryTree(p->left, fin, starts, dims, entropys, eig_vals, eig_vecs);
 		readBinaryTree(p->right, fin, starts, dims, entropys, eig_vals, eig_vecs);
@@ -947,9 +952,9 @@ void DataMgrVect::LoadSegmentation()
 }
 
 
-vector<NodeBi*> DataMgrVect::GetAllNode()
+vector<AbstractNode*> DataMgrVect::GetAllNode()
 {
-	vector<NodeBi*> ret;
+	vector<AbstractNode*> ret;
 	GetDescendantNodes(ret, rootNode);
 	return ret;
 }
@@ -960,7 +965,7 @@ NodeBi* DataMgrVect::getRootNode()
 }
 
 
-void DataMgrVect::GetDescendantNodes(vector<NodeBi*> &ret, NodeBi* nd)
+void DataMgrVect::GetDescendantNodes(vector<AbstractNode*> &ret, NodeBi* nd)
 {
 	//vector<NodeBi*> children;
 	//children.push_back(nd->left);
@@ -971,12 +976,12 @@ void DataMgrVect::GetDescendantNodes(vector<NodeBi*> &ret, NodeBi* nd)
 	//	else
 	//		ret.push_back(child);
 	//}
-	if (nd->left == nullptr)
+	if (nd->GetLeft() == nullptr)
 		ret.push_back(nd);
 	else
 	{
-		GetDescendantNodes(ret, nd->left);
-		GetDescendantNodes(ret, nd->right);
+		GetDescendantNodes(ret, nd->GetLeft());
+		GetDescendantNodes(ret, nd->GetRight());
 	}
 }
 
