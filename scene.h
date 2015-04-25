@@ -282,6 +282,8 @@ private:
     RenderOptionsDialog *m_renderOptions;
 	GraphWidget * m_graphWidget;
 	QJsonView * m_jsonView;
+	QScrollArea * scrollArea;
+
     //ItemDialog *m_itemDialog;
     QTimer *m_timer;
 	GLSphere *m_vecWidget;

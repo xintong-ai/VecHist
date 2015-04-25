@@ -648,14 +648,21 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	//cout << "Data contents: " << endl;
 	//cout << data.toStdString() << endl;
 
-
+	
 	QGraphicsView * view = new QGraphicsView();
 	m_jsonView = new QJsonView(view);
-	view->move(20, 120);
+
+	scrollArea = new QScrollArea;
+	scrollArea->setWidget(view);
+
+	scrollArea->move(20, 120);
+	scrollArea->resize(1000, 800);
+
 	view->resize(1000, 800);
+
 	//m_jsonView->move(60, 120);
 	//m_jsonView->resize(m_jsonView->sizeHint());
-	m_jsonView->resize(800, 800);
+	m_jsonView->resize(3000, 3000);
 	m_jsonView->setJsonValue(data);
 
 	int nx, ny, nz;
@@ -683,7 +690,8 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	//QDockWidget *dock = new QDockWidget(QString(tr("Parameters")), this);
     //twoSided->setWidget(0, m_renderOptions);
 	//twoSided->setWidget(0, m_graphWidget);
-	twoSided->setWidget(0, view);
+	//twoSided->setWidget(0, view);
+	twoSided->setWidget(0, scrollArea);
 	twoSided->setWidget(1, m_renderOptions);
 	//twoSided->setWidget(1, m_graphWidget);
 
