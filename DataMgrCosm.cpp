@@ -18,9 +18,9 @@ void DataMgrCosm::LoadData()
 {
 	cubemap_size = 16;
 	//TODO: remove the hard coded part
-	dim[0] = 62.5;
-	dim[1] = 62.5;
-	dim[2] = 62.5;
+	//dim[0] = 62.5;
+	//dim[1] = 62.5;
+	//dim[2] = 62.5;
 
 	LoadHalos();
 }
@@ -35,6 +35,30 @@ void DataMgrCosm::LoadHalos()
 	//fin >> data;        // get first number from the file (priming the input statement)
 	string line;
 	std::getline(fin, line);
+	stringstream ss(line);
+
+	float tmp;
+
+	ss >> tmp;
+	start[0] = tmp;
+	
+	ss >> tmp;
+	dim[0] = tmp;
+	
+	ss >> tmp;
+	start[1] = tmp;
+	
+	ss >> tmp;
+	dim[1] = tmp;
+	
+	ss >> tmp;
+	start[2] = tmp;
+	
+	ss >> tmp;
+	dim[2] = tmp;
+
+	std::getline(fin, line);
+
 	// You must attempt to read info prior to an eof( ) test.
 	while (!fin.eof())      //if not at end of file, continue reading numbers
 	{
@@ -44,6 +68,10 @@ void DataMgrCosm::LoadHalos()
 		float eigval[3];
 		float eigvec[3];
 		float radius;
+
+		float id;
+		ss >> id;
+
 		ss >> pos[0];
 		ss >> pos[1];
 		ss >> pos[2];
@@ -57,10 +85,17 @@ void DataMgrCosm::LoadHalos()
 		ss >> eigvec[0];
 		ss >> eigvec[1];
 		ss >> eigvec[2];
+		float3 e0 = make_float3(eigvec[0], eigvec[1], eigvec[2]);
+		
+		ss >> eigvec[0];
+		ss >> eigvec[1];
+		ss >> eigvec[2];
+		float3 e1 = make_float3(eigvec[0], eigvec[1], eigvec[2]);
 
-		float3 e0 = make_float3(1, 0, 0);
-		float3 e1 = make_float3(0, 1, 0);
-		float3 e2 = make_float3(0, 0, 1);
+		ss >> eigvec[0];
+		ss >> eigvec[1];
+		ss >> eigvec[2];
+		float3 e2 = make_float3(eigvec[0], eigvec[1], eigvec[2]);
 
 		int nBin = cubemap_size * cubemap_size * 6;
 		float *cubemap = new float[nBin];

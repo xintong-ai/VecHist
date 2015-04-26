@@ -9,7 +9,7 @@
 
 //1 means flow data
 //2 means cosmology data
-const int application = 1;
+const int application = 2;
 
 namespace Widget
 {
@@ -175,6 +175,7 @@ class DataManager
 {
 protected:
 	int cubemap_size;
+	int start[3];
 	int dim[3];
 	int qCubePos[3], qCubeSize[3];	//queried cube position and sizes
 	map<string, string> valStrings;
