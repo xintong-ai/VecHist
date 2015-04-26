@@ -42,7 +42,8 @@
 #define GRAPHWIDGET_H
 
 #include <QGraphicsView>
-#include <DataManager.h>
+//#include <DataManager.h>
+#include <DataMgrVect.h>
 #include <node.h>
 
 class Widget::Node;

@@ -90,12 +90,12 @@ void GraphWidget::getTreeStats(NodeBi * p, int currentDepth, int currentPos)
 	}
 
 	//Recurse
-	if (p->left != nullptr) {
-		getTreeStats(p->left, currentDepth + 1, currentPos - 1);
+	if (p->GetLeft() != nullptr) {
+		getTreeStats(p->GetLeft(), currentDepth + 1, currentPos - 1);
 		
 	}
-	if (p->right != nullptr) {
-		getTreeStats(p->right, currentDepth + 1, currentPos + 1);
+	if (p->GetRight() != nullptr) {
+		getTreeStats(p->GetRight(), currentDepth + 1, currentPos + 1);
 		
 	}
 }
@@ -111,7 +111,7 @@ Widget::Node * GraphWidget::buildGraphFromTree(NodeBi * p, int currentDepth, int
 {
 	Widget::Node *currentNode = new Widget::Node(this);
 	currentNode->setNodeBiPtr(p);
-	p->graphNode = currentNode;
+	p->SetGraphNode(currentNode);
 	
 	currentNode->setPos(x, y);
 	scene()->addItem(currentNode);
@@ -122,12 +122,12 @@ Widget::Node * GraphWidget::buildGraphFromTree(NodeBi * p, int currentDepth, int
 
 	//Recurse to the next level in the tree, and then add a new graph edge for the child node
 	Widget::Node *childNode = nullptr;
-	if (p->left != nullptr) {
-		childNode = buildGraphFromTree(p->left, currentDepth + 1, currentPos - 1, x - nodeWidth * (pow(0.5,currentDepth + 1)), y + nodeHeight); //The distance between nodes is cut to fraction 0.5 ^ (currentDepth + 1) to prevent node overlap
+	if (p->GetLeft() != nullptr) {
+		childNode = buildGraphFromTree(p->GetLeft(), currentDepth + 1, currentPos - 1, x - nodeWidth * (pow(0.5,currentDepth + 1)), y + nodeHeight); //The distance between nodes is cut to fraction 0.5 ^ (currentDepth + 1) to prevent node overlap
 		scene()->addItem(new Edge(currentNode, childNode));
 	}
-	if (p->right != nullptr) {
-		childNode = buildGraphFromTree(p->right, currentDepth + 1, currentPos + 1, x + nodeWidth * (pow(0.5,currentDepth + 1)), y + nodeHeight);
+	if (p->GetRight() != nullptr) {
+		childNode = buildGraphFromTree(p->GetRight(), currentDepth + 1, currentPos + 1, x + nodeWidth * (pow(0.5,currentDepth + 1)), y + nodeHeight);
 		scene()->addItem(new Edge(currentNode, childNode));
 	}
 

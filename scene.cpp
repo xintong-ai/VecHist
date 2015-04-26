@@ -344,22 +344,23 @@ void TwoSidedGraphicsWidget::setWidget(int index, QWidget *widget)
         qWarning("TwoSidedGraphicsWidget::setWidget: Index out of bounds, index == %d", index);
         return;
     }
+	if (1 == application || 2 == application)	{
+		GraphicsWidget *proxy = new GraphicsWidget;
+		proxy->setWidget(widget);
 
-    GraphicsWidget *proxy = new GraphicsWidget;
-    proxy->setWidget(widget);
+		if (m_proxyWidgets[index])
+			delete m_proxyWidgets[index];
+		m_proxyWidgets[index] = proxy;
 
-    if (m_proxyWidgets[index])
-        delete m_proxyWidgets[index];
-    m_proxyWidgets[index] = proxy;
+		proxy->setCacheMode(QGraphicsItem::ItemCoordinateCache);
+		proxy->setZValue(1e30); // Make sure the dialog is drawn on top of all other (OpenGL) items
 
-    proxy->setCacheMode(QGraphicsItem::ItemCoordinateCache);
-    proxy->setZValue(1e30); // Make sure the dialog is drawn on top of all other (OpenGL) items
+		//if (index != m_current)
+		//    proxy->setVisible(false);
+		proxy->setVisible(true);
 
-    //if (index != m_current)
-    //    proxy->setVisible(false);
-	proxy->setVisible(true);
-
-    qobject_cast<QGraphicsScene *>(parent())->addItem(proxy);
+		qobject_cast<QGraphicsScene *>(parent())->addItem(proxy);
+	}
 }
 
 QWidget *TwoSidedGraphicsWidget::widget(int index)
@@ -585,8 +586,11 @@ Scene::Scene(int width, int height, int maxTextureSize)
     //, m_environmentShader(0)
     //, m_environmentProgram(0)
 {
-
-	dataManager = new DataManager();
+//	if (dataManager->GetStringVal("datatype").compare("flow") == 0)
+	if (1 == application)
+		dataManager = new DataMgrVect();
+	else //if (dataManager->GetStringVal("datatype").compare("cosmology") == 0)
+		dataManager = new DataMgrCosm();
 
 	pbo = GLuint(0);
 	tex = 0;
@@ -600,15 +604,25 @@ Scene::Scene(int width, int height, int maxTextureSize)
     ///////dataManager->LoadVec("/media/User/data/plume/15plume3d421.vec");
    
 
-    dataManager->LoadVec("C:\\Users\\datahead8888\\Documents\\sciVis\\data\\15plume3d421.vec");
+    //dataManager->LoadVec("C:\\Users\\datahead8888\\Documents\\sciVis\\data\\15plume3d421.vec");
 	//dataManager->LoadVec("C:\\Users\\datahead8888\\Documents\\sciVis\\data\\15plume3d430.vec");
 	//dataManager->LoadVec("C:\\Users\\datahead8888\\Documents\\sciVis\\data\\UVWf01.vec");
 	
 
 	//TO DO: Make this work:
-	dataManager->LoadVec(dataManager->GetFilename("vectorfield").c_str());
+	//dataManager->LoadVec(dataManager->GetFilename("vectorfield").c_str());
+	dataManager->LoadData();
+	leafNodes = dataManager->GetAllNode();
 
-	dataManager->LoadMergeTree();
+	for (auto nd : leafNodes)	{
+		GLTextureCube *texCube = new GLTextureCube(qMin(1024, m_maxTextureSize), 1);
+		texCube->load(nd->GetCubemap(), dataManager->GetCubemapSize());
+		glColor3d(1.0, 1.0, 1.0);
+		blockTex << texCube;
+	}
+
+
+	((DataMgrCosm *)dataManager)->LoadMergeTree();
 
 	//dataManager->LoadVec("D:/data/nek/nek.d_4.vec");
 	
@@ -635,59 +649,65 @@ Scene::Scene(int width, int height, int maxTextureSize)
     m_renderOptions->move(20, 120);
     m_renderOptions->resize(m_renderOptions->sizeHint());
 
-	m_graphWidget = new GraphWidget();
-	m_graphWidget->move(60, 120);
-	m_graphWidget->resize(m_graphWidget->sizeHint());
+	if (1 == application) {
+		m_graphWidget = new GraphWidget();
+		m_graphWidget->move(60, 120);
+		m_graphWidget->resize(m_graphWidget->sizeHint());
 
-	//This is where we're putting this for now.  We will probably have to move it again soon to a better place
-	//dataManager->LoadMergeTree();
-
-	//Example from http://codereview.stackexchange.com/questions/11849/qjsonview-a-qwidget-based-json-explorer-for-qt
-	QString data = dataManager->getMergeTreeJSon(0);
-
-	//cout << "Data contents: " << endl;
-	//cout << data.toStdString() << endl;
-
-	
-	QGraphicsView * view = new QGraphicsView();
-	m_jsonView = new QJsonView(view);
-
-	scrollArea = new QScrollArea;
-	scrollArea->setWidget(view);
-
-	scrollArea->move(20, 120);
-	scrollArea->resize(900, 800);
-
-	view->resize(1000, 1000);
-
-	//m_jsonView->move(60, 120);
-	//m_jsonView->resize(m_jsonView->sizeHint());
-	m_jsonView->resize(1000, 1000);
-	m_jsonView->setJsonValue(data);
-
-	m_listWidget = new QListWidget;
-	m_listWidget -> resize(200, 600);
-	m_listWidget->move(20, 20);
-
-	vector<MergeTree *> forest = dataManager->getForest();
-	for (int i = 0; i < forest.size(); i++) {
-		m_listWidget->insertItem(i, QString::number(forest[i]->treeId));
+		m_graphWidget->getTreeStats((NodeBi*)dataManager->getRootNode(), 0, 0);
+		m_graphWidget->buildGraphFromTree((NodeBi*)dataManager->getRootNode());
 	}
-	cout << endl;
-	//cout << forest.size() << endl;
-	//cout << endl;
+	else {
+		m_graphWidget = new GraphWidget();
+		m_graphWidget->move(60, 120);
+		m_graphWidget->resize(m_graphWidget->sizeHint());
 
-	//m_listWidget->insertItem(0, QString("one"));
-	//m_listWidget->insertItem(1, QString("two"));
-	//m_listWidget->insertItem(2, QString("three"));
+		//Example from http://codereview.stackexchange.com/questions/11849/qjsonview-a-qwidget-based-json-explorer-for-qt
+		QString data = ((DataMgrCosm * ) dataManager)->getMergeTreeJSon(0);
 
-	//m_listWidget->insertItem(new QListWidgetItem())
+		//cout << "Data contents: " << endl;
+		//cout << data.toStdString() << endl;
 
+		QGraphicsView * view = new QGraphicsView();
+		m_jsonView = new QJsonView(view);
+
+		scrollArea = new QScrollArea;
+		scrollArea->setWidget(view);
+
+		scrollArea->move(20, 120);
+		scrollArea->resize(900, 800);
+
+		view->resize(1000, 1000);
+
+		//m_jsonView->move(60, 120);
+		//m_jsonView->resize(m_jsonView->sizeHint());
+		m_jsonView->resize(1000, 1000);
+		m_jsonView->setJsonValue(data);
+
+		m_listWidget = new QListWidget;
+		m_listWidget->resize(200, 600);
+		m_listWidget->move(20, 20);
+
+		DataMgrCosm * cosmPtr = (DataMgrCosm *)dataManager;
+		vector<MergeTree *> forest = cosmPtr->getForest();
+		for (int i = 0; i < forest.size(); i++) {
+			m_listWidget->insertItem(i, QString::number(forest[i]->treeId));
+		}
+		cout << endl;
+		//cout << forest.size() << endl;
+		//cout << endl;
+
+		//m_listWidget->insertItem(0, QString("one"));
+		//m_listWidget->insertItem(1, QString("two"));
+		//m_listWidget->insertItem(2, QString("three"));
+
+		//m_listWidget->insertItem(new QListWidgetItem())
+
+	}
 
 	int nx, ny, nz;
 	dataManager->GetVolumeSize(nx, ny, nz);
 	m_renderOptions->setBlock(0, 0, 0, nx, ny, nz);
-
 
 	//ShowGpuMemInfo();
 	//m_vec3DTex = new GLTexture3D(nx, ny, nz);
@@ -740,7 +760,7 @@ void Scene::dropBoxSelection()
 	int selectedId = m_listWidget->row(m_listWidget->currentItem());
 	cout << "Selected id: " << selectedId << endl;
 
-	QString data = dataManager->getMergeTreeJSon(selectedId);
+	QString data = ((DataMgrCosm *)dataManager)->getMergeTreeJSon(selectedId);
 	m_jsonView->setJsonValue(data);
 
 	
@@ -1047,24 +1067,27 @@ void Scene::render3D(const QMatrix4x4 &view)
 	//	m_environment->unbind();
 	//}
 
-
+	int dim[3];
+	int start[3];
 	for (int i = 0; i < leafNodes.size(); i++)	{
 		GLTextureCube* tex = blockTex[i];
 		auto nd = leafNodes[i];
+		nd->GetDim(dim);
+		nd->GetStart(start);
 		glPushMatrix();
 		glTranslatef(
-			nd->dim[0] / 2 + nd->start[0], 
-			nd->dim[1] / 2 + nd->start[1], 
-			nd->dim[2] / 2 + nd->start[2]);
-		float min_dim = min(min(nd->dim[0], nd->dim[1]), nd->dim[2]);
+			dim[0] / 2 + start[0], 
+			dim[1] / 2 + start[1], 
+			dim[2] / 2 + start[2]);
+		float min_dim = min(min(dim[0], dim[1]), dim[2]);
 		glScalef(min_dim, min_dim, min_dim);
 		//Scale the size of glyphs
 		//glScalef(0.5, 0.5, 0.5);
 		tex->bind();
 		//m_vecWidget->draw();
 		//m_superWidget->draw();
-		if (nd->isVisible) {
-			nd->glyph->draw();
+		if (nd->GetVisible()) {
+			nd->GetGlyph()->draw();
 		}
 		//nd->
 		
@@ -1808,17 +1831,7 @@ void Scene::renderVolume()
 void Scene::Segmentation()
 {
 	//dataManager->Segmentation();
-	dataManager->LoadSegmentation();
-	leafNodes = dataManager->GetAllNode();
-	m_graphWidget->getTreeStats(dataManager->getRootNode(),0,0);
-	m_graphWidget->buildGraphFromTree(dataManager -> getRootNode());
-
-	for (auto nd : leafNodes)	{
-		GLTextureCube *texCube = new GLTextureCube(qMin(1024, m_maxTextureSize), 1);
-		texCube->load(nd->cubemap, dataManager->GetCubemapSize());
-		glColor3d(1.0, 1.0, 1.0);
-		blockTex << texCube;
-	}
+//	dataManager->LoadSegmentation();
 }
 
 //CutPlane::CutPlane(float3 _normal, float3 _vertex, float3 _aabb_min, float3 _aabb_max)

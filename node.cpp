@@ -152,7 +152,7 @@ void Widget::Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
 
 	Qt::GlobalColor foreColor;
 	Qt::GlobalColor backColor;
-	if (nodeBiPtr->isVisible)
+	if (nodeBiPtr->GetVisible())
 	{
 		foreColor = Qt::yellow;
 		backColor = Qt::darkYellow;
@@ -202,23 +202,23 @@ void Widget::Node::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	update();
 	QGraphicsItem::mousePressEvent(event);
 	//Toggle visibility
-	nodeBiPtr->isVisible = !nodeBiPtr->isVisible;
-	SetChildrenVisibility(nodeBiPtr, nodeBiPtr->isVisible);
+	nodeBiPtr->SetVisible( !nodeBiPtr->GetVisible());
+	SetChildrenVisibility(nodeBiPtr, nodeBiPtr->GetVisible());
 }
 
 void Widget::Node::SetChildrenVisibility(NodeBi *nd, bool _isVisible)
 {
-	nd->isVisible = _isVisible;
+	nd->SetVisible(_isVisible);
 
-	if (nd->graphNode != nullptr) {
-		nd->graphNode->update();
+	if (nd->GetGraphNode() != nullptr) {
+		nd->GetGraphNode()->update();
 	}
 
-	if (nd->left != nullptr) {
-		SetChildrenVisibility(nd->left, _isVisible);
+	if (nd->GetLeft() != nullptr) {
+		SetChildrenVisibility(nd->GetLeft(), _isVisible);
 	}
-	if (nd->right != nullptr) {
-		SetChildrenVisibility(nd->right, _isVisible);
+	if (nd->GetRight() != nullptr) {
+		SetChildrenVisibility(nd->GetRight(), _isVisible);
 	}
 
 
