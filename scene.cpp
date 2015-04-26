@@ -656,13 +656,13 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	scrollArea->setWidget(view);
 
 	scrollArea->move(20, 120);
-	scrollArea->resize(1000, 800);
+	scrollArea->resize(900, 800);
 
-	view->resize(1000, 800);
+	view->resize(1000, 1000);
 
 	//m_jsonView->move(60, 120);
 	//m_jsonView->resize(m_jsonView->sizeHint());
-	m_jsonView->resize(3000, 3000);
+	m_jsonView->resize(1000, 1000);
 	m_jsonView->setJsonValue(data);
 
 	m_listWidget = new QListWidget;

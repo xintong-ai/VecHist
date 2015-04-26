@@ -1119,18 +1119,14 @@ QString DataManager::getMergeTreeJSon(int treeId)
 //The input is a preprocessed version of the merge tree data from the Dark Sky data
 QString DataManager::buildJsonFromTree(MergeNode * currentNode, int level)
 {
+	const int DEPTH_LIMIT = 4;
+
 	int haloId = currentNode->haloId;  //Halo id for current node
 
 	QString currentString = QString("{ \"") + QString::number(haloId) + QString("\" : [");
 	
-
-
-	//Construct the current node
-	
-	
-
 	//Construct the children recursively
-	if (currentNode -> children.size() == 0) {
+	if (currentNode -> children.size() == 0  || level > DEPTH_LIMIT) {
 		currentString += QString("null");
 	}
 	else {
