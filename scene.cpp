@@ -339,7 +339,7 @@ TwoSidedGraphicsWidget::TwoSidedGraphicsWidget(QGraphicsScene *scene)
 
 void TwoSidedGraphicsWidget::setWidget(int index, QWidget *widget)
 {
-    if (index < 0 || index >= 2)
+    if (index < 0 || index >= 3)
     {
         qWarning("TwoSidedGraphicsWidget::setWidget: Index out of bounds, index == %d", index);
         return;
@@ -643,7 +643,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	//dataManager->LoadMergeTree();
 
 	//Example from http://codereview.stackexchange.com/questions/11849/qjsonview-a-qwidget-based-json-explorer-for-qt
-	QString data = dataManager->getMergeTreeJSon();
+	QString data = dataManager->getMergeTreeJSon(0);
 
 	//cout << "Data contents: " << endl;
 	//cout << data.toStdString() << endl;
@@ -665,6 +665,25 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	m_jsonView->resize(3000, 3000);
 	m_jsonView->setJsonValue(data);
 
+	m_listWidget = new QListWidget;
+	m_listWidget -> resize(200, 600);
+	m_listWidget->move(20, 20);
+
+	vector<MergeTree *> forest = dataManager->getForest();
+	for (int i = 0; i < forest.size(); i++) {
+		m_listWidget->insertItem(i, QString::number(forest[i]->treeId));
+	}
+	cout << endl;
+	//cout << forest.size() << endl;
+	//cout << endl;
+
+	//m_listWidget->insertItem(0, QString("one"));
+	//m_listWidget->insertItem(1, QString("two"));
+	//m_listWidget->insertItem(2, QString("three"));
+
+	//m_listWidget->insertItem(new QListWidgetItem())
+
+
 	int nx, ny, nz;
 	dataManager->GetVolumeSize(nx, ny, nz);
 	m_renderOptions->setBlock(0, 0, 0, nx, ny, nz);
@@ -685,6 +704,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		this, SLOT(UpdateBlock(int, int, int, int, int, int)));
     connect(m_renderOptions, SIGNAL(queryChanged(int, int, int)), this, SLOT(UpdateQuery(int, int, int)));
 	connect(m_renderOptions, SIGNAL(segmentationRequested()), this, SLOT(Segmentation()));
+	connect(m_listWidget, SIGNAL(itemSelectionChanged()), this, SLOT(dropBoxSelection()));
 
     TwoSidedGraphicsWidget *twoSided = new TwoSidedGraphicsWidget(this);
 	//QDockWidget *dock = new QDockWidget(QString(tr("Parameters")), this);
@@ -693,6 +713,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	//twoSided->setWidget(0, view);
 	twoSided->setWidget(0, scrollArea);
 	twoSided->setWidget(1, m_renderOptions);
+	twoSided->setWidget(2, m_listWidget);
 	//twoSided->setWidget(1, m_graphWidget);
 
     initGL();
@@ -711,6 +732,18 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	//	COLOUR tmp = GetColour(i, 0, 500);
 	//	colorMap.push_back(make_float3(tmp.r, tmp.g, tmp.b));
 	//}
+}
+
+//Respond to selection events for the list box for tree selection for the forest
+void Scene::dropBoxSelection()
+{
+	int selectedId = m_listWidget->row(m_listWidget->currentItem());
+	cout << "Selected id: " << selectedId << endl;
+
+	QString data = dataManager->getMergeTreeJSon(selectedId);
+	m_jsonView->setJsonValue(data);
+
+	
 }
 
 Scene::~Scene()

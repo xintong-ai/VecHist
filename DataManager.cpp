@@ -1091,7 +1091,7 @@ void DataManager::LoadSegmentation()
 	readBinaryTree(rootNode, fin, starts, dims, entropys, eig_vals, eig_vecs);
 }
 
-QString DataManager::getMergeTreeJSon()
+QString DataManager::getMergeTreeJSon(int treeId)
 {
     //QString data = "{"
 	//	"\"test\" :  [\"this\", \"is\", \"a\", "
@@ -1108,14 +1108,7 @@ QString DataManager::getMergeTreeJSon()
 	"}";
 	*/
 
-	//QString data = "{"
-	//"\"halo1\" :  ["
-	
-	//"\"halo2\" : ["
-	
-	//}";
-
-	QString output = buildJsonFromTree(forest[0]->root, 0);
+	QString output = buildJsonFromTree(forest[treeId]->root, 0);
 	//cout << output.toStdString() << endl;
 	return output;
 

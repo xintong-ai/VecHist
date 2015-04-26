@@ -280,7 +280,7 @@ public:
 	void Segmentation();
 	void LoadMergeTree();
 	void LoadSegmentation();
-	QString getMergeTreeJSon();
+	QString getMergeTreeJSon(int treeId);
 	QString buildJsonFromTree(MergeNode * currentNode, int level);
 	void SplitTopNode();
 	void BuildOctree(Node *nd);
@@ -292,6 +292,7 @@ public:
 	float* GetVecDataXFirst();
 	string GetFilename(string name);
 	NodeBi * getRootNode(){ return rootNode; }
+	vector<MergeTree*> & getForest() { return forest; }
 
 	DataManager();
 	~DataManager();
