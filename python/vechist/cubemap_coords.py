@@ -21,7 +21,10 @@ import numpy as np
 import math
 import matplotlib.cm as cm
 import matplotlib.pylab as pl
+from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.pyplot as plt
 #Ko-Chih add -END
+
 
 def sum_of_squares_of_digits(value):
     return sum(int(c) ** 2 for c in str(value))
@@ -744,96 +747,232 @@ def haloVectorNormalized(d):
 def loadHaloComputeSuperquadric():
     cubemap_size = 16
 
-    #load data
-    fn = "halox.npy"
-    halox = np.load( fn )
-    fn = "haloy.npy"
-    haloy = np.load( fn )
-    fn = "haloz.npy"
-    haloz = np.load( fn )
-    fn = "halorvir.npy"
-    halorvir = np.load( fn )
+    gminx = 100000
+    gmaxx =-100000
+    gminy = 100000
+    gmaxy =-100000
+    gminz = 100000
+    gmaxz =-100000
 
-    fn = "partx.npy"
-    partx = np.load( fn )
-    fn = "party.npy"
-    party = np.load( fn )
-    fn = "partz.npy"
-    partz = np.load( fn )
-    fn = "partvx.npy"
-    partvx = np.load( fn )
-    fn = "partvy.npy"
-    partvy = np.load( fn )
-    fn = "partvz.npy"
-    partvz = np.load( fn )
+    filename = np.arange(0.12, 1.000001, 0.01)
+    for scl in filename:
+        filePrefix = 'C:\\GravityLabDataSet\\Universe\\loadFromRaw\\'
+        particleName = 'ds14_scivis_0128_e4_dt04_' + "{:.4f}".format(scl)
+        outputName = "{:.5f}_".format(scl)
+        print outputName
 
+        #load data
+        fn = filePrefix + outputName + "id.npy"
+        haloid = np.load( fn )
+        fn = filePrefix + outputName + "halox.npy"
+        halox = np.load( fn )
+        fn = filePrefix + outputName + "haloy.npy"
+        haloy = np.load( fn )
+        fn = filePrefix + outputName + "haloz.npy"
+        haloz = np.load( fn )
+        fn = filePrefix + outputName + "halorvir.npy"
+        halorvir = np.load( fn )
 
-    #load data, only use the parameters
-    prefix = "http://darksky.slac.stanford.edu/scivis2015/data/ds14_scivis_0128/"
-    particles = load_sdf(prefix+"ds14_scivis_0128_e4_dt04_1.0000")
+        fn = filePrefix + outputName + "partx.npy"
+        partx = np.load( fn )
+        fn = filePrefix + outputName + "party.npy"
+        party = np.load( fn )
+        fn = filePrefix + outputName + "partz.npy"
+        partz = np.load( fn )
+        fn = filePrefix + outputName + "partvx.npy"
+        partvx = np.load( fn )
+        fn = filePrefix + outputName + "partvy.npy"
+        partvy = np.load( fn )
+        fn = filePrefix + outputName + "partvz.npy"
+        partvz = np.load( fn )
 
-    h_100 = particles.parameters['h_100']
-    width = particles.parameters['L0']
-    cosmo_a = particles.parameters['a']
-    kpc_to_Mpc = 1./1000
+        if np.amin(partx) < gminx:
+            gminx = np.amin(partx)
+        if np.amax(partx) > gmaxx:
+            gmaxx = np.amax(partx)
+        if np.amin(party) < gminy:
+            gminy = np.amin(party)
+        if np.amax(party) > gmaxy:
+            gmaxy = np.amax(party)
+        if np.amin(partz) < gminz:
+            gminz = np.amin(partz)
+        if np.amax(partz) > gmaxz:
+            gmaxz = np.amax(partz)
+        print gminx
+        print gmaxx
+        print gminy
+        print gmaxy
+        print gminz
+        print gmaxz
 
-    convert_to_cMpc = lambda proper: (proper) * h_100 * kpc_to_Mpc / cosmo_a
-    halorvir = convert_to_cMpc( halorvir )
+        #load data, only use the parameters
+        prefix = "http://darksky.slac.stanford.edu/scivis2015/data/ds14_scivis_0128/"
+        particles = load_sdf(prefix+particleName)
 
-    halosize = halox.size
+        h_100 = particles.parameters['h_100']
+        width = particles.parameters['L0']
+        cosmo_a = particles.parameters['a']
+        kpc_to_Mpc = 1./1000
 
-    pl.figure(figsize=[10,10])
-    #pl.scatter(partx, party, color='r', s=1.0, alpha=0.05)
+        convert_to_cMpc = lambda proper: (proper) * h_100 * kpc_to_Mpc / cosmo_a
+        halorvir = convert_to_cMpc( halorvir )
 
-    #partVelocity = np.zeros( [partx.size, 3] )
-    numPart = np.zeros( halosize )
+        halosize = halox.size
 
-    optData = np.zeros( (6500, 16 + 1536) )
+        pl.figure(figsize=[10,10])
+        pl.scatter(partx, party, color='r', s=1.0, alpha=0.05)
 
-    print("num of halo: " + str(halosize))
+        numPart = np.zeros( halosize )
+        optData = np.zeros( (halosize, 17 + 1536) )
+        print("num of halo: " + str(halosize))
 
-    partCnt = 0
-    for i in range(0, 6500):
-        print(i)
-        #print partCnt
-        x = halox[i]
-        y = haloy[i]
-        z = haloz[i]
-        rvir = halorvir[i]
+        partCnt = 0
+        for i in range(0,halosize):
+            id = haloid[i]
+            x = halox[i]
+            y = haloy[i]
+            z = haloz[i]
+            rvir = halorvir[i]
 
-        d = np.sqrt( np.power( ( partx - x ), 2 ) + np.power( ( party - y ), 2 ) + np.power( ( partz - z ), 2 ) )
+            d = np.sqrt( np.power( ( partx - x ), 2 ) + np.power( ( party - y ), 2 ) + np.power( ( partz - z ), 2 ) )
 
-        result = np.array( np.where( d<rvir ) )
-        result = np.reshape( result, result.size )
+            result = np.array( np.where( d<rvir ) )
+            result = np.reshape( result, result.size )
 
-        partVelocity = np.zeros( [result.size, 3] )
+            print str(i) + ": " + str(result.size)
+            pl.scatter(partx[result], party[result], color=cm.jet(0), s=1.0, alpha=0.05)
 
-        #pl.scatter(partx[result], party[result], color=cm.jet(i/float(500)), s=1.0, alpha=0.05)
+            partVelocity = np.zeros( [result.size, 3] )
 
-        for j in range( 0, result.size ):
-            partVelocity[ j, : ] = np.array( [ partvx[result[j]], partvy[result[j]], partvz[result[j]] ] )
-        #     partCnt += 1
+            for j in range( 0, result.size ):
+                partVelocity[ j, : ] = np.array( [ partvx[result[j]], partvy[result[j]], partvz[result[j]] ] )
 
-        #numPart[i] = result.size
+            partVelocity = haloVectorNormalized( partVelocity )
+            eig_val, eig_vec = PCA(partVelocity)
 
-        partVelocity = haloVectorNormalized( partVelocity )
-        eig_val, eig_vec = PCA(partVelocity)
+            optData[i, 0] = id
+            optData[i, 1] = x
+            optData[i, 2] = y
+            optData[i, 3] = z
+            optData[i, 4] = rvir
+            optData[i, 5] = eig_val[0]
+            optData[i, 6] = eig_val[1]
+            optData[i, 7] = eig_val[2]
+            optData[i, 8:11] = eig_vec[0,:]
+            optData[i, 11:14] = eig_vec[1,:]
+            optData[i, 14:17] = eig_vec[2,:]
 
-        optData[i, 0] = x
-        optData[i, 1] = y
-        optData[i, 2] = z
-        optData[i, 3] = rvir
-        optData[i, 4] = eig_val[0]
-        optData[i, 5] = eig_val[1]
-        optData[i, 6] = eig_val[2]
-        optData[i, 7:10] = eig_vec[0,:]
-        optData[i, 10:13] = eig_vec[1,:]
-        optData[i, 13:16] = eig_vec[2,:]
+            print str(optData[i, 1]) + " " + str(optData[i, 2]) + " " + str(optData[i, 3]) + " "
 
-        d_idx = np.apply_along_axis( get, axis=1, arr=partVelocity, size=cubemap_size)
-        cube_hist = GenCubemap(d_idx.ravel(), cubemap_size)
-        optData[i, 16: 16+1536] = cube_hist.ravel()
+            d_idx = np.apply_along_axis( get, axis=1, arr=partVelocity, size=cubemap_size)
+            cube_hist = GenCubemap(d_idx.ravel(), cubemap_size)
+            optData[i, 17: 17+1536] = cube_hist.ravel()
 
-        #print cube_hist_1
+        outputFilePrefix = 'C:\\GravityLabDataSet\\Universe\\collectEigen\\'
+        fn = outputFilePrefix + "tmp.txt"
+        np.savetxt(fn, optData, newline=" \n", header = "0.0 62.5 0.0 62.5 0.0 62.5")
 
-    np.savetxt('haloEigen.txt', optData, newline=" \n")
+        f = open(fn, 'r')
+        tmp = f.read()
+        tmp = tmp[2:-1]
+        f.close()
+
+        f = open(outputFilePrefix + outputName + "haloEigen.txt", 'w')
+        f.write(tmp)
+        f.close()
+
+        pl.savefig( outputFilePrefix + outputName + "halos_and_particles.png", bbox_inches='tight')
+# #===============================================
+#     #load data
+#     fn = "halox.npy"
+#     halox = np.load( fn )
+#     fn = "haloy.npy"
+#     haloy = np.load( fn )
+#     fn = "haloz.npy"
+#     haloz = np.load( fn )
+#     fn = "halorvir.npy"
+#     halorvir = np.load( fn )
+#
+#     fn = "partx.npy"
+#     partx = np.load( fn )
+#     fn = "party.npy"
+#     party = np.load( fn )
+#     fn = "partz.npy"
+#     partz = np.load( fn )
+#     fn = "partvx.npy"
+#     partvx = np.load( fn )
+#     fn = "partvy.npy"
+#     partvy = np.load( fn )
+#     fn = "partvz.npy"
+#     partvz = np.load( fn )
+#
+#
+#     #load data, only use the parameters
+#     prefix = "http://darksky.slac.stanford.edu/scivis2015/data/ds14_scivis_0128/"
+#     particles = load_sdf(prefix+"ds14_scivis_0128_e4_dt04_1.0000")
+#
+#     h_100 = particles.parameters['h_100']
+#     width = particles.parameters['L0']
+#     cosmo_a = particles.parameters['a']
+#     kpc_to_Mpc = 1./1000
+#
+#     convert_to_cMpc = lambda proper: (proper) * h_100 * kpc_to_Mpc / cosmo_a
+#     halorvir = convert_to_cMpc( halorvir )
+#
+#     halosize = halox.size
+#
+#     pl.figure(figsize=[10,10])
+#     #pl.scatter(partx, party, color='r', s=1.0, alpha=0.05)
+#
+#     #partVelocity = np.zeros( [partx.size, 3] )
+#     numPart = np.zeros( halosize )
+#
+#     optData = np.zeros( (6500, 16 + 1536) )
+#
+#     print("num of halo: " + str(halosize))
+#
+#     partCnt = 0
+#     for i in range(0, 6500):
+#         print(i)
+#         #print partCnt
+#         x = halox[i]
+#         y = haloy[i]
+#         z = haloz[i]
+#         rvir = halorvir[i]
+#
+#         d = np.sqrt( np.power( ( partx - x ), 2 ) + np.power( ( party - y ), 2 ) + np.power( ( partz - z ), 2 ) )
+#
+#         result = np.array( np.where( d<rvir ) )
+#         result = np.reshape( result, result.size )
+#
+#         partVelocity = np.zeros( [result.size, 3] )
+#
+#         #pl.scatter(partx[result], party[result], color=cm.jet(i/float(500)), s=1.0, alpha=0.05)
+#
+#         for j in range( 0, result.size ):
+#             partVelocity[ j, : ] = np.array( [ partvx[result[j]], partvy[result[j]], partvz[result[j]] ] )
+#         #     partCnt += 1
+#
+#         #numPart[i] = result.size
+#
+#         partVelocity = haloVectorNormalized( partVelocity )
+#         eig_val, eig_vec = PCA(partVelocity)
+#
+#         optData[i, 0] = x
+#         optData[i, 1] = y
+#         optData[i, 2] = z
+#         optData[i, 3] = rvir
+#         optData[i, 4] = eig_val[0]
+#         optData[i, 5] = eig_val[1]
+#         optData[i, 6] = eig_val[2]
+#         optData[i, 7:10] = eig_vec[0,:]
+#         optData[i, 10:13] = eig_vec[1,:]
+#         optData[i, 13:16] = eig_vec[2,:]
+#
+#         d_idx = np.apply_along_axis( get, axis=1, arr=partVelocity, size=cubemap_size)
+#         cube_hist = GenCubemap(d_idx.ravel(), cubemap_size)
+#         optData[i, 16: 16+1536] = cube_hist.ravel()
+#
+#         #print cube_hist_1
+#
+#     np.savetxt('haloEigen.txt', optData, newline=" \n")
