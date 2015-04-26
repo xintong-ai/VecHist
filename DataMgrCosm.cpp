@@ -106,7 +106,7 @@ void DataMgrCosm::LoadHalos()
 		
 		float3 eigvec3 = make_float3(eigvec[0], eigvec[1], eigvec[2]);
 		halos.push_back(new Halo(
-			pos[0], pos[1], pos[2],
+			(int)id, pos[0], pos[1], pos[2],
 			radius,
 			make_float3(eigval[0], eigval[1], eigval[2]),
 			e0, e1, e2,

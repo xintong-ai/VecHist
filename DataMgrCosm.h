@@ -2,15 +2,17 @@
 
 class Halo:public AbstractNode
 {
+	int id;
 	float pos[3];
 	float radius;
 public:
-	Halo(float haloX, float haloY, float haloZ,
+	Halo(int haloId, float haloX, float haloY, float haloZ,
 		float haloRadius, 
 		float3 eig_vals,
 		float3 eig_vec_0, float3 eig_vec_1, float3 eig_vec_2,
 		float* halo_cubemap, int _cube_size) : AbstractNode(_cube_size)
 	{
+		id = haloId;
 		pos[0] = haloX;
 		pos[1] = haloY;
 		pos[2] = haloX;
