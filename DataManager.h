@@ -149,28 +149,6 @@ public:
 
 };
 
-
-
-//This class represents one node from the merger tree from the Dark Sky data
-struct MergeNode
-{
-	vector<MergeNode *> children;  //Each node has an array of children
-	int haloId = 0;	//The id of the halo corresponding to this node
-};
-
-struct MergeTree
-{
-	MergeNode * root;
-	int treeId;
-
-	MergeTree()
-	{
-		root = nullptr;
-		treeId = 0;
-	}
-};
-
-
 class DataManager
 {
 protected:
@@ -201,7 +179,7 @@ public:
 	void MoveCube(int x, int y, int z);
 	void LoadParameters();
 	string GetStringVal(string name);
-
+    
 
 	DataManager();
 	~DataManager();

@@ -136,6 +136,8 @@ void DataManager::MoveCube(int x, int y, int z)
 	qCubePos[2] += z;
 }
 
+
+
 bool DataManager::CubeInsideVolumeX(int x, int nx)
 {
 	return x >= 0 && (x + nx) <= dim[0];

@@ -39,9 +39,29 @@ public:
 	}
 };
 
+//This class represents one node from the merger tree from the Dark Sky data
+struct MergeNode
+{
+	vector<MergeNode *> children;  //Each node has an array of children
+	int haloId = 0;	//The id of the halo corresponding to this node
+};
+
+struct MergeTree
+{
+	MergeNode * root;
+	int treeId;
+
+	MergeTree()
+	{
+		root = nullptr;
+		treeId = 0;
+	}
+};
+
 class DataMgrCosm:public DataManager
 {
 	vector<Halo*> halos;
+	vector<MergeTree *> forest;  //A forest of merge trees from the Dark Sky data
 	void LoadHalos();
 public:
 	virtual void LoadData();
@@ -62,6 +82,11 @@ public:
 	virtual void GetBlock(int3* datablock, int x, int y, int z, int nx, int ny, int nz){};
 	virtual void GenCubeMap(int x, int y, int z, int nx, int ny, int nz, float* &cubemap){};
 	virtual void UpdateCubeMap(float* cubemap){};
+	void LoadMergeTree();
+	QString getMergeTreeJSon(int treeId);
+	QString buildJsonFromTree(MergeNode * currentNode, int level);
+	vector<MergeTree*> & getForest() { return forest; }
+	MergeNode * readMergeTree(ifstream &fin);
 
 	DataMgrCosm();
 	~DataMgrCosm();

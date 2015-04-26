@@ -339,12 +339,12 @@ TwoSidedGraphicsWidget::TwoSidedGraphicsWidget(QGraphicsScene *scene)
 
 void TwoSidedGraphicsWidget::setWidget(int index, QWidget *widget)
 {
-    if (index < 0 || index >= 2)
+    if (index < 0 || index >= 3)
     {
         qWarning("TwoSidedGraphicsWidget::setWidget: Index out of bounds, index == %d", index);
         return;
     }
-	if (1 == application)	{
+	if (1 == application || 2 == application)	{
 		GraphicsWidget *proxy = new GraphicsWidget;
 		proxy->setWidget(widget);
 
@@ -622,6 +622,8 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	}
 
 
+	((DataMgrCosm *)dataManager)->LoadMergeTree();
+
 	//dataManager->LoadVec("D:/data/nek/nek.d_4.vec");
 	
 	//dataManager->LoadVec("D:/data/brain_dti/vector-field.vec");
@@ -647,13 +649,60 @@ Scene::Scene(int width, int height, int maxTextureSize)
     m_renderOptions->move(20, 120);
     m_renderOptions->resize(m_renderOptions->sizeHint());
 
-	if (1 == application)	{
+	if (1 == application) {
 		m_graphWidget = new GraphWidget();
 		m_graphWidget->move(60, 120);
 		m_graphWidget->resize(m_graphWidget->sizeHint());
 
 		m_graphWidget->getTreeStats((NodeBi*)dataManager->getRootNode(), 0, 0);
 		m_graphWidget->buildGraphFromTree((NodeBi*)dataManager->getRootNode());
+	}
+	else {
+		m_graphWidget = new GraphWidget();
+		m_graphWidget->move(60, 120);
+		m_graphWidget->resize(m_graphWidget->sizeHint());
+
+		//Example from http://codereview.stackexchange.com/questions/11849/qjsonview-a-qwidget-based-json-explorer-for-qt
+		QString data = ((DataMgrCosm * ) dataManager)->getMergeTreeJSon(0);
+
+		//cout << "Data contents: " << endl;
+		//cout << data.toStdString() << endl;
+
+		QGraphicsView * view = new QGraphicsView();
+		m_jsonView = new QJsonView(view);
+
+		scrollArea = new QScrollArea;
+		scrollArea->setWidget(view);
+
+		scrollArea->move(20, 120);
+		scrollArea->resize(900, 800);
+
+		view->resize(1000, 1000);
+
+		//m_jsonView->move(60, 120);
+		//m_jsonView->resize(m_jsonView->sizeHint());
+		m_jsonView->resize(1000, 1000);
+		m_jsonView->setJsonValue(data);
+
+		m_listWidget = new QListWidget;
+		m_listWidget->resize(200, 600);
+		m_listWidget->move(20, 20);
+
+		DataMgrCosm * cosmPtr = (DataMgrCosm *)dataManager;
+		vector<MergeTree *> forest = cosmPtr->getForest();
+		for (int i = 0; i < forest.size(); i++) {
+			m_listWidget->insertItem(i, QString::number(forest[i]->treeId));
+		}
+		cout << endl;
+		//cout << forest.size() << endl;
+		//cout << endl;
+
+		//m_listWidget->insertItem(0, QString("one"));
+		//m_listWidget->insertItem(1, QString("two"));
+		//m_listWidget->insertItem(2, QString("three"));
+
+		//m_listWidget->insertItem(new QListWidgetItem())
+
 	}
 
 	int nx, ny, nz;
@@ -675,12 +724,17 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		this, SLOT(UpdateBlock(int, int, int, int, int, int)));
     connect(m_renderOptions, SIGNAL(queryChanged(int, int, int)), this, SLOT(UpdateQuery(int, int, int)));
 	connect(m_renderOptions, SIGNAL(segmentationRequested()), this, SLOT(Segmentation()));
+	connect(m_listWidget, SIGNAL(itemSelectionChanged()), this, SLOT(dropBoxSelection()));
 
     TwoSidedGraphicsWidget *twoSided = new TwoSidedGraphicsWidget(this);
 	//QDockWidget *dock = new QDockWidget(QString(tr("Parameters")), this);
     //twoSided->setWidget(0, m_renderOptions);
-	twoSided->setWidget(0, m_graphWidget);
+	//twoSided->setWidget(0, m_graphWidget);
+	//twoSided->setWidget(0, view);
+	twoSided->setWidget(0, scrollArea);
 	twoSided->setWidget(1, m_renderOptions);
+	twoSided->setWidget(2, m_listWidget);
+	//twoSided->setWidget(1, m_graphWidget);
 
     initGL();
 	//TODO: when width and height changes, this function should be called again
@@ -700,6 +754,18 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	//}
 }
 
+//Respond to selection events for the list box for tree selection for the forest
+void Scene::dropBoxSelection()
+{
+	int selectedId = m_listWidget->row(m_listWidget->currentItem());
+	cout << "Selected id: " << selectedId << endl;
+
+	QString data = ((DataMgrCosm *)dataManager)->getMergeTreeJSon(selectedId);
+	m_jsonView->setJsonValue(data);
+
+	
+}
+
 Scene::~Scene()
 {
 	if (m_vecWidget)
@@ -717,6 +783,8 @@ Scene::~Scene()
 	//delete m_vec3DTex;
 
 	delete m_renderOptions;
+	delete m_graphWidget;
+	//delete m_jsonView;
 
 //	cudaDeviceReset();
 //	cleanup();
