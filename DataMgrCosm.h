@@ -46,6 +46,7 @@ struct MergeNode
 {
 	vector<MergeNode *> children;  //Each node has an array of children
 	int haloId = 0;	//The id of the halo corresponding to this node
+	AbstractNode * haloRecord = nullptr;
 };
 
 struct MergeTree
@@ -88,7 +89,7 @@ public:
 	QString getMergeTreeJSon(int treeId);
 	QString buildJsonFromTree(MergeNode * currentNode, int level);
 	vector<MergeTree*> & getForest() { return forest; }
-	MergeNode * readMergeTree(ifstream &fin);
+	MergeNode * readMergeTree(ifstream &fin, int treeId);
 
 	DataMgrCosm();
 	~DataMgrCosm();

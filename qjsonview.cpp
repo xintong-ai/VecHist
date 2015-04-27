@@ -14,6 +14,7 @@
 #include "qjson.h"
 #include <iostream>
 
+
 using namespace std;
 
 
@@ -21,12 +22,13 @@ using namespace std;
 #define EXPANDED_MARGIN_LEFT 21
 
 
-QJsonView::QJsonView(QWidget *parent) :
+QJsonView::QJsonView(QWidget *parent, DataManager * dataManager) :
 QWidget(parent),
 lblSingle(new QLabel(this)),
 expanded(false),
 hoverEffectsEnabled(false)
 {
+	this->dataManager = dataManager;
 	//needed for hover effects
 	setAutoFillBackground(true);
 
@@ -275,14 +277,28 @@ void QJsonView::expand()
 	//Obtain the clicked halo id from the user
 	if (v.type() == QVariant::Map) 
 	{
-		cout << "A map was clicked" << endl;
+		//cout << "A map was clicked" << endl;
 		QVariantMap map(v.toMap());
 		QVariantMap::iterator i;
+
+		int haloId = 0;
 		for (i = map.begin(); i != map.end(); ++i)
 		{
-			int haloId = i.key().toInt();
-			cout << "Halo id: " << haloId << endl;
+			haloId = i.key().toInt();
+			cout << "Halo id clicked: " << haloId << endl;
 			cout << endl;
+		}
+
+		unordered_map<int, AbstractNode *> haloTable = dataManager -> getHaloTable();
+		
+		//Look for the halo id in the hashtable and record a reference if found
+		if (haloTable.find(haloId) == haloTable.end()) {
+			cout << "Clicked halo id " << haloId << " is not currently loaded in the timestep data" << endl;
+		}
+		else {
+			cout << "Successfully processed click for halo id " << haloId << endl;
+			AbstractNode * currentNode = haloTable[haloId];
+			currentNode->SetVisible(!currentNode->GetVisible());
 		}
 
 
@@ -290,7 +306,7 @@ void QJsonView::expand()
 	else if(v.type() == QVariant::List)
 	{
 		//They clicked a list.  They must drill down further in order to get a halo id.
-		cout << "A list was clicked" << endl;
+		//cout << "A list was clicked" << endl;
 		
 	}
 	else
@@ -308,7 +324,7 @@ void QJsonView::expand()
 		{
 			foreach(QVariant e, v.toList())
 			{
-				QJsonView *w = new QJsonView(this);
+				QJsonView *w = new QJsonView(this, dataManager);
 				w->setValue(e);
 				layout()->addWidget(w);
 				childWidgets << w;
@@ -336,7 +352,7 @@ void QJsonView::expand()
 				((QGridLayout*)layout())->addWidget(k, index, 0);
 				childWidgets << k;
 
-				QJsonView *w = new QJsonView(this);
+				QJsonView *w = new QJsonView(this, dataManager);
 				w->setValue(i.value());
 				((QGridLayout*)layout())->addWidget(w, index, 1);
 				w->setSizePolicy(sizePolicy);

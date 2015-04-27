@@ -6,6 +6,7 @@
 #include "OSUFlow.h"
 #include "glSuperquadric.h"
 #include "node.h"
+#include <unordered_map>
 
 //1 means flow data
 //2 means cosmology data
@@ -161,6 +162,7 @@ protected:
 	bool CubeInsideVolumeX(int x, int nx);
 	bool CubeInsideVolumeY(int x, int nx);
 	bool CubeInsideVolumeZ(int x, int nx);
+	unordered_map<int, AbstractNode *> haloTable;  //Hash table to link halo ids to Halo struct records
 
 public:
 	virtual void LoadData() = 0;
@@ -179,6 +181,7 @@ public:
 	void MoveCube(int x, int y, int z);
 	void LoadParameters();
 	string GetStringVal(string name);
+	unordered_map<int, AbstractNode *> & getHaloTable() { return haloTable; }
     
 
 	DataManager();

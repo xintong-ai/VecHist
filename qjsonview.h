@@ -5,6 +5,7 @@
 #include <QWidget>
 #include <QVariant>
 #include <QLabel>
+#include "DataManager.h"
 
 
 /**
@@ -25,7 +26,7 @@ public:
 	/**
 	Constructor for QJsonView, taking the parent widget as a single argument.
 	*/
-	explicit QJsonView(QWidget *parent = 0);
+	explicit QJsonView(QWidget *parent = 0, DataManager * dataManger = nullptr);
 
 	/**
 	Static and public helper function returning the HTML code which will be used to visualize the data (by applying syntax highlighting rules).
@@ -136,6 +137,8 @@ private:
 	bool expanded;
 	// true if hover effects are enabled
 	bool hoverEffectsEnabled;
+
+	DataManager * dataManager = nullptr;
 
 	// apply hover effect
 	void hover();
