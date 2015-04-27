@@ -13,8 +13,8 @@ public:
 	{
 		pos[0] = haloX;
 		pos[1] = haloY;
-		pos[2] = haloX;
-		radius = haloRadius * 10;
+		pos[2] = haloZ;
+		radius = haloRadius * 5;
 
 		for (int i = 0; i < 3; i++)	{
 			start[i] = pos[i] - radius;
