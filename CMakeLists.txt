@@ -14,6 +14,10 @@ set(SHARED_LIBRARIES
 		${OSUFLOW_LIBRARY_DEBUG} 
 )
 
+source_group("widgets_h" FILES edge.h node.h graphwidget.h qjson.h qjsonview.h)
+
+source_group("widgets_cpp" FILES edge.cpp node.cpp graphwidget.cpp qjson.cpp qjsonview.cpp)
+
 set( Srcs main.cpp DataManager.cpp glsphere.cpp glSuperquadric.cpp
 	scene.cpp glbuffers.cpp glextensions.cpp trackball.cpp edge.cpp graphwidget.cpp node.cpp qjson.cpp qjsonview.cpp
 	DataMgrCosm.cpp DataMgrVect.cpp 
