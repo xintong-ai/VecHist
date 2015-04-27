@@ -1,3 +1,5 @@
+#ifndef DATA_MGR_COSM
+#define DATA_MGR_COSM
 #include "DataManager.h"
 
 class Halo:public AbstractNode
@@ -65,6 +67,7 @@ class DataMgrCosm:public DataManager
 {
 	vector<Halo*> halos;
 	vector<MergeTree *> forest;  //A forest of merge trees from the Dark Sky data
+	unordered_map<int, MergeNode *> mergeTreeTable;  //Hash table to link halo ids to Halo struct records
 	void LoadHalos();
 public:
 	virtual void LoadData();
@@ -90,8 +93,12 @@ public:
 	QString buildJsonFromTree(MergeNode * currentNode, int level);
 	vector<MergeTree*> & getForest() { return forest; }
 	MergeNode * readMergeTree(ifstream &fin, int treeId);
+	unordered_map<int, MergeNode *> & getMergeTreeTable() { return mergeTreeTable; }
+	void SetChildrenVisibility(MergeNode *nd, bool _isVisible);
 
 	DataMgrCosm();
 	~DataMgrCosm();
 
 };
+
+#endif

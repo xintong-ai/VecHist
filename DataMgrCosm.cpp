@@ -170,13 +170,15 @@ MergeNode * DataMgrCosm::readMergeTree(ifstream &fin, int treeId)
 	MergeNode * currentNode = new MergeNode(); //TO DO: Destructor
 	currentNode->haloId = haloId;
 
+	mergeTreeTable[haloId] = currentNode;
+
 	//Look for the halo id in the hashtable and record a reference if found
 	if (haloTable.find(haloId) == haloTable.end()) {
 		//cerr << "In method DataMgrCosm::readMergeTree " << haloId << " is not found" << endl;
 	}
 	else {
 		cout << "Halo id " << haloId << " successfully loaded for tree id " << treeId << endl;
-		currentNode->haloRecord = haloTable[haloId];
+		currentNode->haloRecord = haloTable[haloId];	
 	}
 
 	currentNode->children.resize(numChildren);
@@ -280,4 +282,19 @@ QString DataMgrCosm::buildJsonFromTree(MergeNode * currentNode, int level)
 
 
 	return currentString;
+}
+
+void DataMgrCosm::SetChildrenVisibility(MergeNode *nd, bool _isVisible)
+{
+	AbstractNode * haloRecord = nd->haloRecord;
+	haloRecord->SetVisible(!haloRecord->GetVisible());
+	
+	for (int i = 0; i < nd->children.size(); i++) {
+		SetChildrenVisibility(nd->children[i], _isVisible);
+	}
+	
+
+	
+
+
 }

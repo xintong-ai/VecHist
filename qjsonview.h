@@ -6,7 +6,7 @@
 #include <QVariant>
 #include <QLabel>
 #include "DataManager.h"
-
+#include "DataMgrCosm.h"
 
 /**
 Widget to display JSON or QVariant data.

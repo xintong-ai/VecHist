@@ -117,7 +117,8 @@ protected:
 	float3 eigval;
 	float3 eigvec[3];
 
-	Widget::Node * graphNode;
+	Widget::Node * graphNode = nullptr;
+	AbstractNode * haloNode = nullptr;
 	GLSuperquadric* glyph;
 	bool isVisible;
 public:
@@ -125,6 +126,8 @@ public:
 	void SetVisible(bool b){ isVisible = b; }
 	Widget::Node* GetGraphNode(){ return graphNode; }
 	void SetGraphNode(Widget::Node* n) { graphNode = n; }
+	AbstractNode * GetHaloNode() { return haloNode; }
+	void setHaloNode(AbstractNode * haloNode) { this->haloNode = haloNode; }
 	//virtual vector<AbstractNode*> GetAllNode() = 0;
 	GLSuperquadric* GetGlyph(){ return glyph; }
 	float* GetCubemap(){ return cubemap; }

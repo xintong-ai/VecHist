@@ -297,8 +297,12 @@ void QJsonView::expand()
 		}
 		else {
 			cout << "Successfully processed click for halo id " << haloId << endl;
-			AbstractNode * currentNode = haloTable[haloId];
-			currentNode->SetVisible(!currentNode->GetVisible());
+			//AbstractNode * currentNode = haloTable[haloId];
+			//currentNode->SetVisible(!currentNode->GetVisible());
+
+			unordered_map<int, MergeNode *> mergeTreeTable = ((DataMgrCosm* ) dataManager)->getMergeTreeTable();
+			MergeNode * mergeNode = mergeTreeTable[haloId];
+			((DataMgrCosm*)dataManager)->SetChildrenVisibility(mergeNode, 0);
 		}
 
 
