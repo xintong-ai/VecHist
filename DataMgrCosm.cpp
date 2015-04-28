@@ -116,6 +116,7 @@ void DataMgrCosm::LoadHalos()
 			cubemap, cubemap_size
 			);
 
+		/*
 		switch ((int)id)
 		{
 		case 257:
@@ -147,13 +148,14 @@ void DataMgrCosm::LoadHalos()
 			break;
 
 		}
+		*/
 
 		halos.push_back(haloRecord);
 		haloTable[id] = haloRecord;
 
-		if (haloTable.find(haloRecord->id) == haloTable.end()) {
-			cout << "Clicked halo id " << id << " is not currently loaded in the timestep data" << endl;
-		}
+		//if (haloTable.find(haloRecord->id) == haloTable.end()) {
+		//	cout << "Clicked halo id " << id << " is not currently loaded in the timestep data" << endl;
+		//}
 
 		std::getline(fin, line);
 //		fin >> data;               //get next number from file
@@ -313,14 +315,20 @@ QString DataMgrCosm::buildJsonFromTree(MergeNode * currentNode, int level)
 	return currentString;
 }
 
+//Recursively set the visibility for all the current merge tree node and all its children
 void DataMgrCosm::SetChildrenVisibility(MergeNode *nd, bool _isVisible)
 {
 	if (nd != nullptr) {
+		//Store the visibility in the merge tree node (Some halos may not be loaded)
+		nd->isVisible = _isVisible;
+
+		//Store the visibility in the halo itself if it is loaded (used during rendering)
 		AbstractNode * haloRecord = nd->haloRecord;
 		if (haloRecord != nullptr) {
 			haloRecord->SetVisible(_isVisible);
 		}
 
+		//Handle visibility for child nodes in the merge tree
 		for (int i = 0; i < nd->children.size(); i++) {
 			SetChildrenVisibility(nd->children[i], _isVisible);
 		}

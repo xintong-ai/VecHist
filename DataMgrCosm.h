@@ -49,7 +49,8 @@ struct MergeNode
 {
 	vector<MergeNode *> children;  //Each node has an array of children
 	int haloId = 0;	//The id of the halo corresponding to this node
-	AbstractNode * haloRecord = nullptr;
+	AbstractNode * haloRecord = nullptr;  //Reference to corresponding halo (if it is loaded and thus exists)
+	bool isVisible = true;  //Whether or not the entry in the merge tree is registered as visble (if it corresponds to a halo).  Not all nodes actually have halos loaded, so this must be stored here.
 };
 
 struct MergeTree

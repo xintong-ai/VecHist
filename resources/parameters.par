@@ -12,5 +12,5 @@ string dims C:/XinCode/VecHist/python/vechist/dims.txt
 string entropy C:/XinCode/VecHist/python/vechist/entropys.txt
 string eigval C:/XinCode/VecHist/python/vechist/eig_vals.txt
 string eigvec C:/XinCode/VecHist/python/vechist/eig_vecs.txt
-string halo C:/Users/datahead8888/Documents/DarkSkyDataDownloaded/0.12000_haloEigen.txt
+string halo C:/Users/datahead8888/Documents/DarkSkyDataDownloaded/0.98000_haloEigen.txt
 string datatype flow

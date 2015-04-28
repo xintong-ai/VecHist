@@ -291,21 +291,24 @@ void QJsonView::expand()
 
 		unordered_map<int, AbstractNode *> * haloTable = dataManager -> getHaloTable();
 		
-		//Look for the halo id in the hashtable and record a reference if found
+		//Look for the halo id in the hashtable
 		if (haloTable->find(haloId) == haloTable->end()) {
 			cout << "Clicked halo id " << haloId << " is not currently loaded in the timestep data" << endl;
 		}
 		else {
-			cout << "Successfully processed click for halo id " << haloId << endl;
+			cout << "Clicked halo id " << haloId << " IS in the timestep data" << endl;
 			//AbstractNode * currentNode = haloTable[haloId];
 			//currentNode->SetVisible(!currentNode->GetVisible());
-
-			unordered_map<int, MergeNode *> * mergeTreeTable = ((DataMgrCosm* ) dataManager)->getMergeTreeTable();
-			//MergeNode * mergeNode = mergeTreeTable[haloId];
-			MergeNode * mergeNode = mergeTreeTable->operator[](haloId);  //Nasty, but we're stuck using a pointer with this operator
-			AbstractNode * haloRecord = mergeNode->haloRecord;
-			((DataMgrCosm*)dataManager)->SetChildrenVisibility(mergeNode, !haloRecord->GetVisible());
 		}
+
+		unordered_map<int, MergeNode *> * mergeTreeTable = ((DataMgrCosm* ) dataManager)->getMergeTreeTable();
+		//MergeNode * mergeNode = mergeTreeTable[haloId];
+		MergeNode * mergeNode = mergeTreeTable->operator[](haloId);  //Nasty, but we're stuck using a pointer with this operator
+		AbstractNode * haloRecord = mergeNode->haloRecord;
+		
+		bool isVisible = !mergeNode->isVisible;
+		((DataMgrCosm*)dataManager)->SetChildrenVisibility(mergeNode, isVisible);
+		
 
 	}
 	else if(v.type() == QVariant::List)
