@@ -23,11 +23,11 @@ public:
 
 		radius = haloRadius;
 
-		//eigval = EigenValue;
+		eigval = eig_vals;
 
-		//eigvec[0] = EigenVector1;
-		//eigvec[1] = EigenVector2;
-		//eigvec[2] = EigenVector3;
+		eigvec[0] = eig_vec_0;
+		eigvec[1] = eig_vec_1;
+		eigvec[2] = eig_vec_2;
 
 		cubemap = halo_cubemap;
 		glyph = new GLSuperquadric(eig_vals, eig_vec_0, eig_vec_1, eig_vec_2, 3, 0.5, 16);
