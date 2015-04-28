@@ -19,7 +19,7 @@ gminz = 100000
 gmaxz =-100000
 
 #filename = np.arange(0.12, 1.000001, 0.01)
-filename = np.arange(1.0, 1.000001, 0.01)
+filename = np.arange(0.12, 1.000001, 0.01)
 for scl in filename:
     filePrefix = 'C:\\GravityLabDataSet\\Universe\\loadFromRaw\\'
     particleName = 'ds14_scivis_0128_e4_dt04_' + "{:.4f}".format(scl)
@@ -27,14 +27,55 @@ for scl in filename:
     print outputName
 
     #load data
+    fn = filePrefix + outputName + "id.npy"
+    haloid = np.load( fn )
+    fn = filePrefix + outputName + "halox.npy"
+    halox = np.load( fn )
+    fn = filePrefix + outputName + "haloy.npy"
+    haloy = np.load( fn )
+    fn = filePrefix + outputName + "haloz.npy"
+    haloz = np.load( fn )
+    fn = filePrefix + outputName + "halorvir.npy"
+    halorvir = np.load( fn )
+    fn = filePrefix + outputName + "halovx.npy"
+    halovx = np.load( fn )
+    fn = filePrefix + outputName + "halovy.npy"
+    halovy = np.load( fn )
+    fn = filePrefix + outputName + "halovz.npy"
+    halovz = np.load( fn )
+
     fn = filePrefix + outputName + "partx.npy"
     partx = np.load( fn )
     fn = filePrefix + outputName + "party.npy"
     party = np.load( fn )
     fn = filePrefix + outputName + "partz.npy"
     partz = np.load( fn )
+    fn = filePrefix + outputName + "partvx.npy"
+    partvx = np.load( fn )
+    fn = filePrefix + outputName + "partvy.npy"
+    partvy = np.load( fn )
+    fn = filePrefix + outputName + "partvz.npy"
+    partvz = np.load( fn )
 
-    dim = 500.0
+    #load data, only use the parameters
+    prefix = "http://darksky.slac.stanford.edu/scivis2015/data/ds14_scivis_0128/"
+    particles = load_sdf(prefix+particleName)
+
+    h_100 = particles.parameters['h_100']
+    width = particles.parameters['L0']
+    cosmo_a = particles.parameters['a']
+    kpc_to_Mpc = 1./1000
+
+    convert_velocityBack = lambda v: ( v / (h_100 * kpc_to_Mpc / cosmo_a) ) - (cosmo_a*width/2.)
+    partvx = convert_velocityBack(partvx)
+    partvy = convert_velocityBack(partvy)
+    partvz = convert_velocityBack(partvz)
+
+    convert_to_cMpc = lambda proper: (proper) * h_100 * kpc_to_Mpc / cosmo_a
+    halorvir = convert_to_cMpc( halorvir )
+
+
+    dim = 250.0
     skip = 62.5/dim
     density = np.zeros( [int(dim),  int(dim),  int(dim)] )
     for i in range(0, partx.size):
@@ -69,13 +110,69 @@ for scl in filename:
     #             density[cnt] = np.array( np.where( xyzand ) ).size
     #             cnt += 1
 
-    density = np.reshape(density, density.size)
-    max = np.amax( density )
-    density /= float( max )
-    max = np.amax( density )
-    density.astype('float32').tofile('density.bin')
-    pause
+    particleInfo = np.zeros([partx.size,12])
+    particleInfo -= 1
 
+
+
+
+    halosize = halox.size
+
+    pl.figure(figsize=[10,10])
+    pl.scatter(partx, party, color='r', s=1.0, alpha=0.05)
+
+    partVelocity = np.zeros( [partx.size, 3] )
+    numPart = np.zeros( halosize )
+
+    partCnt = 0
+    for i in range(0,halosize):
+        print i
+        id = haloid[i]
+        x = halox[i]
+        y = haloy[i]
+        z = haloz[i]
+        vx = halovx[i]
+        vy = halovy[i]
+        vz = halovz[i]
+        rvir = halorvir[i]
+
+        d = np.sqrt( np.power( ( partx - x ), 2 ) + np.power( ( party - y ), 2 ) + np.power( ( partz - z ), 2 ) )
+
+        result = np.array( np.where( d<rvir ) )
+        result = np.reshape( result, result.size )
+
+        for j in range( 0, result.size ):
+            partIdx = result[j]
+            particleInfo[partIdx, 3] = id
+            particleInfo[partIdx, 4] = vx
+            particleInfo[partIdx, 5] = vy
+            particleInfo[partIdx, 6] = vz
+            particleInfo[partIdx, 8] = rvir
+
+
+    for i in range(0, partx.size):
+        if i % 10000 == 0:
+            print i
+        xidx = math.floor( partx[i]/skip )
+        yidx = math.floor( party[i]/skip )
+        zidx = math.floor( partz[i]/skip )
+        if xidx >= dim:
+            xidx -= 1
+        if yidx >= dim:
+            yidx -= 1
+        if zidx >= dim:
+            zidx -= 1
+        particleInfo[i, 0] = partx[i]
+        particleInfo[i, 1] = party[i]
+        particleInfo[i, 2] = partz[i]
+        particleInfo[i, 7] = density[xidx, yidx, zidx]
+        particleInfo[i, 9] = partvx[i]
+        particleInfo[i, 10] = partvy[i]
+        particleInfo[i, 11] = partvz[i]
+
+    particleInfo = np.reshape(particleInfo, particleInfo.size)
+
+    particleInfo.astype('float32').tofile('C:\\GravityLabDataSet\\Universe\\density\\'+"{:.4f}".format(scl)+'_density.bin')
 
     # fn = filePrefix + outputName + "halorvir.npy"
     # halorvir = np.load( fn )
@@ -103,41 +200,41 @@ for scl in filename:
     # numPart = np.zeros( halosize )
     #
     # partCnt = 0
-    for i in range(0,halosize):
-        print i
-        print partCnt
-        x = halox[i]
-        y = haloy[i]
-        z = haloz[i]
-        rvir = halorvir[i]
-
-        d = np.sqrt( np.power( ( partx - x ), 2 ) + np.power( ( party - y ), 2 ) + np.power( ( partz - z ), 2 ) )
-
-        result = np.array( np.where( d<rvir ) )
-        result = np.reshape( result, result.size )
-
-        pl.scatter(partx[result], party[result], color=cm.jet(0), s=1.0, alpha=0.05)
-
-        for j in range( 0, result.size ):
-            partVelocity[ partCnt, : ] = np.array( [ partvx[result[j]], partvy[result[j]], partvz[result[j]] ] )
-            partCnt += 1
-
-        #partCnt += result.size
-        numPart[i] = result.size
-
-    print partCnt
-    print numPart
-
-    np.savetxt('vv.txt', partVelocity[0:partCnt,:], newline=" \n")
-    pause
-
-
-    outputFilePrefix = 'C:\\GravityLabDataSet\\Universe\\collectVelocity\\'
-    fn = outputFilePrefix + outputName + "velocity.npy"
-    np.save( fn, partVelocity[ 0:partCnt, :] )
-
-    fn = outputFilePrefix + outputName + "particlesInHalo.npy"
-    np.save( fn, numPart )
-
-    pl.savefig( outputFilePrefix + outputName + "halos_and_particles.png", bbox_inches='tight')
-
+    # for i in range(0,halosize):
+    #     print i
+    #     print partCnt
+    #     x = halox[i]
+    #     y = haloy[i]
+    #     z = haloz[i]
+    #     rvir = halorvir[i]
+    #
+    #     d = np.sqrt( np.power( ( partx - x ), 2 ) + np.power( ( party - y ), 2 ) + np.power( ( partz - z ), 2 ) )
+    #
+    #     result = np.array( np.where( d<rvir ) )
+    #     result = np.reshape( result, result.size )
+    #
+    #     pl.scatter(partx[result], party[result], color=cm.jet(0), s=1.0, alpha=0.05)
+    #
+    #     for j in range( 0, result.size ):
+    #         partVelocity[ partCnt, : ] = np.array( [ partvx[result[j]], partvy[result[j]], partvz[result[j]] ] )
+    #         partCnt += 1
+    #
+    #     #partCnt += result.size
+    #     numPart[i] = result.size
+    #
+    # print partCnt
+    # print numPart
+    #
+    # np.savetxt('vv.txt', partVelocity[0:partCnt,:], newline=" \n")
+    # pause
+    #
+    #
+    # outputFilePrefix = 'C:\\GravityLabDataSet\\Universe\\collectVelocity\\'
+    # fn = outputFilePrefix + outputName + "velocity.npy"
+    # np.save( fn, partVelocity[ 0:partCnt, :] )
+    #
+    # fn = outputFilePrefix + outputName + "particlesInHalo.npy"
+    # np.save( fn, numPart )
+    #
+    # pl.savefig( outputFilePrefix + outputName + "halos_and_particles.png", bbox_inches='tight')
+    #

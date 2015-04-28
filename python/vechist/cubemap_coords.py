@@ -299,15 +299,24 @@ def GenCubemap(d, size):
 #    print(hist.shape)
     hist = np.reshape(hist, (6 * size, size))
 #    hist = np.ones((6 * size, size))
-    
+
     #normalize by solid angles
     scale_factor = 1000
     sol_ang = SolidAngles(size)
     #plt.imshow(sol_ang)
     #plt.colorbar()
     #plt.show()
+
     for i in range(0, 6):
-        hist[i*size:(i+1)*size, :] = hist[i*size:(i+1)*size, :] / (sol_ang * scale_factor)
+        a = hist[i*size:(i+1)*size, :] / (sol_ang * scale_factor)
+        hist[i*size:(i+1)*size, :] = a
+        if i == 5:
+            print hist.shape
+            print (i+1)*size
+            print np.amax(hist[i*size:(i+1)*size, :])
+            print np.amax(a)
+            pause
+
     #print('Solid Angle (size' + str(size) + '):')
     #print(sol_ang)
 
@@ -315,11 +324,11 @@ def GenCubemap(d, size):
     #normalize to be a histogram
     hist_sum = np.sum(hist)
     #print(hist_sum)
-    if(hist_sum < 0):
+    if(hist_sum <= 0):
+        hist_sum = 1.0
         print("error: bin sum is negative...")
     hist = hist / (hist_sum * 1.0)
 #    ShowHist(hist)
-    
     return hist
 
 def GenCubemapCut(d, size):
@@ -754,7 +763,7 @@ def loadHaloComputeSuperquadric():
     gminz = 100000
     gmaxz =-100000
 
-    filename = np.arange(0.12, 1.000001, 0.01)
+    filename = np.arange(0.98, 1.000001, 0.01)
     for scl in filename:
         filePrefix = 'C:\\GravityLabDataSet\\Universe\\loadFromRaw\\'
         particleName = 'ds14_scivis_0128_e4_dt04_' + "{:.4f}".format(scl)
@@ -814,6 +823,12 @@ def loadHaloComputeSuperquadric():
         cosmo_a = particles.parameters['a']
         kpc_to_Mpc = 1./1000
 
+        #convert_to_cMpc = lambda proper: (proper + cosmo_a*width/2.) * h_100 * kpc_to_Mpc / cosmo_a
+        convert_velocityBack = lambda v: ( v / (h_100 * kpc_to_Mpc / cosmo_a) ) - (cosmo_a*width/2.)
+        partvx = convert_velocityBack(partvx)
+        partvy = convert_velocityBack(partvy)
+        partvz = convert_velocityBack(partvz)
+
         convert_to_cMpc = lambda proper: (proper) * h_100 * kpc_to_Mpc / cosmo_a
         halorvir = convert_to_cMpc( halorvir )
 
@@ -827,7 +842,7 @@ def loadHaloComputeSuperquadric():
         print("num of halo: " + str(halosize))
 
         partCnt = 0
-        for i in range(0,halosize):
+        for i in range(1,halosize):
             id = haloid[i]
             x = halox[i]
             y = haloy[i]
@@ -846,9 +861,20 @@ def loadHaloComputeSuperquadric():
 
             for j in range( 0, result.size ):
                 partVelocity[ j, : ] = np.array( [ partvx[result[j]], partvy[result[j]], partvz[result[j]] ] )
+                if np.sum(partVelocity[ j, : ]) == 0 and j !=0 :
+                    partVelocity[ j, : ] = partVelocity[ j-1, : ]
 
-            partVelocity = haloVectorNormalized( partVelocity )
-            eig_val, eig_vec = PCA(partVelocity)
+            eig_vec = np.zeros([3,3])
+            eig_val = np.zeros(3)
+            print result.size
+            if result.size >1:
+                partVelocity = haloVectorNormalized( partVelocity )
+                eig_val, eig_vec = PCA(partVelocity)
+            else:
+                eig_val = np.array( [optData[i-1, 5], optData[i-1, 6], optData[i-1, 7] ])
+                eig_vec[0,:] = optData[i-1, 8:11]
+                eig_vec[1,:] = optData[i-1, 11:14]
+                eig_vec[2,:] = optData[i-1, 14:17]
 
             optData[i, 0] = id
             optData[i, 1] = x
@@ -862,26 +888,34 @@ def loadHaloComputeSuperquadric():
             optData[i, 11:14] = eig_vec[1,:]
             optData[i, 14:17] = eig_vec[2,:]
 
-            print str(optData[i, 1]) + " " + str(optData[i, 2]) + " " + str(optData[i, 3]) + " "
 
-            d_idx = np.apply_along_axis( get, axis=1, arr=partVelocity, size=cubemap_size)
-            cube_hist = GenCubemap(d_idx.ravel(), cubemap_size)
-            optData[i, 17: 17+1536] = cube_hist.ravel()
+            if result.size >1:
+
+                d_idx = np.apply_along_axis( get, axis=1, arr=partVelocity, size=cubemap_size)
+                cube_hist = GenCubemap(d_idx.ravel(), cubemap_size)
+                optData[i, 17: 17+1536] = cube_hist.ravel()
+            else:
+                optData[i, 17: 17+1536] = optData[i-1, 17: 17+1536]
 
         outputFilePrefix = 'C:\\GravityLabDataSet\\Universe\\collectEigen\\'
-        fn = outputFilePrefix + "tmp.txt"
-        np.savetxt(fn, optData, newline=" \n", header = "0.0 62.5 0.0 62.5 0.0 62.5")
+        fn = outputFilePrefix + outputName + "haloEigen.bin"
+        header = np.array([0,62.5,0,62.5,0,62.5, halosize, 17+1536])
+        optData = np.append( header, np.reshape(optData, optData.size))
+        optData.astype('float32').tofile(fn)
+        pause
 
-        f = open(fn, 'r')
-        tmp = f.read()
-        tmp = tmp[2:-1]
-        f.close()
-
-        f = open(outputFilePrefix + outputName + "haloEigen.txt", 'w')
-        f.write(tmp)
-        f.close()
-
-        pl.savefig( outputFilePrefix + outputName + "halos_and_particles.png", bbox_inches='tight')
+        # np.savetxt(fn, optData, newline=" \n", header = "0.0 62.5 0.0 62.5 0.0 62.5")
+        #
+        # f = open(fn, 'r')
+        # tmp = f.read()
+        # tmp = tmp[2:-1]
+        # f.close()
+        #
+        # f = open(outputFilePrefix + outputName + "haloEigen.txt", 'w')
+        # f.write(tmp)
+        # f.close()
+        #
+        # pl.savefig( outputFilePrefix + outputName + "halos_and_particles.png", bbox_inches='tight')
 # #===============================================
 #     #load data
 #     fn = "halox.npy"

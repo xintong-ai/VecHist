@@ -11,7 +11,7 @@ import matplotlib.cm as cm
 import matplotlib.pylab as pl
 
 
-filename = np.arange(0.12, 1.000001, 0.01)
+filename = np.arange(0.22, 1.000001, 0.01)
 for scl in filename:
     hlistName = 'hlist_' + "{:.5f}".format(scl) + '.list'
     particleName = 'ds14_scivis_0128_e4_dt04_' + "{:.4f}".format(scl)
@@ -60,6 +60,7 @@ for scl in filename:
     convert_to_cMpc = lambda proper: (proper + cosmo_a*width/2.) * h_100 * kpc_to_Mpc / cosmo_a
     print "cosmo_a: " + str(cosmo_a)
 
+
     haloid = np.array( id )
     fn = outputName + "id.npy"
     np.save( fn, haloid )
@@ -75,7 +76,15 @@ for scl in filename:
     halorvir = np.array( rvir )
     fn = outputName + "halorvir.npy"
     np.save( fn, halorvir )
-
+    halovx = np.array( vx )
+    fn = outputName + "halovx.npy"
+    np.save( fn, halovx )
+    halovy = np.array( vy )
+    fn = outputName + "halovy.npy"
+    np.save( fn, halovy )
+    halovz = np.array( vz )
+    fn = outputName + "halovz.npy"
+    np.save( fn, halovz )
 
     partx = np.array( convert_to_cMpc(particles['x'][sl]) )
     fn = outputName + "partx.npy"

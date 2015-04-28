@@ -76,13 +76,16 @@ for scl in filename:
     cosmo_a = particles.parameters['a']
     kpc_to_Mpc = 1./1000
 
+    convert_velocityBack = lambda v: ( v / (h_100 * kpc_to_Mpc / cosmo_a) ) - (cosmo_a*width/2.)
+    partvx = convert_velocityBack(partvx)
+    partvy = convert_velocityBack(partvy)
+    partvz = convert_velocityBack(partvz)
+
     convert_to_cMpc = lambda proper: (proper) * h_100 * kpc_to_Mpc / cosmo_a
     halorvir = convert_to_cMpc( halorvir )
 
     halosize = halox.size
 
-    pl.figure(figsize=[10,10])
-    pl.scatter(partx, party, color='r', s=1.0, alpha=0.05)
 
     partVelocity = np.zeros( [partx.size, 3] )
     numPart = np.zeros( halosize )
