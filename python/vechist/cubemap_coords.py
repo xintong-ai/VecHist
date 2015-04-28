@@ -309,7 +309,8 @@ def GenCubemap(d, size):
 
     for i in range(0, 6):
         a = hist[i*size:(i+1)*size, :] / (sol_ang * scale_factor)
-        hist[i*size:(i+1)*size, :] = a
+
+        #hist[i*size:(i+1)*size, :] = a
         if i == 5:
             print hist.shape
             print (i+1)*size
