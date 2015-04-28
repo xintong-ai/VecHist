@@ -115,8 +115,46 @@ void DataMgrCosm::LoadHalos()
 			e0, e1, e2,
 			cubemap, cubemap_size
 			);
+
+		switch ((int)id)
+		{
+		case 257:
+			haloRecord->id = id = 679582;
+			break;
+		case 259:
+			haloRecord->id = id = 671442;
+			break;
+		case 260:
+			haloRecord->id = id = 663023;
+			break;
+		case 263:
+			haloRecord->id = id = 671443;
+			break;
+		case 265:
+			haloRecord->id = id = 671445;
+			break;
+		case 129:
+			haloRecord->id = id = 663025;
+			break;
+		case 131:
+			haloRecord->id = id = 663027;
+			break;
+		case 132:
+			haloRecord->id = id = 654651;
+			break;
+		case 133:
+			haloRecord->id = id = 654652;
+			break;
+
+		}
+
 		halos.push_back(haloRecord);
 		haloTable[id] = haloRecord;
+
+		if (haloTable.find(haloRecord->id) == haloTable.end()) {
+			cout << "Clicked halo id " << id << " is not currently loaded in the timestep data" << endl;
+		}
+
 		std::getline(fin, line);
 //		fin >> data;               //get next number from file
 	}
@@ -230,29 +268,20 @@ void DataMgrCosm::LoadMergeTree()
 
 }
 
-
+//This method gets the MergeTree JSon for a given tree
+//Parameter treeId - the id of the tree for which we should get JSon
+//JSon example:
+//{
+//"1" :  
+//[{"3" : [null]}],
+//"2" : 
+//[{"4" : [null]}],
+//};
 QString DataMgrCosm::getMergeTreeJSon(int treeId)
 {
-	//QString data = "{"
-	//	"\"test\" :  [\"this\", \"is\", \"a\", "
-	//	"{\"test\" : [\"with\", \"nested\", \"items\"]}],"
-	//	"\"types\" : [1337, 13.37, true, null]"
-	//	"}";
-
-	/*
-	QString data = "{"
-	"\"1\" :  "
-	"[{\"3\" : [null]}],"
-	"\"2\" : "
-	"[{\"4\" : [null]}],"
-	"}";
-	*/
-
 	QString output = buildJsonFromTree(forest[treeId]->root, 0);
 	//cout << output.toStdString() << endl;
 	return output;
-
-	//return data;
 }
 
 //This method recursively reads the contents of a merge tree listed from an in-order traversal
@@ -286,15 +315,14 @@ QString DataMgrCosm::buildJsonFromTree(MergeNode * currentNode, int level)
 
 void DataMgrCosm::SetChildrenVisibility(MergeNode *nd, bool _isVisible)
 {
-	AbstractNode * haloRecord = nd->haloRecord;
-	haloRecord->SetVisible(!haloRecord->GetVisible());
-	
-	for (int i = 0; i < nd->children.size(); i++) {
-		SetChildrenVisibility(nd->children[i], _isVisible);
+	if (nd != nullptr) {
+		AbstractNode * haloRecord = nd->haloRecord;
+		if (haloRecord != nullptr) {
+			haloRecord->SetVisible(_isVisible);
+		}
+
+		for (int i = 0; i < nd->children.size(); i++) {
+			SetChildrenVisibility(nd->children[i], _isVisible);
+		}
 	}
-	
-
-	
-
-
 }

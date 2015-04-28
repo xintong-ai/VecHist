@@ -133,6 +133,9 @@ private:
 	QLabel *lblSingle;
 	// if this is a container type, these point to child widgets
 	QList<QWidget*> childWidgets;
+
+	bool isRed = false;
+
 	// true if this is a container type and is currently in expanded view
 	bool expanded;
 	// true if hover effects are enabled

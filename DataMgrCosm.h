@@ -4,6 +4,7 @@
 
 class Halo:public AbstractNode
 {
+public:
 	int id;
 	float pos[3];
 	float radius;
@@ -93,7 +94,7 @@ public:
 	QString buildJsonFromTree(MergeNode * currentNode, int level);
 	vector<MergeTree*> & getForest() { return forest; }
 	MergeNode * readMergeTree(ifstream &fin, int treeId);
-	unordered_map<int, MergeNode *> & getMergeTreeTable() { return mergeTreeTable; }
+	unordered_map<int, MergeNode *> * getMergeTreeTable() { return &mergeTreeTable; }
 	void SetChildrenVisibility(MergeNode *nd, bool _isVisible);
 
 	DataMgrCosm();
