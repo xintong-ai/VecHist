@@ -5,7 +5,7 @@ class Halo:public AbstractNode
 	float pos[3];
 	float radius;
 public:
-	Halo(float haloX, float haloY, float haloZ,
+	Halo(int haloid, float haloX, float haloY, float haloZ,
 		float haloRadius, 
 		float3 eig_vals,
 		float3 eig_vec_0, float3 eig_vec_1, float3 eig_vec_2,
@@ -63,6 +63,7 @@ class DataMgrCosm:public DataManager
 	vector<Halo*> halos;
 	vector<MergeTree *> forest;  //A forest of merge trees from the Dark Sky data
 	void LoadHalos();
+	void LoadHalosBinary();
 public:
 	virtual void LoadData();
 	virtual vector<AbstractNode*> GetAllNode()

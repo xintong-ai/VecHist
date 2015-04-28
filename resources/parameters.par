@@ -1,16 +1,11 @@
-color basicColor ff0e3d0e
-color woodColors ff5e3d33 ffcc9966
-float woodTubulence 0.1
-color graniteColors ff000000 ff4d261a ffccb3bf
-color marbleColors ffe6e6e6 ff998080
-string mergerTree C:/XinCode/VecHist/python/vechist/merge_tree.txt
-string tree C:/XinCode/VecHist/python/vechist/binary_tree.txt
-string vectorfield C:/Users/datahead8888/Documents/sciVis/data/15plume3d421.vec
-string tree C:/XinCode/VecHist/python/vechist/binary_tree.txt
-string starts C:/XinCode/VecHist/python/vechist/starts.txt
-string dims C:/XinCode/VecHist/python/vechist/dims.txt
-string entropy C:/XinCode/VecHist/python/vechist/entropys.txt
-string eigval C:/XinCode/VecHist/python/vechist/eig_vals.txt
-string eigvec C:/XinCode/VecHist/python/vechist/eig_vecs.txt
-string halo C:/Users/datahead8888/Documents/DarkSkyDataDownloaded/0.12000_haloEigen.txt
+string mergerTree D:/data/universe/merge_tree.txt
+string tree D:/data/plume/binary_tree.txt
+string vectorfield D:/data/plume/15plume3d421.vec
+string tree D:/data/plume/ent9/binary_tree.txt
+string starts D:/data/plume/ent9/starts.txt
+string dims D:/data/plume/ent9/dims.txt
+string entropy D:/data/plume/ent9/entropys.txt
+string eigval D:/data/plume/ent9/eig_vals.txt
+string eigvec D:/data/plume/ent9/eig_vecs.txt
+string halo D:/data/universe/collectEigen/0.12000_haloEigen.bin
 string datatype flow
