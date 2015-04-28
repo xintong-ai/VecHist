@@ -6,6 +6,8 @@
 
 using namespace std;
 
+
+
 DataMgrCosm::DataMgrCosm()
 {
 }
@@ -58,10 +60,10 @@ void DataMgrCosm::LoadHalosBinary()
 			&d[17], cubemap_size
 			));
 	}
+
+	//free(header);
+	free(data);
 }
-
-
-
 void DataMgrCosm::LoadHalos()
 {
 	
@@ -136,10 +138,13 @@ void DataMgrCosm::LoadHalos()
 
 		int nBin = cubemap_size * cubemap_size * 6;
 		float *cubemap = new float[nBin];
+	//	float *cubemapTemp = new float[nBin];
 
 		for (int i = 0; i < nBin; i++)	{
 			ss >> cubemap[i];
 		}
+
+		//delete[] cubemapTemp;
 		
 		float3 eigvec3 = make_float3(eigvec[0], eigvec[1], eigvec[2]);
 		halos.push_back(new Halo(
@@ -232,7 +237,7 @@ void DataMgrCosm::LoadMergeTree()
 
 	//Iterate through each merge tree in the preprocessed data
 	while (readNextToken(fMergeTreeIn, treeId, isNumber)) {
-		cout << "Reading tree structure for tree id " << treeId << endl;
+		//cout << "Reading tree structure for tree id " << treeId << endl;
 		//Read the current merge tree from the file
 		MergeNode * root = readMergeTree(fMergeTreeIn);
 

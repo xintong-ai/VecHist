@@ -1,5 +1,24 @@
 #include "DataManager.h"
 
+
+
+inline void CubemapConvert(float *out, float *in, int s)
+{
+	//for f = 0
+	int s2 = s * s;
+	for (int i = 0; i < s; i++)	{
+		for (int j = 0; j < s; j++)	{
+			out[0 * s2 + i * s + j] = in[4 * s2 + (s - 1 - i) * s + j];
+			out[1 * s2 + i * s + j] = in[1 * s2 + i * s + j];
+			out[2 * s2 + i * s + j] = in[5 * s2 + (s - 1 - i) * s + s - 1 - j];
+			out[3 * s2 + i * s + j] = in[2 * s2 + (s - 1 - i) * s + j];
+			out[4 * s2 + i * s + j] = in[3 * s2 + (s - 1 - j) * s + i];
+			out[5 * s2 + i * s + j] = in[0 * s2 + j * s + i];
+		}
+	}
+}
+
+
 class Halo:public AbstractNode
 {
 	float pos[3];
@@ -29,7 +48,10 @@ public:
 		//eigvec[1] = EigenVector2;
 		//eigvec[2] = EigenVector3;
 
-		cubemap = halo_cubemap;
+		//cubemap = halo_cubemap;
+		cubemap = new float[cube_size * cube_size * 6];
+		CubemapConvert(cubemap, halo_cubemap, cube_size);
+
 		glyph = new GLSuperquadric(eig_vals, eig_vec_0, eig_vec_1, eig_vec_2, 3, 0.5, 16);
 	}
 
