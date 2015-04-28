@@ -1,7 +1,7 @@
 #ifndef DATA_MGR_COSM
 #define DATA_MGR_COSM
 #include "DataManager.h"
-
+#include <list>
 
 
 inline void CubemapConvert(float *out, float *in, int s)
@@ -75,6 +75,8 @@ struct MergeNode
 	bool isVisible = true;  //Whether or not the entry in the merge tree is registered as visble (if it corresponds to a halo).  Not all nodes actually have halos loaded, so this must be stored here.
 };
 
+//This struct represents one merge tree as read from the Dark Sky merge tree data file
+//TO DO: We may want to evaluate whether or not we want to keep this anymore given that we have discovered tree ids are in fact halo ids
 struct MergeTree
 {
 	MergeNode * root;
@@ -115,11 +117,15 @@ public:
 	virtual void UpdateCubeMap(float* cubemap){};
 	void LoadMergeTree();
 	QString getMergeTreeJSon(int treeId);
+	//QString buildJsonFromTreeList(list<MergeNode *> treeList);
 	QString buildJsonFromTree(MergeNode * currentNode, int level);
 	vector<MergeTree*> & getForest() { return forest; }
 	MergeNode * readMergeTree(ifstream &fin, int treeId);
 	unordered_map<int, MergeNode *> * getMergeTreeTable() { return &mergeTreeTable; }
 	void SetChildrenVisibility(MergeNode *nd, bool _isVisible);
+	vector<MergeNode *> getNodesAtGivenTimestepFromForest(int desiredTimeStep);
+	vector<MergeNode *> getNodesAtGivenTimestepFromTree(int desiredTimeStep, int currentTimeStep, MergeNode * mergeNode);
+	
 
 	DataMgrCosm();
 	~DataMgrCosm();

@@ -312,7 +312,7 @@ void DataMgrCosm::LoadMergeTree()
 
 }
 
-//This method gets the MergeTree JSon for a given tree
+//This method gets the MergeTree JSon for a given tree from the entire forest loaded from the data file
 //Parameter treeId - the id of the tree for which we should get JSon
 //JSon example:
 //{
@@ -327,6 +327,21 @@ QString DataMgrCosm::getMergeTreeJSon(int treeId)
 	//cout << output.toStdString() << endl;
 	return output;
 }
+
+/*
+QString DataMgrCosm::buildJsonFromTreeList(list<MergeNode *> treeList)
+{
+	QString output;
+	list<MergeNode *>::iterator it;
+	output += "{";
+	for (it = treeList.begin(); it != treeList.end(); it++) {
+		output += buildJsonFromTree(*it, 0);
+	}
+	cout << endl;
+	//cout << output.toStdString() << endl;
+	return output;
+}
+*/
 
 //This method recursively reads the contents of a merge tree listed from an in-order traversal
 //The input is a preprocessed version of the merge tree data from the Dark Sky data
@@ -376,3 +391,46 @@ void DataMgrCosm::SetChildrenVisibility(MergeNode *nd, bool _isVisible)
 		}
 	}
 }
+
+//This method obtains all nodes at a given timestep for the forest
+//The result is itself a forest, but we represent it with a list of MergeNode * records
+vector<MergeNode *> DataMgrCosm::getNodesAtGivenTimestepFromForest(int desiredTimeStep)
+{
+	vector<MergeNode * > currentList; //This list we are building at this level
+
+	for (int i = 0; i < forest.size(); i++) {
+		MergeTree * mergeTree = forest[i];
+		MergeNode * mergeNode = mergeTree->root;
+
+		vector <MergeNode *> childList = getNodesAtGivenTimestepFromTree(desiredTimeStep, 100, mergeNode);
+		currentList.insert(currentList.end(), childList.begin(), childList.end());
+
+	}
+
+	return currentList;
+}
+
+//This method finds all nodes for a given timestep for a given MergeNode (tree or sub tree)
+vector<MergeNode *> DataMgrCosm::getNodesAtGivenTimestepFromTree(int desiredTimeStep, int currentTimeStep, MergeNode * mergeNode)
+{
+	vector<MergeNode *> currentList;  //The list we are building at this level
+
+	if (mergeNode != nullptr) {
+		
+		if (desiredTimeStep == currentTimeStep) {
+			currentList.push_back(mergeNode);
+			return currentList;
+		}
+
+		
+
+		for (int i = 0; i < mergeNode->children.size(); i++) {
+			vector <MergeNode *> childList = getNodesAtGivenTimestepFromTree(desiredTimeStep, currentTimeStep - 1, mergeNode->children[i]);
+			currentList.insert(currentList.end(), childList.begin(), childList.end());
+		}
+	}
+
+	return currentList;
+
+}
+

@@ -307,6 +307,7 @@ private:
     //QGLShaderProgram *m_environmentProgram;
 
 	DataManager* dataManager;
+	vector<MergeNode *> levelXForest;  //The forest as built from nodes at time step X.  TO DO: Move this into the data manager, and unify it with the representation of the larger forest from the data file
 
     GLuint pbo;     // OpenGL pixel buffer object
 	GLuint tex;     // OpenGL texture object

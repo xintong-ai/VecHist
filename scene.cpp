@@ -659,11 +659,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		m_graphWidget->move(60, 120);
 		m_graphWidget->resize(m_graphWidget->sizeHint());
 
-		//Example from http://codereview.stackexchange.com/questions/11849/qjsonview-a-qwidget-based-json-explorer-for-qt
-		QString data = ((DataMgrCosm * ) dataManager)->getMergeTreeJSon(0);
-
-		//cout << "Data contents: " << endl;
-		//cout << data.toStdString() << endl;
+		
 
 		QGraphicsView * view = new QGraphicsView();
 		m_jsonView = new QJsonView(view, dataManager);
@@ -679,26 +675,37 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		//m_jsonView->move(60, 120);
 		//m_jsonView->resize(m_jsonView->sizeHint());
 		m_jsonView->resize(1000, 1000);
-		m_jsonView->setJsonValue(data);
+		
 
 		m_listWidget = new QListWidget;
 		m_listWidget->resize(200, 600);
 		m_listWidget->move(20, 20);
 
 		DataMgrCosm * cosmPtr = (DataMgrCosm *)dataManager;
-		vector<MergeTree *> forest = cosmPtr->getForest();
-		for (int i = 0; i < forest.size(); i++) {
-			m_listWidget->insertItem(i, QString::number(forest[i]->treeId));
+		//vector<MergeTree *> forest = cosmPtr->getForest();
+
+		//vector<MergeTree *> levelXForest = cosmPtr->getNodesAtGivenTimestepFromForest(16);
+		levelXForest = cosmPtr->getNodesAtGivenTimestepFromForest(16);
+
+		vector<MergeNode *>::iterator it;
+		int i = 0;
+		for (it = levelXForest.begin(); it != levelXForest.end(); it++) {
+			m_listWidget->insertItem(i, QString::number((*it)->haloId));
+			i++;
 		}
 		cout << endl;
-		//cout << forest.size() << endl;
-		//cout << endl;
+		
+		//Example from http://codereview.stackexchange.com/questions/11849/qjsonview-a-qwidget-based-json-explorer-for-qt
+		//QString data = ((DataMgrCosm * ) dataManager)->getMergeTreeJSon(0);
+		QString data = ((DataMgrCosm *)dataManager)->buildJsonFromTree(levelXForest[0], 0);
 
-		//m_listWidget->insertItem(0, QString("one"));
-		//m_listWidget->insertItem(1, QString("two"));
-		//m_listWidget->insertItem(2, QString("three"));
+		m_jsonView->setJsonValue(data);
 
-		//m_listWidget->insertItem(new QListWidgetItem())
+		//cout << "Data contents: " << endl;
+		//cout << data.toStdString() << endl;
+
+		
+		
 
 	}
 
@@ -757,7 +764,8 @@ void Scene::dropBoxSelection()
 	int selectedId = m_listWidget->row(m_listWidget->currentItem());
 	cout << "Selected id: " << selectedId << endl;
 
-	QString data = ((DataMgrCosm *)dataManager)->getMergeTreeJSon(selectedId);
+	//QString data = ((DataMgrCosm *)dataManager)->getMergeTreeJSon(selectedId);
+	QString data = ((DataMgrCosm *)dataManager)->buildJsonFromTree(levelXForest[selectedId], 0);
 	m_jsonView->setJsonValue(data);
 
 	
