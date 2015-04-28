@@ -2,6 +2,25 @@
 #define DATA_MGR_COSM
 #include "DataManager.h"
 
+
+
+inline void CubemapConvert(float *out, float *in, int s)
+{
+	//for f = 0
+	int s2 = s * s;
+	for (int i = 0; i < s; i++)	{
+		for (int j = 0; j < s; j++)	{
+			out[0 * s2 + i * s + j] = in[4 * s2 + (s - 1 - i) * s + j];
+			out[1 * s2 + i * s + j] = in[1 * s2 + i * s + j];
+			out[2 * s2 + i * s + j] = in[5 * s2 + (s - 1 - i) * s + s - 1 - j];
+			out[3 * s2 + i * s + j] = in[2 * s2 + (s - 1 - i) * s + j];
+			out[4 * s2 + i * s + j] = in[3 * s2 + (s - 1 - j) * s + i];
+			out[5 * s2 + i * s + j] = in[0 * s2 + j * s + i];
+		}
+	}
+}
+
+
 class Halo:public AbstractNode
 {
 public:
@@ -19,7 +38,7 @@ public:
 		pos[0] = haloX;
 		pos[1] = haloY;
 		pos[2] = haloZ;
-		radius = haloRadius * 5;
+		radius = haloRadius;
 
 		for (int i = 0; i < 3; i++)	{
 			start[i] = pos[i] - radius;
@@ -34,7 +53,10 @@ public:
 		eigvec[1] = eig_vec_1;
 		eigvec[2] = eig_vec_2;
 
-		cubemap = halo_cubemap;
+		//cubemap = halo_cubemap;
+		cubemap = new float[cube_size * cube_size * 6];
+		CubemapConvert(cubemap, halo_cubemap, cube_size);
+
 		glyph = new GLSuperquadric(eig_vals, eig_vec_0, eig_vec_1, eig_vec_2, 3, 0.5, 16);
 	}
 
@@ -71,6 +93,7 @@ class DataMgrCosm:public DataManager
 	vector<MergeTree *> forest;  //A forest of merge trees from the Dark Sky data
 	unordered_map<int, MergeNode *> mergeTreeTable;  //Hash table to link halo ids to Halo struct records
 	void LoadHalos();
+	void LoadHalosBinary();
 public:
 	virtual void LoadData();
 	virtual vector<AbstractNode*> GetAllNode()

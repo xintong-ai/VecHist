@@ -6,6 +6,8 @@
 
 using namespace std;
 
+
+
 DataMgrCosm::DataMgrCosm()
 {
 }
@@ -22,12 +24,49 @@ void DataMgrCosm::LoadData()
 	//dim[1] = 62.5;
 	//dim[2] = 62.5;
 
-	LoadHalos();
+	LoadHalosBinary();
 	LoadMergeTree();
 
 	//haloTable.clear();
 }
 
+
+void DataMgrCosm::LoadHalosBinary()
+{
+	float header[8];
+	float* data;
+	FILE* fp = fopen(GetStringVal("halo").c_str(), "rb");
+	fread(header, sizeof(float), 8, fp);
+	data = (float*)malloc(sizeof(float)* header[6] * header[7]);
+	fread(data, sizeof(float), header[6] * header[7], fp);
+	fclose(fp);
+
+	start[0] = header[0];
+	dim[0] = header[1];
+	start[1] = header[2];
+	dim[1] = header[3];
+	start[2] = header[4];
+	dim[2] = header[5];
+
+	int nhalos = header[6];
+	int nattr = header[7];
+
+	for (int i = 0; i < nhalos; i++)	{
+		float* d = &data[i*nattr];
+		halos.push_back(new Halo(
+			(int)d[0], d[1], d[2], d[3],
+			d[4],
+			make_float3(d[5], d[6], d[7]),
+			make_float3(d[8], d[9], d[10]),
+			make_float3(d[11], d[12], d[13]),
+			make_float3(d[14], d[15], d[16]),
+			&d[17], cubemap_size
+			));
+	}
+
+	//free(header);
+	free(data);
+}
 void DataMgrCosm::LoadHalos()
 {
 	
@@ -102,10 +141,13 @@ void DataMgrCosm::LoadHalos()
 
 		int nBin = cubemap_size * cubemap_size * 6;
 		float *cubemap = new float[nBin];
+	//	float *cubemapTemp = new float[nBin];
 
 		for (int i = 0; i < nBin; i++)	{
 			ss >> cubemap[i];
 		}
+
+		//delete[] cubemapTemp;
 		
 		float3 eigvec3 = make_float3(eigvec[0], eigvec[1], eigvec[2]);
 		Halo * haloRecord = new Halo(
