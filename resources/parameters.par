@@ -7,5 +7,5 @@ string dims D:/data/plume/ent9/dims.txt
 string entropy D:/data/plume/ent9/entropys.txt
 string eigval D:/data/plume/ent9/eig_vals.txt
 string eigvec D:/data/plume/ent9/eig_vecs.txt
-string halo D:/data/universe/collectEigen/0.12000_haloEigen.bin
+string halo D:/data/universe/collectEigen/0.18000_haloEigen.bin
 string datatype flow
