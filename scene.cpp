@@ -621,9 +621,6 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		blockTex << texCube;
 	}
 
-
-	((DataMgrCosm *)dataManager)->LoadMergeTree();
-
 	//dataManager->LoadVec("D:/data/nek/nek.d_4.vec");
 	
 	//dataManager->LoadVec("D:/data/brain_dti/vector-field.vec");
@@ -669,7 +666,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		//cout << data.toStdString() << endl;
 
 		QGraphicsView * view = new QGraphicsView();
-		m_jsonView = new QJsonView(view);
+		m_jsonView = new QJsonView(view, dataManager);
 
 		scrollArea = new QScrollArea;
 		scrollArea->setWidget(view);

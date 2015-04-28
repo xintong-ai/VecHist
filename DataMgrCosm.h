@@ -1,16 +1,21 @@
+#ifndef DATA_MGR_COSM
+#define DATA_MGR_COSM
 #include "DataManager.h"
 
 class Halo:public AbstractNode
 {
+public:
+	int id;
 	float pos[3];
 	float radius;
 public:
-	Halo(float haloX, float haloY, float haloZ,
+	Halo(int haloId, float haloX, float haloY, float haloZ,
 		float haloRadius, 
 		float3 eig_vals,
 		float3 eig_vec_0, float3 eig_vec_1, float3 eig_vec_2,
 		float* halo_cubemap, int _cube_size) : AbstractNode(_cube_size)
 	{
+		id = haloId;
 		pos[0] = haloX;
 		pos[1] = haloY;
 		pos[2] = haloZ;
@@ -44,6 +49,8 @@ struct MergeNode
 {
 	vector<MergeNode *> children;  //Each node has an array of children
 	int haloId = 0;	//The id of the halo corresponding to this node
+	AbstractNode * haloRecord = nullptr;  //Reference to corresponding halo (if it is loaded and thus exists)
+	bool isVisible = true;  //Whether or not the entry in the merge tree is registered as visble (if it corresponds to a halo).  Not all nodes actually have halos loaded, so this must be stored here.
 };
 
 struct MergeTree
@@ -62,6 +69,7 @@ class DataMgrCosm:public DataManager
 {
 	vector<Halo*> halos;
 	vector<MergeTree *> forest;  //A forest of merge trees from the Dark Sky data
+	unordered_map<int, MergeNode *> mergeTreeTable;  //Hash table to link halo ids to Halo struct records
 	void LoadHalos();
 public:
 	virtual void LoadData();
@@ -86,9 +94,13 @@ public:
 	QString getMergeTreeJSon(int treeId);
 	QString buildJsonFromTree(MergeNode * currentNode, int level);
 	vector<MergeTree*> & getForest() { return forest; }
-	MergeNode * readMergeTree(ifstream &fin);
+	MergeNode * readMergeTree(ifstream &fin, int treeId);
+	unordered_map<int, MergeNode *> * getMergeTreeTable() { return &mergeTreeTable; }
+	void SetChildrenVisibility(MergeNode *nd, bool _isVisible);
 
 	DataMgrCosm();
 	~DataMgrCosm();
 
 };
+
+#endif

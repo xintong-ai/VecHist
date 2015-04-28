@@ -5,7 +5,8 @@
 #include <QWidget>
 #include <QVariant>
 #include <QLabel>
-
+#include "DataManager.h"
+#include "DataMgrCosm.h"
 
 /**
 Widget to display JSON or QVariant data.
@@ -25,7 +26,7 @@ public:
 	/**
 	Constructor for QJsonView, taking the parent widget as a single argument.
 	*/
-	explicit QJsonView(QWidget *parent = 0);
+	explicit QJsonView(QWidget *parent = 0, DataManager * dataManger = nullptr);
 
 	/**
 	Static and public helper function returning the HTML code which will be used to visualize the data (by applying syntax highlighting rules).
@@ -132,10 +133,15 @@ private:
 	QLabel *lblSingle;
 	// if this is a container type, these point to child widgets
 	QList<QWidget*> childWidgets;
+
+	bool isRed = false;
+
 	// true if this is a container type and is currently in expanded view
 	bool expanded;
 	// true if hover effects are enabled
 	bool hoverEffectsEnabled;
+
+	DataManager * dataManager = nullptr;
 
 	// apply hover effect
 	void hover();

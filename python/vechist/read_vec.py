@@ -78,9 +78,12 @@ def readMergerTree(filename):
                 #    print("--------Finished printing merge tree---------")
                 if root != None:
                     print("--------Outputting merge tree to file---------")
-                    fout.write(str(treeId) + " ")
+                    print("Just output a value of " + str(treeId) + " to file.")
                     writeMergerTreeToFile(root, fout)
+                    fout.write(str(treeId) + " ")
                     print("--------Finished outputting merge tree to file---------")
+                else:
+                    fout.write(str(treeId) + " ")
 
                 root = None
             continue
@@ -126,7 +129,7 @@ def readMergerTree(filename):
     #Write the final, tree to the file.  Otherws were written when a new tree definition was found, but this one must be done manually at the end
     if root != None:
         print("--------Outputting merge tree to file---------")
-        fout.write(str(treeId) + " ")
+        #fout.write(str(treeId) + " ")
         writeMergerTreeToFile(root, fout)
         print("--------Finished outputting merge tree to file---------")
 

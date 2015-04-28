@@ -23,6 +23,9 @@ void DataMgrCosm::LoadData()
 	//dim[2] = 62.5;
 
 	LoadHalos();
+	LoadMergeTree();
+
+	//haloTable.clear();
 }
 
 void DataMgrCosm::LoadHalos()
@@ -105,13 +108,55 @@ void DataMgrCosm::LoadHalos()
 		}
 		
 		float3 eigvec3 = make_float3(eigvec[0], eigvec[1], eigvec[2]);
-		halos.push_back(new Halo(
-			pos[0], pos[1], pos[2],
+		Halo * haloRecord = new Halo(
+			(int)id, pos[0], pos[1], pos[2],
 			radius,
 			make_float3(eigval[0], eigval[1], eigval[2]),
 			e0, e1, e2,
 			cubemap, cubemap_size
-			));
+			);
+
+		/*
+		switch ((int)id)
+		{
+		case 257:
+			haloRecord->id = id = 679582;
+			break;
+		case 259:
+			haloRecord->id = id = 671442;
+			break;
+		case 260:
+			haloRecord->id = id = 663023;
+			break;
+		case 263:
+			haloRecord->id = id = 671443;
+			break;
+		case 265:
+			haloRecord->id = id = 671445;
+			break;
+		case 129:
+			haloRecord->id = id = 663025;
+			break;
+		case 131:
+			haloRecord->id = id = 663027;
+			break;
+		case 132:
+			haloRecord->id = id = 654651;
+			break;
+		case 133:
+			haloRecord->id = id = 654652;
+			break;
+
+		}
+		*/
+
+		halos.push_back(haloRecord);
+		haloTable[id] = haloRecord;
+
+		//if (haloTable.find(haloRecord->id) == haloTable.end()) {
+		//	cout << "Clicked halo id " << id << " is not currently loaded in the timestep data" << endl;
+		//}
+
 		std::getline(fin, line);
 //		fin >> data;               //get next number from file
 	}
@@ -146,7 +191,7 @@ inline bool readNextToken(std::istream &in, int &token, bool &isNumber)
 
 //This method recursively reads the contents of a merge tree listed from an in-order traversal
 //The input is a preprocessed version of the merge tree data from the Dark Sky data
-MergeNode * DataMgrCosm::readMergeTree(ifstream &fin)
+MergeNode * DataMgrCosm::readMergeTree(ifstream &fin, int treeId)
 {
 	int haloId = 0, numChildren = 0;  //Halo id and number of children for current node
 	bool isNumber = true; //True if entry read is a number
@@ -164,11 +209,23 @@ MergeNode * DataMgrCosm::readMergeTree(ifstream &fin)
 	//Construct the current node
 	MergeNode * currentNode = new MergeNode(); //TO DO: Destructor
 	currentNode->haloId = haloId;
+
+	mergeTreeTable[haloId] = currentNode;
+
+	//Look for the halo id in the hashtable and record a reference if found
+	if (haloTable.find(haloId) == haloTable.end()) {
+		//cerr << "In method DataMgrCosm::readMergeTree " << haloId << " is not found" << endl;
+	}
+	else {
+		cout << "Halo id " << haloId << " successfully loaded for tree id " << treeId << endl;
+		currentNode->haloRecord = haloTable[haloId];	
+	}
+
 	currentNode->children.resize(numChildren);
 
 	//Construct the children recursively
 	for (int i = 0; i < numChildren; i++) {
-		currentNode->children[i] = readMergeTree(fin);
+		currentNode->children[i] = readMergeTree(fin, treeId);
 	}
 
 	return currentNode;
@@ -194,9 +251,9 @@ void DataMgrCosm::LoadMergeTree()
 
 	//Iterate through each merge tree in the preprocessed data
 	while (readNextToken(fMergeTreeIn, treeId, isNumber)) {
-		cout << "Reading tree structure for tree id " << treeId << endl;
+		//cout << "Reading tree structure for tree id " << treeId << endl;
 		//Read the current merge tree from the file
-		MergeNode * root = readMergeTree(fMergeTreeIn);
+		MergeNode * root = readMergeTree(fMergeTreeIn, treeId);
 
 		MergeTree * mergeTree = new MergeTree;
 		mergeTree->treeId = treeId;
@@ -213,29 +270,20 @@ void DataMgrCosm::LoadMergeTree()
 
 }
 
-
+//This method gets the MergeTree JSon for a given tree
+//Parameter treeId - the id of the tree for which we should get JSon
+//JSon example:
+//{
+//"1" :  
+//[{"3" : [null]}],
+//"2" : 
+//[{"4" : [null]}],
+//};
 QString DataMgrCosm::getMergeTreeJSon(int treeId)
 {
-	//QString data = "{"
-	//	"\"test\" :  [\"this\", \"is\", \"a\", "
-	//	"{\"test\" : [\"with\", \"nested\", \"items\"]}],"
-	//	"\"types\" : [1337, 13.37, true, null]"
-	//	"}";
-
-	/*
-	QString data = "{"
-	"\"1\" :  "
-	"[{\"3\" : [null]}],"
-	"\"2\" : "
-	"[{\"4\" : [null]}],"
-	"}";
-	*/
-
 	QString output = buildJsonFromTree(forest[treeId]->root, 0);
 	//cout << output.toStdString() << endl;
 	return output;
-
-	//return data;
 }
 
 //This method recursively reads the contents of a merge tree listed from an in-order traversal
@@ -265,4 +313,24 @@ QString DataMgrCosm::buildJsonFromTree(MergeNode * currentNode, int level)
 
 
 	return currentString;
+}
+
+//Recursively set the visibility for all the current merge tree node and all its children
+void DataMgrCosm::SetChildrenVisibility(MergeNode *nd, bool _isVisible)
+{
+	if (nd != nullptr) {
+		//Store the visibility in the merge tree node (Some halos may not be loaded)
+		nd->isVisible = _isVisible;
+
+		//Store the visibility in the halo itself if it is loaded (used during rendering)
+		AbstractNode * haloRecord = nd->haloRecord;
+		if (haloRecord != nullptr) {
+			haloRecord->SetVisible(_isVisible);
+		}
+
+		//Handle visibility for child nodes in the merge tree
+		for (int i = 0; i < nd->children.size(); i++) {
+			SetChildrenVisibility(nd->children[i], _isVisible);
+		}
+	}
 }

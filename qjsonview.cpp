@@ -14,6 +14,7 @@
 #include "qjson.h"
 #include <iostream>
 
+
 using namespace std;
 
 
@@ -21,12 +22,13 @@ using namespace std;
 #define EXPANDED_MARGIN_LEFT 21
 
 
-QJsonView::QJsonView(QWidget *parent) :
+QJsonView::QJsonView(QWidget *parent, DataManager * dataManager) :
 QWidget(parent),
 lblSingle(new QLabel(this)),
 expanded(false),
 hoverEffectsEnabled(false)
 {
+	this->dataManager = dataManager;
 	//needed for hover effects
 	setAutoFillBackground(true);
 
@@ -275,22 +277,44 @@ void QJsonView::expand()
 	//Obtain the clicked halo id from the user
 	if (v.type() == QVariant::Map) 
 	{
-		cout << "A map was clicked" << endl;
+		//cout << "A map was clicked" << endl;
 		QVariantMap map(v.toMap());
 		QVariantMap::iterator i;
+
+		int haloId = 0;
 		for (i = map.begin(); i != map.end(); ++i)
 		{
-			int haloId = i.key().toInt();
-			cout << "Halo id: " << haloId << endl;
+			haloId = i.key().toInt();
+			cout << "Halo id clicked: " << haloId << endl;
 			cout << endl;
 		}
 
+		unordered_map<int, AbstractNode *> * haloTable = dataManager -> getHaloTable();
+		
+		//Look for the halo id in the hashtable
+		if (haloTable->find(haloId) == haloTable->end()) {
+			cout << "Clicked halo id " << haloId << " is not currently loaded in the timestep data" << endl;
+		}
+		else {
+			cout << "Clicked halo id " << haloId << " IS in the timestep data" << endl;
+			//AbstractNode * currentNode = haloTable[haloId];
+			//currentNode->SetVisible(!currentNode->GetVisible());
+		}
+
+		unordered_map<int, MergeNode *> * mergeTreeTable = ((DataMgrCosm* ) dataManager)->getMergeTreeTable();
+		//MergeNode * mergeNode = mergeTreeTable[haloId];
+		MergeNode * mergeNode = mergeTreeTable->operator[](haloId);  //Nasty, but we're stuck using a pointer with this operator
+		AbstractNode * haloRecord = mergeNode->haloRecord;
+		
+		bool isVisible = !mergeNode->isVisible;
+		((DataMgrCosm*)dataManager)->SetChildrenVisibility(mergeNode, isVisible);
+		
 
 	}
 	else if(v.type() == QVariant::List)
 	{
 		//They clicked a list.  They must drill down further in order to get a halo id.
-		cout << "A list was clicked" << endl;
+		//cout << "A list was clicked" << endl;
 		
 	}
 	else
@@ -308,7 +332,7 @@ void QJsonView::expand()
 		{
 			foreach(QVariant e, v.toList())
 			{
-				QJsonView *w = new QJsonView(this);
+				QJsonView *w = new QJsonView(this, dataManager);
 				w->setValue(e);
 				layout()->addWidget(w);
 				childWidgets << w;
@@ -336,7 +360,7 @@ void QJsonView::expand()
 				((QGridLayout*)layout())->addWidget(k, index, 0);
 				childWidgets << k;
 
-				QJsonView *w = new QJsonView(this);
+				QJsonView *w = new QJsonView(this, dataManager);
 				w->setValue(i.value());
 				((QGridLayout*)layout())->addWidget(w, index, 1);
 				w->setSizePolicy(sizePolicy);
