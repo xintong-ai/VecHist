@@ -44,6 +44,7 @@
 #include <QtGui/qmatrix4x4.h>
 #include <QtGui/qvector3d.h>
 #include <QOpenGLFunctions>
+#include <sstream>
 
 //#include "3rdparty/fbm.h"
 #include <memory>
@@ -573,6 +574,21 @@ inline int iDivUp(int a, int b)
 	return (a % b != 0) ? (a / b + 1) : (a / b);
 }
 
+void Scene::UpdateTexture()
+{
+	blockTex.clear();
+
+	leafNodes = dataManager->GetAllNode();
+
+	for (auto nd : leafNodes)	{
+		GLTextureCube *texCube = new GLTextureCube(qMin(1024, m_maxTextureSize), 1);
+		texCube->load(nd->GetCubemap(), dataManager->GetCubemapSize());
+		glColor3d(1.0, 1.0, 1.0);
+		blockTex << texCube;
+	}
+}
+
+
 Scene::Scene(int width, int height, int maxTextureSize)
     : m_distExp(600)
     , m_frame(0)
@@ -591,6 +607,13 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		dataManager = new DataMgrVect();
 	else //if (dataManager->GetStringVal("datatype").compare("cosmology") == 0)
 		dataManager = new DataMgrCosm();
+
+	//Read the starting time step value from the .par file, and convert it to an integer
+	string startTimeStepStr = dataManager->GetStringVal("starttimestep");
+	istringstream iss(startTimeStepStr);
+	int startTimeStepValue = 0;
+	iss >> startTimeStepValue;
+	dataManager->setStartTimeStep(startTimeStepValue);
 
 	pbo = GLuint(0);
 	tex = 0;
@@ -612,14 +635,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	//TO DO: Make this work:
 	//dataManager->LoadVec(dataManager->GetFilename("vectorfield").c_str());
 	dataManager->LoadData();
-	leafNodes = dataManager->GetAllNode();
-
-	for (auto nd : leafNodes)	{
-		GLTextureCube *texCube = new GLTextureCube(qMin(1024, m_maxTextureSize), 1);
-		texCube->load(nd->GetCubemap(), dataManager->GetCubemapSize());
-		glColor3d(1.0, 1.0, 1.0);
-		blockTex << texCube;
-	}
+	UpdateTexture();
 
 	//dataManager->LoadVec("D:/data/nek/nek.d_4.vec");
 	
@@ -659,14 +675,10 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		m_graphWidget->move(60, 120);
 		m_graphWidget->resize(m_graphWidget->sizeHint());
 
-		//Example from http://codereview.stackexchange.com/questions/11849/qjsonview-a-qwidget-based-json-explorer-for-qt
-		QString data = ((DataMgrCosm * ) dataManager)->getMergeTreeJSon(0);
-
-		//cout << "Data contents: " << endl;
-		//cout << data.toStdString() << endl;
+		
 
 		QGraphicsView * view = new QGraphicsView();
-		m_jsonView = new QJsonView(view, dataManager);
+		m_jsonView = new QJsonView(view, dataManager, this);
 
 		scrollArea = new QScrollArea;
 		scrollArea->setWidget(view);
@@ -679,26 +691,37 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		//m_jsonView->move(60, 120);
 		//m_jsonView->resize(m_jsonView->sizeHint());
 		m_jsonView->resize(1000, 1000);
-		m_jsonView->setJsonValue(data);
+		
 
 		m_listWidget = new QListWidget;
 		m_listWidget->resize(200, 600);
 		m_listWidget->move(20, 20);
 
 		DataMgrCosm * cosmPtr = (DataMgrCosm *)dataManager;
-		vector<MergeTree *> forest = cosmPtr->getForest();
-		for (int i = 0; i < forest.size(); i++) {
-			m_listWidget->insertItem(i, QString::number(forest[i]->treeId));
+		//vector<MergeTree *> forest = cosmPtr->getForest();
+
+		//vector<MergeTree *> levelXForest = cosmPtr->getNodesAtGivenTimestepFromForest(16);
+		levelXForest = cosmPtr->getNodesAtGivenTimestepFromForest(dataManager->getStartTimeStep());
+
+		vector<MergeNode *>::iterator it;
+		int i = 0;
+		for (it = levelXForest.begin(); it != levelXForest.end(); it++) {
+			m_listWidget->insertItem(i, QString::number((*it)->haloId));
+			i++;
 		}
 		cout << endl;
-		//cout << forest.size() << endl;
-		//cout << endl;
+		
+		//Example from http://codereview.stackexchange.com/questions/11849/qjsonview-a-qwidget-based-json-explorer-for-qt
+		//QString data = ((DataMgrCosm * ) dataManager)->getMergeTreeJSon(0);
+		QString data = ((DataMgrCosm *)dataManager)->buildJsonFromTree(levelXForest[0], 0);
 
-		//m_listWidget->insertItem(0, QString("one"));
-		//m_listWidget->insertItem(1, QString("two"));
-		//m_listWidget->insertItem(2, QString("three"));
+		m_jsonView->setJsonValue(data);
 
-		//m_listWidget->insertItem(new QListWidgetItem())
+		//cout << "Data contents: " << endl;
+		//cout << data.toStdString() << endl;
+
+		
+		
 
 	}
 
@@ -757,7 +780,8 @@ void Scene::dropBoxSelection()
 	int selectedId = m_listWidget->row(m_listWidget->currentItem());
 	cout << "Selected id: " << selectedId << endl;
 
-	QString data = ((DataMgrCosm *)dataManager)->getMergeTreeJSon(selectedId);
+	//QString data = ((DataMgrCosm *)dataManager)->getMergeTreeJSon(selectedId);
+	QString data = ((DataMgrCosm *)dataManager)->buildJsonFromTree(levelXForest[selectedId], 0);
 	m_jsonView->setJsonValue(data);
 
 	
@@ -910,6 +934,128 @@ void Scene::renderBBox(const QMatrix4x4 &view)
 
 	glEnd();
 }
+
+void Scene::renderSelectionBox(const QMatrix4x4 &view)
+{
+	//int bx = nx - distance, by = ny - distance, bz = nz - distance;
+	double  nx = selectionX;
+	double ny = selectionY;
+	double nz = selectionZ;
+	double distance = selectionBoxWidth;
+
+
+	glBegin(GL_LINES);
+
+	
+	//////Front quad///////
+	//Bottom line
+	glVertex3f(nx - distance, ny - distance, nz - distance);
+	glVertex3f(nx + distance, ny - distance, nz - distance);
+
+	//Top line
+	glVertex3f(nx - distance, ny + distance, nz - distance);
+	glVertex3f(nx + distance, ny + distance, nz - distance);
+
+	//Left line
+	glVertex3f(nx - distance, ny - distance, nz - distance);
+	glVertex3f(nx - distance, ny + distance, nz - distance);
+
+	//Right line
+	glVertex3f(nx + distance, ny - distance, nz - distance);
+	glVertex3f(nx + distance, ny + distance, nz - distance);
+
+
+	/////Back quad///////
+	//Bottom line (from same persepctive as front quad)
+	glVertex3f(nx - distance, ny - distance, nz + distance);
+	glVertex3f(nx + distance, ny - distance, nz + distance);
+
+	//Top line
+	glVertex3f(nx - distance, ny + distance, nz + distance);
+	glVertex3f(nx + distance, ny + distance, nz + distance);
+
+	//Left line
+	glVertex3f(nx - distance, ny - distance, nz + distance);
+	glVertex3f(nx - distance, ny + distance, nz + distance);
+
+	//Right line
+	glVertex3f(nx + distance, ny - distance, nz + distance);
+	glVertex3f(nx + distance, ny + distance, nz + distance);
+
+	/////////Left quad/////
+	//Bottom line
+	glVertex3f(nx - distance, ny - distance, nz - distance);
+	glVertex3f(nx - distance, ny - distance, nz + distance);
+
+	//Top line
+	glVertex3f(nx - distance, ny + distance, nz - distance);
+	glVertex3f(nx - distance, ny + distance, nz + distance);
+
+	/////////Right quad/////
+	//Bottom line
+	glVertex3f(nx + distance, ny - distance, nz - distance);
+	glVertex3f(nx + distance, ny - distance, nz + distance);
+
+	//Top line
+	glVertex3f(nx + distance, ny + distance, nz - distance);
+	glVertex3f(nx + distance, ny + distance, nz + distance);
+
+	/*
+	glVertex3f(0, 0, 0);
+	glVertex3f(bx, 0, 0);
+
+	glVertex3f(bx, 0, 0);
+	glVertex3f(bx, by, 0);
+
+	glVertex3f(bx, by, 0);
+	glVertex3f(0, by, 0);
+
+	glVertex3f(0, by, 0);
+	glVertex3f(0, 0, 0);
+
+	//////
+	glVertex3f(0, 0, 0);
+	glVertex3f(0, 0, bz);
+
+	glVertex3f(bx, 0, 0);
+	glVertex3f(bx, 0, bz);
+
+	glVertex3f(bx, by, 0);
+	glVertex3f(bx, by, bz);
+
+	glVertex3f(0, by, 0);
+	glVertex3f(0, by, bz);
+
+	//////
+	glVertex3f(0, 0, bz);
+	glVertex3f(bx, 0, bz);
+
+	glVertex3f(bx, 0, bz);
+	glVertex3f(bx, by, bz);
+
+	glVertex3f(bx, by, bz);
+	glVertex3f(0, by, bz);
+
+	glVertex3f(0, by, bz);
+	glVertex3f(0, 0, bz);
+	*/
+
+	glEnd();
+}
+
+void Scene::setSelectionBoxPosition(int x, int y, int z)
+{
+	selectionX = x;
+	selectionY = y;
+	selectionZ = z;
+
+}
+
+void Scene::setSelectionBoxWidth(int width)
+{
+	selectionBoxWidth = width;
+}
+
 
 void Scene::renderQCube(const QMatrix4x4 &view)
 {
@@ -1089,6 +1235,14 @@ void Scene::render3D(const QMatrix4x4 &view)
 		//nd->
 		
 		tex->unbind();
+
+		if (nd->GetSelected()) {
+			//glPushAttrib(GL_COLOR_BUFFER_BIT);
+			glColor3f(1.0f, 1.0f, 0.0f); //Currently has no effect
+			renderSelectionBox(view);
+			//glPopAttrib();
+		}
+
 		glPopMatrix();
 
 		//draw the links
@@ -1125,6 +1279,7 @@ void Scene::render3D(const QMatrix4x4 &view)
 //	/********end******/
 //	m_programs["sphere_brush"]->release();
 
+	/*
 	glLineWidth(8.0f);
 	float axis_len = 32;
 	glColor3f(1.0f, 0.0f, 0.0f);
@@ -1145,6 +1300,7 @@ void Scene::render3D(const QMatrix4x4 &view)
 	glVertex3f(0.0f, 0.0f, 3.0f * axis_len);
 	glEnd();
 	glLineWidth(1.0f);
+	*/
 
 	//draw streamlines
 	//glUseProgram(0);
@@ -1221,8 +1377,9 @@ void Scene::render3D(const QMatrix4x4 &view)
 //	//	glPolygonMode(GL_FRONT, GL_FILL);
 
 
-	renderQCube(view);
-	renderBBox(view);
+	//renderQCube(view);
+	//renderBBox(view);
+	
 
 	//glPopMatrix();
 

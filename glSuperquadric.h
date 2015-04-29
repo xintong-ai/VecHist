@@ -62,6 +62,7 @@ class GLSuperquadric : public GLTriangleMesh<P3T2N3Vertex, unsigned short>
 public:
     // 0 < r < 0.5, 0 <= n <= 125
 	explicit GLSuperquadric(float3 e_val, float3 e_vec_0, float3 e_vec_1, float3 e_vec_2, float r, float scale, int n);
+	~GLSuperquadric();
 };
 
 #endif

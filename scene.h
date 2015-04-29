@@ -222,6 +222,8 @@ protected:
 //    virtual void mouseDoubleClickEvent(QMouseEvent *event);
 //};
 
+class QJsonView;
+
 class Scene : public QGraphicsScene, protected QGLFunctions
 {
     Q_OBJECT
@@ -230,6 +232,7 @@ public:
     ~Scene();
     virtual void drawBackground(QPainter *painter, const QRectF &rect);
 	void UpdateBlock();
+	void UpdateTexture();
 
 public slots:
     //void setShader(int index);
@@ -246,7 +249,10 @@ public slots:
 protected:
 	void render3D(const QMatrix4x4 &view);
 	void renderBBox(const QMatrix4x4 &view);
+	void renderSelectionBox(const QMatrix4x4 &view);
 	void renderQCube(const QMatrix4x4 &view);	//render the queried cube
+	void setSelectionBoxPosition(int x, int y, int z);
+	void setSelectionBoxWidth(int width);
 	void setStates();
     //void setLights();
     void defaultStates();
@@ -269,6 +275,7 @@ private:
 	//void DrawPicking();
 	void ShowGpuMemInfo();
 
+	
     QTime m_time;
     int m_lastTime;
     int m_mouseEventTime;
@@ -307,6 +314,7 @@ private:
     //QGLShaderProgram *m_environmentProgram;
 
 	DataManager* dataManager;
+	vector<MergeNode *> levelXForest;  //The forest as built from nodes at time step X.  TO DO: Move this into the data manager, and unify it with the representation of the larger forest from the data file
 
     GLuint pbo;     // OpenGL pixel buffer object
 	GLuint tex;     // OpenGL texture object
@@ -318,6 +326,11 @@ private:
 	dim3 gridSize;
 	dim3 blockSize;
 	GLfloat invProjMulView[16];
+
+	double selectionX = 0;
+	double selectionY = 0;
+	double selectionZ = 0;
+	double selectionBoxWidth = 0.4;
 
 	////picking
 	//GLuint m_fbo;

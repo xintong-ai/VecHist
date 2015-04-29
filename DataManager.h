@@ -120,10 +120,13 @@ protected:
 	Widget::Node * graphNode = nullptr;
 	AbstractNode * haloNode = nullptr;
 	GLSuperquadric* glyph;
-	bool isVisible;
+	bool isVisible = true;
+	bool isSelected = false;
 public:
 	bool GetVisible(){ return isVisible; }
 	void SetVisible(bool b){ isVisible = b; }
+	bool GetSelected() { return isSelected; }
+	void SetSelected(bool isSelected) { this->isSelected = isSelected; }
 	Widget::Node* GetGraphNode(){ return graphNode; }
 	void SetGraphNode(Widget::Node* n) { graphNode = n; }
 	AbstractNode * GetHaloNode() { return haloNode; }
@@ -156,6 +159,7 @@ public:
 class DataManager
 {
 protected:
+	int startTimeStep = 100; //TO DO: Rename this and its getter/setter methods to "currentTimeStep"
 	int cubemap_size;
 	int start[3];
 	int dim[3];
@@ -185,7 +189,8 @@ public:
 	void LoadParameters();
 	string GetStringVal(string name);
 	unordered_map<int, AbstractNode *> * getHaloTable() { return &haloTable; }
-    
+	int getStartTimeStep() { return startTimeStep; }
+	void setStartTimeStep(int startTimeStep) { this->startTimeStep = startTimeStep; }
 
 	DataManager();
 	~DataManager();

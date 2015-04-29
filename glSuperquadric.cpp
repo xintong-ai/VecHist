@@ -162,3 +162,8 @@ GLSuperquadric::GLSuperquadric(float3 e_val, float3 e_vec_0, float3 e_vec_1, flo
 	m_vb.unlock();
 }
 
+GLSuperquadric::~GLSuperquadric()
+{
+	//Need to delete textures here, presumably
+
+}

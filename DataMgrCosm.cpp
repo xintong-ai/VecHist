@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <assert.h>
+#include <iomanip>
 
 using namespace std;
 
@@ -24,18 +25,40 @@ void DataMgrCosm::LoadData()
 	//dim[1] = 62.5;
 	//dim[2] = 62.5;
 
-	LoadHalosBinary();
+	LoadHalosBinary(startTimeStep);
 	LoadMergeTree();
 
 	//haloTable.clear();
 }
 
-
-void DataMgrCosm::LoadHalosBinary()
+//Load the binary halo data files
+//Parameter timestep id - the timestep for which data should be loaded
+bool DataMgrCosm::LoadHalosBinary(int timeStepId)
 {
+	string haloDir = GetStringVal("halodir");
+	string haloSuffix = GetStringVal("halosuffix");
+	
+	stringstream ss;
+	ss << haloDir << "/" << fixed << setprecision(2) << startTimeStep / 100.00 << haloSuffix;
+	cout << "Loading file: " << ss.str() << endl;
+
+	return LoadHalosBinary(ss.str());
+}
+
+//Load the binary halo data files
+//Parameter inputFileName - the name of the file to load
+bool DataMgrCosm::LoadHalosBinary(string inputFileName)
+{
+	halos.clear();  //Needed if different files are loaded over time
+	haloTable.clear();
+
 	float header[8];
 	float* data;
-	FILE* fp = fopen(GetStringVal("halo").c_str(), "rb");
+	FILE* fp = fopen(inputFileName.c_str(), "rb");
+	if (fp == nullptr) {
+		cerr << inputFileName << " could not be opened succesfully." << endl;
+		return false;
+	}
 	fread(header, sizeof(float), 8, fp);
 	data = (float*)malloc(sizeof(float)* header[6] * header[7]);
 	fread(data, sizeof(float), header[6] * header[7], fp);
@@ -53,7 +76,7 @@ void DataMgrCosm::LoadHalosBinary()
 
 	for (int i = 0; i < nhalos; i++)	{
 		float* d = &data[i*nattr];
-		halos.push_back(new Halo(
+		Halo * haloRecord = new Halo(
 			(int)d[0], d[1], d[2], d[3],
 			d[4],
 			make_float3(d[5], d[6], d[7]),
@@ -61,14 +84,19 @@ void DataMgrCosm::LoadHalosBinary()
 			make_float3(d[11], d[12], d[13]),
 			make_float3(d[14], d[15], d[16]),
 			&d[17], cubemap_size
-			));
+			);
+		halos.push_back(haloRecord);
+		haloTable[(int)d[0]] = haloRecord;
 	}
 
 	//free(header);
 	free(data);
+	return true;
 }
 void DataMgrCosm::LoadHalos()
 {
+	halos.clear();  //Needed if function is called multiple times for any reason
+	haloTable.clear();
 	
 	using namespace std;
 	ifstream fin(GetStringVal("halo").c_str());
@@ -233,7 +261,7 @@ inline bool readNextToken(std::istream &in, int &token, bool &isNumber)
 
 //This method recursively reads the contents of a merge tree listed from an in-order traversal
 //The input is a preprocessed version of the merge tree data from the Dark Sky data
-MergeNode * DataMgrCosm::readMergeTree(ifstream &fin, int treeId)
+MergeNode * DataMgrCosm::readMergeTree(ifstream &fin, int treeId, int currentLevel)
 {
 	int haloId = 0, numChildren = 0;  //Halo id and number of children for current node
 	bool isNumber = true; //True if entry read is a number
@@ -251,6 +279,7 @@ MergeNode * DataMgrCosm::readMergeTree(ifstream &fin, int treeId)
 	//Construct the current node
 	MergeNode * currentNode = new MergeNode(); //TO DO: Destructor
 	currentNode->haloId = haloId;
+	currentNode->timeStepId = currentLevel;
 
 	mergeTreeTable[haloId] = currentNode;
 
@@ -267,7 +296,7 @@ MergeNode * DataMgrCosm::readMergeTree(ifstream &fin, int treeId)
 
 	//Construct the children recursively
 	for (int i = 0; i < numChildren; i++) {
-		currentNode->children[i] = readMergeTree(fin, treeId);
+		currentNode->children[i] = readMergeTree(fin, treeId, currentLevel - 1);
 	}
 
 	return currentNode;
@@ -295,7 +324,7 @@ void DataMgrCosm::LoadMergeTree()
 	while (readNextToken(fMergeTreeIn, treeId, isNumber)) {
 		//cout << "Reading tree structure for tree id " << treeId << endl;
 		//Read the current merge tree from the file
-		MergeNode * root = readMergeTree(fMergeTreeIn, treeId);
+		MergeNode * root = readMergeTree(fMergeTreeIn, treeId, 100);
 
 		MergeTree * mergeTree = new MergeTree;
 		mergeTree->treeId = treeId;
@@ -312,7 +341,7 @@ void DataMgrCosm::LoadMergeTree()
 
 }
 
-//This method gets the MergeTree JSon for a given tree
+//This method gets the MergeTree JSon for a given tree from the entire forest loaded from the data file
 //Parameter treeId - the id of the tree for which we should get JSon
 //JSon example:
 //{
@@ -327,6 +356,21 @@ QString DataMgrCosm::getMergeTreeJSon(int treeId)
 	//cout << output.toStdString() << endl;
 	return output;
 }
+
+/*
+QString DataMgrCosm::buildJsonFromTreeList(list<MergeNode *> treeList)
+{
+	QString output;
+	list<MergeNode *>::iterator it;
+	output += "{";
+	for (it = treeList.begin(); it != treeList.end(); it++) {
+		output += buildJsonFromTree(*it, 0);
+	}
+	cout << endl;
+	//cout << output.toStdString() << endl;
+	return output;
+}
+*/
 
 //This method recursively reads the contents of a merge tree listed from an in-order traversal
 //The input is a preprocessed version of the merge tree data from the Dark Sky data
@@ -376,3 +420,46 @@ void DataMgrCosm::SetChildrenVisibility(MergeNode *nd, bool _isVisible)
 		}
 	}
 }
+
+//This method obtains all nodes at a given timestep for the forest
+//The result is itself a forest, but we represent it with a list of MergeNode * records
+vector<MergeNode *> DataMgrCosm::getNodesAtGivenTimestepFromForest(int desiredTimeStep)
+{
+	vector<MergeNode * > currentList; //This list we are building at this level
+
+	for (int i = 0; i < forest.size(); i++) {
+		MergeTree * mergeTree = forest[i];
+		MergeNode * mergeNode = mergeTree->root;
+
+		vector <MergeNode *> childList = getNodesAtGivenTimestepFromTree(desiredTimeStep, 100, mergeNode);
+		currentList.insert(currentList.end(), childList.begin(), childList.end());
+
+	}
+
+	return currentList;
+}
+
+//This method finds all nodes for a given timestep for a given MergeNode (tree or sub tree)
+vector<MergeNode *> DataMgrCosm::getNodesAtGivenTimestepFromTree(int desiredTimeStep, int currentTimeStep, MergeNode * mergeNode)
+{
+	vector<MergeNode *> currentList;  //The list we are building at this level
+
+	if (mergeNode != nullptr) {
+		
+		if (desiredTimeStep == currentTimeStep) {
+			currentList.push_back(mergeNode);
+			return currentList;
+		}
+
+		
+
+		for (int i = 0; i < mergeNode->children.size(); i++) {
+			vector <MergeNode *> childList = getNodesAtGivenTimestepFromTree(desiredTimeStep, currentTimeStep - 1, mergeNode->children[i]);
+			currentList.insert(currentList.end(), childList.begin(), childList.end());
+		}
+	}
+
+	return currentList;
+
+}
+

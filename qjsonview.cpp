@@ -13,6 +13,8 @@
 #include <QToolTip>
 #include "qjson.h"
 #include <iostream>
+#include <sstream>
+#include <iomanip>
 
 
 using namespace std;
@@ -22,13 +24,14 @@ using namespace std;
 #define EXPANDED_MARGIN_LEFT 21
 
 
-QJsonView::QJsonView(QWidget *parent, DataManager * dataManager) :
+QJsonView::QJsonView(QWidget *parent, DataManager * dataManager, Scene * sceneRef) :
 QWidget(parent),
 lblSingle(new QLabel(this)),
 expanded(false),
 hoverEffectsEnabled(false)
 {
 	this->dataManager = dataManager;
+	this->sceneRef = sceneRef;
 	//needed for hover effects
 	setAutoFillBackground(true);
 
@@ -289,25 +292,51 @@ void QJsonView::expand()
 			cout << endl;
 		}
 
-		unordered_map<int, AbstractNode *> * haloTable = dataManager -> getHaloTable();
 		
-		//Look for the halo id in the hashtable
-		if (haloTable->find(haloId) == haloTable->end()) {
-			cout << "Clicked halo id " << haloId << " is not currently loaded in the timestep data" << endl;
-		}
-		else {
-			cout << "Clicked halo id " << haloId << " IS in the timestep data" << endl;
-			//AbstractNode * currentNode = haloTable[haloId];
-			//currentNode->SetVisible(!currentNode->GetVisible());
-		}
 
 		unordered_map<int, MergeNode *> * mergeTreeTable = ((DataMgrCosm* ) dataManager)->getMergeTreeTable();
 		//MergeNode * mergeNode = mergeTreeTable[haloId];
 		MergeNode * mergeNode = mergeTreeTable->operator[](haloId);  //Nasty, but we're stuck using a pointer with this operator
-		AbstractNode * haloRecord = mergeNode->haloRecord;
+		//AbstractNode * haloRecord = mergeNode->haloRecord;
 		
-		bool isVisible = !mergeNode->isVisible;
-		((DataMgrCosm*)dataManager)->SetChildrenVisibility(mergeNode, isVisible);
+		//bool isVisible = !mergeNode->isVisible;
+		//((DataMgrCosm*)dataManager)->SetChildrenVisibility(mergeNode, isVisible);
+
+		cout << "Clicked merge node time step: " << mergeNode->timeStepId << endl;
+		cout << "Current data manager time step: " << dataManager->getStartTimeStep() << endl;
+
+		if (mergeNode->timeStepId != dataManager->getStartTimeStep()) {
+			dataManager->setStartTimeStep(mergeNode->timeStepId);
+			if (((DataMgrCosm*)dataManager)->LoadHalosBinary(dataManager->getStartTimeStep())) {
+				sceneRef->UpdateTexture();
+				unordered_map<int, AbstractNode *> * haloTable = dataManager->getHaloTable();
+				//Look for the halo id in the hashtable
+				if (haloTable->find(haloId) == haloTable->end()) {
+					cout << "Clicked halo id " << haloId << " is not currently loaded in the timestep data" << endl;
+				}
+				else {
+					cout << "Clicked halo id " << haloId << " IS in the timestep data" << endl;
+					AbstractNode * currentNode = haloTable->operator[](haloId);
+					currentNode->SetSelected(true);
+					//currentNode->
+					//currentNode->SetVisible(!currentNode->GetVisible());
+				}
+			}
+		}
+		else {
+			unordered_map<int, AbstractNode *> * haloTable = dataManager->getHaloTable();
+			if (haloTable->find(haloId) == haloTable->end()) {
+				cout << "Clicked halo id " << haloId << " is not currently loaded in the timestep data" << endl;
+			}
+			else {
+				cout << "Clicked halo id " << haloId << " IS in the timestep data" << endl;
+				AbstractNode * currentNode = haloTable->operator[](haloId);
+				currentNode->SetSelected(true);
+				//currentNode->
+				//currentNode->SetVisible(!currentNode->GetVisible());
+			}
+
+		}
 		
 
 	}
@@ -332,7 +361,7 @@ void QJsonView::expand()
 		{
 			foreach(QVariant e, v.toList())
 			{
-				QJsonView *w = new QJsonView(this, dataManager);
+				QJsonView *w = new QJsonView(this, dataManager, sceneRef);
 				w->setValue(e);
 				layout()->addWidget(w);
 				childWidgets << w;
@@ -360,7 +389,7 @@ void QJsonView::expand()
 				((QGridLayout*)layout())->addWidget(k, index, 0);
 				childWidgets << k;
 
-				QJsonView *w = new QJsonView(this, dataManager);
+				QJsonView *w = new QJsonView(this, dataManager, sceneRef);
 				w->setValue(i.value());
 				((QGridLayout*)layout())->addWidget(w, index, 1);
 				w->setSizePolicy(sizePolicy);

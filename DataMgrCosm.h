@@ -1,7 +1,7 @@
 #ifndef DATA_MGR_COSM
 #define DATA_MGR_COSM
 #include "DataManager.h"
-
+#include <list>
 
 
 inline void CubemapConvert(float *out, float *in, int s)
@@ -63,6 +63,7 @@ public:
 	~Halo()
 	{
 		delete[] cubemap;
+		delete glyph;
 	}
 };
 
@@ -72,9 +73,12 @@ struct MergeNode
 	vector<MergeNode *> children;  //Each node has an array of children
 	int haloId = 0;	//The id of the halo corresponding to this node
 	AbstractNode * haloRecord = nullptr;  //Reference to corresponding halo (if it is loaded and thus exists)
+	int timeStepId = -1;				//Time step number (Stored as an integer -- thus 1.0 becomes 100, and 0.99 becomes 99)
 	bool isVisible = true;  //Whether or not the entry in the merge tree is registered as visble (if it corresponds to a halo).  Not all nodes actually have halos loaded, so this must be stored here.
 };
 
+//This struct represents one merge tree as read from the Dark Sky merge tree data file
+//TO DO: We may want to evaluate whether or not we want to keep this anymore given that we have discovered tree ids are in fact halo ids
 struct MergeTree
 {
 	MergeNode * root;
@@ -93,8 +97,9 @@ class DataMgrCosm:public DataManager
 	vector<MergeTree *> forest;  //A forest of merge trees from the Dark Sky data
 	unordered_map<int, MergeNode *> mergeTreeTable;  //Hash table to link halo ids to Halo struct records
 	void LoadHalos();
-	void LoadHalosBinary();
 public:
+	bool LoadHalosBinary(int timeStepId);
+	bool LoadHalosBinary(string inputFileName);
 	virtual void LoadData();
 	virtual vector<AbstractNode*> GetAllNode()
 	{
@@ -115,11 +120,15 @@ public:
 	virtual void UpdateCubeMap(float* cubemap){};
 	void LoadMergeTree();
 	QString getMergeTreeJSon(int treeId);
+	//QString buildJsonFromTreeList(list<MergeNode *> treeList);
 	QString buildJsonFromTree(MergeNode * currentNode, int level);
 	vector<MergeTree*> & getForest() { return forest; }
-	MergeNode * readMergeTree(ifstream &fin, int treeId);
+	MergeNode * readMergeTree(ifstream &fin, int treeId, int currentLevel);
 	unordered_map<int, MergeNode *> * getMergeTreeTable() { return &mergeTreeTable; }
 	void SetChildrenVisibility(MergeNode *nd, bool _isVisible);
+	vector<MergeNode *> getNodesAtGivenTimestepFromForest(int desiredTimeStep);
+	vector<MergeNode *> getNodesAtGivenTimestepFromTree(int desiredTimeStep, int currentTimeStep, MergeNode * mergeNode);
+	
 
 	DataMgrCosm();
 	~DataMgrCosm();
