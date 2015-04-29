@@ -574,6 +574,21 @@ inline int iDivUp(int a, int b)
 	return (a % b != 0) ? (a / b + 1) : (a / b);
 }
 
+void Scene::UpdateTexture()
+{
+	blockTex.clear();
+
+	leafNodes = dataManager->GetAllNode();
+
+	for (auto nd : leafNodes)	{
+		GLTextureCube *texCube = new GLTextureCube(qMin(1024, m_maxTextureSize), 1);
+		texCube->load(nd->GetCubemap(), dataManager->GetCubemapSize());
+		glColor3d(1.0, 1.0, 1.0);
+		blockTex << texCube;
+	}
+}
+
+
 Scene::Scene(int width, int height, int maxTextureSize)
     : m_distExp(600)
     , m_frame(0)
@@ -620,14 +635,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	//TO DO: Make this work:
 	//dataManager->LoadVec(dataManager->GetFilename("vectorfield").c_str());
 	dataManager->LoadData();
-	leafNodes = dataManager->GetAllNode();
-
-	for (auto nd : leafNodes)	{
-		GLTextureCube *texCube = new GLTextureCube(qMin(1024, m_maxTextureSize), 1);
-		texCube->load(nd->GetCubemap(), dataManager->GetCubemapSize());
-		glColor3d(1.0, 1.0, 1.0);
-		blockTex << texCube;
-	}
+	UpdateTexture();
 
 	//dataManager->LoadVec("D:/data/nek/nek.d_4.vec");
 	

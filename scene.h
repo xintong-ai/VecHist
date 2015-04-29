@@ -232,6 +232,7 @@ public:
     ~Scene();
     virtual void drawBackground(QPainter *painter, const QRectF &rect);
 	void UpdateBlock();
+	void UpdateTexture();
 
 public slots:
     //void setShader(int index);
