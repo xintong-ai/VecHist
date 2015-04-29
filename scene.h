@@ -222,6 +222,8 @@ protected:
 //    virtual void mouseDoubleClickEvent(QMouseEvent *event);
 //};
 
+class QJsonView;
+
 class Scene : public QGraphicsScene, protected QGLFunctions
 {
     Q_OBJECT

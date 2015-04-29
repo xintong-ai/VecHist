@@ -670,7 +670,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		
 
 		QGraphicsView * view = new QGraphicsView();
-		m_jsonView = new QJsonView(view, dataManager);
+		m_jsonView = new QJsonView(view, dataManager, this);
 
 		scrollArea = new QScrollArea;
 		scrollArea->setWidget(view);

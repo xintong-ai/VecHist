@@ -24,13 +24,14 @@ using namespace std;
 #define EXPANDED_MARGIN_LEFT 21
 
 
-QJsonView::QJsonView(QWidget *parent, DataManager * dataManager) :
+QJsonView::QJsonView(QWidget *parent, DataManager * dataManager, Scene * sceneRef) :
 QWidget(parent),
 lblSingle(new QLabel(this)),
 expanded(false),
 hoverEffectsEnabled(false)
 {
 	this->dataManager = dataManager;
+	this->sceneRef = sceneRef;
 	//needed for hover effects
 	setAutoFillBackground(true);
 

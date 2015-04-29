@@ -7,6 +7,9 @@
 #include <QLabel>
 #include "DataManager.h"
 #include "DataMgrCosm.h"
+#include "Scene.h"
+
+class Scene;
 
 /**
 Widget to display JSON or QVariant data.
@@ -26,7 +29,7 @@ public:
 	/**
 	Constructor for QJsonView, taking the parent widget as a single argument.
 	*/
-	explicit QJsonView(QWidget *parent = 0, DataManager * dataManger = nullptr);
+	explicit QJsonView(QWidget *parent = 0, DataManager * dataManger = nullptr, Scene * sceneRef = nullptr);
 
 	/**
 	Static and public helper function returning the HTML code which will be used to visualize the data (by applying syntax highlighting rules).
@@ -142,6 +145,7 @@ private:
 	bool hoverEffectsEnabled;
 
 	DataManager * dataManager = nullptr;
+	Scene * sceneRef = nullptr;
 
 	// apply hover effect
 	void hover();
