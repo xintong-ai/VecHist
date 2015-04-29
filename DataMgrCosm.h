@@ -97,7 +97,7 @@ class DataMgrCosm:public DataManager
 	unordered_map<int, MergeNode *> mergeTreeTable;  //Hash table to link halo ids to Halo struct records
 	void LoadHalos();
 public:
-	void LoadHalosBinary();
+	void LoadHalosBinary(int timeStepId);
 	void LoadHalosBinary(string inputFileName);
 	virtual void LoadData();
 	virtual vector<AbstractNode*> GetAllNode()

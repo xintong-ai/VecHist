@@ -317,10 +317,8 @@ void QJsonView::expand()
 		
 
 		if (mergeNode->timeStepId != dataManager->getStartTimeStep()) {
-			stringstream ss;
-			ss << "C:/Users/datahead8888/Documents/DarkSkyDataDownloaded/" << fixed << setprecision(2) << dataManager->getStartTimeStep() / 100.00 << "000_haloEigen.bin";
-			cout << "Loading file: " << ss.str() << endl;
-			((DataMgrCosm*)dataManager)->LoadHalosBinary(ss.str());
+			dataManager->setStartTimeStep(mergeNode->timeStepId);
+			((DataMgrCosm*)dataManager)->LoadHalosBinary(dataManager->getStartTimeStep());
 		}
 		
 

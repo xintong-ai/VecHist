@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <assert.h>
+#include <iomanip>
 
 using namespace std;
 
@@ -24,20 +25,28 @@ void DataMgrCosm::LoadData()
 	//dim[1] = 62.5;
 	//dim[2] = 62.5;
 
-	LoadHalosBinary();
+	LoadHalosBinary(startTimeStep);
 	LoadMergeTree();
 
 	//haloTable.clear();
 }
 
-
-void DataMgrCosm::LoadHalosBinary()
+//Load the binary halo data files
+//Parameter timestep id - the timestep for which data should be loaded
+void DataMgrCosm::LoadHalosBinary(int timeStepId)
 {
-	string fileName = GetStringVal("halo");
-	LoadHalosBinary(fileName);
+	string haloDir = GetStringVal("halodir");
+	string haloSuffix = GetStringVal("halosuffix");
+	
+	stringstream ss;
+	ss << haloDir << "/" << fixed << setprecision(2) << startTimeStep / 100.00 << haloSuffix;
+	cout << "Loading file: " << ss.str() << endl;
 
+	LoadHalosBinary(ss.str());
 }
 
+//Load the binary halo data files
+//Parameter inputFileName - the name of the file to load
 void DataMgrCosm::LoadHalosBinary(string inputFileName)
 {
 	halos.clear();  //Needed if different files are loaded over time
