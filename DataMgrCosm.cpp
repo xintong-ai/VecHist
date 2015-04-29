@@ -288,7 +288,7 @@ MergeNode * DataMgrCosm::readMergeTree(ifstream &fin, int treeId, int currentLev
 		//cerr << "In method DataMgrCosm::readMergeTree " << haloId << " is not found" << endl;
 	}
 	else {
-		cout << "Halo id " << haloId << " successfully loaded for tree id " << treeId << endl;
+		//cout << "Halo id " << haloId << " successfully loaded for tree id " << treeId << endl;
 		currentNode->haloRecord = haloTable[haloId];	
 	}
 

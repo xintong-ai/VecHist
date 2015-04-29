@@ -249,7 +249,7 @@ public slots:
 protected:
 	void render3D(const QMatrix4x4 &view);
 	void renderBBox(const QMatrix4x4 &view);
-	void renderSelectionBox(const QMatrix4x4 &view);
+	//void renderSelectionBox(const QMatrix4x4 &view);
 	void renderQCube(const QMatrix4x4 &view);	//render the queried cube
 	void setSelectionBoxPosition(int x, int y, int z);
 	void setSelectionBoxWidth(int width);
