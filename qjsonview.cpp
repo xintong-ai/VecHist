@@ -287,7 +287,23 @@ void QJsonView::expand()
 		int haloId = 0;
 		for (i = map.begin(); i != map.end(); ++i)
 		{
-			haloId = i.key().toInt();
+			QString starter = i.key();
+
+			QString newValue;
+
+			for (int i = 0; i < starter.length(); i++)
+			{
+				if (starter.mid(i, 1) != "(")
+				{
+					newValue += starter.mid(i, 1);
+				}
+				else
+				{
+					break;
+				}
+			}
+
+			haloId = newValue.toInt();
 			cout << "Halo id clicked: " << haloId << endl;
 			cout << endl;
 		}

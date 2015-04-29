@@ -160,6 +160,7 @@ class DataManager
 {
 protected:
 	int startTimeStep = 100; //TO DO: Rename this and its getter/setter methods to "currentTimeStep"
+	int firstTimeStep = 18;
 	int cubemap_size;
 	int start[3];
 	int dim[3];

@@ -380,7 +380,7 @@ QString DataMgrCosm::buildJsonFromTree(MergeNode * currentNode, int level)
 
 	int haloId = currentNode->haloId;  //Halo id for current node
 
-	QString currentString = QString("{ \"") + QString::number(haloId) + QString("\" : [");
+	QString currentString = QString("{ \"") + QString::number(haloId) + " \( " + QString::number(firstTimeStep - level) + " \) " + QString("\" : [");
 
 	//Construct the children recursively
 	if (currentNode->children.size() == 0 || level > DEPTH_LIMIT) {
