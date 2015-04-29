@@ -269,6 +269,7 @@ private:
 	//void DrawPicking();
 	void ShowGpuMemInfo();
 
+	
     QTime m_time;
     int m_lastTime;
     int m_mouseEventTime;

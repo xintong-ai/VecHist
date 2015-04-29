@@ -13,6 +13,8 @@
 #include <QToolTip>
 #include "qjson.h"
 #include <iostream>
+#include <sstream>
+#include <iomanip>
 
 
 using namespace std;
@@ -306,8 +308,20 @@ void QJsonView::expand()
 		MergeNode * mergeNode = mergeTreeTable->operator[](haloId);  //Nasty, but we're stuck using a pointer with this operator
 		AbstractNode * haloRecord = mergeNode->haloRecord;
 		
-		bool isVisible = !mergeNode->isVisible;
-		((DataMgrCosm*)dataManager)->SetChildrenVisibility(mergeNode, isVisible);
+		//bool isVisible = !mergeNode->isVisible;
+		//((DataMgrCosm*)dataManager)->SetChildrenVisibility(mergeNode, isVisible);
+
+		cout << "Clicked merge node time step: " << mergeNode->timeStepId << endl;
+		cout << "Current data manager time step: " << dataManager->getStartTimeStep() << endl;
+
+		
+
+		if (mergeNode->timeStepId != dataManager->getStartTimeStep()) {
+			stringstream ss;
+			ss << "C:/Users/datahead8888/Documents/DarkSkyDataDownloaded/" << fixed << setprecision(2) << dataManager->getStartTimeStep() / 100.00 << "000_haloEigen.bin";
+			cout << "Loading file: " << ss.str() << endl;
+			((DataMgrCosm*)dataManager)->LoadHalosBinary(ss.str());
+		}
 		
 
 	}

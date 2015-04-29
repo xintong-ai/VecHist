@@ -44,6 +44,7 @@
 #include <QtGui/qmatrix4x4.h>
 #include <QtGui/qvector3d.h>
 #include <QOpenGLFunctions>
+#include <sstream>
 
 //#include "3rdparty/fbm.h"
 #include <memory>
@@ -592,6 +593,13 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	else //if (dataManager->GetStringVal("datatype").compare("cosmology") == 0)
 		dataManager = new DataMgrCosm();
 
+	//Read the starting time step value from the .par file, and convert it to an integer
+	string startTimeStepStr = dataManager->GetStringVal("starttimestep");
+	istringstream iss(startTimeStepStr);
+	int startTimeStepValue = 0;
+	iss >> startTimeStepValue;
+	dataManager->setStartTimeStep(startTimeStepValue);
+
 	pbo = GLuint(0);
 	tex = 0;
 	//$$$
@@ -685,7 +693,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		//vector<MergeTree *> forest = cosmPtr->getForest();
 
 		//vector<MergeTree *> levelXForest = cosmPtr->getNodesAtGivenTimestepFromForest(16);
-		levelXForest = cosmPtr->getNodesAtGivenTimestepFromForest(16);
+		levelXForest = cosmPtr->getNodesAtGivenTimestepFromForest(dataManager->getStartTimeStep());
 
 		vector<MergeNode *>::iterator it;
 		int i = 0;

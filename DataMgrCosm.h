@@ -72,6 +72,7 @@ struct MergeNode
 	vector<MergeNode *> children;  //Each node has an array of children
 	int haloId = 0;	//The id of the halo corresponding to this node
 	AbstractNode * haloRecord = nullptr;  //Reference to corresponding halo (if it is loaded and thus exists)
+	int timeStepId = -1;				//Time step number (Stored as an integer -- thus 1.0 becomes 100, and 0.99 becomes 99)
 	bool isVisible = true;  //Whether or not the entry in the merge tree is registered as visble (if it corresponds to a halo).  Not all nodes actually have halos loaded, so this must be stored here.
 };
 
@@ -95,8 +96,9 @@ class DataMgrCosm:public DataManager
 	vector<MergeTree *> forest;  //A forest of merge trees from the Dark Sky data
 	unordered_map<int, MergeNode *> mergeTreeTable;  //Hash table to link halo ids to Halo struct records
 	void LoadHalos();
-	void LoadHalosBinary();
 public:
+	void LoadHalosBinary();
+	void LoadHalosBinary(string inputFileName);
 	virtual void LoadData();
 	virtual vector<AbstractNode*> GetAllNode()
 	{
@@ -120,7 +122,7 @@ public:
 	//QString buildJsonFromTreeList(list<MergeNode *> treeList);
 	QString buildJsonFromTree(MergeNode * currentNode, int level);
 	vector<MergeTree*> & getForest() { return forest; }
-	MergeNode * readMergeTree(ifstream &fin, int treeId);
+	MergeNode * readMergeTree(ifstream &fin, int treeId, int currentLevel);
 	unordered_map<int, MergeNode *> * getMergeTreeTable() { return &mergeTreeTable; }
 	void SetChildrenVisibility(MergeNode *nd, bool _isVisible);
 	vector<MergeNode *> getNodesAtGivenTimestepFromForest(int desiredTimeStep);

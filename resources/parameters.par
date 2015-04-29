@@ -9,3 +9,4 @@ string eigval C:/XinCode/VecHist/python/vechist/eig_vals.txt
 string eigvec  string eigvec C:/XinCode/VecHist/python/vechist/eig_vecs.txt
 string halo C:/Users/datahead8888/Documents/DarkSkyDataDownloaded/0.16000_haloEigen.bin
 string datatype flow
+string starttimestep 16

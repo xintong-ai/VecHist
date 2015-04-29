@@ -33,9 +33,18 @@ void DataMgrCosm::LoadData()
 
 void DataMgrCosm::LoadHalosBinary()
 {
+	string fileName = GetStringVal("halo");
+	LoadHalosBinary(fileName);
+
+}
+
+void DataMgrCosm::LoadHalosBinary(string inputFileName)
+{
+	halos.clear();  //Needed if different files are loaded over time
+
 	float header[8];
 	float* data;
-	FILE* fp = fopen(GetStringVal("halo").c_str(), "rb");
+	FILE* fp = fopen(inputFileName.c_str(), "rb");
 	fread(header, sizeof(float), 8, fp);
 	data = (float*)malloc(sizeof(float)* header[6] * header[7]);
 	fread(data, sizeof(float), header[6] * header[7], fp);
@@ -69,6 +78,7 @@ void DataMgrCosm::LoadHalosBinary()
 }
 void DataMgrCosm::LoadHalos()
 {
+	halos.clear();  //Needed if function is called multiple times for any reason
 	
 	using namespace std;
 	ifstream fin(GetStringVal("halo").c_str());
@@ -233,7 +243,7 @@ inline bool readNextToken(std::istream &in, int &token, bool &isNumber)
 
 //This method recursively reads the contents of a merge tree listed from an in-order traversal
 //The input is a preprocessed version of the merge tree data from the Dark Sky data
-MergeNode * DataMgrCosm::readMergeTree(ifstream &fin, int treeId)
+MergeNode * DataMgrCosm::readMergeTree(ifstream &fin, int treeId, int currentLevel)
 {
 	int haloId = 0, numChildren = 0;  //Halo id and number of children for current node
 	bool isNumber = true; //True if entry read is a number
@@ -251,6 +261,7 @@ MergeNode * DataMgrCosm::readMergeTree(ifstream &fin, int treeId)
 	//Construct the current node
 	MergeNode * currentNode = new MergeNode(); //TO DO: Destructor
 	currentNode->haloId = haloId;
+	currentNode->timeStepId = currentLevel;
 
 	mergeTreeTable[haloId] = currentNode;
 
@@ -267,7 +278,7 @@ MergeNode * DataMgrCosm::readMergeTree(ifstream &fin, int treeId)
 
 	//Construct the children recursively
 	for (int i = 0; i < numChildren; i++) {
-		currentNode->children[i] = readMergeTree(fin, treeId);
+		currentNode->children[i] = readMergeTree(fin, treeId, currentLevel - 1);
 	}
 
 	return currentNode;
@@ -295,7 +306,7 @@ void DataMgrCosm::LoadMergeTree()
 	while (readNextToken(fMergeTreeIn, treeId, isNumber)) {
 		//cout << "Reading tree structure for tree id " << treeId << endl;
 		//Read the current merge tree from the file
-		MergeNode * root = readMergeTree(fMergeTreeIn, treeId);
+		MergeNode * root = readMergeTree(fMergeTreeIn, treeId, 100);
 
 		MergeTree * mergeTree = new MergeTree;
 		mergeTree->treeId = treeId;
