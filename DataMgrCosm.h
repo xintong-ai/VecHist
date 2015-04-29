@@ -63,6 +63,7 @@ public:
 	~Halo()
 	{
 		delete[] cubemap;
+		delete glyph;
 	}
 };
 
