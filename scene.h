@@ -327,10 +327,11 @@ private:
 	dim3 blockSize;
 	GLfloat invProjMulView[16];
 
+	//TO DO: Remove these unless we end up using them to represent the selection box position
 	double selectionX = 0;
 	double selectionY = 0;
 	double selectionZ = 0;
-	double selectionBoxWidth = 0.4;
+	double selectionBoxWidth = 0.6;
 
 	////picking
 	//GLuint m_fbo;
