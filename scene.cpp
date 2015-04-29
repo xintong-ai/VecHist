@@ -1237,7 +1237,10 @@ void Scene::render3D(const QMatrix4x4 &view)
 		tex->unbind();
 
 		if (nd->GetSelected()) {
+			//glPushAttrib(GL_COLOR_BUFFER_BIT);
+			glColor3f(1.0f, 1.0f, 0.0f); //Currently has no effect
 			renderSelectionBox(view);
+			//glPopAttrib();
 		}
 
 		glPopMatrix();
