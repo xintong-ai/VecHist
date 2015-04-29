@@ -33,7 +33,7 @@ void DataMgrCosm::LoadData()
 
 //Load the binary halo data files
 //Parameter timestep id - the timestep for which data should be loaded
-void DataMgrCosm::LoadHalosBinary(int timeStepId)
+bool DataMgrCosm::LoadHalosBinary(int timeStepId)
 {
 	string haloDir = GetStringVal("halodir");
 	string haloSuffix = GetStringVal("halosuffix");
@@ -42,18 +42,22 @@ void DataMgrCosm::LoadHalosBinary(int timeStepId)
 	ss << haloDir << "/" << fixed << setprecision(2) << startTimeStep / 100.00 << haloSuffix;
 	cout << "Loading file: " << ss.str() << endl;
 
-	LoadHalosBinary(ss.str());
+	return LoadHalosBinary(ss.str());
 }
 
 //Load the binary halo data files
 //Parameter inputFileName - the name of the file to load
-void DataMgrCosm::LoadHalosBinary(string inputFileName)
+bool DataMgrCosm::LoadHalosBinary(string inputFileName)
 {
 	halos.clear();  //Needed if different files are loaded over time
 
 	float header[8];
 	float* data;
 	FILE* fp = fopen(inputFileName.c_str(), "rb");
+	if (fp == nullptr) {
+		cerr << inputFileName << " could not be opened succesfully." << endl;
+		return false;
+	}
 	fread(header, sizeof(float), 8, fp);
 	data = (float*)malloc(sizeof(float)* header[6] * header[7]);
 	fread(data, sizeof(float), header[6] * header[7], fp);
@@ -84,6 +88,7 @@ void DataMgrCosm::LoadHalosBinary(string inputFileName)
 
 	//free(header);
 	free(data);
+	return true;
 }
 void DataMgrCosm::LoadHalos()
 {

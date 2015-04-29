@@ -317,8 +317,9 @@ void QJsonView::expand()
 
 		if (mergeNode->timeStepId != dataManager->getStartTimeStep()) {
 			dataManager->setStartTimeStep(mergeNode->timeStepId);
-			((DataMgrCosm*)dataManager)->LoadHalosBinary(dataManager->getStartTimeStep());
-			sceneRef->UpdateTexture();
+			if (((DataMgrCosm*)dataManager)->LoadHalosBinary(dataManager->getStartTimeStep())) {
+				sceneRef->UpdateTexture();
+			}
 		}
 		
 
