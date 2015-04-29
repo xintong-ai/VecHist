@@ -935,6 +935,128 @@ void Scene::renderBBox(const QMatrix4x4 &view)
 	glEnd();
 }
 
+void Scene::renderSelectionBox(const QMatrix4x4 &view)
+{
+	//int bx = nx - distance, by = ny - distance, bz = nz - distance;
+	double  nx = selectionX;
+	double ny = selectionY;
+	double nz = selectionZ;
+	double distance = selectionBoxWidth;
+
+
+	glBegin(GL_LINES);
+
+	
+	//////Front quad///////
+	//Bottom line
+	glVertex3f(nx - distance, ny - distance, nz - distance);
+	glVertex3f(nx + distance, ny - distance, nz - distance);
+
+	//Top line
+	glVertex3f(nx - distance, ny + distance, nz - distance);
+	glVertex3f(nx + distance, ny + distance, nz - distance);
+
+	//Left line
+	glVertex3f(nx - distance, ny - distance, nz - distance);
+	glVertex3f(nx - distance, ny + distance, nz - distance);
+
+	//Right line
+	glVertex3f(nx + distance, ny - distance, nz - distance);
+	glVertex3f(nx + distance, ny + distance, nz - distance);
+
+
+	/////Back quad///////
+	//Bottom line (from same persepctive as front quad)
+	glVertex3f(nx - distance, ny - distance, nz + distance);
+	glVertex3f(nx + distance, ny - distance, nz + distance);
+
+	//Top line
+	glVertex3f(nx - distance, ny + distance, nz + distance);
+	glVertex3f(nx + distance, ny + distance, nz + distance);
+
+	//Left line
+	glVertex3f(nx - distance, ny - distance, nz + distance);
+	glVertex3f(nx - distance, ny + distance, nz + distance);
+
+	//Right line
+	glVertex3f(nx + distance, ny - distance, nz + distance);
+	glVertex3f(nx + distance, ny + distance, nz + distance);
+
+	/////////Left quad/////
+	//Bottom line
+	glVertex3f(nx - distance, ny - distance, nz - distance);
+	glVertex3f(nx - distance, ny - distance, nz + distance);
+
+	//Top line
+	glVertex3f(nx - distance, ny + distance, nz - distance);
+	glVertex3f(nx - distance, ny + distance, nz + distance);
+
+	/////////Right quad/////
+	//Bottom line
+	glVertex3f(nx + distance, ny - distance, nz - distance);
+	glVertex3f(nx + distance, ny - distance, nz + distance);
+
+	//Top line
+	glVertex3f(nx + distance, ny + distance, nz - distance);
+	glVertex3f(nx + distance, ny + distance, nz + distance);
+
+	/*
+	glVertex3f(0, 0, 0);
+	glVertex3f(bx, 0, 0);
+
+	glVertex3f(bx, 0, 0);
+	glVertex3f(bx, by, 0);
+
+	glVertex3f(bx, by, 0);
+	glVertex3f(0, by, 0);
+
+	glVertex3f(0, by, 0);
+	glVertex3f(0, 0, 0);
+
+	//////
+	glVertex3f(0, 0, 0);
+	glVertex3f(0, 0, bz);
+
+	glVertex3f(bx, 0, 0);
+	glVertex3f(bx, 0, bz);
+
+	glVertex3f(bx, by, 0);
+	glVertex3f(bx, by, bz);
+
+	glVertex3f(0, by, 0);
+	glVertex3f(0, by, bz);
+
+	//////
+	glVertex3f(0, 0, bz);
+	glVertex3f(bx, 0, bz);
+
+	glVertex3f(bx, 0, bz);
+	glVertex3f(bx, by, bz);
+
+	glVertex3f(bx, by, bz);
+	glVertex3f(0, by, bz);
+
+	glVertex3f(0, by, bz);
+	glVertex3f(0, 0, bz);
+	*/
+
+	glEnd();
+}
+
+void Scene::setSelectionBoxPosition(int x, int y, int z)
+{
+	selectionX = x;
+	selectionY = y;
+	selectionZ = z;
+
+}
+
+void Scene::setSelectionBoxWidth(int width)
+{
+	selectionBoxWidth = width;
+}
+
+
 void Scene::renderQCube(const QMatrix4x4 &view)
 {
 
@@ -1113,6 +1235,11 @@ void Scene::render3D(const QMatrix4x4 &view)
 		//nd->
 		
 		tex->unbind();
+
+		if (nd->GetSelected()) {
+			renderSelectionBox(view);
+		}
+
 		glPopMatrix();
 
 		//draw the links
@@ -1149,6 +1276,7 @@ void Scene::render3D(const QMatrix4x4 &view)
 //	/********end******/
 //	m_programs["sphere_brush"]->release();
 
+	/*
 	glLineWidth(8.0f);
 	float axis_len = 32;
 	glColor3f(1.0f, 0.0f, 0.0f);
@@ -1169,6 +1297,7 @@ void Scene::render3D(const QMatrix4x4 &view)
 	glVertex3f(0.0f, 0.0f, 3.0f * axis_len);
 	glEnd();
 	glLineWidth(1.0f);
+	*/
 
 	//draw streamlines
 	//glUseProgram(0);
@@ -1245,8 +1374,9 @@ void Scene::render3D(const QMatrix4x4 &view)
 //	//	glPolygonMode(GL_FRONT, GL_FILL);
 
 
-	renderQCube(view);
-	renderBBox(view);
+	//renderQCube(view);
+	//renderBBox(view);
+	
 
 	//glPopMatrix();
 

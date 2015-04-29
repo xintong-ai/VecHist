@@ -292,22 +292,12 @@ void QJsonView::expand()
 			cout << endl;
 		}
 
-		unordered_map<int, AbstractNode *> * haloTable = dataManager -> getHaloTable();
 		
-		//Look for the halo id in the hashtable
-		if (haloTable->find(haloId) == haloTable->end()) {
-			cout << "Clicked halo id " << haloId << " is not currently loaded in the timestep data" << endl;
-		}
-		else {
-			cout << "Clicked halo id " << haloId << " IS in the timestep data" << endl;
-			//AbstractNode * currentNode = haloTable[haloId];
-			//currentNode->SetVisible(!currentNode->GetVisible());
-		}
 
 		unordered_map<int, MergeNode *> * mergeTreeTable = ((DataMgrCosm* ) dataManager)->getMergeTreeTable();
 		//MergeNode * mergeNode = mergeTreeTable[haloId];
 		MergeNode * mergeNode = mergeTreeTable->operator[](haloId);  //Nasty, but we're stuck using a pointer with this operator
-		AbstractNode * haloRecord = mergeNode->haloRecord;
+		//AbstractNode * haloRecord = mergeNode->haloRecord;
 		
 		//bool isVisible = !mergeNode->isVisible;
 		//((DataMgrCosm*)dataManager)->SetChildrenVisibility(mergeNode, isVisible);
@@ -319,7 +309,33 @@ void QJsonView::expand()
 			dataManager->setStartTimeStep(mergeNode->timeStepId);
 			if (((DataMgrCosm*)dataManager)->LoadHalosBinary(dataManager->getStartTimeStep())) {
 				sceneRef->UpdateTexture();
+				unordered_map<int, AbstractNode *> * haloTable = dataManager->getHaloTable();
+				//Look for the halo id in the hashtable
+				if (haloTable->find(haloId) == haloTable->end()) {
+					cout << "Clicked halo id " << haloId << " is not currently loaded in the timestep data" << endl;
+				}
+				else {
+					cout << "Clicked halo id " << haloId << " IS in the timestep data" << endl;
+					AbstractNode * currentNode = haloTable->operator[](haloId);
+					currentNode->SetSelected(true);
+					//currentNode->
+					//currentNode->SetVisible(!currentNode->GetVisible());
+				}
 			}
+		}
+		else {
+			unordered_map<int, AbstractNode *> * haloTable = dataManager->getHaloTable();
+			if (haloTable->find(haloId) == haloTable->end()) {
+				cout << "Clicked halo id " << haloId << " is not currently loaded in the timestep data" << endl;
+			}
+			else {
+				cout << "Clicked halo id " << haloId << " IS in the timestep data" << endl;
+				AbstractNode * currentNode = haloTable->operator[](haloId);
+				currentNode->SetSelected(true);
+				//currentNode->
+				//currentNode->SetVisible(!currentNode->GetVisible());
+			}
+
 		}
 		
 

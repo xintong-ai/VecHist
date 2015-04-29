@@ -249,7 +249,10 @@ public slots:
 protected:
 	void render3D(const QMatrix4x4 &view);
 	void renderBBox(const QMatrix4x4 &view);
+	void renderSelectionBox(const QMatrix4x4 &view);
 	void renderQCube(const QMatrix4x4 &view);	//render the queried cube
+	void setSelectionBoxPosition(int x, int y, int z);
+	void setSelectionBoxWidth(int width);
 	void setStates();
     //void setLights();
     void defaultStates();
@@ -323,6 +326,11 @@ private:
 	dim3 gridSize;
 	dim3 blockSize;
 	GLfloat invProjMulView[16];
+
+	double selectionX = 0;
+	double selectionY = 0;
+	double selectionZ = 0;
+	double selectionBoxWidth = 0.4;
 
 	////picking
 	//GLuint m_fbo;

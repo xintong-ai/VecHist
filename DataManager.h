@@ -120,10 +120,13 @@ protected:
 	Widget::Node * graphNode = nullptr;
 	AbstractNode * haloNode = nullptr;
 	GLSuperquadric* glyph;
-	bool isVisible;
+	bool isVisible = true;
+	bool isSelected = false;
 public:
 	bool GetVisible(){ return isVisible; }
 	void SetVisible(bool b){ isVisible = b; }
+	bool GetSelected() { return isSelected; }
+	void SetSelected(bool isSelected) { this->isSelected = isSelected; }
 	Widget::Node* GetGraphNode(){ return graphNode; }
 	void SetGraphNode(Widget::Node* n) { graphNode = n; }
 	AbstractNode * GetHaloNode() { return haloNode; }
