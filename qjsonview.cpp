@@ -315,11 +315,10 @@ void QJsonView::expand()
 		cout << "Clicked merge node time step: " << mergeNode->timeStepId << endl;
 		cout << "Current data manager time step: " << dataManager->getStartTimeStep() << endl;
 
-		
-
 		if (mergeNode->timeStepId != dataManager->getStartTimeStep()) {
 			dataManager->setStartTimeStep(mergeNode->timeStepId);
 			((DataMgrCosm*)dataManager)->LoadHalosBinary(dataManager->getStartTimeStep());
+			sceneRef->UpdateTexture();
 		}
 		
 
