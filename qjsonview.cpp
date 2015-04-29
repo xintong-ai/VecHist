@@ -344,7 +344,7 @@ void QJsonView::expand()
 		{
 			foreach(QVariant e, v.toList())
 			{
-				QJsonView *w = new QJsonView(this, dataManager);
+				QJsonView *w = new QJsonView(this, dataManager, sceneRef);
 				w->setValue(e);
 				layout()->addWidget(w);
 				childWidgets << w;
@@ -372,7 +372,7 @@ void QJsonView::expand()
 				((QGridLayout*)layout())->addWidget(k, index, 0);
 				childWidgets << k;
 
-				QJsonView *w = new QJsonView(this, dataManager);
+				QJsonView *w = new QJsonView(this, dataManager, sceneRef);
 				w->setValue(i.value());
 				((QGridLayout*)layout())->addWidget(w, index, 1);
 				w->setSizePolicy(sizePolicy);
