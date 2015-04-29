@@ -50,6 +50,7 @@ bool DataMgrCosm::LoadHalosBinary(int timeStepId)
 bool DataMgrCosm::LoadHalosBinary(string inputFileName)
 {
 	halos.clear();  //Needed if different files are loaded over time
+	haloTable.clear();
 
 	float header[8];
 	float* data;
@@ -75,7 +76,7 @@ bool DataMgrCosm::LoadHalosBinary(string inputFileName)
 
 	for (int i = 0; i < nhalos; i++)	{
 		float* d = &data[i*nattr];
-		halos.push_back(new Halo(
+		Halo * haloRecord = new Halo(
 			(int)d[0], d[1], d[2], d[3],
 			d[4],
 			make_float3(d[5], d[6], d[7]),
@@ -83,7 +84,9 @@ bool DataMgrCosm::LoadHalosBinary(string inputFileName)
 			make_float3(d[11], d[12], d[13]),
 			make_float3(d[14], d[15], d[16]),
 			&d[17], cubemap_size
-			));
+			);
+		halos.push_back(haloRecord);
+		haloTable[(int)d[0]] = haloRecord;
 	}
 
 	//free(header);
@@ -93,6 +96,7 @@ bool DataMgrCosm::LoadHalosBinary(string inputFileName)
 void DataMgrCosm::LoadHalos()
 {
 	halos.clear();  //Needed if function is called multiple times for any reason
+	haloTable.clear();
 	
 	using namespace std;
 	ifstream fin(GetStringVal("halo").c_str());
