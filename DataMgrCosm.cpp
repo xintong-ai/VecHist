@@ -25,7 +25,7 @@ void DataMgrCosm::LoadData()
 	//dim[1] = 62.5;
 	//dim[2] = 62.5;
 
-	LoadHalosBinary(startTimeStep);
+	LoadHalosBinary(currentTimeStep);
 	LoadMergeTree();
 
 	//haloTable.clear();
@@ -39,7 +39,7 @@ bool DataMgrCosm::LoadHalosBinary(int timeStepId)
 	string haloSuffix = GetStringVal("halosuffix");
 	
 	stringstream ss;
-	ss << haloDir << "/" << fixed << setprecision(2) << startTimeStep / 100.00 << haloSuffix;
+	ss << haloDir << "/" << fixed << setprecision(2) << currentTimeStep / 100.00 << haloSuffix;
 	cout << "Loading file: " << ss.str() << endl;
 
 	return LoadHalosBinary(ss.str());
@@ -380,7 +380,7 @@ QString DataMgrCosm::buildJsonFromTree(MergeNode * currentNode, int level)
 
 	int haloId = currentNode->haloId;  //Halo id for current node
 
-	QString currentString = QString("{ \"") + QString::number(haloId) + " \( " + QString::number(firstTimeStep - level) + " \) " + QString("\" : [");
+	QString currentString = QString("{ \"") + QString::number(haloId) + " \( " + QString::number(startTimeStep - level) + " \) " + QString("\" : [");
 
 	//Construct the children recursively
 	if (currentNode->children.size() == 0 || level > DEPTH_LIMIT) {

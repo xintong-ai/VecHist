@@ -319,11 +319,11 @@ void QJsonView::expand()
 		//((DataMgrCosm*)dataManager)->SetChildrenVisibility(mergeNode, isVisible);
 
 		cout << "Clicked merge node time step: " << mergeNode->timeStepId << endl;
-		cout << "Current data manager time step: " << dataManager->getStartTimeStep() << endl;
+		cout << "Current data manager time step: " << dataManager->getCurrentTimeStep() << endl;
 
-		if (mergeNode->timeStepId != dataManager->getStartTimeStep()) {
-			dataManager->setStartTimeStep(mergeNode->timeStepId);
-			if (((DataMgrCosm*)dataManager)->LoadHalosBinary(dataManager->getStartTimeStep())) {
+		if (mergeNode->timeStepId != dataManager->getCurrentTimeStep()) {
+			dataManager->setCurrentTimeStep(mergeNode->timeStepId);
+			if (((DataMgrCosm*)dataManager)->LoadHalosBinary(dataManager->getCurrentTimeStep())) {
 				sceneRef->UpdateTexture();
 				unordered_map<int, AbstractNode *> * haloTable = dataManager->getHaloTable();
 				//Look for the halo id in the hashtable

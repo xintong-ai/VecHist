@@ -614,6 +614,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	int startTimeStepValue = 0;
 	iss >> startTimeStepValue;
 	dataManager->setStartTimeStep(startTimeStepValue);
+	dataManager->setCurrentTimeStep(startTimeStepValue);
 
 	pbo = GLuint(0);
 	tex = 0;
@@ -701,7 +702,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		//vector<MergeTree *> forest = cosmPtr->getForest();
 
 		//vector<MergeTree *> levelXForest = cosmPtr->getNodesAtGivenTimestepFromForest(16);
-		levelXForest = cosmPtr->getNodesAtGivenTimestepFromForest(dataManager->getStartTimeStep());
+		levelXForest = cosmPtr->getNodesAtGivenTimestepFromForest(dataManager->getCurrentTimeStep());
 
 		vector<MergeNode *>::iterator it;
 		int i = 0;

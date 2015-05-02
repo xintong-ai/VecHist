@@ -159,8 +159,8 @@ public:
 class DataManager
 {
 protected:
-	int startTimeStep = 100; //TO DO: Rename this and its getter/setter methods to "currentTimeStep"
-	int firstTimeStep = 18;
+	int currentTimeStep = 100;
+	int startTimeStep = 100;
 	int cubemap_size;
 	int start[3];
 	int dim[3];
@@ -190,6 +190,8 @@ public:
 	void LoadParameters();
 	string GetStringVal(string name);
 	unordered_map<int, AbstractNode *> * getHaloTable() { return &haloTable; }
+	int getCurrentTimeStep() { return currentTimeStep; }
+	void setCurrentTimeStep(int currentTimeStep) { this->currentTimeStep = currentTimeStep; }
 	int getStartTimeStep() { return startTimeStep; }
 	void setStartTimeStep(int startTimeStep) { this->startTimeStep = startTimeStep; }
 
