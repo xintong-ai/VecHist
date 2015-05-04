@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#include <iostream>
+#include <fstream>
 #include <QDebug>
 #include "scene.h"
 #include <QtGui/qmatrix4x4.h>
@@ -592,6 +594,10 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	else //if (dataManager->GetStringVal("datatype").compare("cosmology") == 0)
 		dataManager = new DataMgrCosm();
 
+	//NewColor Newlight
+	currentColormapID = 6;
+	//NewColor Newlight over
+
 	pbo = GLuint(0);
 	tex = 0;
 	//$$$
@@ -806,6 +812,11 @@ void Scene::initGL()
 
     // Load all .fsh files as fragment shaders
    // "distribution" = 0;
+
+	//NewColor Newlight
+	readColormap();
+	//NewColor Newlight over
+
     filter = QStringList("*.fsh");
     files = QDir(":/res/vechist/").entryInfoList(filter, QDir::Files | QDir::Readable);
     foreach (QFileInfo file, files) {
@@ -858,6 +869,50 @@ static void loadMatrix(const QMatrix4x4& m)
         mat[index] = data[index];
     glLoadMatrixf(mat);
 }
+
+//NewColor Newlight
+void Scene::setCurrentColormapID(int id)
+{
+	currentColormapID = id;
+}
+
+void Scene::readColormap()
+{
+	ifstream inputColormap;
+	inputColormap.open("colormap.bin", ios::in | ios::binary);
+	if (!inputColormap){
+		cerr << "Error: unable to read the input colormap file."
+			<< endl;
+	}
+
+	inputColormap.seekg(currentColormapID * 33 * 4 * sizeof(float));
+
+	for (int i = 0; i < 33; ++i){
+		inputColormap.read((char*)&colmap[i], 4 * sizeof(float));
+	}
+
+	/*ofstream outfile;
+	outfile.open("asciiColormap.txt", ios::out);
+	if (!outfile){
+	cerr << "Error: unable to read the output ascii colormap file."
+	<< endl;
+	}
+	for (int i = 0; i < 33; ++i){
+	for (int j = 0; j < 4; ++j){
+	outfile << colmap[i][j] << " ";
+	}
+	outfile << endl;
+	}
+
+	outfile.close();
+	outfile.clear();*/
+
+	inputColormap.close();
+	inputColormap.clear();
+
+}
+
+//NewColor Newlight over
 
 
 void Scene::renderBBox(const QMatrix4x4 &view)
@@ -1024,7 +1079,24 @@ void Scene::render3D(const QMatrix4x4 &view)
 	m_programs["distribution"]->bind();
 //	m_programs["distribution"]->setUniformValue("tex", GLint(0));
 	m_programs["distribution"]->setUniformValue("env", GLint(0));
-	m_programs["distribution"]->setUniformValue("view", qModelview);
+	//NewColor Newlight
+	QVector4D lightPos[2];
+	lightPos[0] = QVector4D(0.0, 0.0, 1.0, 0.0);
+	lightPos[1] = QVector4D(0.0, 0.0, -1.0, 0.0);
+	m_programs["distribution"]->setUniformValueArray("lightposn", lightPos, 2);
+	QVector4D ambientMat(0.2, 0.2, 0.2, 1.0);
+	m_programs["distribution"]->setUniformValue("ambient", ambientMat);
+	QVector4D diffuseMat(0.8, 0.8, 0.8, 1.0);
+	m_programs["distribution"]->setUniformValue("diffuse", diffuseMat);
+	QVector4D specularMat(0.3, 0.3, 0.3, 1.0);
+	m_programs["distribution"]->setUniformValue("specular", specularMat);
+	QVector4D emissionMat(0.1, 0.1, 0.1, 1.0);
+	m_programs["distribution"]->setUniformValue("emission", emissionMat);
+	float shininessMat = 20.0;
+	m_programs["distribution"]->setUniformValue("shininess", shininessMat);
+	m_programs["distribution"]->setUniformValueArray("cm", colmap, 33);
+	//NewColor Newlight over
+	//m_programs["distribution"]->setUniformValue("view", qModelview);
 
 #if 0
 	//draw sphere by the side

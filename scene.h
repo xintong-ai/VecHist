@@ -243,6 +243,10 @@ public slots:
 	void OnMove(std::vector<float>& motionData);
 //    void newItem(ItemDialog::ItemType type);
 	void dropBoxSelection();
+
+	//NewColor Newlight
+	void setCurrentColormapID(int id);
+	//NewColor Newlight over
 protected:
 	void render3D(const QMatrix4x4 &view);
 	void renderBBox(const QMatrix4x4 &view);
@@ -305,6 +309,12 @@ private:
     QVector<QGLShader *> m_fragmentShaders;
     //QGLShader *m_environmentShader;
     //QGLShaderProgram *m_environmentProgram;
+
+	//NewColor Newlight
+	QVector4D colmap[33];
+	int currentColormapID;
+	void readColormap();
+	//NewColor Newlight over
 
 	DataManager* dataManager;
 
