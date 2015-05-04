@@ -403,6 +403,10 @@ void TwoSidedGraphicsWidget::animateFlip()
 
 QVariant GraphicsWidget::itemChange(GraphicsItemChange change, const QVariant &value)
 {
+	//@datahead8888 - This code is intended to prevent a child window from being dragged outside of the larger window's bounds
+	//I am deactivating this code, since it breaks in some cases when the parent window is set to a smaller size.  In this case
+	//the child window usually ends up anchored above the parent window, unable to be moved.
+	/*
     if (change == ItemPositionChange && scene()) {
         QRectF rect = boundingRect();
         QPointF pos = value.toPointF();
@@ -417,6 +421,7 @@ QVariant GraphicsWidget::itemChange(GraphicsItemChange change, const QVariant &v
             pos.setY(sceneRect.bottom() - rect.bottom());
         return pos;
     }
+	*/
     return QGraphicsProxyWidget::itemChange(change, value);
 }
 
