@@ -681,8 +681,6 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		m_graphWidget->move(60, 120);
 		m_graphWidget->resize(m_graphWidget->sizeHint());
 
-		
-
 		QGraphicsView * view = new QGraphicsView();
 		m_jsonView = new QJsonView(view, dataManager, this);
 
@@ -752,6 +750,8 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	if (application == 1) {
 		twoSided->setWidget(0, m_graphWidget);
 		twoSided->setWidget(1, m_renderOptions);
+
+		((DataMgrVect * )dataManager)->buildDotFileFromTree();
 	}
 	else {
 		connect(m_listWidget, SIGNAL(itemSelectionChanged()), this, SLOT(dropBoxSelection()));
@@ -760,6 +760,8 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		twoSided->setWidget(1, m_renderOptions);
 		twoSided->setWidget(2, m_listWidget);
 	}
+
+	
 
     
 	//QDockWidget *dock = new QDockWidget(QString(tr("Parameters")), this);
