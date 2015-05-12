@@ -10,7 +10,7 @@
 
 //1 means flow data
 //2 means cosmology data
-const int application = 2;
+const int application = 1;
 
 namespace Widget
 {

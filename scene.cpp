@@ -725,10 +725,6 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
 		//cout << "Data contents: " << endl;
 		//cout << data.toStdString() << endl;
-
-		
-		
-
 	}
 
 	int nx, ny, nz;
@@ -743,6 +739,8 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
 	//initPixelBuffer();
 	
+	TwoSidedGraphicsWidget *twoSided = new TwoSidedGraphicsWidget(this);
+
     //connect(m_renderOptions, SIGNAL(colorParameterChanged(QString,QRgb)), this, SLOT(setColorParameter(QString,QRgb)));
     connect(m_renderOptions, SIGNAL(floatParameterChanged(QString,float)), this, SLOT(setFloatParameter(QString,float)));
     //connect(m_renderOptions, SIGNAL(shaderChanged(int)), this, SLOT(setShader(int)));
@@ -750,16 +748,25 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		this, SLOT(UpdateBlock(int, int, int, int, int, int)));
     connect(m_renderOptions, SIGNAL(queryChanged(int, int, int)), this, SLOT(UpdateQuery(int, int, int)));
 	connect(m_renderOptions, SIGNAL(segmentationRequested()), this, SLOT(Segmentation()));
-	connect(m_listWidget, SIGNAL(itemSelectionChanged()), this, SLOT(dropBoxSelection()));
 
-    TwoSidedGraphicsWidget *twoSided = new TwoSidedGraphicsWidget(this);
+	if (application == 1) {
+		twoSided->setWidget(0, m_graphWidget);
+		twoSided->setWidget(1, m_renderOptions);
+	}
+	else {
+		connect(m_listWidget, SIGNAL(itemSelectionChanged()), this, SLOT(dropBoxSelection()));
+
+		twoSided->setWidget(0, scrollArea);
+		twoSided->setWidget(1, m_renderOptions);
+		twoSided->setWidget(2, m_listWidget);
+	}
+
+    
 	//QDockWidget *dock = new QDockWidget(QString(tr("Parameters")), this);
     //twoSided->setWidget(0, m_renderOptions);
 	//twoSided->setWidget(0, m_graphWidget);
 	//twoSided->setWidget(0, view);
-	twoSided->setWidget(0, scrollArea);
-	twoSided->setWidget(1, m_renderOptions);
-	twoSided->setWidget(2, m_listWidget);
+	
 	//twoSided->setWidget(1, m_graphWidget);
 
     initGL();
