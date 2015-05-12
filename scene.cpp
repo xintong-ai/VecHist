@@ -752,6 +752,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		twoSided->setWidget(1, m_renderOptions);
 
 		((DataMgrVect * )dataManager)->buildDotFileFromTree();
+		((DataMgrVect *)dataManager)->buildPlainTextFileFromDot();
 	}
 	else {
 		connect(m_listWidget, SIGNAL(itemSelectionChanged()), this, SLOT(dropBoxSelection()));

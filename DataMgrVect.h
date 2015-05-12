@@ -157,5 +157,6 @@ public:
 
 	void buildDotFileFromTree();
 	void buildDotFileFromTree(NodeBi * p, int currentDepth, int previousId);
+	void buildPlainTextFileFromDot();
 
 };

@@ -2,6 +2,7 @@
 
 
 //#include "DataManager.h"
+#include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
 //#include "dstat.h"
@@ -1076,4 +1077,10 @@ void DataMgrVect::buildDotFileFromTree(NodeBi * p, int currentDepth, int previou
 		buildDotFileFromTree(p->GetRight(), currentDepth + 1, currentId);
 		
 	}
+}
+
+void DataMgrVect::buildPlainTextFileFromDot()
+{
+	//C:\Graphviz2.38\bin\dot - Tplain - ext tree.txt > tree.ptxt
+	system("C:\\Graphviz2.38\\bin\\dot -Tplain-ext entropyTree.dot > tree.ptxt");
 }
