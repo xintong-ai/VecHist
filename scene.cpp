@@ -671,7 +671,9 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	if (1 == application) {
 		m_graphWidget = new GraphWidget();
 		m_graphWidget->move(60, 120);
-		m_graphWidget->resize(m_graphWidget->sizeHint());
+		//m_graphWidget->resize(m_graphWidget->sizeHint());
+		m_graphWidget->resize(1000, 1000);
+
 
 		m_graphWidget->getTreeStats((NodeBi*)dataManager->getRootNode(), 0, 0);
 		m_graphWidget->buildGraphFromTree((NodeBi*)dataManager->getRootNode());
@@ -679,6 +681,12 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		m_graphVizWidget = new GraphVizWidget();
 		m_graphVizWidget->move(60, 120);
 		m_graphVizWidget->resize(m_graphVizWidget->sizeHint());
+
+		scrollArea = new QScrollArea;
+		scrollArea->setWidget(m_graphVizWidget);
+
+		scrollArea->move(20, 120);
+		scrollArea->resize(900, 800);
 
 	}
 	else {
@@ -753,7 +761,8 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	connect(m_renderOptions, SIGNAL(segmentationRequested()), this, SLOT(Segmentation()));
 
 	if (application == 1) {
-		twoSided->setWidget(0, m_graphWidget);
+		//twoSided->setWidget(0, m_graphWidget);
+		twoSided->setWidget(0, scrollArea);
 		twoSided->setWidget(1, m_renderOptions);
 
 		((DataMgrVect * )dataManager)->buildDotFileFromTree();

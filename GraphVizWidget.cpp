@@ -9,6 +9,10 @@ GraphVizWidget::~GraphVizWidget()
 		delete nodes[i];
 	}
 
+	for (int i = 0; i < edges.size(); i++) {
+		delete edges[i];
+	}
+
 }
 
 
@@ -144,5 +148,6 @@ void GraphVizWidget::loadGraphVizTextFile()
 
 	cout << endl;
 
+	
 	
 }
