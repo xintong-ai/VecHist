@@ -678,15 +678,15 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		m_graphWidget->getTreeStats((NodeBi*)dataManager->getRootNode(), 0, 0);
 		m_graphWidget->buildGraphFromTree((NodeBi*)dataManager->getRootNode());
 
-		m_graphVizWidget = new GraphVizWidget();
-		m_graphVizWidget->move(60, 120);
-		m_graphVizWidget->resize(m_graphVizWidget->sizeHint());
+		//m_graphVizWidget = new GraphVizWidget();
+		//m_graphVizWidget->move(60, 120);
+		//m_graphVizWidget->resize(m_graphVizWidget->sizeHint());
 
-		scrollArea = new QScrollArea;
-		scrollArea->setWidget(m_graphVizWidget);
+		//scrollArea = new QScrollArea;
+		//scrollArea->setWidget(m_graphVizWidget);
 
-		scrollArea->move(20, 120);
-		scrollArea->resize(900, 800);
+		//scrollArea->move(20, 120);
+		//scrollArea->resize(900, 800);
 
 	}
 	else {
@@ -761,13 +761,14 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	connect(m_renderOptions, SIGNAL(segmentationRequested()), this, SLOT(Segmentation()));
 
 	if (application == 1) {
-		//twoSided->setWidget(0, m_graphWidget);
-		twoSided->setWidget(0, scrollArea);
+		twoSided->setWidget(0, m_graphWidget);
+		//twoSided->setWidget(0, scrollArea);
 		twoSided->setWidget(1, m_renderOptions);
 
 		((DataMgrVect * )dataManager)->buildDotFileFromTree();
 		((DataMgrVect *)dataManager)->buildPlainTextFileFromDot();
-		m_graphVizWidget->loadGraphVizTextFile();
+		//m_graphVizWidget->loadGraphVizTextFile();
+		m_graphWidget->loadGraphVizTextFile();
 	}
 	else {
 		connect(m_listWidget, SIGNAL(itemSelectionChanged()), this, SLOT(dropBoxSelection()));
