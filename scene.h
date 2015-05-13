@@ -46,6 +46,7 @@
 #include "glextensions.h"
 #include "graphWidget.h"
 #include "qjsonview.h"
+#include "GraphVizWidget.h"
 
 #include <QtWidgets>
 #include <QtOpenGL>
@@ -293,6 +294,7 @@ private:
 	QJsonView * m_jsonView;
 	QScrollArea * scrollArea;
 	QListWidget * m_listWidget;
+	GraphVizWidget * m_graphVizWidget;
 
     //ItemDialog *m_itemDialog;
     QTimer *m_timer;

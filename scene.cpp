@@ -675,6 +675,11 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
 		m_graphWidget->getTreeStats((NodeBi*)dataManager->getRootNode(), 0, 0);
 		m_graphWidget->buildGraphFromTree((NodeBi*)dataManager->getRootNode());
+
+		m_graphVizWidget = new GraphVizWidget();
+		m_graphVizWidget->move(60, 120);
+		m_graphVizWidget->resize(m_graphVizWidget->sizeHint());
+
 	}
 	else {
 		m_graphWidget = new GraphWidget();
@@ -753,6 +758,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
 		((DataMgrVect * )dataManager)->buildDotFileFromTree();
 		((DataMgrVect *)dataManager)->buildPlainTextFileFromDot();
+		m_graphVizWidget->loadGraphVizTextFile();
 	}
 	else {
 		connect(m_listWidget, SIGNAL(itemSelectionChanged()), this, SLOT(dropBoxSelection()));

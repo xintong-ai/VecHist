@@ -14,17 +14,17 @@ set(SHARED_LIBRARIES
 		${OSUFLOW_LIBRARY_DEBUG} 
 )
 
-source_group("widgets_h" FILES edge.h node.h graphwidget.h qjson.h qjsonview.h)
+source_group("widgets_h" FILES edge.h node.h graphwidget.h qjson.h qjsonview.h GraphVizWidget.h)
 
-source_group("widgets_cpp" FILES edge.cpp node.cpp graphwidget.cpp qjson.cpp qjsonview.cpp)
+source_group("widgets_cpp" FILES edge.cpp node.cpp graphwidget.cpp qjson.cpp qjsonview.cpp GraphVizWidget.cpp)
 
 set( Srcs main.cpp DataManager.cpp glsphere.cpp glSuperquadric.cpp
 	scene.cpp glbuffers.cpp glextensions.cpp trackball.cpp edge.cpp graphwidget.cpp node.cpp qjson.cpp qjsonview.cpp
-	DataMgrCosm.cpp DataMgrVect.cpp 
+	DataMgrCosm.cpp DataMgrVect.cpp GraphVizWidget.cpp
 	)
 set( Hdrs DataManager.h glsphere.h glSuperquadric.h gltrianglemesh.h
 	scene.h glbuffers.h glextensions.h trackball.h edge.h graphwidget.h node.h
-	DataMgrCosm.h DataMgrVect.h qjson.h qjsonview.h
+	DataMgrCosm.h DataMgrVect.h qjson.h qjsonview.h GraphVizWidget.h
     )
 set( Rcs resources/vechist.qrc)
 
