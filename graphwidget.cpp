@@ -243,11 +243,19 @@ void GraphWidget::loadGraphVizTextFile()
 	return currentNode;
 	*/
 
-	scene()->setSceneRect(0, 0, graphWidth, graphHeight);
+	//scene()->setSceneRect(0, 0, graphWidth, graphHeight);
+
+	cout << "Graph Width: " << graphWidth << endl;
+	cout << "Graph Height: " << graphHeight << endl;
+	cout << "Scene Width: " << scene()->width() << endl;
+	cout << "Scene Height: " << scene()->height() << endl;
+
+	double widthRatio = scene()->width() / (double)graphWidth;
+	double heightRatio = scene()->height() / (double)graphHeight;
 
 	for (int i = 0; i < nodes.size(); i++) {
 		Widget::Node * childNode = new Widget::Node(this);
-		childNode->setPos(nodes[i]->x, nodes[i]->y);
+		childNode->setPos(nodes[i]->x*widthRatio, scene()-> height() - nodes[i]->y*heightRatio);
 		childNode->RADIUS = nodes[i]->width / 2;
 		childNode->RADIUS = 0.00000001;
 		scene()->addItem(childNode);
