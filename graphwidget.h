@@ -55,6 +55,7 @@ struct GraphVizNode
 	double y;  //U coordinate
 	double width; //Ellipse width
 	double height; //Ellipse height
+	Widget::Node * widgetNode = nullptr;  //QT Widget node
 };
 
 struct ControlPoint

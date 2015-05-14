@@ -255,6 +255,7 @@ void GraphWidget::loadGraphVizTextFile()
 
 	for (int i = 0; i < nodes.size(); i++) {
 		Widget::Node * childNode = new Widget::Node(this);
+		nodes[i]->widgetNode = childNode;
 		childNode->setPos(nodes[i]->x*widthRatio, scene()-> height() - nodes[i]->y*heightRatio);
 		childNode->RADIUS = nodes[i]->width / 2;
 		childNode->RADIUS = 0.00000001;
@@ -263,12 +264,46 @@ void GraphWidget::loadGraphVizTextFile()
 
 	}
 
-	/*
-	for (int i = 0; i < edges.size(); i++) {
+	//This part is loosely based on: http://www.gamedev.net/blog/1508/entry-2259265-creating-an-interactive-ui-for-viewing-graphs-the-code/
 
-		Edge * edge = new Edge();
+	
+	QPainterPath painterPath;
+
+
+	for (int i = 0; i < edges.size(); i++) {
+		
+		//WIP Bezier curves code (to represent the b-splines
+		//It seems to cause performance issue on startup, so we may want to omit this.
+		/*
+		for (int j = 0; j < edges[i]->controlPoints.size() / 3; j++) {
+			ControlPoint controlPoint1 = edges[i]->controlPoints[j*3];
+			ControlPoint controlPoint2 = edges[i]->controlPoints[j*3+1];
+			ControlPoint controlPoint3 = edges[i]->controlPoints[j*3+2];
+			painterPath.cubicTo(controlPoint1.x * widthRatio, scene()->height() - controlPoint1.y*heightRatio, controlPoint2.x*widthRatio, scene()->height() - controlPoint2.y * heightRatio, controlPoint3.x*widthRatio, scene()->height() - controlPoint3.y * heightRatio);
+		}
+
+		if (edges[i]->controlPoints.size() % 3 != 0) {
+			for (int j = edges[i]->controlPoints.size() / 3 * 3 + 1; j < edges[i]->controlPoints.size(); j++) {
+				ControlPoint controlPoint = edges[i]->controlPoints[j];
+				painterPath.lineTo(controlPoint.x * widthRatio, scene()->height() - controlPoint.y * heightRatio);
+			}
+		}
+
+		scene()->addPath(painterPath);
+		*/
+		
+		string headNodeName = edges[i]->head->name;
+		string tailNodeName = edges[i]->tail->name;
+
+		GraphVizNode * headNode = nodeTable[headNodeName];
+		GraphVizNode * tailNode = nodeTable[tailNodeName];
+
+		Edge * edge = new Edge(headNode->widgetNode, tailNode->widgetNode);
+		scene()->addItem(edge);
+
 	}
-	*/
+	
+
 }
 
 //Method to find max tree depth and max tree "width"
