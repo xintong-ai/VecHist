@@ -675,8 +675,8 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		m_graphWidget->resize(1000, 1000);
 
 
-		m_graphWidget->getTreeStats((NodeBi*)dataManager->getRootNode(), 0, 0);
-		m_graphWidget->buildGraphFromTree((NodeBi*)dataManager->getRootNode());
+		////////////////////////m_graphWidget->getTreeStats((NodeBi*)dataManager->getRootNode(), 0, 0);
+		////////////////////////m_graphWidget->buildGraphFromTree((NodeBi*)dataManager->getRootNode());
 
 		//m_graphVizWidget = new GraphVizWidget();
 		//m_graphVizWidget->move(60, 120);

@@ -152,17 +152,17 @@ void Widget::Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
 
 	Qt::GlobalColor foreColor;
 	Qt::GlobalColor backColor;
-	if (nodeBiPtr->GetVisible())
-	{
+	////////////if (nodeBiPtr->GetVisible())
+	////////////{
 		foreColor = Qt::yellow;
 		backColor = Qt::darkYellow;
-	}
-	else
-	{
-		foreColor = Qt::red;
-		backColor = Qt::darkRed;
+	////////////}
+	////////////else
+	//////{
+	//////	foreColor = Qt::red;
+	//////	backColor = Qt::darkRed;
 
-	}
+	//////}
 
 	QRadialGradient gradient(-3, -3, 10);
 	if (option->state & QStyle::State_Sunken) {

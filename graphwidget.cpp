@@ -65,8 +65,8 @@ GraphWidget::GraphWidget(QWidget *parent, NodeBi *p)
 	setWindowTitle(tr("Tree Widget"));
 
 	if (p != nullptr) {
-		getTreeStats(p, 0, 0);
-		buildGraphFromTree(p);
+		//getTreeStats(p, 0, 0);
+		//buildGraphFromTree(p);
 	}
 
 }
@@ -215,6 +215,52 @@ void GraphWidget::loadGraphVizTextFile()
 
 	cout << endl;
 
+	/////////////////////////////////////////////////////////////
+	//Reference code:
+	/*
+	Widget::Node *currentNode = new Widget::Node(this);
+	currentNode->setNodeBiPtr(p);
+	p->SetGraphNode(currentNode);
+
+	currentNode->setPos(x, y);
+	scene()->addItem(currentNode);
+
+	//Use the maximum depth and maximum width of the tree to set the amount of space that each tree node takes up
+	double nodeHeight = sceneRect().height() / double(maxTreeDepth) * 0.975;  //97.5% to compensate for slight y shift mentioned in launcher method above
+	double nodeWidth = sceneRect().width() / 2;
+
+	//Recurse to the next level in the tree, and then add a new graph edge for the child node
+	Widget::Node *childNode = nullptr;
+	if (p->GetLeft() != nullptr) {
+	childNode = buildGraphFromTree(p->GetLeft(), currentDepth + 1, currentPos - 1, x - nodeWidth * (pow(0.5,currentDepth + 1)), y + nodeHeight); //The distance between nodes is cut to fraction 0.5 ^ (currentDepth + 1) to prevent node overlap
+	scene()->addItem(new Edge(currentNode, childNode));
+	}
+	if (p->GetRight() != nullptr) {
+	childNode = buildGraphFromTree(p->GetRight(), currentDepth + 1, currentPos + 1, x + nodeWidth * (pow(0.5,currentDepth + 1)), y + nodeHeight);
+	scene()->addItem(new Edge(currentNode, childNode));
+	}
+
+	return currentNode;
+	*/
+
+	scene()->setSceneRect(0, 0, graphWidth, graphHeight);
+
+	for (int i = 0; i < nodes.size(); i++) {
+		Widget::Node * childNode = new Widget::Node(this);
+		childNode->setPos(nodes[i]->x, nodes[i]->y);
+		childNode->RADIUS = nodes[i]->width / 2;
+		childNode->RADIUS = 0.00000001;
+		scene()->addItem(childNode);
+		//childNode->set
+
+	}
+
+	/*
+	for (int i = 0; i < edges.size(); i++) {
+
+		Edge * edge = new Edge();
+	}
+	*/
 }
 
 //Method to find max tree depth and max tree "width"
