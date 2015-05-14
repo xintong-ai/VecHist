@@ -152,7 +152,7 @@ void Widget::Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
 
 	Qt::GlobalColor foreColor;
 	Qt::GlobalColor backColor;
-	if (nodeBiPtr->GetVisible())
+	if (!nodeBiPtr->GetSelected())
 	{
 		foreColor = Qt::yellow;
 		backColor = Qt::darkYellow;
@@ -202,8 +202,9 @@ void Widget::Node::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	update();
 	QGraphicsItem::mousePressEvent(event);
 	//Toggle visibility
-	nodeBiPtr->SetVisible( !nodeBiPtr->GetVisible());
-	SetChildrenVisibility(nodeBiPtr, nodeBiPtr->GetVisible());
+	//nodeBiPtr->SetVisible( !nodeBiPtr->GetVisible());
+	nodeBiPtr->SetSelected(!nodeBiPtr->GetSelected());
+	//SetChildrenVisibility(nodeBiPtr, nodeBiPtr->GetVisible());
 }
 
 void Widget::Node::SetChildrenVisibility(NodeBi *nd, bool _isVisible)
