@@ -117,7 +117,6 @@ class DataMgrVect:public DataManager
 	void LoadOSUFlow(const char* filename);
 	void readBinaryTree(NodeBi *&p, ifstream &fin, vector<float3> starts, vector<float3> dims,
 		vector<float> entropys, vector<float3> eig_vals, vector<float3> eig_vecs);
-	ofstream dotOut;
 
 public:
 	DataMgrVect();
@@ -155,8 +154,6 @@ public:
 	virtual NodeBi* getRootNode();
 	virtual void UpdateCubeMap(float* cubemap);
 
-	void buildDotFileFromTree();
-	void buildDotFileFromTree(NodeBi * p, int currentDepth, int previousId);
-	void buildPlainTextFileFromDot();
+	
 
 };

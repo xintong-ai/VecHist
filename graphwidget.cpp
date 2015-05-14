@@ -83,6 +83,50 @@ GraphWidget::~GraphWidget()
 
 }
 
+void GraphWidget::buildDotFileFromTree(NodeBi * root)
+{
+	dotOut.open("entropyTree.dot", ios::out);
+	if (!dotOut.is_open()) {
+		cerr << "Failed to open graph dot file for output -- cannot send input file to GraphViz!" << endl;
+		return;
+	}
+	dotOut << "digraph G {" << endl;;
+	buildDotFileFromTree(root, 0, 0);
+	dotOut << "}" << endl;
+	dotOut.close();
+}
+
+
+//This method builds the dot file from the tree data structure, using recursion to do an in order traversal
+void GraphWidget::buildDotFileFromTree(NodeBi * p, int currentDepth, int previousId)
+{
+	static int nextId = 0;
+	nextId++;
+
+	int currentId = nextId;
+
+	string strCurrentId = std::to_string(currentId);
+	nodeBiTable[strCurrentId] = p;
+
+	if (previousId != 0) {
+		dotOut << previousId << " -> " << currentId << ";" << endl;
+	}
+
+	if (p->GetLeft() != nullptr) {
+		buildDotFileFromTree(p->GetLeft(), currentDepth + 1, currentId);
+	}
+	if (p->GetRight() != nullptr) {
+		buildDotFileFromTree(p->GetRight(), currentDepth + 1, currentId);
+
+	}
+}
+
+void GraphWidget::buildPlainTextFileFromDot()
+{
+	//C:\Graphviz2.38\bin\dot - Tplain - ext tree.txt > tree.ptxt
+	system("C:\\Graphviz2.38\\bin\\dot -Tplain-ext entropyTree.dot > tree.ptxt");
+}
+
 void GraphWidget::loadGraphVizTextFile()
 {
 	inFile.open("tree.ptxt", ios::in);
@@ -259,6 +303,11 @@ void GraphWidget::loadGraphVizTextFile()
 		childNode->setPos(nodes[i]->x*widthRatio, scene()-> height() - nodes[i]->y*heightRatio);
 		childNode->RADIUS = nodes[i]->width / 2;
 		childNode->RADIUS = 0.00000001;
+		NodeBi * nodeBiPtr = nodeBiTable[nodes[i]->name];
+		if (nodeBiPtr == nullptr ) {
+			cerr << "Warning - " << nodes[i]->name << " has no node bi record!" << endl;
+		}
+		childNode->setNodeBiPtr(nodeBiPtr);
 		scene()->addItem(childNode);
 		//childNode->set
 
@@ -499,3 +548,4 @@ void GraphWidget::zoomOut()
 {
 	scaleView(1 / qreal(1.2));
 }
+

@@ -80,6 +80,9 @@ public:
 	GraphWidget(QWidget *parent = 0, NodeBi *p = 0);
 	~GraphWidget();
 	
+	void buildDotFileFromTree(NodeBi * root);
+	void buildDotFileFromTree(NodeBi * p, int currentDepth, int previousId);
+	void buildPlainTextFileFromDot();
 	void loadGraphVizTextFile();
 	void getTreeStats(NodeBi * p, int currentDepth, int currentPos);
 	Widget::Node * buildGraphFromTree(NodeBi * p);
@@ -114,8 +117,10 @@ private:
 	ifstream inFile;							 //Output file from dot to be read
 	double graphScale, graphWidth, graphHeight;  //Attributes about entire graph that will be needed to establish the coordinate system
 	unordered_map<string, GraphVizNode *> nodeTable; //HashTable linking node ids to the struct records
+	unordered_map<string, NodeBi *> nodeBiTable;     //HashTable linking node ids to NodeBi struct records
 	vector<GraphVizNode *> nodes;					//The list of all nodes
 	vector<GraphVizEdge *> edges;					//The list of all edges
+	ofstream dotOut;								//The output file stream handler for the file that will be read by the dot program
 	
 };
 

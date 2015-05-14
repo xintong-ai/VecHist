@@ -1044,43 +1044,4 @@ void DataMgrVect::UpdateCubeMap(float* cubemap)
 	ComputeCubeMap(datablock.get(), cubeSizeTotal, cubemap, cubemap_size);
 }
 
-void DataMgrVect::buildDotFileFromTree()
-{
-	dotOut.open("entropyTree.dot", ios::out);
-	if (!dotOut.is_open()) {
-		cerr << "Faild to open graph dot file for output -- cannot send input file to GraphViz!" << endl;
-		return;
-	}
-	dotOut << "digraph G {" << endl;;
-	buildDotFileFromTree(getRootNode(), 0, 0);
-	dotOut << "}" << endl;
-	dotOut.close();
-}
 
-
-//This method builds the dot file from the tree data structure, using recursion to do an in order traversal
-void DataMgrVect::buildDotFileFromTree(NodeBi * p, int currentDepth, int previousId)
-{
-	static int nextId = 0;
-	nextId++;
-
-	int currentId = nextId;
-	
-	if (previousId != 0) {
-		dotOut << previousId << " -> " << currentId << ";" << endl;
-	}
-
-	if (p->GetLeft() != nullptr) {
-		buildDotFileFromTree(p->GetLeft(), currentDepth + 1, currentId);
-	}
-	if (p->GetRight() != nullptr) {
-		buildDotFileFromTree(p->GetRight(), currentDepth + 1, currentId);
-		
-	}
-}
-
-void DataMgrVect::buildPlainTextFileFromDot()
-{
-	//C:\Graphviz2.38\bin\dot - Tplain - ext tree.txt > tree.ptxt
-	system("C:\\Graphviz2.38\\bin\\dot -Tplain-ext entropyTree.dot > tree.ptxt");
-}

@@ -765,9 +765,12 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		//twoSided->setWidget(0, scrollArea);
 		twoSided->setWidget(1, m_renderOptions);
 
-		((DataMgrVect * )dataManager)->buildDotFileFromTree();
-		((DataMgrVect *)dataManager)->buildPlainTextFileFromDot();
+		//((DataMgrVect * )dataManager)->buildDotFileFromTree();
+		//((DataMgrVect *)dataManager)->buildPlainTextFileFromDot();
 		//m_graphVizWidget->loadGraphVizTextFile();
+
+		m_graphWidget->buildDotFileFromTree((NodeBi*)dataManager->getRootNode());
+		m_graphWidget->buildPlainTextFileFromDot();
 		m_graphWidget->loadGraphVizTextFile();
 	}
 	else {
