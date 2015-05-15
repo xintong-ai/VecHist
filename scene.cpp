@@ -1216,6 +1216,9 @@ void Scene::render3D(const QMatrix4x4 &view)
 	for (int i = 0; i < leafNodes.size(); i++)	{
 		GLTextureCube* tex = blockTex[i];
 		auto nd = leafNodes[i];
+
+		
+
 		nd->GetDim(dim);
 		nd->GetStart(start);
 		glPushMatrix();
@@ -1227,7 +1230,18 @@ void Scene::render3D(const QMatrix4x4 &view)
 		glScalef(min_dim, min_dim, min_dim);
 		//Scale the size of glyphs
 		//glScalef(0.5, 0.5, 0.5);
+
+
+
 		tex->bind();
+		
+		if (nd->GetSelected()) {
+			//selectedNode = (AbstractNode*)nd;
+			//RenderBox(view, start[0], start[1], start[2], dim[0], dim[1], dim[2]);
+			//glColor3f(1.0f, 1.0f, 0.0f);
+			///////////////RenderBox(view, dim[0], dim[1], dim[2], start[0], start[1], start[2]);
+		}
+		
 		//m_vecWidget->draw();
 		//m_superWidget->draw();
 		if (nd->GetVisible()) {
@@ -1242,12 +1256,7 @@ void Scene::render3D(const QMatrix4x4 &view)
 		
 		tex->unbind();
 
-		if (nd->GetSelected()) {
-			selectedNode = (AbstractNode*)nd;
-			//RenderBox(view, start[0], start[1], start[2], dim[0], dim[1], dim[2]);
-			glColor3f(1.0f, 1.0f, 0.0f);
-			RenderBox(view, dim[0], dim[1], dim[2], start[0], start[1], start[2]);
-		}
+		
 
 		glPopMatrix();
 
@@ -1269,6 +1278,38 @@ void Scene::render3D(const QMatrix4x4 &view)
 	}
 	m_programs["distribution"]->release();
 
+	for (int i = 0; i < leafNodes.size(); i++)	{
+		GLTextureCube* tex = blockTex[i];
+		auto nd = leafNodes[i];
+
+
+
+		nd->GetDim(dim);
+		nd->GetStart(start);
+		glPushMatrix();
+		glTranslatef(
+			dim[0] / 2 + start[0],
+			dim[1] / 2 + start[1],
+			dim[2] / 2 + start[2]);
+		float min_dim = min(min(dim[0], dim[1]), dim[2]);
+		glScalef(min_dim, min_dim, min_dim);
+
+		if (nd->GetSelected()) {
+			//selectedNode = (AbstractNode*)nd;
+			//RenderBox(view, start[0], start[1], start[2], dim[0], dim[1], dim[2]);
+			//glColor3f(1.0f, 1.0f, 0.0f);
+
+			glColor3f(1.0f, 1.0f, 0.0f);
+			RenderBox(view, dim[0], dim[1], dim[2], start[0], start[1], start[2]);
+		}
+
+		glPopMatrix();
+
+	}
+
+
+
+	/*
 	if (nullptr != selectedNode)	{
 		glPushAttrib(GL_LINE_BIT | GL_CURRENT_BIT);
 		glColor3f(1.0f, 1.0f, 0.0f); //Currently has no effect
@@ -1284,9 +1325,19 @@ void Scene::render3D(const QMatrix4x4 &view)
 		//float min_dim = min(min(dim[0], dim[1]), dim[2]);
 		//glScalef(min_dim, min_dim, min_dim);
 		//RenderBox(view, start[0], start[1], start[2], dim[0], dim[1], dim[2]);
+		glTranslatef(
+			dim[0] / 2 + start[0],
+			dim[1] / 2 + start[1],
+			dim[2] / 2 + start[2]);
+		float min_dim = min(min(dim[0], dim[1]), dim[2]);
+		glScalef(min_dim, min_dim, min_dim);
+
+		RenderBox(view, dim[0], dim[1], dim[2], start[0], start[1], start[2]);
 		glPopMatrix();
 		glPopAttrib();
 	}
+
+	*/
 
 //	m_programs["sphere_brush"]->bind();
 //	/********Draw for picking******/
