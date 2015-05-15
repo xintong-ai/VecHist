@@ -1278,11 +1278,11 @@ void Scene::render3D(const QMatrix4x4 &view)
 	}
 	m_programs["distribution"]->release();
 
+	//Render all selection box(es)
+	//Note: these are done after the shader program is no longer needed in order to prevent color conflicts
 	for (int i = 0; i < leafNodes.size(); i++)	{
 		GLTextureCube* tex = blockTex[i];
 		auto nd = leafNodes[i];
-
-
 
 		nd->GetDim(dim);
 		nd->GetStart(start);
@@ -1295,19 +1295,16 @@ void Scene::render3D(const QMatrix4x4 &view)
 		glScalef(min_dim, min_dim, min_dim);
 
 		if (nd->GetSelected()) {
-			//selectedNode = (AbstractNode*)nd;
-			//RenderBox(view, start[0], start[1], start[2], dim[0], dim[1], dim[2]);
-			//glColor3f(1.0f, 1.0f, 0.0f);
-
+			glPushAttrib(GL_LINE_BIT | GL_CURRENT_BIT);
 			glColor3f(1.0f, 1.0f, 0.0f);
+			glLineWidth(3.0);
 			RenderBox(view, dim[0], dim[1], dim[2], start[0], start[1], start[2]);
+			glPopAttrib();
 		}
 
 		glPopMatrix();
 
 	}
-
-
 
 	/*
 	if (nullptr != selectedNode)	{

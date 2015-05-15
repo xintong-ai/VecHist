@@ -202,7 +202,7 @@ void Widget::Node::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	update();
 	QGraphicsItem::mousePressEvent(event);
 	//Toggle visibility
-	nodeBiPtr->SetVisible( !nodeBiPtr->GetVisible());
+	//nodeBiPtr->SetVisible( !nodeBiPtr->GetVisible());
 	nodeBiPtr->SetSelected(!nodeBiPtr->GetSelected());
 	//SetChildrenVisibility(nodeBiPtr, nodeBiPtr->GetVisible());
 }
