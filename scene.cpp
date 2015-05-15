@@ -970,63 +970,75 @@ void Scene::renderBBox(const QMatrix4x4 &view)
 	glEnd();
 }
 
-inline void RenderBox(const QMatrix4x4 &view, int sx, int sy, int sz, int nx, int ny, int nz)
+inline void Scene::RenderBox(const QMatrix4x4 &view, int sx, int sy, int sz, int nx, int ny, int nz)
 {
+	
+	nx = selectionX;
+	ny = selectionY;
+	nz = selectionZ;
+
+	double distance = selectionBoxWidth;
+
 	glBegin(GL_LINES);
 
 	
+	
+
+
 	//////Front quad///////
 	//Bottom line
-	glVertex3f(sx, sy, sz);
-	glVertex3f(sx + nx, sy, sz);
+	glVertex3f(nx - distance, ny - distance, nz - distance);
+	glVertex3f(nx + distance, ny - distance, nz - distance);
 
 	//Top line
-	glVertex3f(sx, sy + ny, sz);
-	glVertex3f(sx + nx, sy + ny, sz);
+	glVertex3f(nx - distance, ny + distance, nz - distance);
+	glVertex3f(nx + distance, ny + distance, nz - distance);
 
 	//Left line
-	glVertex3f(sx, sy, sz);
-	glVertex3f(sx, sy + ny, sz);
+	glVertex3f(nx - distance, ny - distance, nz - distance);
+	glVertex3f(nx - distance, ny + distance, nz - distance);
 
 	//Right line
-	glVertex3f(sx + nx, sy, sz);
-	glVertex3f(sx + nx, sy + ny, sz);
+	glVertex3f(nx + distance, ny - distance, nz - distance);
+	glVertex3f(nx + distance, ny + distance, nz - distance);
 
 
 	/////Back quad///////
 	//Bottom line (from same persepctive as front quad)
-	glVertex3f(sx, sy, sz + nz);
-	glVertex3f(sx + nx, sy, sz + nz);
+	glVertex3f(nx - distance, ny - distance, nz + distance);
+	glVertex3f(nx + distance, ny - distance, nz + distance);
 
 	//Top line
-	glVertex3f(sx, sy + ny, sz + nz);
-	glVertex3f(sx + nx, sy + ny, sz + nz);
+	glVertex3f(nx - distance, ny + distance, nz + distance);
+	glVertex3f(nx + distance, ny + distance, nz + distance);
 
 	//Left line
-	glVertex3f(sx, sy, sz + nz);
-	glVertex3f(sx, sy + ny, sz + nz);
+	glVertex3f(nx - distance, ny - distance, nz + distance);
+	glVertex3f(nx - distance, ny + distance, nz + distance);
 
 	//Right line
-	glVertex3f(sx + nx, sy, sz + nz);
-	glVertex3f(sx + nx, sy + ny, sz + nz);
+	glVertex3f(nx + distance, ny - distance, nz + distance);
+	glVertex3f(nx + distance, ny + distance, nz + distance);
 
 	/////////Left quad/////
 	//Bottom line
-	glVertex3f(sx, sy, sz);
-	glVertex3f(sx, sy, sz + nz);
+	glVertex3f(nx - distance, ny - distance, nz - distance);
+	glVertex3f(nx - distance, ny - distance, nz + distance);
 
 	//Top line
-	glVertex3f(sx, sy + ny, sz);
-	glVertex3f(sx, sy + ny, sz + nz);
+	glVertex3f(nx - distance, ny + distance, nz - distance);
+	glVertex3f(nx - distance, ny + distance, nz + distance);
 
 	/////////Right quad/////
 	//Bottom line
-	glVertex3f(sx + nx, sy, sz);
-	glVertex3f(sx + nx, sy, sz + nz);
+	glVertex3f(nx + distance, ny - distance, nz - distance);
+	glVertex3f(nx + distance, ny - distance, nz + distance);
 
 	//Top line
-	glVertex3f(sx + nx, sy + ny, sz);
-	glVertex3f(sx + nx, sy + ny, sz + nz);
+	glVertex3f(nx + distance, ny + distance, nz - distance);
+	glVertex3f(nx + distance, ny + distance, nz + distance);
+
+	
 
 	glEnd();
 }
@@ -1204,6 +1216,9 @@ void Scene::render3D(const QMatrix4x4 &view)
 	for (int i = 0; i < leafNodes.size(); i++)	{
 		GLTextureCube* tex = blockTex[i];
 		auto nd = leafNodes[i];
+
+		
+
 		nd->GetDim(dim);
 		nd->GetStart(start);
 		glPushMatrix();
@@ -1215,20 +1230,33 @@ void Scene::render3D(const QMatrix4x4 &view)
 		glScalef(min_dim, min_dim, min_dim);
 		//Scale the size of glyphs
 		//glScalef(0.5, 0.5, 0.5);
+
+
+
 		tex->bind();
+		
+		if (nd->GetSelected()) {
+			//selectedNode = (AbstractNode*)nd;
+			//RenderBox(view, start[0], start[1], start[2], dim[0], dim[1], dim[2]);
+			//glColor3f(1.0f, 1.0f, 0.0f);
+			///////////////RenderBox(view, dim[0], dim[1], dim[2], start[0], start[1], start[2]);
+		}
+		
 		//m_vecWidget->draw();
 		//m_superWidget->draw();
 		if (nd->GetVisible()) {
 			nd->GetGlyph()->draw();
 		}
+
+		//if (nd->GetSelected()) {
+		//	
+		//}
+
 		//nd->
 		
 		tex->unbind();
 
-		if (nd->GetSelected()) {
-			selectedNode = (AbstractNode*)nd;
-			
-		}
+		
 
 		glPopMatrix();
 
@@ -1250,6 +1278,35 @@ void Scene::render3D(const QMatrix4x4 &view)
 	}
 	m_programs["distribution"]->release();
 
+	//Render all selection box(es)
+	//Note: these are done after the shader program is no longer needed in order to prevent color conflicts
+	for (int i = 0; i < leafNodes.size(); i++)	{
+		GLTextureCube* tex = blockTex[i];
+		auto nd = leafNodes[i];
+
+		nd->GetDim(dim);
+		nd->GetStart(start);
+		glPushMatrix();
+		glTranslatef(
+			dim[0] / 2 + start[0],
+			dim[1] / 2 + start[1],
+			dim[2] / 2 + start[2]);
+		float min_dim = min(min(dim[0], dim[1]), dim[2]);
+		glScalef(min_dim, min_dim, min_dim);
+
+		if (nd->GetSelected()) {
+			glPushAttrib(GL_LINE_BIT | GL_CURRENT_BIT);
+			glColor3f(1.0f, 1.0f, 0.0f);
+			glLineWidth(3.0);
+			RenderBox(view, dim[0], dim[1], dim[2], start[0], start[1], start[2]);
+			glPopAttrib();
+		}
+
+		glPopMatrix();
+
+	}
+
+	/*
 	if (nullptr != selectedNode)	{
 		glPushAttrib(GL_LINE_BIT | GL_CURRENT_BIT);
 		glColor3f(1.0f, 1.0f, 0.0f); //Currently has no effect
@@ -1257,9 +1314,27 @@ void Scene::render3D(const QMatrix4x4 &view)
 		selectedNode->GetStart(start);
 		selectedNode->GetDim(dim);
 		//renderSelectionBox(view);
-		RenderBox(view, start[0], start[1], start[2], dim[0], dim[1], dim[2]);
+		glPushMatrix();
+		//glTranslatef(
+		//	dim[0] / 2 + start[0],
+		//	dim[1] / 2 + start[1],
+		//	dim[2] / 2 + start[2]);
+		//float min_dim = min(min(dim[0], dim[1]), dim[2]);
+		//glScalef(min_dim, min_dim, min_dim);
+		//RenderBox(view, start[0], start[1], start[2], dim[0], dim[1], dim[2]);
+		glTranslatef(
+			dim[0] / 2 + start[0],
+			dim[1] / 2 + start[1],
+			dim[2] / 2 + start[2]);
+		float min_dim = min(min(dim[0], dim[1]), dim[2]);
+		glScalef(min_dim, min_dim, min_dim);
+
+		RenderBox(view, dim[0], dim[1], dim[2], start[0], start[1], start[2]);
+		glPopMatrix();
 		glPopAttrib();
 	}
+
+	*/
 
 //	m_programs["sphere_brush"]->bind();
 //	/********Draw for picking******/
