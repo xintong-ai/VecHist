@@ -1,3 +1,5 @@
+#include <fstream>
+
 #include "DataManager.h"
 
 class NodeBi:public AbstractNode
@@ -116,7 +118,6 @@ class DataMgrVect:public DataManager
 	void readBinaryTree(NodeBi *&p, ifstream &fin, vector<float3> starts, vector<float3> dims,
 		vector<float> entropys, vector<float3> eig_vals, vector<float3> eig_vecs);
 
-
 public:
 	DataMgrVect();
 	~DataMgrVect();
@@ -152,5 +153,7 @@ public:
 	virtual vector<AbstractNode*> GetAllNode();
 	virtual NodeBi* getRootNode();
 	virtual void UpdateCubeMap(float* cubemap);
+
+	
 
 };

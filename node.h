@@ -55,7 +55,7 @@ namespace Widget
 	class Node : public QGraphicsItem
 	{
 	public:
-		const double RADIUS = 0.5;
+		double RADIUS = 0.5;
 
 		Node(GraphWidget *graphWidget);
 

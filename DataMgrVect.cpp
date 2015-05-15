@@ -2,6 +2,7 @@
 
 
 //#include "DataManager.h"
+#include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
 //#include "dstat.h"
@@ -1042,3 +1043,5 @@ void DataMgrVect::UpdateCubeMap(float* cubemap)
 	//}
 	ComputeCubeMap(datablock.get(), cubeSizeTotal, cubemap, cubemap_size);
 }
+
+

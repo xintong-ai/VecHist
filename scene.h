@@ -46,6 +46,7 @@
 #include "glextensions.h"
 #include "graphWidget.h"
 #include "qjsonview.h"
+//#include "GraphVizWidget.h"
 
 #include <QtWidgets>
 #include <QtOpenGL>
@@ -246,6 +247,7 @@ public slots:
 	void OnMove(std::vector<float>& motionData);
 //    void newItem(ItemDialog::ItemType type);
 	void dropBoxSelection();
+	void RenderBox(const QMatrix4x4 &view, int sx, int sy, int sz, int nx, int ny, int nz);
 protected:
 	void render3D(const QMatrix4x4 &view);
 	void renderBBox(const QMatrix4x4 &view);
@@ -275,7 +277,6 @@ private:
 	//void DrawPicking();
 	void ShowGpuMemInfo();
 
-	
     QTime m_time;
     int m_lastTime;
     int m_mouseEventTime;
@@ -293,6 +294,7 @@ private:
 	QJsonView * m_jsonView;
 	QScrollArea * scrollArea;
 	QListWidget * m_listWidget;
+	//GraphVizWidget * m_graphVizWidget;
 
     //ItemDialog *m_itemDialog;
     QTimer *m_timer;

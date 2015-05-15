@@ -65,9 +65,293 @@ GraphWidget::GraphWidget(QWidget *parent, NodeBi *p)
 	setWindowTitle(tr("Tree Widget"));
 
 	if (p != nullptr) {
-		getTreeStats(p, 0, 0);
-		buildGraphFromTree(p);
+		//getTreeStats(p, 0, 0);
+		//buildGraphFromTree(p);
 	}
+
+}
+
+GraphWidget::~GraphWidget()
+{
+	for (int i = 0; i < nodes.size(); i++) {
+		delete nodes[i];
+	}
+
+	for (int i = 0; i < edges.size(); i++) {
+		delete edges[i];
+	}
+
+}
+
+void GraphWidget::buildDotFileFromTree(NodeBi * root)
+{
+	dotOut.open("entropyTree.dot", ios::out);
+	if (!dotOut.is_open()) {
+		cerr << "Failed to open graph dot file for output -- cannot send input file to GraphViz!" << endl;
+		return;
+	}
+	dotOut << "digraph G {" << endl;;
+	buildDotFileFromTree(root, 0, 0);
+	dotOut << "}" << endl;
+	dotOut.close();
+}
+
+
+//This method builds the dot file from the tree data structure, using recursion to do an in order traversal
+void GraphWidget::buildDotFileFromTree(NodeBi * p, int currentDepth, int previousId)
+{
+	static int nextId = 0;
+	nextId++;
+
+	int currentId = nextId;
+
+	string strCurrentId = std::to_string(currentId);
+	nodeBiTable[strCurrentId] = p;
+
+	if (previousId != 0) {
+		dotOut << previousId << " -> " << currentId << ";" << endl;
+	}
+
+	if (p->GetLeft() != nullptr) {
+		buildDotFileFromTree(p->GetLeft(), currentDepth + 1, currentId);
+	}
+	if (p->GetRight() != nullptr) {
+		buildDotFileFromTree(p->GetRight(), currentDepth + 1, currentId);
+
+	}
+}
+
+void GraphWidget::buildPlainTextFileFromDot()
+{
+	//C:\Graphviz2.38\bin\dot - Tplain - ext tree.txt > tree.ptxt
+	system("C:\\Graphviz2.38\\bin\\dot -Tplain-ext entropyTree.dot > tree.ptxt");
+}
+
+void GraphWidget::loadGraphVizTextFile()
+{
+	inFile.open("tree.ptxt", ios::in);
+	if (!inFile.is_open())
+	{
+		cerr << "tree.ptxt did not open successfully" << endl;
+		return;
+	}
+
+	//Specs from http://www.graphviz.org/doc/info/output.html#d:plain-ext
+	//There are four types of statements.
+	//graph scale width height
+	//node name x y width height label style shape color fillcolor
+	//edge tail head n x1 y1 ..xn yn[label xl yl] style color
+	//stop
+
+	string token; //The general token currently read from the file needing to be processed
+	string name; //The name of the node currently being processed
+	string headName; //The name of the head element of an edge currently being processed
+	string tailName; //The name of the tail element of an edge currently being processed
+	int numNodes;    //The number of nodes constituting one b-spline
+	double x, y; //The x and y coordinates of the node/edge being read
+	double width, height;  //The width and height of the node currently being read
+
+	nodes.clear();
+
+	while (!inFile.fail()) {
+		inFile >> token;
+		if (token == "graph") {
+			cout << "New graph record: " << endl;
+			inFile >> graphScale;
+			inFile >> graphWidth;
+			inFile >> graphHeight;
+			cout << "Scale: " << graphScale << " Width: " << graphWidth << " Height: " << graphHeight << endl;
+		}
+		else if (token == "node") {
+			//Parse the Node Record
+			cout << "New node record: " << endl;
+			inFile >> name;
+			cout << "Name: " << name << endl;
+			inFile >> x >> y;
+			cout << "x = " << x << " y = " << y << endl;
+			inFile >> width >> height;
+			cout << "width = " << width << " height = " << height << endl;
+			cout << "Unused tokens: " << endl;
+			for (int i = 0; i < 5; i++) {
+				inFile >> token;
+				cout << token << " ";
+			}
+			cout << endl;
+
+			//Store the node record
+			GraphVizNode * node = new GraphVizNode;
+			node->name = name;
+			node->x = x;
+			node->y = y;
+			node->width = width;
+			node->height = height;
+
+			nodes.push_back(node);
+
+			nodeTable[name] = node;
+
+
+		}
+		else if (token == "edge") {
+			//////////////Parse the main part of the edge record//////////////////
+			cout << "New edge record:" << endl;
+			inFile >> headName;
+			cout << "Head Name: " << headName << endl;
+			inFile >> tailName;
+			cout << "Tail Name: " << tailName << endl;
+			inFile >> numNodes;
+			cout << "Num Nodes: " << numNodes << endl;
+
+			///////////Store the edge record///////////////////////
+			GraphVizNode * headPtr = nodeTable[headName];
+			if (headPtr == nullptr) {
+				cerr << headName << " not found!!!!!" << endl;
+				break;
+			}
+
+			GraphVizNode * tailPtr = nodeTable[tailName];
+			if (tailPtr == nullptr) {
+				cerr << tailName << " not found!!!!!" << endl;
+				break;
+			}
+
+			GraphVizEdge * edge = new GraphVizEdge();
+			edge->head = headPtr;
+			edge->tail = tailPtr;
+			edge->controlPoints.resize(numNodes);
+
+
+			//////////Parse and store the control point records////
+			for (int i = 0; i < numNodes; i++) {
+				inFile >> x;
+				inFile >> y;
+				cout << "Control Point # " << i << ": " << x << " " << y << endl;
+
+				ControlPoint controlPoint;
+				controlPoint.x = x;
+				controlPoint.y = y;
+				edge->controlPoints.push_back(controlPoint);
+			}
+
+			//Add the new edge to the list
+			edges.push_back(edge);
+
+			cout << "Unused tokens: " << endl;
+			for (int i = 0; i < 2; i++) {
+				inFile >> token;
+				cout << token << " ";
+			}
+			cout << endl;
+
+
+		}
+		else if (token == "stop") {
+			cout << "Stop request encountered" << endl;
+		}
+		else {
+			cerr << "Warning: unexpected token " << token << " found in plain text dot" << endl;
+		}
+	}
+
+	cout << "-----------------------------" << endl;
+	cout << "End of file reached" << endl;
+	cout << "-----------------------------" << endl;
+
+	cout << endl;
+
+	/////////////////////////////////////////////////////////////
+	//Reference code:
+	/*
+	Widget::Node *currentNode = new Widget::Node(this);
+	currentNode->setNodeBiPtr(p);
+	p->SetGraphNode(currentNode);
+
+	currentNode->setPos(x, y);
+	scene()->addItem(currentNode);
+
+	//Use the maximum depth and maximum width of the tree to set the amount of space that each tree node takes up
+	double nodeHeight = sceneRect().height() / double(maxTreeDepth) * 0.975;  //97.5% to compensate for slight y shift mentioned in launcher method above
+	double nodeWidth = sceneRect().width() / 2;
+
+	//Recurse to the next level in the tree, and then add a new graph edge for the child node
+	Widget::Node *childNode = nullptr;
+	if (p->GetLeft() != nullptr) {
+	childNode = buildGraphFromTree(p->GetLeft(), currentDepth + 1, currentPos - 1, x - nodeWidth * (pow(0.5,currentDepth + 1)), y + nodeHeight); //The distance between nodes is cut to fraction 0.5 ^ (currentDepth + 1) to prevent node overlap
+	scene()->addItem(new Edge(currentNode, childNode));
+	}
+	if (p->GetRight() != nullptr) {
+	childNode = buildGraphFromTree(p->GetRight(), currentDepth + 1, currentPos + 1, x + nodeWidth * (pow(0.5,currentDepth + 1)), y + nodeHeight);
+	scene()->addItem(new Edge(currentNode, childNode));
+	}
+
+	return currentNode;
+	*/
+
+	//scene()->setSceneRect(0, 0, graphWidth, graphHeight);
+
+	cout << "Graph Width: " << graphWidth << endl;
+	cout << "Graph Height: " << graphHeight << endl;
+	cout << "Scene Width: " << scene()->width() << endl;
+	cout << "Scene Height: " << scene()->height() << endl;
+
+	double widthRatio = scene()->width() / (double)graphWidth;
+	double heightRatio = scene()->height() / (double)graphHeight;
+
+	for (int i = 0; i < nodes.size(); i++) {
+		Widget::Node * childNode = new Widget::Node(this);
+		nodes[i]->widgetNode = childNode;
+		childNode->setPos(nodes[i]->x*widthRatio, scene()-> height() - nodes[i]->y*heightRatio);
+		childNode->RADIUS = nodes[i]->width / 2;
+		childNode->RADIUS = 0.00000001;
+		NodeBi * nodeBiPtr = nodeBiTable[nodes[i]->name];
+		if (nodeBiPtr == nullptr ) {
+			cerr << "Warning - " << nodes[i]->name << " has no node bi record!" << endl;
+		}
+		childNode->setNodeBiPtr(nodeBiPtr);
+		scene()->addItem(childNode);
+		//childNode->set
+
+	}
+
+	//This part is loosely based on: http://www.gamedev.net/blog/1508/entry-2259265-creating-an-interactive-ui-for-viewing-graphs-the-code/
+
+	
+	QPainterPath painterPath;
+
+
+	for (int i = 0; i < edges.size(); i++) {
+		
+		//WIP Bezier curves code (to represent the b-splines
+		//It seems to cause performance issue on startup, so we may want to omit this.
+		/*
+		for (int j = 0; j < edges[i]->controlPoints.size() / 3; j++) {
+			ControlPoint controlPoint1 = edges[i]->controlPoints[j*3];
+			ControlPoint controlPoint2 = edges[i]->controlPoints[j*3+1];
+			ControlPoint controlPoint3 = edges[i]->controlPoints[j*3+2];
+			painterPath.cubicTo(controlPoint1.x * widthRatio, scene()->height() - controlPoint1.y*heightRatio, controlPoint2.x*widthRatio, scene()->height() - controlPoint2.y * heightRatio, controlPoint3.x*widthRatio, scene()->height() - controlPoint3.y * heightRatio);
+		}
+
+		if (edges[i]->controlPoints.size() % 3 != 0) {
+			for (int j = edges[i]->controlPoints.size() / 3 * 3 + 1; j < edges[i]->controlPoints.size(); j++) {
+				ControlPoint controlPoint = edges[i]->controlPoints[j];
+				painterPath.lineTo(controlPoint.x * widthRatio, scene()->height() - controlPoint.y * heightRatio);
+			}
+		}
+
+		scene()->addPath(painterPath);
+		*/
+		
+		string headNodeName = edges[i]->head->name;
+		string tailNodeName = edges[i]->tail->name;
+
+		GraphVizNode * headNode = nodeTable[headNodeName];
+		GraphVizNode * tailNode = nodeTable[tailNodeName];
+
+		Edge * edge = new Edge(headNode->widgetNode, tailNode->widgetNode);
+		scene()->addItem(edge);
+
+	}
+	
 
 }
 
@@ -264,3 +548,4 @@ void GraphWidget::zoomOut()
 {
 	scaleView(1 / qreal(1.2));
 }
+
