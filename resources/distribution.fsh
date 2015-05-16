@@ -243,8 +243,8 @@ void main()
 	float v = textureCube(env, texcoord).x;
 	vec4 unlitColor = GetColor(v, 0, 1); //vec4((normal.x + 1) * 0.5, (normal.y + 1), (normal.z + 1) * 0.5, 1.0f);
 	
-    vec4 final_color;
-    for(int i = 0; i < 1; i++){
+    vec4 final_color = vec4(0.0, 0.0, 0.0, 1.0);
+    for(int i = 0; i < 2; i++){
 	const vec3 eyepos = vec3(0, 0, 0);
 	vec4 _mypos = gl_ModelViewMatrix * myposition;
 	vec3 mypos = _mypos.xyz / _mypos.w;
