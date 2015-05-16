@@ -623,7 +623,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	dataManager->setStartTimeStep(startTimeStepValue);
 	dataManager->setCurrentTimeStep(startTimeStepValue);
 	//NewColor Newlight
-	currentColormapID = 6;
+	currentColormapID = 0;
 	//NewColor Newlight over
 
 	pbo = GLuint(0);
@@ -1566,6 +1566,9 @@ void Scene::setStates()
     //float materialSpecular[] = {0.5f, 0.5f, 0.5f, 1.0f};
     //glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, materialSpecular);
     //glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 32.0f);
+	float materialSpecular[] = { 0.5f, 0.5f, 0.5f, 1.0f };
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, materialSpecular);
+	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 32.0f);
 }
 
 //void Scene::setLights()
