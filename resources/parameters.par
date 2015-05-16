@@ -8,6 +8,8 @@ string entropy C:/XinCode/VecHist/python/vechist/entropys.txt
 string eigval C:/XinCode/VecHist/python/vechist/eig_vals.txt
 string eigvec C:/XinCode/VecHist/python/vechist/eig_vecs.txt
 string halodir C:/Users/datahead8888/Documents/DarkSkyDataDownloaded
+string colormap C:/XinCode/VecHist/resources/colormap.bin
 string halosuffix 000_haloEigen.bin
 string datatype flow
 string starttimestep 18
+

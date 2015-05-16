@@ -1,0 +1,11 @@
+string mergerTree C:/GravityLabDataSet/Universe/collectEigen/merge_tree.txt
+string tree D:/data/plume/binary_tree.txt
+string vectorfield D:/data/plume/15plume3d421.vec
+string tree D:/data/plume/ent9/binary_tree.txt
+string starts D:/data/plume/ent9/starts.txt
+string dims D:/data/plume/ent9/dims.txt
+string entropy D:/data/plume/ent9/entropys.txt
+string eigval D:/data/plume/ent9/eig_vals.txt
+string eigvec D:/data/plume/ent9/eig_vecs.txt
+string halo C:/GravityLabDataSet/Universe/collectEigen/0.15000_haloEigen.bin
+string datatype flow

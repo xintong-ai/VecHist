@@ -39,30 +39,34 @@
 **
 ****************************************************************************/
 
-varying vec3 position, normal, texcoord;
-varying vec4 specular, ambient, diffuse, lightDirection;
+varying vec4 myposition;
+varying vec3 mynormal, texcoord;
+//varying vec4 specular, ambient, diffuse, lightDirection;
 
-uniform mat4 view;
-uniform float plane_normal;
+//uniform mat4 view;
+//uniform float plane_normal;
 
 void main()
 {	
     gl_TexCoord[0] = gl_MultiTexCoord0;
 //    gl_TexCoord[1] = gl_Vertex;
-    specular = gl_LightSource[0].specular;
-    ambient = gl_LightSource[0].ambient;
-    diffuse = gl_LightSource[0].diffuse;
-	vec4 lightDir = vec4(0.0f, 0.0f, 1.0f, 1.0f);
-    lightDirection = view * lightDir;//gl_LightSource[0].position;
+    //specular = gl_LightSource[0].specular;
+    //ambient = gl_LightSource[0].ambient;
+    //diffuse = gl_LightSource[0].diffuse;
+	//vec4 lightDir = vec4(0.0f, 0.0f, 1.0f, 0.0f);
+    //lightDirection = view * lightDir;//gl_LightSource[0].position;
 
 //    normal = gl_NormalMatrix * gl_Normal;
-    normal = gl_Normal;
+    mynormal = gl_Normal;
 	texcoord = vec3(gl_TexCoord[0].x, gl_TexCoord[0].y, gl_TexCoord[0].z);
 	
 	
 	
-    position = vec3(gl_Vertex.x, gl_Vertex.y, gl_Vertex.z);//gl_Vertex.xyz;
+    //myposition = vec3(gl_Vertex.x, gl_Vertex.y, gl_Vertex.z);//gl_Vertex.xyz;
+    myposition = gl_Vertex;
 
-    gl_FrontColor = gl_Color;
-    gl_Position = ftransform();
+    //gl_FrontColor = gl_Color;
+    //gl_BackColor = gl_Color;
+    //gl_Position = ftransform();
+    gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * gl_Vertex;
 }

@@ -248,6 +248,9 @@ public slots:
 //    void newItem(ItemDialog::ItemType type);
 	void dropBoxSelection();
 	void RenderBox(const QMatrix4x4 &view, int sx, int sy, int sz, int nx, int ny, int nz);
+	//NewColor Newlight
+	void setCurrentColormapID(int id);
+	//NewColor Newlight over
 protected:
 	void render3D(const QMatrix4x4 &view);
 	void renderBBox(const QMatrix4x4 &view);
@@ -314,6 +317,12 @@ private:
     QVector<QGLShader *> m_fragmentShaders;
     //QGLShader *m_environmentShader;
     //QGLShaderProgram *m_environmentProgram;
+
+	//NewColor Newlight
+	QVector4D colmap[33];
+	int currentColormapID;
+	void readColormap();
+	//NewColor Newlight over
 
 	DataManager* dataManager;
 	vector<MergeNode *> levelXForest;  //The forest as built from nodes at time step X.  TO DO: Move this into the data manager, and unify it with the representation of the larger forest from the data file

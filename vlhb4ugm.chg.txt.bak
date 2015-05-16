@@ -1,0 +1,23 @@
+﻿
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+# On branch loadFilesFromRaw
+# Your branch is up-to-date with 'origin/loadFilesFromRaw'.
+#
+# Changes to be committed:
+#	modified:   python/vechist/GenDensityVolume.py
+#	modified:   python/vechist/GenHaloVecs.py
+#	modified:   python/vechist/cubemap_coords.py
+#	new file:   python/vechist/density.bin
+#	modified:   python/vechist/loadHaloFile.py
+#
+# Untracked files:
+#	4tjdd3b5.rh3.txt.bak
+#	n3saedes.cll.txt.bak
+#	python/vechist/halos_and_particles.png
+#	python/vechist/test.png
+#	python/vechist/test.py
+#	wo5pqwor.z1p.txt.bak
+#	wsmyegc0.ddo.txt.bak
+#
+
