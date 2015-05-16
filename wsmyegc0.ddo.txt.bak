@@ -1,0 +1,23 @@
+﻿
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+# On branch LoadHaloVecsAndOutput
+# Your branch is up-to-date with 'origin/LoadHaloVecsAndOutput'.
+#
+# Changes to be committed:
+#	new file:   m54lurri.txv.txt.bak
+#	new file:   python/vechist/.idea/.name
+#	new file:   python/vechist/.idea/encodings.xml
+#	new file:   python/vechist/.idea/misc.xml
+#	new file:   python/vechist/.idea/modules.xml
+#	new file:   python/vechist/.idea/scopes/scope_settings.xml
+#	new file:   python/vechist/.idea/vcs.xml
+#	new file:   python/vechist/.idea/vechist.iml
+#	new file:   python/vechist/.idea/workspace.xml
+#	modified:   python/vechist/GenHaloVecs.py
+#	new file:   python/vechist/halos_and_particles.png
+#	modified:   python/vechist/loadHaloFile.py
+#	modified:   resources/parameters.par
+#	renamed:    resources/parameters.par -> resources/parameters.par.bak
+#
+
