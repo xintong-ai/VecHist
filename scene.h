@@ -71,6 +71,8 @@
 //#include <helper_cuda.h>
 //#include <helper_functions.h>
 //#include <helper_timer.h>
+#include <vtkLookupTable.h>
+#include <vtkSmartPointer.h>
 
 #define PI 3.14159265358979
 
@@ -353,6 +355,8 @@ private:
 	vector<AbstractNode*> leafNodes;
 	vector<float3> colorMap;
 	//vector<CutPlane> cutplanes;
+
+	vtkLookupTable * colorTable = nullptr;
 };
 
 #endif

@@ -812,6 +812,39 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	//	COLOUR tmp = GetColour(i, 0, 500);
 	//	colorMap.push_back(make_float3(tmp.r, tmp.g, tmp.b));
 	//}
+
+	colorTable = vtkLookupTable::New();
+	
+	colorTable->SetHueRange(0.0, 0.66);
+
+	colorTable->SetNumberOfColors(256);
+	colorTable->SetNanColor(0.1, 0.1, 0.1, 1.0);
+	colorTable->SetTableRange(0.0, 10.0);
+	//colorTable->SetRampToLinear();
+	
+	colorTable->SetValueRange(0.0, 10.0);
+	
+	
+	colorTable->Build();
+
+	double color[3];
+	colorTable->GetColor(1.0, color);
+	std::cout << color[0] << " " << color[1] << " " << color[2] << std::endl;
+
+	colorTable->GetColor(1.1, color);
+	std::cout << color[0] << " " << color[1] << " " << color[2] << std::endl;
+
+	colorTable->GetColor(4.7, color);
+	std::cout << color[0] << " " << color[1] << " " << color[2] << std::endl;
+
+	colorTable->GetColor(4.8, color);
+	std::cout << color[0] << " " << color[1] << " " << color[2] << std::endl;
+
+	colorTable->GetColor(4.9, color);
+	std::cout << color[0] << " " << color[1] << " " << color[2] << std::endl;
+
+
+	cout << endl;
 }
 
 //Respond to selection events for the list box for tree selection for the forest

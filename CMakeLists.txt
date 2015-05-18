@@ -4,15 +4,23 @@ cmake_minimum_required(VERSION 2.6)
 find_package(OpenGL REQUIRED)
 find_package(OSUFlow REQUIRED)
 find_package(Qt5Widgets)
+find_package(VTK REQUIRED)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
-include_directories( ${CMAKE_CURRENT_SOURCE_DIR} ${OSUFLOW_INCLUDE_DIR} required)
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR} ${OSUFLOW_INCLUDE_DIR} ${VTK_INCLUDE_DIRS} required)
 
 set(SHARED_LIBRARIES
 		${OPENGL_LIBRARIES}
-		${OSUFLOW_LIBRARY_DEBUG} 
+		${OSUFLOW_LIBRARY_DEBUG}
+		${VTK_LIBRARY_DIRS}
 )
+
+message("OSUFLOW_LIBRARY_DEBUG")
+message("${OSUFLOW_LIBRARY_DEBUG}")
+
+message("VTK LIBRARY DIRS:")
+message("${VTK_LIBRARY_DIRS}")
 
 source_group("widgets_h" FILES edge.h node.h graphwidget.h qjson.h qjsonview.h GraphVizWidget.h)
 
