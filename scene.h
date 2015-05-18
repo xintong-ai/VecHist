@@ -73,6 +73,7 @@
 //#include <helper_timer.h>
 #include <vtkLookupTable.h>
 #include <vtkSmartPointer.h>
+#include <QLinearGradient>
 
 #define PI 3.14159265358979
 
@@ -152,7 +153,7 @@ public slots:
 protected slots:
     void animateFlip();
 private:
-    GraphicsWidget *m_proxyWidgets[4];
+    GraphicsWidget *m_proxyWidgets[5];
     int m_current;
     int m_angle; // angle in degrees
     int m_delta;
@@ -299,6 +300,7 @@ private:
 	QJsonView * m_jsonView;
 	QScrollArea * scrollArea;
 	QListWidget * m_listWidget;
+	QWidget sliderWidget;
 	//GraphVizWidget * m_graphVizWidget;
 
     //ItemDialog *m_itemDialog;

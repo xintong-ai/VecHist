@@ -843,6 +843,23 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	colorTable->GetColor(4.9, color);
 	std::cout << color[0] << " " << color[1] << " " << color[2] << std::endl;
 
+	//based on http://www.codeprogress.com/cpp/libraries/qt/showQtExample.php?key=QLinearGradientManyColor&index=583
+	QLinearGradient gradient(sliderWidget.rect().topLeft(), sliderWidget.rect().topRight());
+	gradient.setColorAt(0, Qt::blue);
+	gradient.setColorAt(0.2, Qt::green);
+	gradient.setColorAt(0.4, Qt::red);
+	gradient.setColorAt(0.6, Qt::yellow);
+	gradient.setColorAt(1, Qt::cyan);
+
+	//based on http://www.codeprogress.com/cpp/libraries/qt/showQtExample.php?key=QLinearGradientManyColor&index=583
+	QPalette palette;
+	palette.setBrush(QPalette::Background, QBrush(gradient));
+	sliderWidget.setPalette(palette);
+	//sliderWidget.show();
+	sliderWidget.setWindowTitle("Entropy Query");
+	//this->addWidget(&sliderWidget);
+	twoSided->setWidget(2, &sliderWidget);
+	sliderWidget.move(1000, 150);
 
 	cout << endl;
 }
