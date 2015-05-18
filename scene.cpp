@@ -813,22 +813,25 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	//	colorMap.push_back(make_float3(tmp.r, tmp.g, tmp.b));
 	//}
 
+	const double MIN = 0.0;
+	const double MAX = 10.0;
+
 	colorTable = vtkLookupTable::New();
 	
-	colorTable->SetHueRange(0.0, 0.66);
+	colorTable->SetHueRange(0.0, 0.66); //Was 0.0 to 0.66
 
 	colorTable->SetNumberOfColors(256);
 	colorTable->SetNanColor(0.1, 0.1, 0.1, 1.0);
-	colorTable->SetTableRange(0.0, 10.0);
+	colorTable->SetTableRange(MIN, MAX);
 	//colorTable->SetRampToLinear();
 	
-	colorTable->SetValueRange(0.0, 10.0);
+	//colorTable->SetValueRange(MIN, MAX);
 	
 	
 	colorTable->Build();
 
 	double color[3];
-	colorTable->GetColor(1.0, color);
+	/*colorTable->GetColor(1.0, color);
 	std::cout << color[0] << " " << color[1] << " " << color[2] << std::endl;
 
 	colorTable->GetColor(1.1, color);
@@ -841,15 +844,18 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	std::cout << color[0] << " " << color[1] << " " << color[2] << std::endl;
 
 	colorTable->GetColor(4.9, color);
-	std::cout << color[0] << " " << color[1] << " " << color[2] << std::endl;
+	std::cout << color[0] << " " << color[1] << " " << color[2] << std::endl;*/
 
 	//based on http://www.codeprogress.com/cpp/libraries/qt/showQtExample.php?key=QLinearGradientManyColor&index=583
 	QLinearGradient gradient(sliderWidget.rect().topLeft(), sliderWidget.rect().topRight());
-	gradient.setColorAt(0, Qt::blue);
-	gradient.setColorAt(0.2, Qt::green);
-	gradient.setColorAt(0.4, Qt::red);
-	gradient.setColorAt(0.6, Qt::yellow);
-	gradient.setColorAt(1, Qt::cyan);
+	
+	const double INCREMENT = 0.01;
+
+	for (double i = MIN; i <= MAX; i += INCREMENT) {
+		colorTable->GetColor(i, color);
+		//cout << "New color: " << color[0] << " " << color[1] << " " << color[2] << endl;
+		gradient.setColorAt((MAX - i) / (MAX - MIN), QColor(255 * color[0], 255 * color[1], 255 * color[2], 255));
+	}
 
 	//based on http://www.codeprogress.com/cpp/libraries/qt/showQtExample.php?key=QLinearGradientManyColor&index=583
 	QPalette palette;
