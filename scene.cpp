@@ -846,15 +846,18 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	colorTable->GetColor(4.9, color);
 	std::cout << color[0] << " " << color[1] << " " << color[2] << std::endl;*/
 
+	sliderWidget.resize(50, 800);
+	sliderWidget.setFixedSize(50, 800);  //This might be replaced with code for a resize event later
+
 	//based on http://www.codeprogress.com/cpp/libraries/qt/showQtExample.php?key=QLinearGradientManyColor&index=583
-	QLinearGradient gradient(sliderWidget.rect().topLeft(), sliderWidget.rect().topRight());
+	QLinearGradient gradient(0, 0, 0, sliderWidget.rect().height());
 	
 	const double INCREMENT = 0.01;
 
 	for (double i = MIN; i <= MAX; i += INCREMENT) {
 		colorTable->GetColor(i, color);
 		//cout << "New color: " << color[0] << " " << color[1] << " " << color[2] << endl;
-		gradient.setColorAt((MAX - i) / (MAX - MIN), QColor(255 * color[0], 255 * color[1], 255 * color[2], 255));
+		gradient.setColorAt((i) / (MAX - MIN), QColor(255 * color[0], 255 * color[1], 255 * color[2], 255));
 	}
 
 	//based on http://www.codeprogress.com/cpp/libraries/qt/showQtExample.php?key=QLinearGradientManyColor&index=583
@@ -866,6 +869,12 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	//this->addWidget(&sliderWidget);
 	twoSided->setWidget(2, &sliderWidget);
 	sliderWidget.move(1000, 150);
+	slider.resize(sliderWidget.rect().width(), sliderWidget.rect().height());
+	
+	QHBoxLayout horizLayout;
+	horizLayout.addWidget(&slider);
+
+	sliderWidget.setLayout(&horizLayout);
 
 	cout << endl;
 }

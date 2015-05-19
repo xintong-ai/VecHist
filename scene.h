@@ -359,6 +359,7 @@ private:
 	//vector<CutPlane> cutplanes;
 
 	vtkLookupTable * colorTable = nullptr;
+	QSlider slider;
 };
 
 #endif
