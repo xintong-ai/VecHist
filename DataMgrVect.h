@@ -14,8 +14,8 @@ class NodeBi:public AbstractNode
 	//Widget::Node
 public:
 	//TODO: these two variable should be private
-	NodeBi* left;
-	NodeBi* right;
+	NodeBi* left;	//Left child node
+	NodeBi* right;	//Right child node
 
 	NodeBi(
 		int _start0, int _start1, int _start2,
@@ -163,6 +163,8 @@ public:
 	float getMinEntropy() { return minEntropy; }
 	float getMaxEntropy() { return maxEntropy; }
 
-	
+	void SetChildrenBelowEntropyToVisible(NodeBi * nd, double _maxEntropy);
+
+	void PrintEntropies(NodeBi * nd, int level);
 
 };

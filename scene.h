@@ -250,6 +250,7 @@ public slots:
 	void OnMove(std::vector<float>& motionData);
 //    void newItem(ItemDialog::ItemType type);
 	void dropBoxSelection();
+	void sliderSelection(int newValue);
 	void RenderBox(const QMatrix4x4 &view, int sx, int sy, int sz, int nx, int ny, int nz);
 	//NewColor Newlight
 	void setCurrentColormapID(int id);

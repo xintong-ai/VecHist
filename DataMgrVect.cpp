@@ -1078,3 +1078,36 @@ void DataMgrVect::calculateEntropyExtremes(NodeBi *p)
 
 }
 
+//This method queries for all nodes at or below a given maximum entropy value.  Nodes at or below the maximum are set to visible.
+//Nodes above the maximum are set to invisible.
+void DataMgrVect::SetChildrenBelowEntropyToVisible(NodeBi * nd, double _maxEntropy)
+{
+	if (nd != nullptr) {
+		//Store the visibility in the merge tree node (Some halos may not be loaded)
+		nd->SetVisible(nd->GetEntropy() <= _maxEntropy);
+		
+		SetChildrenBelowEntropyToVisible(nd->left, _maxEntropy);
+		
+		SetChildrenBelowEntropyToVisible(nd->right, _maxEntropy);
+		
+	}
+
+}
+
+//Utility debugging method to print all entropies up to a certain level (currently up to level 3)
+//Parameters:
+//    nd -> the current NodeBI record
+//    level -> the current level
+void DataMgrVect::PrintEntropies(NodeBi * nd, int level)
+{
+	if (nd != nullptr && level <= 3) {
+		//Store the visibility in the merge tree node (Some halos may not be loaded)
+		cout << "Entropy: " << nd->GetEntropy();
+
+		PrintEntropies(nd->left, level + 1);
+
+		PrintEntropies(nd->right, level + 1);
+
+	}
+
+}

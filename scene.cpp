@@ -698,6 +698,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		
 		sliderWidget.move(1000, 150);
 		slider.resize(sliderWidget.rect().width(), sliderWidget.rect().height());
+		slider.setValue(99);
 
 		QHBoxLayout horizLayout;
 		horizLayout.addWidget(&slider);
@@ -823,6 +824,8 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	connect(m_renderOptions, SIGNAL(segmentationRequested()), this, SLOT(Segmentation()));
 
 	if (application == 1) {
+		connect(&slider, SIGNAL(valueChanged(int)), SLOT(sliderSelection(int)));
+
 		twoSided->setWidget(0, m_graphWidget);
 		//twoSided->setWidget(0, scrollArea);
 		twoSided->setWidget(1, m_renderOptions);
@@ -835,10 +838,10 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		m_graphWidget->buildDotFileFromTree((NodeBi*)dataManager->getRootNode());
 		m_graphWidget->buildPlainTextFileFromDot();
 		m_graphWidget->loadGraphVizTextFile();
+		//((DataMgrVect*)dataManager)->PrintEntropies((NodeBi*)dataManager->getRootNode(), 0);
 	}
 	else {
 		connect(m_listWidget, SIGNAL(itemSelectionChanged()), this, SLOT(dropBoxSelection()));
-
 		twoSided->setWidget(0, scrollArea);
 		twoSided->setWidget(1, m_renderOptions);
 		twoSided->setWidget(2, m_listWidget);
@@ -880,6 +883,16 @@ void Scene::dropBoxSelection()
 	m_jsonView->setJsonValue(data);
 
 	
+}
+
+void Scene::sliderSelection(int newValue) {
+	cout << "New value is: " << newValue << endl;
+	double minEntropy = ((DataMgrVect*)dataManager)->getMinEntropy();
+	double maxEntropy = ((DataMgrVect*)dataManager)->getMaxEntropy();
+	double entropyValue =  minEntropy + (maxEntropy - minEntropy) * (double(newValue) / 100);
+	cout << "Entropy value is: " << entropyValue << endl;
+	((DataMgrVect*)dataManager)->SetChildrenBelowEntropyToVisible((NodeBi*)dataManager->getRootNode(), entropyValue);
+	//((DataMgrVect*)dataManager)->PrintEntropies((NodeBi*)dataManager->getRootNode(), 0);
 }
 
 Scene::~Scene()
