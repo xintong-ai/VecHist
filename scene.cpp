@@ -648,6 +648,63 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	dataManager->LoadData();
 	UpdateTexture();
 
+	//for (int i = 0; i < 500; i++)	{
+	//	COLOUR tmp = GetColour(i, 0, 500);
+	//	colorMap.push_back(make_float3(tmp.r, tmp.g, tmp.b));
+	//}
+
+
+	//Build the entropy color table and slider widget gradient data
+	if (application == 1) {
+
+		((DataMgrVect *)dataManager)->calculateEntropyExtremes();
+
+		double min = ((DataMgrVect *)dataManager)->getMinEntropy();
+		double max = ((DataMgrVect *)dataManager)->getMaxEntropy();
+
+		colorTable = vtkLookupTable::New();
+
+		colorTable->SetHueRange(0.0, 0.66); //Was 0.0 to 0.66
+
+		colorTable->SetNumberOfColors(256);
+		colorTable->SetNanColor(0.1, 0.1, 0.1, 1.0);
+		colorTable->SetTableRange(min, max);
+		//colorTable->SetRampToLinear();
+
+		//colorTable->SetValueRange(MIN, MAX);
+
+		colorTable->Build();
+
+		double color[3];
+
+		sliderWidget.resize(50, 800);
+		sliderWidget.setFixedSize(50, 800);  //This might be replaced with code for a resize event later
+
+		QLinearGradient gradient(0, 0, 0, sliderWidget.rect().height());
+
+		const double INCREMENT = 0.01;
+
+		const int NUM_ITERATIONS = 100;
+		for (double i = min; i <= max; i += (max - min) / NUM_ITERATIONS) {
+			colorTable->GetColor(i, color);
+			gradient.setColorAt((i) / (max - min), QColor(255 * color[0], 255 * color[1], 255 * color[2], 255));
+		}
+
+		//based on http://www.codeprogress.com/cpp/libraries/qt/showQtExample.php?key=QLinearGradientManyColor&index=583
+		QPalette palette;
+		palette.setBrush(QPalette::Background, QBrush(gradient));
+		sliderWidget.setPalette(palette);
+		sliderWidget.setWindowTitle("Entropy Query");
+		
+		sliderWidget.move(1000, 150);
+		slider.resize(sliderWidget.rect().width(), sliderWidget.rect().height());
+
+		QHBoxLayout horizLayout;
+		horizLayout.addWidget(&slider);
+
+		sliderWidget.setLayout(&horizLayout);
+	}
+
 	//dataManager->LoadVec("D:/data/nek/nek.d_4.vec");
 	
 	//dataManager->LoadVec("D:/data/brain_dti/vector-field.vec");
@@ -674,7 +731,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
     m_renderOptions->resize(m_renderOptions->sizeHint());
 
 	if (1 == application) {
-		m_graphWidget = new GraphWidget();
+		m_graphWidget = new GraphWidget(colorTable);
 		m_graphWidget->move(60, 120);
 		//m_graphWidget->resize(m_graphWidget->sizeHint());
 		m_graphWidget->resize(1000, 1000);
@@ -695,7 +752,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
 	}
 	else {
-		m_graphWidget = new GraphWidget();
+		m_graphWidget = new GraphWidget(colorTable);
 		m_graphWidget->move(60, 120);
 		m_graphWidget->resize(m_graphWidget->sizeHint());
 
@@ -769,6 +826,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		twoSided->setWidget(0, m_graphWidget);
 		//twoSided->setWidget(0, scrollArea);
 		twoSided->setWidget(1, m_renderOptions);
+		twoSided->setWidget(2, &sliderWidget);
 
 		//((DataMgrVect * )dataManager)->buildDotFileFromTree();
 		//((DataMgrVect *)dataManager)->buildPlainTextFileFromDot();
@@ -808,75 +866,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
     m_time.start();
 
-	//for (int i = 0; i < 500; i++)	{
-	//	COLOUR tmp = GetColour(i, 0, 500);
-	//	colorMap.push_back(make_float3(tmp.r, tmp.g, tmp.b));
-	//}
-
-	const double MIN = 0.0;
-	const double MAX = 10.0;
-
-	colorTable = vtkLookupTable::New();
 	
-	colorTable->SetHueRange(0.0, 0.66); //Was 0.0 to 0.66
-
-	colorTable->SetNumberOfColors(256);
-	colorTable->SetNanColor(0.1, 0.1, 0.1, 1.0);
-	colorTable->SetTableRange(MIN, MAX);
-	//colorTable->SetRampToLinear();
-	
-	//colorTable->SetValueRange(MIN, MAX);
-	
-	
-	colorTable->Build();
-
-	double color[3];
-	/*colorTable->GetColor(1.0, color);
-	std::cout << color[0] << " " << color[1] << " " << color[2] << std::endl;
-
-	colorTable->GetColor(1.1, color);
-	std::cout << color[0] << " " << color[1] << " " << color[2] << std::endl;
-
-	colorTable->GetColor(4.7, color);
-	std::cout << color[0] << " " << color[1] << " " << color[2] << std::endl;
-
-	colorTable->GetColor(4.8, color);
-	std::cout << color[0] << " " << color[1] << " " << color[2] << std::endl;
-
-	colorTable->GetColor(4.9, color);
-	std::cout << color[0] << " " << color[1] << " " << color[2] << std::endl;*/
-
-	sliderWidget.resize(50, 800);
-	sliderWidget.setFixedSize(50, 800);  //This might be replaced with code for a resize event later
-
-	//based on http://www.codeprogress.com/cpp/libraries/qt/showQtExample.php?key=QLinearGradientManyColor&index=583
-	QLinearGradient gradient(0, 0, 0, sliderWidget.rect().height());
-	
-	const double INCREMENT = 0.01;
-
-	for (double i = MIN; i <= MAX; i += INCREMENT) {
-		colorTable->GetColor(i, color);
-		//cout << "New color: " << color[0] << " " << color[1] << " " << color[2] << endl;
-		gradient.setColorAt((i) / (MAX - MIN), QColor(255 * color[0], 255 * color[1], 255 * color[2], 255));
-	}
-
-	//based on http://www.codeprogress.com/cpp/libraries/qt/showQtExample.php?key=QLinearGradientManyColor&index=583
-	QPalette palette;
-	palette.setBrush(QPalette::Background, QBrush(gradient));
-	sliderWidget.setPalette(palette);
-	//sliderWidget.show();
-	sliderWidget.setWindowTitle("Entropy Query");
-	//this->addWidget(&sliderWidget);
-	twoSided->setWidget(2, &sliderWidget);
-	sliderWidget.move(1000, 150);
-	slider.resize(sliderWidget.rect().width(), sliderWidget.rect().height());
-	
-	QHBoxLayout horizLayout;
-	horizLayout.addWidget(&slider);
-
-	sliderWidget.setLayout(&horizLayout);
-
-	cout << endl;
 }
 
 //Respond to selection events for the list box for tree selection for the forest

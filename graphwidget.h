@@ -45,6 +45,7 @@
 //#include <DataManager.h>
 #include <DataMgrVect.h>
 #include <node.h>
+#include <vtkLookupTable.h>
 
 class Widget::Node;
 
@@ -77,7 +78,7 @@ class GraphWidget : public QGraphicsView
 	//Q_OBJECT
 
 public:
-	GraphWidget(QWidget *parent = 0, NodeBi *p = 0);
+	GraphWidget(vtkLookupTable * colorTable, QWidget *parent = 0, NodeBi *p = 0);
 	~GraphWidget();
 	
 	void buildDotFileFromTree(NodeBi * root);
@@ -121,6 +122,7 @@ private:
 	vector<GraphVizNode *> nodes;					//The list of all nodes
 	vector<GraphVizEdge *> edges;					//The list of all edges
 	ofstream dotOut;								//The output file stream handler for the file that will be read by the dot program
+	vtkLookupTable * colorTable;					//Reference to the VTK color table
 	
 };
 

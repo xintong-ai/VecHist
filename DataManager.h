@@ -147,6 +147,9 @@ public:
 			_start[i] = start[i];
 	}
 
+	float GetEntropy() { return entropy; }
+	void SetEntropy(float entropy) { this->entropy = entropy; }
+
 	AbstractNode(int _cube_size)
 	{
 		cube_size = _cube_size;
@@ -159,8 +162,8 @@ public:
 class DataManager
 {
 protected:
-	int currentTimeStep = 100;
-	int startTimeStep = 100;
+	int currentTimeStep = 100;	//Timestep currently loaded in scene (for cosmological data)
+	int startTimeStep = 100;	//First in series of timesteps selectable for cosmological data (currently only for the JSON component)
 	int cubemap_size;
 	int start[3];
 	int dim[3];

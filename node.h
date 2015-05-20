@@ -74,6 +74,8 @@ namespace Widget
 		QPainterPath shape() const Q_DECL_OVERRIDE;
 		void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) Q_DECL_OVERRIDE;
 		void SetChildrenVisibility(NodeBi *nd, bool _isVisible);
+		void setForeDisplayColor(QColor foreDisplayColor) { this->foreDisplayColor = foreDisplayColor; }
+		void setBackDisplayColor(QColor backDisplayColor) { this->backDisplayColor = backDisplayColor; }
 
 	protected:
 		QVariant itemChange(GraphicsItemChange change, const QVariant &value) Q_DECL_OVERRIDE;
@@ -86,6 +88,8 @@ namespace Widget
 		QPointF newPos;
 		GraphWidget *graph;  //Pointer to the larger graph widget
 		NodeBi * nodeBiPtr;  //Pointer to our interal tree data structure - used for either an entropy tree or a merger tree
+		QColor foreDisplayColor;
+		QColor backDisplayColor;
 	};
 };
 

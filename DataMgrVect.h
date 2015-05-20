@@ -35,6 +35,9 @@ public:
 		dim[0] = _dim0;
 		dim[1] = _dim1;
 		dim[2] = _dim2;
+
+		this->entropy = entropy;
+
 		//left = nullptr;
 		//right = nullptr;
 		//cubemap = nullptr;
@@ -94,6 +97,8 @@ class DataMgrVect:public DataManager
 	int blockDim[3];
 	float3* data_x_first;
 	//	int nCells;
+	double minEntropy = 0;  //Minimum entropy found in the entropy tree
+	double maxEntropy = 0;  //Maximum entropy found in the entropy tree
 	std::vector<std::vector<double> > vV;
 	std::vector<std::vector<int> > vF;
 	std::vector<float> vertexValue;
@@ -107,7 +112,7 @@ class DataMgrVect:public DataManager
 	//
 	float entropyThreshold;// 6;// 10.2;	//592 cubes for plume
 	//Node *topNode;
-	NodeBi *rootNode;
+	NodeBi *rootNode;		//Root node to the entropy tree structure
 	int numBlocks;
 
 	//void SplitNode(Node* parent);
@@ -153,6 +158,10 @@ public:
 	virtual vector<AbstractNode*> GetAllNode();
 	virtual NodeBi* getRootNode();
 	virtual void UpdateCubeMap(float* cubemap);
+	void calculateEntropyExtremes();
+	void calculateEntropyExtremes(NodeBi *p);
+	float getMinEntropy() { return minEntropy; }
+	float getMaxEntropy() { return maxEntropy; }
 
 	
 

@@ -150,12 +150,15 @@ void Widget::Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
 	painter->drawEllipse(-7, -7, RADIUS, RADIUS);
 	//painter->drawEllipse(-7, -7, 30, 30);
 
-	Qt::GlobalColor foreColor;
-	Qt::GlobalColor backColor;
+	QColor foreColor;
+	QColor backColor;
 	if (!nodeBiPtr->GetSelected())
 	{
-		foreColor = Qt::yellow;
-		backColor = Qt::darkYellow;
+		//foreColor = Qt::yellow;
+		//backColor = Qt::darkYellow;
+		foreColor = foreDisplayColor;
+		backColor = backDisplayColor;
+
 	}
 	else
 	{
@@ -168,8 +171,8 @@ void Widget::Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
 	if (option->state & QStyle::State_Sunken) {
 		gradient.setCenter(3, 3);
 		gradient.setFocalPoint(3, 3);
-		gradient.setColorAt(1, QColor(foreColor).light(120));
-		gradient.setColorAt(0, QColor(backColor).light(120));
+		gradient.setColorAt(1, foreColor.light(120));
+		gradient.setColorAt(0, backColor.light(120));
 	}
 	else {
 		gradient.setColorAt(0, foreColor);

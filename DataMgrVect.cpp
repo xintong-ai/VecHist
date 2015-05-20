@@ -899,6 +899,7 @@ void DataMgrVect::readBinaryTree(NodeBi *&p, ifstream &fin, vector<float3> start
 			entropys[token], eig_vals[token],
 			eig_vecs[3 * token], eig_vecs[3 * token + 1], eig_vecs[3 * token + 2],
 			cubemap_size, 0);
+		//cout << "New entropy record: "  << entropys[token] << endl;
 		ComputeCubemapNode(p);
 		readBinaryTree(p->left, fin, starts, dims, entropys, eig_vals, eig_vecs);
 		readBinaryTree(p->right, fin, starts, dims, entropys, eig_vals, eig_vecs);
@@ -1044,4 +1045,36 @@ void DataMgrVect::UpdateCubeMap(float* cubemap)
 	ComputeCubeMap(datablock.get(), cubeSizeTotal, cubemap, cubemap_size);
 }
 
+//This function calculates the min and max entropy values, storing them in class members minEntropy and maxEntropy respectively
+void DataMgrVect::calculateEntropyExtremes()
+{
+	NodeBi *rootNode = getRootNode();
+	minEntropy = maxEntropy = rootNode->GetEntropy();
+
+	calculateEntropyExtremes(rootNode);
+}
+
+//This function recursively finds the min and max entropy values, storing them in class members minEntropy and maxEntropy respectively
+//It is called by calculateEntropyExtremes() above
+//Input parameters: p - the entropy tree structure
+void DataMgrVect::calculateEntropyExtremes(NodeBi *p)
+{
+	float currentEntropy = p->GetEntropy();
+
+	if (currentEntropy < minEntropy) {
+		minEntropy = currentEntropy;
+	}
+
+	if (currentEntropy > maxEntropy) {
+		maxEntropy = currentEntropy;
+	}
+
+	if (p->left != nullptr) {
+		calculateEntropyExtremes(p->left);
+	}
+	if (p->right != nullptr) {
+		calculateEntropyExtremes(p->right);
+	}
+
+}
 

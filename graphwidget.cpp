@@ -46,9 +46,10 @@
 
 #include <QKeyEvent>
 
-GraphWidget::GraphWidget(QWidget *parent, NodeBi *p)
+GraphWidget::GraphWidget(vtkLookupTable * colorTable, QWidget *parent, NodeBi *p)
 	: QGraphicsView(parent), timerId(0)
 {
+	this->colorTable = colorTable;
 	QGraphicsScene *scene = new QGraphicsScene(this);
 	scene->setItemIndexMethod(QGraphicsScene::NoIndex);
 	//scene->setSceneRect(0, 0, 800, 800);
@@ -63,11 +64,6 @@ GraphWidget::GraphWidget(QWidget *parent, NodeBi *p)
 	//setMinimumSize(100, 100);
 	setMaximumSize(800, 800);
 	setWindowTitle(tr("Tree Widget"));
-
-	if (p != nullptr) {
-		//getTreeStats(p, 0, 0);
-		//buildGraphFromTree(p);
-	}
 
 }
 
@@ -121,6 +117,7 @@ void GraphWidget::buildDotFileFromTree(NodeBi * p, int currentDepth, int previou
 	}
 }
 
+//This function invokes the dot program in order to create a dot output text file containing the layout information that our program can read
 void GraphWidget::buildPlainTextFileFromDot()
 {
 	//C:\Graphviz2.38\bin\dot - Tplain - ext tree.txt > tree.ptxt
@@ -259,36 +256,6 @@ void GraphWidget::loadGraphVizTextFile()
 
 	cout << endl;
 
-	/////////////////////////////////////////////////////////////
-	//Reference code:
-	/*
-	Widget::Node *currentNode = new Widget::Node(this);
-	currentNode->setNodeBiPtr(p);
-	p->SetGraphNode(currentNode);
-
-	currentNode->setPos(x, y);
-	scene()->addItem(currentNode);
-
-	//Use the maximum depth and maximum width of the tree to set the amount of space that each tree node takes up
-	double nodeHeight = sceneRect().height() / double(maxTreeDepth) * 0.975;  //97.5% to compensate for slight y shift mentioned in launcher method above
-	double nodeWidth = sceneRect().width() / 2;
-
-	//Recurse to the next level in the tree, and then add a new graph edge for the child node
-	Widget::Node *childNode = nullptr;
-	if (p->GetLeft() != nullptr) {
-	childNode = buildGraphFromTree(p->GetLeft(), currentDepth + 1, currentPos - 1, x - nodeWidth * (pow(0.5,currentDepth + 1)), y + nodeHeight); //The distance between nodes is cut to fraction 0.5 ^ (currentDepth + 1) to prevent node overlap
-	scene()->addItem(new Edge(currentNode, childNode));
-	}
-	if (p->GetRight() != nullptr) {
-	childNode = buildGraphFromTree(p->GetRight(), currentDepth + 1, currentPos + 1, x + nodeWidth * (pow(0.5,currentDepth + 1)), y + nodeHeight);
-	scene()->addItem(new Edge(currentNode, childNode));
-	}
-
-	return currentNode;
-	*/
-
-	//scene()->setSceneRect(0, 0, graphWidth, graphHeight);
-
 	cout << "Graph Width: " << graphWidth << endl;
 	cout << "Graph Height: " << graphHeight << endl;
 	cout << "Scene Width: " << scene()->width() << endl;
@@ -297,6 +264,7 @@ void GraphWidget::loadGraphVizTextFile()
 	double widthRatio = scene()->width() / (double)graphWidth;
 	double heightRatio = scene()->height() / (double)graphHeight;
 
+	//Add the nodes to the graph widget's scene
 	for (int i = 0; i < nodes.size(); i++) {
 		Widget::Node * childNode = new Widget::Node(this);
 		nodes[i]->widgetNode = childNode;
@@ -304,21 +272,36 @@ void GraphWidget::loadGraphVizTextFile()
 		childNode->RADIUS = nodes[i]->width / 2;
 		childNode->RADIUS = 0.00000001;
 		NodeBi * nodeBiPtr = nodeBiTable[nodes[i]->name];
-		if (nodeBiPtr == nullptr ) {
+
+		double entropyValue = 0;
+		if (nodeBiPtr != nullptr) {
+			entropyValue = nodeBiPtr->GetEntropy();
+		}
+		else {
+			entropyValue = 0;
 			cerr << "Warning - " << nodes[i]->name << " has no node bi record!" << endl;
 		}
+
+		//cout << "New entropy value: " << entropyValue << endl;
+
 		childNode->setNodeBiPtr(nodeBiPtr);
+
+		double color[3];
+		colorTable->GetColor(entropyValue, color);
+		QColor entropyColor(255 * color[0], 255 * color[1], 255 * color[2], 255);
+
+		childNode->setForeDisplayColor(entropyColor);
+		childNode->setBackDisplayColor(entropyColor);  //TODO: Make work with node's gradient
+
 		scene()->addItem(childNode);
-		//childNode->set
 
 	}
 
 	//This part is loosely based on: http://www.gamedev.net/blog/1508/entry-2259265-creating-an-interactive-ui-for-viewing-graphs-the-code/
 
-	
 	QPainterPath painterPath;
 
-
+	//Add the edges to the graph widget's scene
 	for (int i = 0; i < edges.size(); i++) {
 		
 		//WIP Bezier curves code (to represent the b-splines
