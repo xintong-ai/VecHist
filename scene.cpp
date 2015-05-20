@@ -684,9 +684,18 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
 		const double INCREMENT = 0.01;
 
+		cout << min << endl;
+		cout << max << endl;
+
+
 		const int NUM_ITERATIONS = 100;
 		for (double i = min; i <= max; i += (max - min) / NUM_ITERATIONS) {
 			colorTable->GetColor(i, color);
+			if (i >= 10) {
+				cout << "i: " << endl;
+				cout << "Color: " << color[0] << " " << color[1] << " " << color[2] << endl;
+			}
+			//colorTable->GetColor(3.5, color);
 			gradient.setColorAt((i) / (max - min), QColor(255 * color[0], 255 * color[1], 255 * color[2], 255));
 		}
 
@@ -888,10 +897,12 @@ void Scene::dropBoxSelection()
 //Event hander method for changes in the slider
 //Parameter newValue - the new value from the slider change (currently 0 to 99)
 void Scene::sliderSelection(int newValue) {
+	newValue = newValue + 1;
 	cout << "New value is: " << newValue << endl;
 	double minEntropy = ((DataMgrVect*)dataManager)->getMinEntropy();
 	double maxEntropy = ((DataMgrVect*)dataManager)->getMaxEntropy();
 	double entropyValue =  minEntropy + (maxEntropy - minEntropy) * (double(newValue) / 100);
+	slider.setToolTip(QString("Entropy: ") + QString::number(entropyValue));
 	cout << "Entropy value is: " << entropyValue << endl;
 	((DataMgrVect*)dataManager)->SetChildrenBelowEntropyToVisible((NodeBi*)dataManager->getRootNode(), entropyValue);
 	//((DataMgrVect*)dataManager)->PrintEntropies((NodeBi*)dataManager->getRootNode(), 0);

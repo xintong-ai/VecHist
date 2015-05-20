@@ -264,6 +264,10 @@ void GraphWidget::loadGraphVizTextFile()
 	double widthRatio = scene()->width() / (double)graphWidth;
 	double heightRatio = scene()->height() / (double)graphHeight;
 
+	//TODO: Externalize this hardcoding
+	double min = 0;
+	double max = 10.449;
+
 	//Add the nodes to the graph widget's scene
 	for (int i = 0; i < nodes.size(); i++) {
 		Widget::Node * childNode = new Widget::Node(this);
@@ -276,12 +280,16 @@ void GraphWidget::loadGraphVizTextFile()
 		double entropyValue = 0;
 		if (nodeBiPtr != nullptr) {
 			entropyValue = nodeBiPtr->GetEntropy();
+			//setToolTip(QString("Entropy: ") + QString::number(entropyValue));
 		}
 		else {
 			entropyValue = 0;
 			cerr << "Warning - " << nodes[i]->name << " has no node bi record!" << endl;
 		}
 
+		entropyValue = max - entropyValue;  //TODO: use min as well and exteralize
+
+		//entropyValue = 3.5;
 		//cout << "New entropy value: " << entropyValue << endl;
 
 		childNode->setNodeBiPtr(nodeBiPtr);
@@ -289,10 +297,13 @@ void GraphWidget::loadGraphVizTextFile()
 
 		double color[3];
 		colorTable->GetColor(entropyValue, color);
+		cout << "Name: " << nodes[i]->name << endl;
+		cout << "Color: " << color[0] << " " << color[1] << " " << color[2] << endl;
 		QColor entropyColor(255 * color[0], 255 * color[1], 255 * color[2], 255);
 
 		childNode->setForeDisplayColor(entropyColor);
 		childNode->setBackDisplayColor(entropyColor);  //TODO: Make work with node's gradient
+		childNode->setName(nodes[i]->name);
 
 		scene()->addItem(childNode);
 

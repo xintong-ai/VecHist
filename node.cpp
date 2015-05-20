@@ -218,6 +218,12 @@ void Widget::Node::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	//nodeBiPtr->SetVisible( !nodeBiPtr->GetVisible());
 	nodeBiPtr->SetSelected(!nodeBiPtr->GetSelected());
 	//SetChildrenVisibility(nodeBiPtr, nodeBiPtr->GetVisible());
+
+	NodeBi * nodeBiPtr = getNodeBiPtr();
+	double entropyValue = nodeBiPtr->GetEntropy();
+	setToolTip(QString("Entropy: ") + QString::number(entropyValue));
+	cout << "Entropy of Node: " << entropyValue << endl;
+	cout << "Name of Node: " << name << endl;
 }
 
 void Widget::Node::SetChildrenVisibility(NodeBi *nd, bool _isVisible)
@@ -243,3 +249,12 @@ void Widget::Node::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 	update();
 	QGraphicsItem::mouseReleaseEvent(event);
 }
+
+/*void Widget::Node::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+	NodeBi * nodeBiPtr = getNodeBiPtr();
+	double entropyValue = nodeBiPtr->GetEntropy();
+	setToolTip(QString("Entropy: ") + QString::number(entropyValue));
+
+
+}*/
