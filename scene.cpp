@@ -885,6 +885,8 @@ void Scene::dropBoxSelection()
 	
 }
 
+//Event hander method for changes in the slider
+//Parameter newValue - the new value from the slider change (currently 0 to 99)
 void Scene::sliderSelection(int newValue) {
 	cout << "New value is: " << newValue << endl;
 	double minEntropy = ((DataMgrVect*)dataManager)->getMinEntropy();

@@ -285,6 +285,7 @@ void GraphWidget::loadGraphVizTextFile()
 		//cout << "New entropy value: " << entropyValue << endl;
 
 		childNode->setNodeBiPtr(nodeBiPtr);
+		nodeBiPtr->SetGraphNode(childNode);
 
 		double color[3];
 		colorTable->GetColor(entropyValue, color);

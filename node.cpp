@@ -143,30 +143,33 @@ QPainterPath Widget::Node::shape() const
 //This is the QT Paint method for graph nodes
 void Widget::Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
 {
+	//Currently only a radius at a maximum of 10 is guaranteed to work correctly, since the bounding box of the whole node is not large enough
+	//We will need to look into howt to increase it later
+	//The shadow does not work correctly yet for smaller radii
+	//This component was very much hardwired for a radius of 10 originally
 	const int RADIUS = 10;
 
 	painter->setPen(Qt::NoPen);
 	painter->setBrush(Qt::darkGray);
-	painter->drawEllipse(-7, -7, RADIUS, RADIUS);
-	//painter->drawEllipse(-7, -7, 30, 30);
+	painter->drawEllipse(-RADIUS * 0.7, -RADIUS * 0.7, RADIUS, RADIUS);
 
+	//Set the colors for the interior
 	QColor foreColor;
 	QColor backColor;
 	if (!nodeBiPtr->GetSelected())
 	{
-		//foreColor = Qt::yellow;
-		//backColor = Qt::darkYellow;
 		foreColor = foreDisplayColor;
 		backColor = backDisplayColor;
 
 	}
 	else
 	{
-		foreColor = Qt::red;
-		backColor = Qt::darkRed;
+		foreColor = Qt::magenta;
+		backColor = Qt::darkMagenta;
 
 	}	
 
+	//Draw the interior
 	QRadialGradient gradient(-3, -3, 10);
 	if (option->state & QStyle::State_Sunken) {
 		gradient.setCenter(3, 3);
@@ -180,9 +183,16 @@ void Widget::Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
 	}
 	painter->setBrush(gradient);
 
+	//Draw the border
 	painter->setPen(QPen(Qt::black, 0));
-	painter->drawEllipse(-10, -10, RADIUS, RADIUS);
-	//painter->drawEllipse(-10, -10, 30, 30);
+	painter->drawEllipse(-RADIUS, -RADIUS, RADIUS, RADIUS);
+	
+	//Draw X's for invisible nodes
+	if (!nodeBiPtr->GetVisible()) {
+		painter->setPen(QPen(Qt::black, 2));
+		painter->drawLine(-RADIUS, -RADIUS, 0, 0);
+		painter->drawLine(-RADIUS, 0, 0, -RADIUS);
+	}
 }
 
 QVariant Widget::Node::itemChange(GraphicsItemChange change, const QVariant &value)

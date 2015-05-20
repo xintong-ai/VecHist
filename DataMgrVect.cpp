@@ -1086,6 +1086,11 @@ void DataMgrVect::SetChildrenBelowEntropyToVisible(NodeBi * nd, double _maxEntro
 		//Store the visibility in the merge tree node (Some halos may not be loaded)
 		nd->SetVisible(nd->GetEntropy() <= _maxEntropy);
 		
+		if (nd->GetGraphNode() != nullptr) {
+			nd->GetGraphNode()->update();
+			
+		}
+		
 		SetChildrenBelowEntropyToVisible(nd->left, _maxEntropy);
 		
 		SetChildrenBelowEntropyToVisible(nd->right, _maxEntropy);
