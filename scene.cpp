@@ -671,9 +671,9 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		//Build the gradient
 		const int NUM_ITERATIONS = 100;
 		for (double i = min; i <= max; i += (max - min) / NUM_ITERATIONS) {
-			((DataMgrVect *)dataManager)->getEntropyColor(i, color);
+			((DataMgrVect *)dataManager)->getEntropyColorReversed(i, color);
 			//cout << "Color for " << i << ": " << color[0] << " " << color[1] << " " << color[2] << endl;
-			gradient.setColorAt(((max - min - (i - min)) + min) / (max - min), QColor(255 * color[0], 255 * color[1], 255 * color[2], 255));
+			gradient.setColorAt((i - min) / (max - min), QColor(255 * color[0], 255 * color[1], 255 * color[2], 255));
 		}
 		
 		//Do the rest of the set up for the slider widget

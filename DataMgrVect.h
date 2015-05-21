@@ -152,6 +152,7 @@ public:
 	void LoadSegmentation();
 	void BuildColorMap();
 	void getEntropyColor(double entropyValue, double color[3]);
+	void getEntropyColorReversed(double entropyValue, double color[3]);
 	//void SplitTopNode();
 	//void BuildOctree(Node *nd);
 	vector<vector<float4>> GetStreamlines();

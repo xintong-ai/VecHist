@@ -7,7 +7,7 @@ import time
 import math
 
 cube.loadHaloComputeSuperquadric()
-pause
+#pause
 
 time_start = time.time()
 
@@ -27,8 +27,16 @@ shape = d_idx.shape
 d_3d = np.load('d_vec.npy')
 d_3d = cube.normalize(d_3d)
 
+#Calculate entropy for root node (needed for tree visualization)
+start = np.array([0, 0, 0])
+dim = np.array([shape[0], shape[1], shape[2]])
+m_idx = d_idx[start[0]:(start[0]+dim[0]), start[1]:(start[1]+dim[1]), start[2]:(start[2]+dim[2])]
+
+cube_hist = cube.GenCubemap(m_idx.ravel(), cubemap_size)
+entropy = cube.get_histogram_entropy(cube_hist.ravel())
+
 ######do the splitting computation########
-root = cube.TreeNode(np.array([0, 0, 0]), np.array([shape[0], shape[1], shape[2]]), 0, [0, 0, 0], np.array([[0,0,0], [0,0,0], [0,0,0]]))#np.array(d_idx.shape) / 2, np.array([0.0, 0.0, 0.0]))
+root = cube.TreeNode(np.array([0, 0, 0]), np.array([shape[0], shape[1], shape[2]]), entropy, [0, 0, 0], np.array([[0,0,0], [0,0,0], [0,0,0]]))#np.array(d_idx.shape) / 2, np.array([0.0, 0.0, 0.0]))
 cube.SplitEntropy(root, d_idx, d_3d, cubemap_size)
 
 f = open('binary_tree.txt', 'w')

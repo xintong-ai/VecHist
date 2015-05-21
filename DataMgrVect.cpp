@@ -990,6 +990,20 @@ void DataMgrVect::getEntropyColor(double entropyValue, double color[3])
 	}
 }
 
+//This function gets an entropy color based on the values in the vtk color map
+//Notably, it does not flip the result -- thus making it "reversed" from what we normally use;
+//this is what the gradient uses.
+void DataMgrVect::getEntropyColorReversed(double entropyValue, double color[3])
+{
+	if (colorTable == nullptr) {
+		color[0] = color[1] = color[2] = 0.0;
+		cerr << "getEntropyColor was called, but the color map was null" << endl;
+	}
+	else {
+		colorTable->GetColor(entropyValue, color);
+	}
+}
+
 vector<AbstractNode*> DataMgrVect::GetAllNode()
 {
 	vector<AbstractNode*> ret;
