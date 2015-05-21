@@ -961,7 +961,7 @@ void DataMgrVect::BuildColorMap()
 {	
 	colorTable = vtkLookupTable::New();
 
-	colorTable->SetHueRange(0.0, 0.66); //Was 0.0 to 0.66
+	colorTable->SetHueRange(0.0, 0.55); //Was 0.0 to 0.66
 
 	colorTable->SetNumberOfColors(256);
 	colorTable->SetNanColor(0.1, 0.1, 0.1, 1.0);

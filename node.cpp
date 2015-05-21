@@ -189,7 +189,7 @@ void Widget::Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
 	
 	//Draw X's for invisible nodes
 	if (!nodeBiPtr->GetVisible()) {
-		painter->setPen(QPen(Qt::black, 2));
+		painter->setPen(QPen(Qt::darkBlue, 2.5));
 		painter->drawLine(-RADIUS, -RADIUS, 0, 0);
 		painter->drawLine(-RADIUS, 0, 0, -RADIUS);
 	}
