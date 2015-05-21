@@ -470,6 +470,8 @@ void DataMgrVect::LoadData()
 	cubemap_size = 16;
 	LoadVec(GetStringVal("vectorfield").c_str());
 	LoadSegmentation();
+	calculateEntropyExtremes();
+	BuildColorMap();
 }
 
 
@@ -899,6 +901,7 @@ void DataMgrVect::readBinaryTree(NodeBi *&p, ifstream &fin, vector<float3> start
 			entropys[token], eig_vals[token],
 			eig_vecs[3 * token], eig_vecs[3 * token + 1], eig_vecs[3 * token + 2],
 			cubemap_size, 0);
+		//cout << "New entropy record: "  << entropys[token] << endl;
 		ComputeCubemapNode(p);
 		readBinaryTree(p->left, fin, starts, dims, entropys, eig_vals, eig_vecs);
 		readBinaryTree(p->right, fin, starts, dims, entropys, eig_vals, eig_vecs);
@@ -952,6 +955,40 @@ void DataMgrVect::LoadSegmentation()
 	readBinaryTree(rootNode, fin, starts, dims, entropys, eig_vals, eig_vecs);
 }
 
+//This function builds the vtk color map used for both the gradient in the slider widget and used to determine the colors of graph nodes
+//It corresponds to different values of entropy
+void DataMgrVect::BuildColorMap()
+{	
+	colorTable = vtkLookupTable::New();
+
+	colorTable->SetHueRange(0.0, 0.66); //Was 0.0 to 0.66
+
+	colorTable->SetNumberOfColors(256);
+	colorTable->SetNanColor(0.1, 0.1, 0.1, 1.0);
+	colorTable->SetTableRange(minEntropy, maxEntropy);
+	//colorTable->SetRampToLinear();
+
+	//colorTable->SetValueRange(MIN, MAX);
+
+	colorTable->Build();
+}
+
+//This function gets an entropy color based on the values in the vtk color map
+//Notably, it flips the result so that blue is the lowest value and so that red is the largest value
+void DataMgrVect::getEntropyColor(double entropyValue, double color[3])
+{
+	if (colorTable == nullptr) {
+		color[0] = color[1] = color[2] = 0.0;
+		cerr << "getEntropyColor was called, but the color map was null" << endl;
+	}
+	else {
+		entropyValue = entropyValue - minEntropy;
+		entropyValue = maxEntropy - minEntropy - entropyValue;
+		entropyValue = entropyValue + minEntropy;
+
+		colorTable->GetColor(entropyValue, color);
+	}
+}
 
 vector<AbstractNode*> DataMgrVect::GetAllNode()
 {
@@ -1044,4 +1081,75 @@ void DataMgrVect::UpdateCubeMap(float* cubemap)
 	ComputeCubeMap(datablock.get(), cubeSizeTotal, cubemap, cubemap_size);
 }
 
+//This function calculates the min and max entropy values, storing them in class members minEntropy and maxEntropy respectively
+void DataMgrVect::calculateEntropyExtremes()
+{
+	NodeBi *rootNode = getRootNode();
+	minEntropy = maxEntropy = rootNode->GetEntropy();
 
+	calculateEntropyExtremes(rootNode);
+}
+
+//This function recursively finds the min and max entropy values, storing them in class members minEntropy and maxEntropy respectively
+//It is called by calculateEntropyExtremes() above
+//Input parameters: p - the entropy tree structure
+void DataMgrVect::calculateEntropyExtremes(NodeBi *p)
+{
+	float currentEntropy = p->GetEntropy();
+
+	if (currentEntropy < minEntropy) {
+		minEntropy = currentEntropy;
+	}
+
+	if (currentEntropy > maxEntropy) {
+		maxEntropy = currentEntropy;
+	}
+
+	if (p->left != nullptr) {
+		calculateEntropyExtremes(p->left);
+	}
+	if (p->right != nullptr) {
+		calculateEntropyExtremes(p->right);
+	}
+
+}
+
+//This method queries for all nodes at or below a given maximum entropy value.  Nodes at or below the maximum are set to visible.
+//Nodes above the maximum are set to invisible.
+void DataMgrVect::SetChildrenBelowEntropyToVisible(NodeBi * nd, double _maxEntropy)
+{
+	if (nd != nullptr) {
+		//Store the visibility in the merge tree node (Some halos may not be loaded)
+		double myEntropy = nd->GetEntropy();
+		nd->SetVisible(nd->GetEntropy() <= _maxEntropy);
+		
+		if (nd->GetGraphNode() != nullptr) {
+			nd->GetGraphNode()->update();
+			
+		}
+		
+		SetChildrenBelowEntropyToVisible(nd->left, _maxEntropy);
+		
+		SetChildrenBelowEntropyToVisible(nd->right, _maxEntropy);
+		
+	}
+
+}
+
+//Utility debugging method to print all entropies up to a certain level (currently up to level 3)
+//Parameters:
+//    nd -> the current NodeBI record
+//    level -> the current level
+void DataMgrVect::PrintEntropies(NodeBi * nd, int level)
+{
+	if (nd != nullptr && level <= 3) {
+		//Store the visibility in the merge tree node (Some halos may not be loaded)
+		cout << "Entropy: " << nd->GetEntropy();
+
+		PrintEntropies(nd->left, level + 1);
+
+		PrintEntropies(nd->right, level + 1);
+
+	}
+
+}

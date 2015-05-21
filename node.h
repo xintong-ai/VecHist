@@ -74,18 +74,26 @@ namespace Widget
 		QPainterPath shape() const Q_DECL_OVERRIDE;
 		void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) Q_DECL_OVERRIDE;
 		void SetChildrenVisibility(NodeBi *nd, bool _isVisible);
+		void setForeDisplayColor(QColor foreDisplayColor) { this->foreDisplayColor = foreDisplayColor; }
+		void setBackDisplayColor(QColor backDisplayColor) { this->backDisplayColor = backDisplayColor; }
+		void setName(string name) { this->name = name; }
+		string getName() { return name; }
 
 	protected:
 		QVariant itemChange(GraphicsItemChange change, const QVariant &value) Q_DECL_OVERRIDE;
 
 		void mousePressEvent(QGraphicsSceneMouseEvent *event) Q_DECL_OVERRIDE;
 		void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) Q_DECL_OVERRIDE;
+		//void mouseMoveEvent(QGraphicsSceneMouseEvent *event) Q_DECL_OVERRIDE;
 
 	private:
 		QList<Edge *> edgeList;
 		QPointF newPos;
 		GraphWidget *graph;  //Pointer to the larger graph widget
 		NodeBi * nodeBiPtr;  //Pointer to our interal tree data structure - used for either an entropy tree or a merger tree
+		QColor foreDisplayColor;
+		QColor backDisplayColor;
+		string name;		//Name as loaded from GraphViz dot output file
 	};
 };
 

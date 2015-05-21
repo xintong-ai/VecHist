@@ -648,6 +648,51 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	dataManager->LoadData();
 	UpdateTexture();
 
+	//for (int i = 0; i < 500; i++)	{
+	//	COLOUR tmp = GetColour(i, 0, 500);
+	//	colorMap.push_back(make_float3(tmp.r, tmp.g, tmp.b));
+	//}
+
+	//Set up the gradient and slider widget
+	if (application == 1) {
+		//Set up the slider widget initial size
+		sliderWidget.resize(50, 800);
+		sliderWidget.setFixedSize(50, 800);  //This might be replaced with code for a resize event later
+
+		double min = ((DataMgrVect *)dataManager)->getMinEntropy();
+		double max = ((DataMgrVect *)dataManager)->getMaxEntropy();
+
+		QLinearGradient gradient(0, 0, 0, sliderWidget.rect().height());
+
+		const double INCREMENT = 0.01;
+
+		double color[3];
+
+		//Build the gradient
+		const int NUM_ITERATIONS = 100;
+		for (double i = min; i <= max; i += (max - min) / NUM_ITERATIONS) {
+			((DataMgrVect *)dataManager)->getEntropyColor(i, color);
+			//cout << "Color for " << i << ": " << color[0] << " " << color[1] << " " << color[2] << endl;
+			gradient.setColorAt(((max - min - (i - min)) + min) / (max - min), QColor(255 * color[0], 255 * color[1], 255 * color[2], 255));
+		}
+		
+		//Do the rest of the set up for the slider widget
+		//based on http://www.codeprogress.com/cpp/libraries/qt/showQtExample.php?key=QLinearGradientManyColor&index=583
+		QPalette palette;
+		palette.setBrush(QPalette::Background, QBrush(gradient));
+		sliderWidget.setPalette(palette);
+		sliderWidget.setWindowTitle("Entropy Query");
+		
+		sliderWidget.move(1000, 150);
+		slider.resize(sliderWidget.rect().width(), sliderWidget.rect().height());
+		slider.setValue(99);
+
+		QHBoxLayout horizLayout;
+		horizLayout.addWidget(&slider);
+
+		sliderWidget.setLayout(&horizLayout);
+	}
+
 	//dataManager->LoadVec("D:/data/nek/nek.d_4.vec");
 	
 	//dataManager->LoadVec("D:/data/brain_dti/vector-field.vec");
@@ -674,7 +719,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
     m_renderOptions->resize(m_renderOptions->sizeHint());
 
 	if (1 == application) {
-		m_graphWidget = new GraphWidget();
+		m_graphWidget = new GraphWidget(dataManager);
 		m_graphWidget->move(60, 120);
 		//m_graphWidget->resize(m_graphWidget->sizeHint());
 		m_graphWidget->resize(1000, 1000);
@@ -695,7 +740,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
 	}
 	else {
-		m_graphWidget = new GraphWidget();
+		m_graphWidget = new GraphWidget(dataManager);
 		m_graphWidget->move(60, 120);
 		m_graphWidget->resize(m_graphWidget->sizeHint());
 
@@ -766,9 +811,12 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	connect(m_renderOptions, SIGNAL(segmentationRequested()), this, SLOT(Segmentation()));
 
 	if (application == 1) {
+		connect(&slider, SIGNAL(valueChanged(int)), SLOT(sliderSelection(int)));
+
 		twoSided->setWidget(0, m_graphWidget);
 		//twoSided->setWidget(0, scrollArea);
 		twoSided->setWidget(1, m_renderOptions);
+		twoSided->setWidget(2, &sliderWidget);
 
 		//((DataMgrVect * )dataManager)->buildDotFileFromTree();
 		//((DataMgrVect *)dataManager)->buildPlainTextFileFromDot();
@@ -777,10 +825,10 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		m_graphWidget->buildDotFileFromTree((NodeBi*)dataManager->getRootNode());
 		m_graphWidget->buildPlainTextFileFromDot();
 		m_graphWidget->loadGraphVizTextFile();
+		//((DataMgrVect*)dataManager)->PrintEntropies((NodeBi*)dataManager->getRootNode(), 0);
 	}
 	else {
 		connect(m_listWidget, SIGNAL(itemSelectionChanged()), this, SLOT(dropBoxSelection()));
-
 		twoSided->setWidget(0, scrollArea);
 		twoSided->setWidget(1, m_renderOptions);
 		twoSided->setWidget(2, m_listWidget);
@@ -808,10 +856,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
     m_time.start();
 
-	//for (int i = 0; i < 500; i++)	{
-	//	COLOUR tmp = GetColour(i, 0, 500);
-	//	colorMap.push_back(make_float3(tmp.r, tmp.g, tmp.b));
-	//}
+	
 }
 
 //Respond to selection events for the list box for tree selection for the forest
@@ -825,6 +870,20 @@ void Scene::dropBoxSelection()
 	m_jsonView->setJsonValue(data);
 
 	
+}
+
+//Event hander method for changes in the slider
+//Parameter newValue - the new value from the slider change (currently 0 to 99)
+void Scene::sliderSelection(int newValue) {
+	newValue = newValue + 1;
+	cout << "New value is: " << newValue << endl;
+	double minEntropy = ((DataMgrVect*)dataManager)->getMinEntropy();
+	double maxEntropy = ((DataMgrVect*)dataManager)->getMaxEntropy();
+	double entropyValue =  minEntropy + (maxEntropy - minEntropy) * (double(newValue) / 100);
+	slider.setToolTip(QString("Entropy: ") + QString::number(entropyValue));
+	cout << "Entropy value is: " << entropyValue << endl;
+	((DataMgrVect*)dataManager)->SetChildrenBelowEntropyToVisible((NodeBi*)dataManager->getRootNode(), entropyValue);
+	//((DataMgrVect*)dataManager)->PrintEntropies((NodeBi*)dataManager->getRootNode(), 0);
 }
 
 Scene::~Scene()

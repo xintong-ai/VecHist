@@ -1,5 +1,6 @@
 #include <fstream>
 
+#include <vtkLookupTable.h>
 #include "DataManager.h"
 
 class NodeBi:public AbstractNode
@@ -14,8 +15,8 @@ class NodeBi:public AbstractNode
 	//Widget::Node
 public:
 	//TODO: these two variable should be private
-	NodeBi* left;
-	NodeBi* right;
+	NodeBi* left;	//Left child node
+	NodeBi* right;	//Right child node
 
 	NodeBi(
 		int _start0, int _start1, int _start2,
@@ -35,6 +36,9 @@ public:
 		dim[0] = _dim0;
 		dim[1] = _dim1;
 		dim[2] = _dim2;
+
+		this->entropy = entropy;
+
 		//left = nullptr;
 		//right = nullptr;
 		//cubemap = nullptr;
@@ -94,6 +98,8 @@ class DataMgrVect:public DataManager
 	int blockDim[3];
 	float3* data_x_first;
 	//	int nCells;
+	double minEntropy = 0;  //Minimum entropy found in the entropy tree
+	double maxEntropy = 0;  //Maximum entropy found in the entropy tree
 	std::vector<std::vector<double> > vV;
 	std::vector<std::vector<int> > vF;
 	std::vector<float> vertexValue;
@@ -107,8 +113,10 @@ class DataMgrVect:public DataManager
 	//
 	float entropyThreshold;// 6;// 10.2;	//592 cubes for plume
 	//Node *topNode;
-	NodeBi *rootNode;
+	NodeBi *rootNode;		//Root node to the entropy tree structure
 	int numBlocks;
+
+	vtkLookupTable * colorTable = nullptr;
 
 	//void SplitNode(Node* parent);
 	//void ComputeCubemapNode(Node *&nd);
@@ -142,6 +150,8 @@ public:
 	int GetNumOfCells();
 	//void Segmentation();
 	void LoadSegmentation();
+	void BuildColorMap();
+	void getEntropyColor(double entropyValue, double color[3]);
 	//void SplitTopNode();
 	//void BuildOctree(Node *nd);
 	vector<vector<float4>> GetStreamlines();
@@ -153,7 +163,13 @@ public:
 	virtual vector<AbstractNode*> GetAllNode();
 	virtual NodeBi* getRootNode();
 	virtual void UpdateCubeMap(float* cubemap);
+	void calculateEntropyExtremes();
+	void calculateEntropyExtremes(NodeBi *p);
+	float getMinEntropy() { return minEntropy; }
+	float getMaxEntropy() { return maxEntropy; }
 
-	
+	void SetChildrenBelowEntropyToVisible(NodeBi * nd, double _maxEntropy);
+
+	void PrintEntropies(NodeBi * nd, int level);
 
 };

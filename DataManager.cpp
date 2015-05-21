@@ -159,4 +159,7 @@ string DataManager::GetStringVal(string name)
 	return valStrings[name];
 }
 
-//void AbstractNode::GetStart(int* _start)
+
+
+
+

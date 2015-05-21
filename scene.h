@@ -71,6 +71,7 @@
 //#include <helper_cuda.h>
 //#include <helper_functions.h>
 //#include <helper_timer.h>
+#include <QLinearGradient>
 
 #define PI 3.14159265358979
 
@@ -150,7 +151,7 @@ public slots:
 protected slots:
     void animateFlip();
 private:
-    GraphicsWidget *m_proxyWidgets[4];
+    GraphicsWidget *m_proxyWidgets[5];
     int m_current;
     int m_angle; // angle in degrees
     int m_delta;
@@ -247,6 +248,7 @@ public slots:
 	void OnMove(std::vector<float>& motionData);
 //    void newItem(ItemDialog::ItemType type);
 	void dropBoxSelection();
+	void sliderSelection(int newValue);
 	void RenderBox(const QMatrix4x4 &view, int sx, int sy, int sz, int nx, int ny, int nz);
 	//NewColor Newlight
 	void setCurrentColormapID(int id);
@@ -297,6 +299,7 @@ private:
 	QJsonView * m_jsonView;
 	QScrollArea * scrollArea;
 	QListWidget * m_listWidget;
+	QWidget sliderWidget;
 	//GraphVizWidget * m_graphVizWidget;
 
     //ItemDialog *m_itemDialog;
@@ -353,6 +356,8 @@ private:
 	vector<AbstractNode*> leafNodes;
 	vector<float3> colorMap;
 	//vector<CutPlane> cutplanes;
+
+	QSlider slider;
 };
 
 #endif
