@@ -470,6 +470,8 @@ void DataMgrVect::LoadData()
 	cubemap_size = 16;
 	LoadVec(GetStringVal("vectorfield").c_str());
 	LoadSegmentation();
+	calculateEntropyExtremes();
+	BuildColorMap();
 }
 
 
@@ -953,6 +955,40 @@ void DataMgrVect::LoadSegmentation()
 	readBinaryTree(rootNode, fin, starts, dims, entropys, eig_vals, eig_vecs);
 }
 
+//This function builds the vtk color map used for both the gradient in the slider widget and used to determine the colors of graph nodes
+//It corresponds to different values of entropy
+void DataMgrVect::BuildColorMap()
+{	
+	colorTable = vtkLookupTable::New();
+
+	colorTable->SetHueRange(0.0, 0.66); //Was 0.0 to 0.66
+
+	colorTable->SetNumberOfColors(256);
+	colorTable->SetNanColor(0.1, 0.1, 0.1, 1.0);
+	colorTable->SetTableRange(minEntropy, maxEntropy);
+	//colorTable->SetRampToLinear();
+
+	//colorTable->SetValueRange(MIN, MAX);
+
+	colorTable->Build();
+}
+
+//This function gets an entropy color based on the values in the vtk color map
+//Notably, it flips the result so that blue is the lowest value and so that red is the largest value
+void DataMgrVect::getEntropyColor(double entropyValue, double color[3])
+{
+	if (colorTable == nullptr) {
+		color[0] = color[1] = color[2] = 0.0;
+		cerr << "getEntropyColor was called, but the color map was null" << endl;
+	}
+	else {
+		entropyValue = entropyValue - minEntropy;
+		entropyValue = maxEntropy - minEntropy - entropyValue;
+		entropyValue = entropyValue + minEntropy;
+
+		colorTable->GetColor(entropyValue, color);
+	}
+}
 
 vector<AbstractNode*> DataMgrVect::GetAllNode()
 {

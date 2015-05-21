@@ -46,10 +46,10 @@
 
 #include <QKeyEvent>
 
-GraphWidget::GraphWidget(vtkLookupTable * colorTable, QWidget *parent, NodeBi *p)
+GraphWidget::GraphWidget(DataManager * dataManager, QWidget *parent, NodeBi *p)
 	: QGraphicsView(parent), timerId(0)
 {
-	this->colorTable = colorTable;
+	this->dataManager = dataManager;
 	QGraphicsScene *scene = new QGraphicsScene(this);
 	scene->setItemIndexMethod(QGraphicsScene::NoIndex);
 	//scene->setSceneRect(0, 0, 800, 800);
@@ -264,10 +264,6 @@ void GraphWidget::loadGraphVizTextFile()
 	double widthRatio = scene()->width() / (double)graphWidth;
 	double heightRatio = scene()->height() / (double)graphHeight;
 
-	//TODO: Externalize this hardcoding
-	double min = 0;
-	double max = 10.449;
-
 	//Add the nodes to the graph widget's scene
 	for (int i = 0; i < nodes.size(); i++) {
 		Widget::Node * childNode = new Widget::Node(this);
@@ -287,18 +283,15 @@ void GraphWidget::loadGraphVizTextFile()
 			cerr << "Warning - " << nodes[i]->name << " has no node bi record!" << endl;
 		}
 
-		entropyValue = max - entropyValue;  //TODO: use min as well and exteralize
-
-		//entropyValue = 3.5;
-		//cout << "New entropy value: " << entropyValue << endl;
-
+		//Give the objects references to each other
 		childNode->setNodeBiPtr(nodeBiPtr);
 		nodeBiPtr->SetGraphNode(childNode);
 
+		//Set the color of the node based on the entropy
 		double color[3];
-		colorTable->GetColor(entropyValue, color);
-		cout << "Name: " << nodes[i]->name << endl;
-		cout << "Color: " << color[0] << " " << color[1] << " " << color[2] << endl;
+		((DataMgrVect *)dataManager)->getEntropyColor(entropyValue, color);
+		//cout << "Name: " << nodes[i]->name << endl;
+		//cout << "Color: " << color[0] << " " << color[1] << " " << color[2] << endl;
 		QColor entropyColor(255 * color[0], 255 * color[1], 255 * color[2], 255);
 
 		childNode->setForeDisplayColor(entropyColor);
@@ -534,11 +527,13 @@ void GraphWidget::shuffle()
 	}
 }
 
+//Zoom in event (fired when scroll wheel is used)
 void GraphWidget::zoomIn()
 {
 	scaleView(qreal(1.2));
 }
 
+//Zoom out event (Fired when scroll wheel is used)
 void GraphWidget::zoomOut()
 {
 	scaleView(1 / qreal(1.2));

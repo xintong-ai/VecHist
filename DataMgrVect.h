@@ -1,5 +1,6 @@
 #include <fstream>
 
+#include <vtkLookupTable.h>
 #include "DataManager.h"
 
 class NodeBi:public AbstractNode
@@ -115,6 +116,8 @@ class DataMgrVect:public DataManager
 	NodeBi *rootNode;		//Root node to the entropy tree structure
 	int numBlocks;
 
+	vtkLookupTable * colorTable = nullptr;
+
 	//void SplitNode(Node* parent);
 	//void ComputeCubemapNode(Node *&nd);
 	void ComputeCubemapNode(NodeBi *&nd);
@@ -147,6 +150,8 @@ public:
 	int GetNumOfCells();
 	//void Segmentation();
 	void LoadSegmentation();
+	void BuildColorMap();
+	void getEntropyColor(double entropyValue, double color[3]);
 	//void SplitTopNode();
 	//void BuildOctree(Node *nd);
 	vector<vector<float4>> GetStreamlines();

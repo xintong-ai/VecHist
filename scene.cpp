@@ -653,52 +653,30 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	//	colorMap.push_back(make_float3(tmp.r, tmp.g, tmp.b));
 	//}
 
-
-	//Build the entropy color table and slider widget gradient data
+	//Set up the gradient and slider widget
 	if (application == 1) {
-
-		((DataMgrVect *)dataManager)->calculateEntropyExtremes();
+		//Set up the slider widget initial size
+		sliderWidget.resize(50, 800);
+		sliderWidget.setFixedSize(50, 800);  //This might be replaced with code for a resize event later
 
 		double min = ((DataMgrVect *)dataManager)->getMinEntropy();
 		double max = ((DataMgrVect *)dataManager)->getMaxEntropy();
-
-		colorTable = vtkLookupTable::New();
-
-		colorTable->SetHueRange(0.0, 0.66); //Was 0.0 to 0.66
-
-		colorTable->SetNumberOfColors(256);
-		colorTable->SetNanColor(0.1, 0.1, 0.1, 1.0);
-		colorTable->SetTableRange(min, max);
-		//colorTable->SetRampToLinear();
-
-		//colorTable->SetValueRange(MIN, MAX);
-
-		colorTable->Build();
-
-		double color[3];
-
-		sliderWidget.resize(50, 800);
-		sliderWidget.setFixedSize(50, 800);  //This might be replaced with code for a resize event later
 
 		QLinearGradient gradient(0, 0, 0, sliderWidget.rect().height());
 
 		const double INCREMENT = 0.01;
 
-		cout << min << endl;
-		cout << max << endl;
+		double color[3];
 
-
+		//Build the gradient
 		const int NUM_ITERATIONS = 100;
 		for (double i = min; i <= max; i += (max - min) / NUM_ITERATIONS) {
-			colorTable->GetColor(i, color);
-			if (i >= 10) {
-				cout << "i: " << endl;
-				cout << "Color: " << color[0] << " " << color[1] << " " << color[2] << endl;
-			}
-			//colorTable->GetColor(3.5, color);
-			gradient.setColorAt((i) / (max - min), QColor(255 * color[0], 255 * color[1], 255 * color[2], 255));
+			((DataMgrVect *)dataManager)->getEntropyColor(i, color);
+			//cout << "Color for " << i << ": " << color[0] << " " << color[1] << " " << color[2] << endl;
+			gradient.setColorAt(((max - min - (i - min)) + min) / (max - min), QColor(255 * color[0], 255 * color[1], 255 * color[2], 255));
 		}
-
+		
+		//Do the rest of the set up for the slider widget
 		//based on http://www.codeprogress.com/cpp/libraries/qt/showQtExample.php?key=QLinearGradientManyColor&index=583
 		QPalette palette;
 		palette.setBrush(QPalette::Background, QBrush(gradient));
@@ -741,7 +719,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
     m_renderOptions->resize(m_renderOptions->sizeHint());
 
 	if (1 == application) {
-		m_graphWidget = new GraphWidget(colorTable);
+		m_graphWidget = new GraphWidget(dataManager);
 		m_graphWidget->move(60, 120);
 		//m_graphWidget->resize(m_graphWidget->sizeHint());
 		m_graphWidget->resize(1000, 1000);
@@ -762,7 +740,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
 	}
 	else {
-		m_graphWidget = new GraphWidget(colorTable);
+		m_graphWidget = new GraphWidget(dataManager);
 		m_graphWidget->move(60, 120);
 		m_graphWidget->resize(m_graphWidget->sizeHint());
 

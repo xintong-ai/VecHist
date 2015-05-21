@@ -45,7 +45,6 @@
 //#include <DataManager.h>
 #include <DataMgrVect.h>
 #include <node.h>
-#include <vtkLookupTable.h>
 
 class Widget::Node;
 
@@ -78,7 +77,7 @@ class GraphWidget : public QGraphicsView
 	//Q_OBJECT
 
 public:
-	GraphWidget(vtkLookupTable * colorTable, QWidget *parent = 0, NodeBi *p = 0);
+	GraphWidget(DataManager * dataManager, QWidget *parent = 0, NodeBi *p = 0);
 	~GraphWidget();
 	
 	void buildDotFileFromTree(NodeBi * root);
@@ -110,7 +109,7 @@ private:
 	int timerId;
 	Widget::Node *centerNode;
 
-	int maxTreeDepth = 0;
+	int maxTreeDepth = 0;						//Maximum tree depth reached in the tree
 	int minPos = 0;
 	int maxPos = 0;
 
@@ -122,7 +121,7 @@ private:
 	vector<GraphVizNode *> nodes;					//The list of all nodes
 	vector<GraphVizEdge *> edges;					//The list of all edges
 	ofstream dotOut;								//The output file stream handler for the file that will be read by the dot program
-	vtkLookupTable * colorTable;					//Reference to the VTK color table
+	DataManager * dataManager;					//Reference to the data manager
 	
 };
 
