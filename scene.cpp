@@ -683,7 +683,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		sliderWidget.setPalette(palette);
 		sliderWidget.setWindowTitle("Entropy Query");
 		
-		sliderWidget.move(1000, 150);
+		sliderWidget.move(1100, 30);
 		slider.resize(sliderWidget.rect().width(), sliderWidget.rect().height());
 		
 		slider.setRange(0, 100);
@@ -717,12 +717,12 @@ Scene::Scene(int width, int height, int maxTextureSize)
     //m_trackBalls[2] = TrackBall(0.0f, QVector3D(0, 1, 0), TrackBall::Plane);
 
     m_renderOptions = new RenderOptionsDialog();
-    m_renderOptions->move(20, 120);
+    m_renderOptions->move(1500, 30);
     m_renderOptions->resize(m_renderOptions->sizeHint());
 
 	if (1 == application) {
 		m_graphWidget = new GraphWidget(dataManager);
-		m_graphWidget->move(60, 120);
+		m_graphWidget->move(20, 30);
 		//m_graphWidget->resize(m_graphWidget->sizeHint());
 		m_graphWidget->resize(1000, 1000);
 
@@ -743,7 +743,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	}
 	else {
 		m_graphWidget = new GraphWidget(dataManager);
-		m_graphWidget->move(60, 120);
+		m_graphWidget->move(20, 30);
 		m_graphWidget->resize(m_graphWidget->sizeHint());
 
 		QGraphicsView * view = new QGraphicsView();

@@ -62,7 +62,7 @@ GraphWidget::GraphWidget(DataManager * dataManager, QWidget *parent, NodeBi *p)
 	scale(qreal(0.8), qreal(0.8));
 	setMinimumSize(400, 400);
 	//setMinimumSize(100, 100);
-	setMaximumSize(800, 800);
+	setMaximumSize(1800, 950);
 	setWindowTitle(tr("Tree Widget"));
 
 }
