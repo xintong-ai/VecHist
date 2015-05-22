@@ -658,7 +658,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		//Set up the slider widget initial size
 		sliderWidget.resize(50, 800);
 		sliderWidget.setFixedSize(50, 800);  //This might be replaced with code for a resize event later
-
+		
 		double min = ((DataMgrVect *)dataManager)->getMinEntropy();
 		double max = ((DataMgrVect *)dataManager)->getMaxEntropy();
 
@@ -685,7 +685,9 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		
 		sliderWidget.move(1000, 150);
 		slider.resize(sliderWidget.rect().width(), sliderWidget.rect().height());
-		slider.setValue(99);
+		
+		slider.setRange(0, 100);
+		slider.setValue(100);
 
 		QHBoxLayout horizLayout;
 		horizLayout.addWidget(&slider);
@@ -875,7 +877,6 @@ void Scene::dropBoxSelection()
 //Event hander method for changes in the slider
 //Parameter newValue - the new value from the slider change (currently 0 to 99)
 void Scene::sliderSelection(int newValue) {
-	newValue = newValue + 1;
 	cout << "New value is: " << newValue << endl;
 	double minEntropy = ((DataMgrVect*)dataManager)->getMinEntropy();
 	double maxEntropy = ((DataMgrVect*)dataManager)->getMaxEntropy();

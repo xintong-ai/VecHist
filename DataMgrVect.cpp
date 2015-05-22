@@ -1102,6 +1102,9 @@ void DataMgrVect::calculateEntropyExtremes()
 	minEntropy = maxEntropy = rootNode->GetEntropy();
 
 	calculateEntropyExtremes(rootNode);
+
+	minEntropy -= EPSILON;
+	maxEntropy += EPSILON;
 }
 
 //This function recursively finds the min and max entropy values, storing them in class members minEntropy and maxEntropy respectively

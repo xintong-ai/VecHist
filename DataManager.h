@@ -12,6 +12,9 @@
 //2 means cosmology data
 const int application = 1;
 
+//A very small number used for floating point issue resolution
+const double EPSILON = 1e-6;
+
 namespace Widget
 {
 	class Node;
