@@ -39,7 +39,9 @@ class TreeMapWindow : public QFrame
 		TreeMapWindow();
         ~TreeMapWindow();
 
-       
+	private:
+		QVBoxLayout *mainLayout;
+		TreeMapPlot *ltmPlot;
 };
 
 #endif // _GC_TreeMapWindow_h

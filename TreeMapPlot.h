@@ -48,13 +48,15 @@ class TreeMapPlot : public QWidget
 
 
     public:
-        //TreeMapPlot(TreeMapWindow *, Context *context);
 		TreeMapPlot(TreeMapWindow *);
         ~TreeMapPlot();
         
     protected:
-
 		TreeMapWindow *parent;
+
+	private:
+		TreeMap *root;      // the tree map data structure
+		TreeMap *highlight; // currently needs to be highlighted
     
 };
 

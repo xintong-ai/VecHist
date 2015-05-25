@@ -28,6 +28,13 @@
 
 TreeMapWindow::TreeMapWindow()
 {
+	// the plot
+	mainLayout = new QVBoxLayout;  //Lines widgets up vertically
+	ltmPlot = new TreeMapPlot(this);
+	mainLayout->addWidget(ltmPlot);
+	mainLayout->setSpacing(0);
+	mainLayout->setContentsMargins(0, 0, 0, 0);
+	setLayout(mainLayout);
     
 }
 
