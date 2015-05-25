@@ -26,6 +26,14 @@
 TreeMapPlot::TreeMapPlot(TreeMapWindow *parent)
 	: QWidget(parent), parent(parent)
 {
+	myLabel.setText("Test Successful");
+	
+	QVBoxLayout * mainLayout = new QVBoxLayout;  //Lines widgets up vertically
+	
+	mainLayout->addWidget(&myLabel);
+	mainLayout->setSpacing(0);
+	mainLayout->setContentsMargins(0, 0, 0, 0);
+	setLayout(mainLayout);
     
 }
 

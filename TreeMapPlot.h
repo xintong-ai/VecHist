@@ -57,6 +57,7 @@ class TreeMapPlot : public QWidget
 	private:
 		TreeMap *root;      // the tree map data structure
 		TreeMap *highlight; // currently needs to be highlighted
+		QLabel myLabel;
     
 };
 
