@@ -39,6 +39,7 @@ class TreeMapWindow : public QFrame
 
 		TreeMapWindow();
         ~TreeMapWindow();
+		void refreshPlot();
 
 	private:
 		QVBoxLayout *mainLayout;

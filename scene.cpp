@@ -729,6 +729,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		treeMapWindow = new TreeMapWindow();
 		treeMapWindow->move(20, 30);
 		treeMapWindow->resize(1000, 1000);
+		treeMapWindow->refreshPlot();
 
 		////////////////////////m_graphWidget->getTreeStats((NodeBi*)dataManager->getRootNode(), 0, 0);
 		////////////////////////m_graphWidget->buildGraphFromTree((NodeBi*)dataManager->getRootNode());

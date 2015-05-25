@@ -42,5 +42,11 @@ TreeMapWindow::~TreeMapWindow()
 {
 }
 
+void
+TreeMapWindow::refreshPlot()
+{
+	ltmPlot->setData();
+}
+
 
 
