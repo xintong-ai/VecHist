@@ -26,6 +26,8 @@
 TreeMapPlot::TreeMapPlot(TreeMapWindow *parent)
 	: QWidget(parent), parent(parent)
 {
+	root = new TreeMap;
+
 	myLabel.setText("Test Successful");
 	
 	QVBoxLayout * mainLayout = new QVBoxLayout;  //Lines widgets up vertically
@@ -33,7 +35,7 @@ TreeMapPlot::TreeMapPlot(TreeMapWindow *parent)
 	mainLayout->addWidget(&myLabel);
 	mainLayout->setSpacing(0);
 	mainLayout->setContentsMargins(0, 0, 0, 0);
-	setLayout(mainLayout);
+	//setLayout(mainLayout);
     
 }
 
@@ -41,4 +43,28 @@ TreeMapPlot::~TreeMapPlot()
 {
 }
 
+void
+TreeMapPlot::resizeEvent(QResizeEvent *)
+{
+	// layout the map
+	if (root) root->layout(QRect(9, 9, geometry().width() - 18, geometry().height() - 18));
+}
+
+void
+TreeMapPlot::paintEvent(QPaintEvent *)
+{
+	QPainter painter(this);
+
+	QColor color = QColor(0, 0, 255, 255);
+	QPen pen(color);
+	pen.setWidth(10); // root
+	QBrush brush(color);
+	painter.setBrush(brush);
+	painter.setPen(pen);
+
+	painter.drawRect(root->rect.x() + 4,
+		root->rect.y() + 4,
+		root->rect.width() - 8,
+		root->rect.height() - 8);
+}
 

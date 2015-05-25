@@ -33,10 +33,33 @@ class TreeMap
         TreeMap(TreeMap *parent = NULL, QString name = "", double value = 0.0) :
             parent(parent), name(name), value(value) {}
 
+		// The main user entry point - call this on the root
+		// node and it will layout all the children in the
+		// rectangle supplied. The children's rectangles can
+		// then be passed directly to painter.drawRect etc
+		void layout(QRect rect) {
+
+			// I'll take that
+			this->rect = rect;
+			
+			// need to sort in descending order
+			///////////////////////////////////sort();
+
+			// Use the squarified algorithm outlined
+			// by Mark Bruls, Kees Huizing, and Jarke J. van Wijk
+			// in "http://citeseerx.ist.psu.edu/viewdoc/
+			// download?doi=10.1.1.36.6685&rep=rep1&type=pdf"
+			// ... will recurse
+			///////////////////////////////////squarifyLayout(children, rect);
+		}
+
         // data
         TreeMap *parent;
         QString name;
         double value;
+
+		// geometry
+		QRect rect;
         
 };
 
@@ -53,6 +76,9 @@ class TreeMapPlot : public QWidget
         
     protected:
 		TreeMapWindow *parent;
+
+		virtual void paintEvent(QPaintEvent *);
+		virtual void resizeEvent(QResizeEvent *);
 
 	private:
 		TreeMap *root;      // the tree map data structure
