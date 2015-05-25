@@ -33,15 +33,8 @@ TreeMapPlot::TreeMapPlot(TreeMapWindow *parent)
 	: QWidget(parent), parent(parent)
 {
 	root = new TreeMap;
-
-	//myLabel.setText("Test Successful");
-	
-	//QVBoxLayout * mainLayout = new QVBoxLayout;  //Lines widgets up vertically
-	
-	//mainLayout->addWidget(&myLabel);
-	//mainLayout->setSpacing(0);
-	//mainLayout->setContentsMargins(0, 0, 0, 0);
-	//setLayout(mainLayout);
+	setMouseTracking(true);
+	installEventFilter(this);
     
 }
 
@@ -213,3 +206,54 @@ TreeMapPlot::paintEvent(QPaintEvent *)
 	}
 }
 
+bool
+TreeMapPlot::eventFilter(QObject *, QEvent *e)
+{
+
+	if (e->type() == QEvent::MouseMove) {
+		QPoint pos = static_cast<QMouseEvent*>(e)->pos();
+		TreeMap *underMouse = NULL;
+
+		// look at the bottom rung.
+		foreach(TreeMap *first, root->children)
+			if ((underMouse = first->findAt(pos)) != NULL)
+				break;
+
+		// if this one isn't the one that is
+		// currently highlighted repaint to
+		// highlight it!
+		if (underMouse && highlight != underMouse) {
+			highlight = underMouse;
+			repaint();
+			return true;
+		}
+
+	}
+	else if (e->type() == QEvent::Leave) {
+		highlight = NULL;
+		repaint();
+		return true;
+
+	}
+	else if (e->type() == QEvent::MouseButtonPress) {
+
+		QPoint pos = static_cast<QMouseEvent*>(e)->pos();
+		Qt::MouseButton button = static_cast<QMouseEvent*>(e)->button();
+
+		if (button == Qt::LeftButton) {
+			TreeMap *underMouse = NULL;
+
+			// look at the bottom rung.
+			foreach(TreeMap *first, root->children)
+				if ((underMouse = first->findAt(pos)) != NULL)
+					break;
+
+			// got one?
+			if (underMouse) {
+				emit clicked(underMouse->parent->name, underMouse->name);
+			}
+		}
+	}
+
+	return false;
+}

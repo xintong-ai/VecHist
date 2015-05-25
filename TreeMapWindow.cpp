@@ -23,6 +23,7 @@
 #include <QString>
 #include <QVBoxLayout>
 #include <qformlayout.h>
+#include <iostream>
 
 
 
@@ -35,6 +36,9 @@ TreeMapWindow::TreeMapWindow()
 	mainLayout->setSpacing(0);
 	mainLayout->setContentsMargins(0, 0, 0, 0);
 	setLayout(mainLayout);
+
+	// user clicked on a cell in the plot
+	connect(ltmPlot, SIGNAL(clicked(QString, QString)), this, SLOT(cellClicked(QString, QString)));
     
 }
 
@@ -48,5 +52,47 @@ TreeMapWindow::refreshPlot()
 	ltmPlot->setData();
 }
 
+void
+TreeMapWindow::cellClicked(QString f1, QString f2)
+{
+	//This appears to be code from Golden Cheetah for generating a popup with information from the click.  We will probably just strip this out after verifying it is useless to us.
+	/*
+	QStringList match;
 
+	// create a list of activities in this cell
+	int count = 0;
+	foreach(RideItem *item, context->athlete->rideCache->rides()) {
+
+		// honour the settings
+		if (!settings.specification.pass(item)) continue;
+
+		// text may either not exists, then "unknown" or just be "" but f1, f2 don't know ""
+		QString x1 = item->getText(settings.field1, tr("(unknown)"));
+		QString x2 = item->getText(settings.field2, tr("(unknown)"));
+		if (x1 == "") x1 = tr("(unknown)");
+		if (x2 == "") x2 = tr("(unknown)");
+
+		// match !
+		if (x1 == f1 && x2 == f2) {
+			match << item->fileName;
+			count++;
+		}
+	}
+
+	// create a specification for ours
+	Specification spec;
+	spec.setDateRange(settings.specification.dateRange());
+	FilterSet fs = settings.specification.filterSet();
+	fs.addFilter(true, match);
+	spec.setFilterSet(fs);
+
+	// and the metric to display
+	const RideMetricFactory &factory = RideMetricFactory::instance();
+	const RideMetric *metric = factory.rideMetric(settings.symbol);
+
+	ltmPopup->setData(spec, metric, QString(tr("%1 activities")).arg(count));
+	popup->show();
+	*/
+	std::cout << "Clicked in the tree map window " << std::endl;
+}
 

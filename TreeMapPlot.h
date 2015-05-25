@@ -240,6 +240,12 @@ class TreeMapPlot : public QWidget
 		TreeMapPlot(TreeMapWindow *);
         ~TreeMapPlot();
 		void setData();
+
+	public slots:
+		bool eventFilter(QObject *object, QEvent *e);
+
+	signals:
+		void clicked(QString, QString);
         
     protected:
 		TreeMapWindow *parent;

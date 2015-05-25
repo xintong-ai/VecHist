@@ -41,6 +41,10 @@ class TreeMapWindow : public QFrame
         ~TreeMapWindow();
 		void refreshPlot();
 
+	public slots:
+
+		void cellClicked(QString, QString); // cell clicked
+
 	private:
 		QVBoxLayout *mainLayout;
 		TreeMapPlot *ltmPlot;
