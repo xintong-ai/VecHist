@@ -27,6 +27,7 @@
 #include <qtreewidget.h>
 #include <qlabel.h>
 #include <qcombobox.h>
+#include <QVBoxLayout>
 
 
 class TreeMapPlot;
