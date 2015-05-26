@@ -240,6 +240,7 @@ class TreeMapPlot : public QWidget
 		TreeMapPlot(TreeMapWindow *);
         ~TreeMapPlot();
 		void setData();
+		void areaReport();
 
 	public slots:
 		bool eventFilter(QObject *object, QEvent *e);
@@ -250,6 +251,7 @@ class TreeMapPlot : public QWidget
     protected:
 		TreeMapWindow *parent;
 
+		void paintChildren(TreeMap * parent, QPainter & painter, QBrush & brush, int level);
 		virtual void paintEvent(QPaintEvent *);
 		virtual void resizeEvent(QResizeEvent *);
 
