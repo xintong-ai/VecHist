@@ -152,8 +152,8 @@ void TreeMapPlot::parseBITree(NodeBi * biNode, TreeMap * treeMapNode, int curren
 
 	//If we are at a leaf node, add a regular value to the tree map
 	if (biNode->GetLeft() == nullptr && biNode->GetRight() == nullptr || currentDepth >= DEPTH_LIMIT) {
-		newNode = treeMapNode->insert(QString(""), biNode->GetEntropy());
-		cout << "Entropy: " << biNode->GetEntropy();
+		//newNode = treeMapNode->insert(QString(""), biNode->GetEntropy());
+		newNode = treeMapNode->insert(QString::number(biNode->GetEntropy(), 'g', 2), biNode->GetEntropy());
 	}
 	//Otherwise we are not at a leaf node, in which case the value really doesn't matter.  Show that with a value of 0.
 	else {
