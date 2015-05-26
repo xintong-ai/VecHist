@@ -115,7 +115,8 @@ void
 TreeMapPlot::resizeEvent(QResizeEvent *)
 {
 	// layout the map
-	if (root) root->layout(QRect(9, 9, geometry().width() - 18, geometry().height() - 18));
+	//if (root) root->layout(QRect(9, 9, geometry().width() - 18, geometry().height() - 18));
+	if (root) root->layout2(QRect(9, 9, geometry().width() - 18, geometry().height() - 18));
 }
 
 void

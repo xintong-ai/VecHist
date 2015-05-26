@@ -99,6 +99,24 @@ class TreeMap
 			squarifyLayout(children, rect);
 		}
 
+		void layout2(QRect rect) {
+
+			// I'll take that
+			this->rect = rect;
+
+			// need to sort in descending order
+			//sort();
+
+			// Use the squarified algorithm outlined
+			// by Mark Bruls, Kees Huizing, and Jarke J. van Wijk
+			// in "http://citeseerx.ist.psu.edu/viewdoc/
+			// download?doi=10.1.1.36.6685&rep=rep1&type=pdf"
+			// ... will recurse
+			//squarifyLayout(children, rect);
+			slicelayout(children, rect, Qt::Horizontal);
+		}
+
+
 		// we use the well-known squarify layout
 		// to maintain aspect ratios as near as possible
 		// to a square. It in turn uses the original
@@ -121,7 +139,7 @@ class TreeMap
 			if (start > end) return;
 
 			if (end - start < 2) {
-				slicelayout(items, start, end, bounds);
+				slicelayoutForSquarify(items, start, end, bounds);
 				return;
 			}
 
@@ -152,7 +170,7 @@ class TreeMap
 					b += q;
 				}
 
-				slicelayout(items, start, mid, QRect(x, y, w, h*b));
+				slicelayoutForSquarify(items, start, mid, QRect(x, y, w, h*b));
 				layout(items, mid + 1, end, QRect(x, y + h*b, w, h*(1 - b)));
 
 			}
@@ -170,7 +188,7 @@ class TreeMap
 					b += q;
 				}
 
-				slicelayout(items, start, mid, QRect(x, y, w*b, h));
+				slicelayoutForSquarify(items, start, mid, QRect(x, y, w*b, h));
 				layout(items, mid + 1, end, QRect(x + w*b, y, w*(1 - b), h));
 			}
 		}
@@ -187,7 +205,8 @@ class TreeMap
 
 		// slice the items into strips either horizontally
 		// or vertically along whichever has the longest side
-		void slicelayout(QList<TreeMap*> items, int start, int end, QRect bounds) {
+		//This is the version used by the squarify flow above -- it is not recursive
+		void slicelayoutForSquarify(QList<TreeMap*> items, int start, int end, QRect bounds) {
 
 			// setup
 			double total = 0, accumulator = 0; // total value of items and running total
@@ -215,6 +234,57 @@ class TreeMap
 					items[i]->rect.setHeight(bounds.height());
 				}
 				accumulator += factor;
+			}
+		}
+
+		//Recursive version of slice layout - used by itself to layout a treemap completely
+		void slicelayout(QList<TreeMap*> items, QRect bounds, Qt::Orientation orientation) 
+		{
+
+			// setup
+			double total = 0, accumulator = 0; // total value of items and running total
+			
+			for (int i = 0; i < items.size(); i++) {
+				total += items[i]->value;
+			}
+			
+			//Qt::Orientation orientation = (bounds.width() > bounds.height()) ? Qt::Horizontal : Qt::Vertical;
+
+			// slice em up!
+			for (int i = 0; i < items.size(); i++) {
+
+				double factor = items[i]->value / total;
+				if (orientation == Qt::Vertical) {
+					// slice em into a vertical stack
+					items[i]->rect.setX(bounds.x());
+					items[i]->rect.setWidth(bounds.width());
+					items[i]->rect.setY(bounds.y() + bounds.height()*(1 - accumulator - factor));
+					items[i]->rect.setHeight(bounds.height()*factor);
+
+				}
+				else {
+
+					// slice em into a horizontal stack
+					items[i]->rect.setX(bounds.x() + bounds.width()*(1 - accumulator - factor));
+					items[i]->rect.setWidth(bounds.width()*factor);
+					items[i]->rect.setY(bounds.y());
+					items[i]->rect.setHeight(bounds.height());
+				}
+				accumulator += factor;
+			}
+
+			Qt::Orientation childOrientation;
+			if (orientation == Qt::Vertical) {
+				childOrientation = Qt::Horizontal;
+			}
+			else {
+				childOrientation = Qt::Vertical;
+			}
+
+			for (int i = 0; i < items.size(); i++) {
+				if (items[i] != nullptr) {
+					slicelayout(items[i]->children, items[i]->rect, childOrientation);
+				}
 			}
 		}
 
