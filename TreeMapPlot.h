@@ -60,9 +60,14 @@ class TreeMap
 		TreeMap *findAt(QPoint pos) {
 
 			// find the child that is under pos!
-			foreach(TreeMap *child, children)
-				if (child->rect.contains(pos)) return child;
-			return NULL;
+			//foreach(TreeMap *child, children)
+			//	if (child->rect.contains(pos)) return child;
+			if (rect.contains(pos)) {
+				return this;
+			}
+			else {
+				return NULL;
+			}
 		}
 
 		// wipe out value and all children
@@ -357,11 +362,13 @@ class TreeMapPlot : public QWidget
 		void paintChildren(TreeMap * parent, QPainter & painter, QBrush & brush, int level);
 		virtual void paintEvent(QPaintEvent *);
 		virtual void resizeEvent(QResizeEvent *);
+		void buildLeafList(TreeMap * parent);
 
 	private:
 		TreeMap *root;      // the tree map data structure
 		TreeMap *highlight; // currently needs to be highlighted
 		QLabel myLabel;
+		list<TreeMap *> leafNodes;
     
 };
 

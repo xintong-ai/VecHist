@@ -94,17 +94,20 @@ TreeMapPlot::setData()
 		QString text1 = strings1[i];
 		TreeMap *first = root->insert(text1, values1[i]);
 		for (int j = 0; j < strings2.size(); j++) {
-			QString text2 = strings2[j];
-			TreeMap * second = first->insert(text2, values2[j]);
+			//QString text2 = strings2[j];
+			//TreeMap * second = first->insert(text2, values2[j]);
 			for (int k = 0; k < strings3.size(); k++) {
 				//3 level nesting test case -- we need to make the paint method work for this
-				QString text3 = strings3[k];
-				TreeMap * third = second->insert(text3, values3[i]);
+				//QString text3 = strings3[k];
+				//TreeMap * third = second->insert(text3, values3[i]);
 			}
 
 			
 		}
 	}
+
+	leafNodes.clear();
+	buildLeafList(root);
 
 	// layout and paint
 	resizeEvent(NULL);
@@ -191,11 +194,17 @@ void TreeMapPlot::paintChildren(TreeMap * parent, QPainter & painter, QBrush & b
 
 	foreach(TreeMap *first, parent->children) {
 
+		
+
 		cHSV.setHsv((double)255 / (factor*n++), 255, 150);
 		cRGB = cHSV.convertTo(QColor::Rgb);
 		brush.setColor(cRGB);
 		
-		painter.setBrush(brush);
+		if (first == highlight)
+			painter.setBrush(hbrush);
+		else
+			painter.setBrush(brush);
+		
 		painter.setPen(textPen);
 
 		const int OFFSET_FACTOR = 4;
@@ -252,8 +261,23 @@ void TreeMapPlot::areaReport()
 
 }
 
-bool
-TreeMapPlot::eventFilter(QObject *, QEvent *e)
+void TreeMapPlot::buildLeafList(TreeMap * parent)
+{
+	if (parent->children.size() > 0) {
+		for (int i = 0; i < parent->children.size(); i++) {
+			if (parent->children[i] != nullptr) {
+				buildLeafList(parent->children[i]);
+			}
+
+		}
+	}
+	else {
+		leafNodes.push_back(parent);
+	}
+
+}
+
+bool TreeMapPlot::eventFilter(QObject *, QEvent *e)
 {
 
 	if (e->type() == QEvent::MouseMove) {
@@ -261,7 +285,7 @@ TreeMapPlot::eventFilter(QObject *, QEvent *e)
 		TreeMap *underMouse = NULL;
 
 		// look at the bottom rung.
-		foreach(TreeMap *first, root->children)
+		foreach(TreeMap *first, leafNodes)
 			if ((underMouse = first->findAt(pos)) != NULL)
 				break;
 
