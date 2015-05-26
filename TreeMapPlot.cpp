@@ -62,10 +62,10 @@ TreeMapPlot::setData()
 	strings1.push_back("Sam");
 	strings1.push_back("Walter");
 
-	values1.push_back(0);
-	values1.push_back(0);
-	values1.push_back(0);
-	values1.push_back(0);
+	values1.push_back(10);
+	values1.push_back(20);
+	values1.push_back(30);
+	values1.push_back(40);
 
 	strings2.push_back("1");
 	strings2.push_back("2");
@@ -99,7 +99,7 @@ TreeMapPlot::setData()
 			for (int k = 0; k < strings3.size(); k++) {
 				//3 level nesting test case -- we need to make the paint method work for this
 				QString text3 = strings3[k];
-				TreeMap * third = second->insert(text3, values3[k]);
+				TreeMap * third = second->insert(text3, values3[i]);
 			}
 
 			

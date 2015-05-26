@@ -20,8 +20,11 @@
 #define _GC_TreeMapPlot_h 1
 
 #include <QtGui>
+#include <vector>
 
 #include "TreeMapWindow.h"
+
+using namespace std;
 
 
 // for sorting
@@ -99,6 +102,7 @@ class TreeMap
 			squarifyLayout(children, rect);
 		}
 
+		//TODO: Unify this with the first layout method -- make it choose the layout algrorithm based on a setting (boolean or an enum)
 		void layout2(QRect rect) {
 
 			// I'll take that
@@ -237,23 +241,52 @@ class TreeMap
 			}
 		}
 
+		int getValueSum(QList<TreeMap*> items)
+		{
+			int total = 0;
+			for (int i = 0; i < items.size(); i++) {
+				if (items[i] != nullptr && items[i]->children.size() > 0) {
+					total += getValueSum(items[i]->children);
+				}
+				else {
+					total += items[i]->value;
+				}
+			}
+			return total;
+
+		}
+
 		//Recursive version of slice layout - used by itself to layout a treemap completely
 		void slicelayout(QList<TreeMap*> items, QRect bounds, Qt::Orientation orientation) 
 		{
+			Qt::Orientation childOrientation;
+			if (orientation == Qt::Vertical) {
+				childOrientation = Qt::Horizontal;
+			}
+			else {
+				childOrientation = Qt::Vertical;
+			}
 
-			// setup
+			vector<double> values;
 			double total = 0, accumulator = 0; // total value of items and running total
 			
 			for (int i = 0; i < items.size(); i++) {
-				total += items[i]->value;
+				if (items[i] != nullptr && items[i]->children.size() > 0) {
+					int sumValue = getValueSum(items[i]->children);
+					values.push_back(sumValue);
+					total += sumValue;
+				}
+				else {
+					values.push_back(items[i]->value);
+					total += items[i]->value;
+				}
 			}
 			
-			//Qt::Orientation orientation = (bounds.width() > bounds.height()) ? Qt::Horizontal : Qt::Vertical;
 
 			// slice em up!
-			for (int i = 0; i < items.size(); i++) {
+			for (int i = 0; i < values.size(); i++) {
 
-				double factor = items[i]->value / total;
+				double factor = values[i] / total;
 				if (orientation == Qt::Vertical) {
 					// slice em into a vertical stack
 					items[i]->rect.setX(bounds.x());
@@ -270,22 +303,22 @@ class TreeMap
 					items[i]->rect.setY(bounds.y());
 					items[i]->rect.setHeight(bounds.height());
 				}
+
+				
+
 				accumulator += factor;
 			}
 
-			Qt::Orientation childOrientation;
-			if (orientation == Qt::Vertical) {
-				childOrientation = Qt::Horizontal;
-			}
-			else {
-				childOrientation = Qt::Vertical;
+			for (int i = 0; i < items.size(); i++) {
+				if (items[i] != nullptr && items[i]->children.size() > 0) {
+					slicelayout(items[i]->children, items[i]->rect, childOrientation);
+					
+				}
+				
 			}
 
-			for (int i = 0; i < items.size(); i++) {
-				if (items[i] != nullptr) {
-					slicelayout(items[i]->children, items[i]->rect, childOrientation);
-				}
-			}
+
+			
 		}
 
         // data
