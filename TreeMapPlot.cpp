@@ -221,16 +221,21 @@ void TreeMapPlot::paintChildren(TreeMap * parent, QPainter & painter, QBrush & b
 	hcolor.setAlpha(127);
 	QBrush hbrush(hcolor);
 
+	QPen selectedPen;
+	selectedPen.setColor(Qt::yellow);
+	selectedPen.setWidth(5);
+
+
 	int fontSizeValue = 0;
 
 	switch (level) {
 	case 0:
-		textPen.setColor(Qt::magenta);
+		textPen.setColor(Qt::darkMagenta);
 		fontSizeValue = 18;
 		font.setPointSize(fontSizeValue);
 		break;
 	case 1:
-		textPen.setColor(Qt::yellow);
+		textPen.setColor(Qt::magenta);
 		fontSizeValue = 16;
 		font.setPointSize(fontSizeValue);
 		break;
@@ -260,7 +265,10 @@ void TreeMapPlot::paintChildren(TreeMap * parent, QPainter & painter, QBrush & b
 		else
 			painter.setBrush(brush);
 		
-		painter.setPen(textPen);
+		if (first == selected)
+			painter.setPen(selectedPen);
+		else
+			painter.setPen(textPen);
 
 		const int OFFSET_FACTOR = 2;
 		QRect drawRect;
@@ -369,13 +377,22 @@ bool TreeMapPlot::eventFilter(QObject *, QEvent *e)
 			TreeMap *underMouse = NULL;
 
 			// look at the bottom rung.
-			foreach(TreeMap *first, root->children)
+			//foreach(TreeMap *first, root->children)
+			//	if ((underMouse = first->findAt(pos)) != NULL)
+			//		break;
+			
+			// look at the bottom rung.
+			foreach(TreeMap *first, leafNodes)
 				if ((underMouse = first->findAt(pos)) != NULL)
 					break;
 
+
 			// got one?
 			if (underMouse) {
-				emit clicked(underMouse->parent->name, underMouse->name);
+				//emit clicked(underMouse->parent->name, underMouse->name);
+				selected = underMouse;
+				repaint();
+				return true;
 			}
 		}
 	}

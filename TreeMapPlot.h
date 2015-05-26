@@ -382,7 +382,8 @@ class TreeMapPlot : public QWidget
 
 	private:
 		TreeMap *root;      // the tree map data structure
-		TreeMap *highlight; // currently needs to be highlighted
+		TreeMap *highlight; // moused over tree map leaf node to be highlighted
+		TreeMap *selected;  // currently selected tree map - place a prominent border around it
 		QLabel myLabel;
 		list<TreeMap *> leafNodes;
     
