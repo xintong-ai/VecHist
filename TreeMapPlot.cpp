@@ -122,111 +122,6 @@ void
 TreeMapPlot::paintEvent(QPaintEvent *)
 {
 	//areaReport();
-
-	/*
-	if (!root) return;
-
-	// labels
-	QFont font;
-
-	// Init paint settings
-	QPainter painter(this);
-	QColor color = QColor(0, 0, 255, 255);
-	QPen pen(color);
-	pen.setWidth(10); // root
-	QBrush brush(color);
-	painter.setBrush(brush);
-	painter.setPen(pen);
-
-	// draw border and background (root node)
-	painter.drawRect(root->rect.x() + 4,
-		root->rect.y() + 4,
-		root->rect.width() - 8,
-		root->rect.height() - 8);
-
-	// first level - rectangles, but not text yet
-	pen.setWidth(5);
-	pen.setColor(color);
-	painter.setPen(pen);
-
-	int n = 1;
-	QColor cHSV, cRGB;
-	double factor = double(1) / double(root->children.count());
-
-	foreach(TreeMap *first, root->children) {
-
-		cHSV.setHsv((double)255 / (factor*n++), 255, 150);
-		cRGB = cHSV.convertTo(QColor::Rgb);
-		brush.setColor(cRGB);
-		painter.setBrush(brush);
-		painter.drawRect(first->rect);
-	}
-
-	// second level - overlay rectangles - with text
-	QPen textPen(Qt::white);
-	font.setPointSize(8);
-	painter.setFont(font);
-
-	// overlay colors
-	color = Qt::darkGray;
-	color.setAlpha(127);
-	brush.setColor(color);
-	QColor hcolor(Qt::lightGray);
-	hcolor.setAlpha(127);
-	QBrush hbrush(hcolor);
-	QRect textRect;
-	QRect demandedTextRect;
-	foreach(TreeMap *first, root->children) {
-		foreach(TreeMap *second, first->children) {
-			if (second == highlight) painter.setBrush(hbrush);
-			else painter.setBrush(brush);
-
-			//////////////rectangles////////////
-			painter.setPen(Qt::NoPen);
-			painter.drawRect(second->rect.x() + 2,
-				second->rect.y() + 2,
-				second->rect.width() - 4,
-				second->rect.height() - 4);
-
-			//////////////text///////////////////
-			textRect.setRect(second->rect.x() + 2, second->rect.y() + 2, second->rect.width() - 4, second->rect.height() - 4);
-			// determine font size based on size of window and length of text / try to apply 3 different font sizes - then fall back to "8"
-			font.setPointSize(14);
-			painter.setFont(font);
-			painter.setPen(textPen);
-			demandedTextRect = painter.boundingRect(textRect, Qt::AlignTop | Qt::AlignLeft, second->name);
-			if (!textRect.contains(demandedTextRect)) {
-				font.setPointSize(12);
-				painter.setFont(font);
-				demandedTextRect = painter.boundingRect(textRect, Qt::AlignTop | Qt::AlignLeft, second->name);
-				if (!textRect.contains(demandedTextRect)) {
-					font.setPointSize(10);
-					painter.setFont(font);
-					demandedTextRect = painter.boundingRect(textRect, Qt::AlignTop | Qt::AlignLeft, second->name);
-					if (!textRect.contains(demandedTextRect)) {
-						// fall back to use smallest useful font / even if text may be clipped
-						font.setPointSize(8);
-						painter.setFont(font);
-					}
-				}
-			}
-			painter.drawText(textRect, Qt::AlignTop | Qt::AlignLeft, second->name);
-		}
-	}
-
-	// paint the text for level 1 now - to not overlap it with gray/alpha coming from level 2 drawing overlay
-	textPen.setColor(Qt::black);
-	font.setPointSize(18);
-	painter.setFont(font);
-	painter.setPen(textPen);
-	foreach(TreeMap *first, root->children) {
-		painter.drawText(first->rect,
-			Qt::AlignVCenter | Qt::AlignHCenter,
-			first->name);
-	}
-	*/
-	
-
 	if (!root) return;
 
 	// labels
@@ -254,73 +149,9 @@ TreeMapPlot::paintEvent(QPaintEvent *)
 
 	paintChildren(root, painter, brush, 0);
 
-	
 
 
-//////////////////////////////////////
-// second level - overlay rectangles - with text
 
-// overlay colors
-//color = Qt::darkGray;
-//color.setAlpha(127);
-//brush.setColor(color);
-//QColor hcolor(Qt::lightGray);
-//hcolor.setAlpha(127);
-//QBrush hbrush(hcolor);
-
-
-#ifdef JUNK
-QRect textRect;
-QRect demandedTextRect;
-foreach(TreeMap *first, root->children) {
-	foreach(TreeMap *second, first->children) {
-		if (second == highlight) painter.setBrush(hbrush);
-		else painter.setBrush(brush);
-
-		//////////////rectangles////////////
-		painter.setPen(Qt::NoPen);
-		painter.drawRect(second->rect.x() + 2,
-			second->rect.y() + 2,
-			second->rect.width() - 4,
-			second->rect.height() - 4);
-
-		//////////////text///////////////////
-		textRect.setRect(second->rect.x() + 2, second->rect.y() + 2, second->rect.width() - 4, second->rect.height() - 4);
-		// determine font size based on size of window and length of text / try to apply 3 different font sizes - then fall back to "8"
-		font.setPointSize(14);
-		painter.setFont(font);
-		painter.setPen(textPen);
-		demandedTextRect = painter.boundingRect(textRect, Qt::AlignTop | Qt::AlignLeft, second->name);
-		if (!textRect.contains(demandedTextRect)) {
-			font.setPointSize(12);
-			painter.setFont(font);
-			demandedTextRect = painter.boundingRect(textRect, Qt::AlignTop | Qt::AlignLeft, second->name);
-			if (!textRect.contains(demandedTextRect)) {
-				font.setPointSize(10);
-				painter.setFont(font);
-				demandedTextRect = painter.boundingRect(textRect, Qt::AlignTop | Qt::AlignLeft, second->name);
-				if (!textRect.contains(demandedTextRect)) {
-					// fall back to use smallest useful font / even if text may be clipped
-					font.setPointSize(8);
-					painter.setFont(font);
-				}
-			}
-		}
-		painter.drawText(textRect, Qt::AlignTop | Qt::AlignLeft, second->name);
-	}
-}
-
-// paint the text for level 1 now - to not overlap it with gray/alpha coming from level 2 drawing overlay
-textPen.setColor(Qt::black);
-font.setPointSize(18);
-painter.setFont(font);
-painter.setPen(textPen);
-foreach(TreeMap *first, root->children) {
-	painter.drawText(first->rect,
-		Qt::AlignVCenter | Qt::AlignHCenter,
-		first->name);
-}
-#endif
 }
 
 void TreeMapPlot::paintChildren(TreeMap * parent, QPainter & painter, QBrush & brush, int level)
@@ -365,7 +196,12 @@ void TreeMapPlot::paintChildren(TreeMap * parent, QPainter & painter, QBrush & b
 		
 		painter.setBrush(brush);
 		painter.setPen(textPen);
-		painter.drawRect(first->rect);
+
+		const int OFFSET_FACTOR = 4;
+		QRect drawRect;
+		drawRect.setRect(first->rect.x() + level * OFFSET_FACTOR, first->rect.y() + level * OFFSET_FACTOR, first->rect.width() - level * OFFSET_FACTOR, first->rect.height() - level * OFFSET_FACTOR);
+
+		painter.drawRect(drawRect);
 
 		paintChildren(first, painter, brush, level + 1);
 
