@@ -29,6 +29,8 @@
 #include <qcombobox.h>
 #include <QVBoxLayout>
 
+#include "DataMgrVect.h"
+
 
 class TreeMapPlot;
 class TreeMapWindow : public QFrame
@@ -39,7 +41,7 @@ class TreeMapWindow : public QFrame
 
 		TreeMapWindow();
         ~TreeMapWindow();
-		void refreshPlot();
+		void refreshPlot(NodeBi * root);
 
 	public slots:
 

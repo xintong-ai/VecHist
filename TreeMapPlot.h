@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "TreeMapWindow.h"
+#include "DataMgrVect.h"
 
 using namespace std;
 
@@ -39,7 +40,7 @@ class TreeMap
 
 		// insert into children, if not there then add
 		TreeMap *insert(QString name, double value = 0.0) {
-
+			/*
 			// accumulate and update my parent too
 			this->value += value;
 			for (TreeMap *p = parent; p != NULL; p = p->parent) p->value += value;
@@ -50,6 +51,19 @@ class TreeMap
 					return x;
 				}
 			}
+
+			TreeMap *newone = new TreeMap(this, name, value);
+			children.append(newone);
+			return newone;
+			*/
+
+			//This code would prevent duplicate names if used.  Since we don't want to render labels always, I have commented this out.
+			//foreach(TreeMap *x, children) {
+			//	if (x->name == name) {
+			//		x->value += value;
+			//		return x;
+			//	}
+			//}
 
 			TreeMap *newone = new TreeMap(this, name, value);
 			children.append(newone);
@@ -347,7 +361,9 @@ class TreeMapPlot : public QWidget
     public:
 		TreeMapPlot(TreeMapWindow *);
         ~TreeMapPlot();
-		void setData();
+		void setData(NodeBi * rootBi);
+		void parseBITree(NodeBi * biNode);
+		void parseBITree(NodeBi * biNode, TreeMap * treeMapNode, int currentDepth);
 		void areaReport();
 
 	public slots:

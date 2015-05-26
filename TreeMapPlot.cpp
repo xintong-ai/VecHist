@@ -44,11 +44,14 @@ TreeMapPlot::~TreeMapPlot()
 {
 }
 
-void
-TreeMapPlot::setData()
+void TreeMapPlot::setData(NodeBi * rootBi)
 {
-	root->clear();
+	if (root != nullptr) {
+		root->clear();
+	}
+	
 
+	/*
 	std::vector<QString> strings1;
 	std::vector<QString> strings2;
 	std::vector<QString> strings3;
@@ -62,10 +65,10 @@ TreeMapPlot::setData()
 	strings1.push_back("Sam");
 	strings1.push_back("Walter");
 
-	values1.push_back(10);
-	values1.push_back(20);
-	values1.push_back(30);
-	values1.push_back(40);
+	values1.push_back(0);
+	values1.push_back(0);
+	values1.push_back(0);
+	values1.push_back(0);
 
 	strings2.push_back("1");
 	strings2.push_back("2");
@@ -75,10 +78,10 @@ TreeMapPlot::setData()
 	//Area differences test - I would expect item 3 to have an area 4 X as large as the other 3 entries
 	//Interesting test case that fails in squarify layout: 50, 50, 200, 100.
 	//Here we did not push any items to the 3rd level to do this test case (I commented out the 3rd level nesting insertions).
-	values2.push_back(100);
-	values2.push_back(100);
-	values2.push_back(200);
-	values2.push_back(100);
+	values2.push_back(0);
+	values2.push_back(0);
+	values2.push_back(0);
+	values2.push_back(0);
 
 	strings3.push_back("a");
 	strings3.push_back("b");
@@ -94,17 +97,22 @@ TreeMapPlot::setData()
 		QString text1 = strings1[i];
 		TreeMap *first = root->insert(text1, values1[i]);
 		for (int j = 0; j < strings2.size(); j++) {
-			//QString text2 = strings2[j];
-			//TreeMap * second = first->insert(text2, values2[j]);
+			QString text2 = strings2[j];
+			TreeMap * second = first->insert(text2, values2[j]);
 			for (int k = 0; k < strings3.size(); k++) {
 				//3 level nesting test case -- we need to make the paint method work for this
-				//QString text3 = strings3[k];
-				//TreeMap * third = second->insert(text3, values3[i]);
+				QString text3 = strings3[k];
+				TreeMap * third = second->insert(text3, values3[i]);
 			}
 
 			
 		}
 	}
+	*/
+	
+	parseBITree(rootBi);
+	//root->insert(QString(""), 100);
+	//root->insert(QString(""), 200);
 
 	leafNodes.clear();
 	buildLeafList(root);
@@ -114,16 +122,63 @@ TreeMapPlot::setData()
 	repaint();
 }
 
-void
-TreeMapPlot::resizeEvent(QResizeEvent *)
+void TreeMapPlot::parseBITree(NodeBi * biNode)
+{
+	//Deal with edge cases
+	if (biNode == nullptr) {
+		root->insert(QString(""), 0);
+	}
+	else if (biNode->GetLeft() == nullptr && biNode->GetRight() == nullptr) {
+		root->insert(QString(""), biNode->GetEntropy());
+	}
+	else {
+
+		//Recurse to the next level in the tree
+		if (biNode->GetLeft() != nullptr) {
+			parseBITree(biNode->GetLeft(), root, 0);
+		}
+		if (biNode->GetRight() != nullptr) {
+			parseBITree(biNode->GetRight(), root, 0);
+		}
+	}
+
+}
+
+void TreeMapPlot::parseBITree(NodeBi * biNode, TreeMap * treeMapNode, int currentDepth)
+{
+	TreeMap * newNode = nullptr;
+
+	const int DEPTH_LIMIT = 6;
+
+	//If we are at a leaf node, add a regular value to the tree map
+	if (biNode->GetLeft() == nullptr && biNode->GetRight() == nullptr || currentDepth >= DEPTH_LIMIT) {
+		newNode = treeMapNode->insert(QString(""), biNode->GetEntropy());
+		cout << "Entropy: " << biNode->GetEntropy();
+	}
+	//Otherwise we are not at a leaf node, in which case the value really doesn't matter.  Show that with a value of 0.
+	else {
+		newNode = treeMapNode->insert(QString(""), 0);
+	}
+
+	//Recurse to the next level in the tree
+	if (biNode->GetLeft() != nullptr && currentDepth < DEPTH_LIMIT) {
+		parseBITree(biNode->GetLeft(), newNode, currentDepth + 1); 
+	}
+	if (biNode->GetRight() != nullptr && currentDepth < DEPTH_LIMIT) {
+		parseBITree(biNode->GetRight(), newNode, currentDepth + 1);
+	}
+
+
+}
+
+void TreeMapPlot::resizeEvent(QResizeEvent *)
 {
 	// layout the map
 	//if (root) root->layout(QRect(9, 9, geometry().width() - 18, geometry().height() - 18));
 	if (root) root->layout2(QRect(9, 9, geometry().width() - 18, geometry().height() - 18));
 }
 
-void
-TreeMapPlot::paintEvent(QPaintEvent *)
+void TreeMapPlot::paintEvent(QPaintEvent *)
 {
 	//areaReport();
 	if (!root) return;
@@ -207,7 +262,7 @@ void TreeMapPlot::paintChildren(TreeMap * parent, QPainter & painter, QBrush & b
 		
 		painter.setPen(textPen);
 
-		const int OFFSET_FACTOR = 4;
+		const int OFFSET_FACTOR = 2;
 		QRect drawRect;
 		drawRect.setRect(first->rect.x() + level * OFFSET_FACTOR, first->rect.y() + level * OFFSET_FACTOR, first->rect.width() - level * OFFSET_FACTOR, first->rect.height() - level * OFFSET_FACTOR);
 

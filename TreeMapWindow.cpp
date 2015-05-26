@@ -47,9 +47,9 @@ TreeMapWindow::~TreeMapWindow()
 }
 
 void
-TreeMapWindow::refreshPlot()
+TreeMapWindow::refreshPlot(NodeBi * root)
 {
-	ltmPlot->setData();
+	ltmPlot->setData(root);
 }
 
 void
