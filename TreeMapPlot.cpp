@@ -148,7 +148,7 @@ void TreeMapPlot::parseBITree(NodeBi * biNode, TreeMap * treeMapNode, int curren
 {
 	TreeMap * newNode = nullptr;
 
-	const int DEPTH_LIMIT = 16; //6
+	const int DEPTH_LIMIT = 100000; //This constant can be used to limit the number of levels used - it is useful in debugging.  For now it is set to a massive number to make there be no real limit.
 
 	//If we are at a leaf node, add a regular value to the tree map
 	if (biNode->GetLeft() == nullptr && biNode->GetRight() == nullptr || currentDepth >= DEPTH_LIMIT) {
@@ -273,7 +273,7 @@ void TreeMapPlot::paintChildren(TreeMap * parent, QPainter & painter, QBrush & b
 		else
 			painter.setPen(textPen);
 
-		const int OFFSET_FACTOR = 4;
+		const int OFFSET_FACTOR = 0;
 		QRect drawRect;
 		drawRect.setRect(first->rect.x() + level * OFFSET_FACTOR, first->rect.y() + level * OFFSET_FACTOR, first->rect.width() - level * OFFSET_FACTOR, first->rect.height() - level * OFFSET_FACTOR);
 
