@@ -270,7 +270,7 @@ void TreeMapPlot::paintChildren(TreeMap * parent, QPainter & painter, QBrush & b
 		else
 			painter.setBrush(brush);
 		
-		if (first == selected)
+		if (first->nodeBiRef != nullptr && first->nodeBiRef->GetSelected())
 			painter.setPen(selectedPen);
 		else
 			painter.setPen(textPen);
@@ -380,31 +380,35 @@ bool TreeMapPlot::eventFilter(QObject *, QEvent *e)
 
 		if (button == Qt::LeftButton) {
 			TreeMap *underMouse = NULL;
-
-			// look at the bottom rung.
-			//foreach(TreeMap *first, root->children)
-			//	if ((underMouse = first->findAt(pos)) != NULL)
-			//		break;
 			
 			// look at the bottom rung.
 			foreach(TreeMap *first, leafNodes)
 				if ((underMouse = first->findAt(pos)) != NULL)
 					break;
 
-
 			// got one?
-			if (underMouse) {
+			if (underMouse && underMouse ->nodeBiRef != nullptr) {
 				
-				if (selected != nullptr && selected->nodeBiRef != nullptr) {
-					selected->nodeBiRef->SetSelected(false);
-				}
+				//if (selected != nullptr && selected->nodeBiRef != nullptr) {
+				//	selected->nodeBiRef->SetSelected(false);
+				//	if (selected->nodeBiRef->GetGraphNode() != nullptr) {
+				//		Widget::Node * nodePtr = selected->nodeBiRef->GetGraphNode();
+				//		nodePtr->update();
+				//	}
+				//}
 
-				selected = underMouse;
-				repaint();
+				//selected = underMouse;
+				//repaint();
 
-				if (selected != nullptr && selected->nodeBiRef != nullptr) {
-					selected->nodeBiRef->SetSelected(true);
-				}
+				//if (selected != nullptr && selected->nodeBiRef != nullptr) {
+				//	selected->nodeBiRef->SetSelected(true);
+				//	Widget::Node * nodePtr = selected->nodeBiRef->GetGraphNode();
+				//	nodePtr->update();
+				//	
+				//}
+				underMouse->nodeBiRef->SetSelected(!underMouse->nodeBiRef->GetSelected());
+
+				
 
 				return true;
 			}
