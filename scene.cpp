@@ -730,7 +730,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
 		treeMapWindow = new TreeMapWindow();
 		treeMapWindow->move(20, 30);
-		treeMapWindow->resize(1000, 1000);
+		treeMapWindow->resize(8000, 8000);
 		treeMapWindow->refreshPlot((NodeBi*)dataManager->getRootNode());
 
 		scrollArea = new QScrollArea;

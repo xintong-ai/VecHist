@@ -129,7 +129,7 @@ void TreeMapWindow::wheelEvent(QWheelEvent *event)
 	int y = point.y();
 
 	
-	scrollArea->ensureVisible(x, y);
+	scrollArea->ensureVisible(x * factor, y * factor);
 }
 #endif
 

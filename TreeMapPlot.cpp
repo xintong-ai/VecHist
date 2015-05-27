@@ -148,7 +148,7 @@ void TreeMapPlot::parseBITree(NodeBi * biNode, TreeMap * treeMapNode, int curren
 {
 	TreeMap * newNode = nullptr;
 
-	const int DEPTH_LIMIT = 4; //6
+	const int DEPTH_LIMIT = 16; //6
 
 	//If we are at a leaf node, add a regular value to the tree map
 	if (biNode->GetLeft() == nullptr && biNode->GetRight() == nullptr || currentDepth >= DEPTH_LIMIT) {
