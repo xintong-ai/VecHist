@@ -827,10 +827,11 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	if (application == 1) {
 		connect(&slider, SIGNAL(valueChanged(int)), SLOT(sliderSelection(int)));
 
-		//twoSided->setWidget(0, m_graphWidget);
+		
 		twoSided->setWidget(0, scrollArea);
+		twoSided->setWidget(1, m_graphWidget);
 		//twoSided->setWidget(0, treeMapWindow);
-		twoSided->setWidget(1, m_renderOptions);
+		//twoSided->setWidget(1, m_renderOptions);
 		twoSided->setWidget(2, &sliderWidget);
 		
 
