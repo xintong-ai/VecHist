@@ -721,6 +721,8 @@ Scene::Scene(int width, int height, int maxTextureSize)
     m_renderOptions->resize(m_renderOptions->sizeHint());
 
 	if (1 == application) {
+		
+		
 		m_graphWidget = new GraphWidget(dataManager);
 		m_graphWidget->move(20, 30);
 		//m_graphWidget->resize(m_graphWidget->sizeHint());
@@ -730,6 +732,12 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		treeMapWindow->move(20, 30);
 		treeMapWindow->resize(1000, 1000);
 		treeMapWindow->refreshPlot((NodeBi*)dataManager->getRootNode());
+
+		scrollArea = new QScrollArea;
+		scrollArea->setWidget(treeMapWindow);
+		scrollArea->move(20, 120);
+		scrollArea->resize(900, 800);
+		treeMapWindow->setScrollArea(scrollArea);
 
 		////////////////////////m_graphWidget->getTreeStats((NodeBi*)dataManager->getRootNode(), 0, 0);
 		////////////////////////m_graphWidget->buildGraphFromTree((NodeBi*)dataManager->getRootNode());
@@ -820,8 +828,8 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		connect(&slider, SIGNAL(valueChanged(int)), SLOT(sliderSelection(int)));
 
 		//twoSided->setWidget(0, m_graphWidget);
-		//twoSided->setWidget(0, scrollArea);
-		twoSided->setWidget(0, treeMapWindow);
+		twoSided->setWidget(0, scrollArea);
+		//twoSided->setWidget(0, treeMapWindow);
 		twoSided->setWidget(1, m_renderOptions);
 		twoSided->setWidget(2, &sliderWidget);
 		

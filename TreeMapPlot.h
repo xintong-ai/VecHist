@@ -366,11 +366,14 @@ class TreeMapPlot : public QWidget
 		void parseBITree(NodeBi * biNode, TreeMap * treeMapNode, int currentDepth);
 		void areaReport();
 
+
 	public slots:
 		bool eventFilter(QObject *object, QEvent *e);
 
 	signals:
 		void clicked(QString, QString);
+
+		
         
     protected:
 		TreeMapWindow *parent;

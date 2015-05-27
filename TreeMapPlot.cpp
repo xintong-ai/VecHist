@@ -148,7 +148,7 @@ void TreeMapPlot::parseBITree(NodeBi * biNode, TreeMap * treeMapNode, int curren
 {
 	TreeMap * newNode = nullptr;
 
-	const int DEPTH_LIMIT = 6;
+	const int DEPTH_LIMIT = 4; //6
 
 	//If we are at a leaf node, add a regular value to the tree map
 	if (biNode->GetLeft() == nullptr && biNode->GetRight() == nullptr || currentDepth >= DEPTH_LIMIT) {
@@ -183,11 +183,14 @@ void TreeMapPlot::paintEvent(QPaintEvent *)
 	//areaReport();
 	if (!root) return;
 
+	//resize(sizeHint() * 2);
+
 	// labels
 	
 
 	// Init paint settings
 	QPainter painter(this);
+
 	QColor color = QColor(0, 0, 255, 255);
 	QPen pen(color);
 	pen.setWidth(10); // root
@@ -270,7 +273,7 @@ void TreeMapPlot::paintChildren(TreeMap * parent, QPainter & painter, QBrush & b
 		else
 			painter.setPen(textPen);
 
-		const int OFFSET_FACTOR = 2;
+		const int OFFSET_FACTOR = 4;
 		QRect drawRect;
 		drawRect.setRect(first->rect.x() + level * OFFSET_FACTOR, first->rect.y() + level * OFFSET_FACTOR, first->rect.width() - level * OFFSET_FACTOR, first->rect.height() - level * OFFSET_FACTOR);
 
@@ -399,3 +402,6 @@ bool TreeMapPlot::eventFilter(QObject *, QEvent *e)
 
 	return false;
 }
+
+
+

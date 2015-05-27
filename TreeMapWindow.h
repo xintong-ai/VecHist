@@ -28,6 +28,7 @@
 #include <qlabel.h>
 #include <qcombobox.h>
 #include <QVBoxLayout>
+#include <qscrollarea.h>
 
 #include "DataMgrVect.h"
 
@@ -42,6 +43,11 @@ class TreeMapWindow : public QFrame
 		TreeMapWindow();
         ~TreeMapWindow();
 		void refreshPlot(NodeBi * root);
+		#ifndef QT_NO_WHEELEVENT
+		void wheelEvent(QWheelEvent *event) Q_DECL_OVERRIDE;
+		#endif
+
+		void setScrollArea(QScrollArea * scrollArea) { this->scrollArea = scrollArea; }
 
 	public slots:
 
@@ -50,6 +56,7 @@ class TreeMapWindow : public QFrame
 	private:
 		QVBoxLayout *mainLayout;
 		TreeMapPlot *ltmPlot;
+		QScrollArea * scrollArea = nullptr;
 };
 
 #endif // _GC_TreeMapWindow_h

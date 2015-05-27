@@ -19,6 +19,7 @@
 #include "TreeMapWindow.h"
 #include "TreeMapPlot.h"
 
+#include <qscrollarea.h>
 #include <QtGui>
 #include <QString>
 #include <QVBoxLayout>
@@ -36,6 +37,8 @@ TreeMapWindow::TreeMapWindow()
 	mainLayout->setSpacing(0);
 	mainLayout->setContentsMargins(0, 0, 0, 0);
 	setLayout(mainLayout);
+
+	//resize(sizeHint() * 10);
 
 	// user clicked on a cell in the plot
 	connect(ltmPlot, SIGNAL(clicked(QString, QString)), this, SLOT(cellClicked(QString, QString)));
@@ -95,4 +98,38 @@ TreeMapWindow::cellClicked(QString f1, QString f2)
 	*/
 	std::cout << "Clicked in the tree map window " << std::endl;
 }
+
+const double EPSILON2 = 1e-02;
+
+#ifndef QT_NO_WHEELEVENT
+void TreeMapWindow::wheelEvent(QWheelEvent *event)
+{
+	//cout << "Scroll wheel event " <<  << endl;
+
+	double factor = 1;
+	if (abs(event->delta()) < EPSILON2) {
+		factor = 1;
+	}
+	else if (event->delta() > 0) {
+		factor = event->delta() / 100.0;
+	}
+	else if (event->delta() < 0) {
+		factor = 1 / (fabs(event->delta() / 100.0));
+	}
+	
+
+	int width = this->width();
+	int height = this->height();
+
+	setFixedSize(width * factor, height*factor);
+
+	QPoint point = event->pos();
+
+	int x = point.x();
+	int y = point.y();
+
+	
+	scrollArea->ensureVisible(x, y);
+}
+#endif
 
