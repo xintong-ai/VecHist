@@ -348,6 +348,9 @@ class TreeMap
 
 		// geometry
 		QRect rect;
+
+		//TODO: Make this private
+		NodeBi* nodeBiRef = nullptr;
         
 };
 
@@ -384,9 +387,9 @@ class TreeMapPlot : public QWidget
 		void buildLeafList(TreeMap * parent);
 
 	private:
-		TreeMap *root;      // the tree map data structure
-		TreeMap *highlight; // moused over tree map leaf node to be highlighted
-		TreeMap *selected;  // currently selected tree map - place a prominent border around it
+		TreeMap *root = nullptr;      // the tree map data structure
+		TreeMap *highlight = nullptr; // moused over tree map leaf node to be highlighted
+		TreeMap *selected = nullptr;  // currently selected tree map - place a prominent border around it
 		QLabel myLabel;
 		list<TreeMap *> leafNodes;
     

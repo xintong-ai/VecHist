@@ -160,6 +160,8 @@ void TreeMapPlot::parseBITree(NodeBi * biNode, TreeMap * treeMapNode, int curren
 		newNode = treeMapNode->insert(QString(""), 0);
 	}
 
+	newNode->nodeBiRef = biNode;
+
 	//Recurse to the next level in the tree
 	if (biNode->GetLeft() != nullptr && currentDepth < DEPTH_LIMIT) {
 		parseBITree(biNode->GetLeft(), newNode, currentDepth + 1); 
@@ -392,9 +394,18 @@ bool TreeMapPlot::eventFilter(QObject *, QEvent *e)
 
 			// got one?
 			if (underMouse) {
-				//emit clicked(underMouse->parent->name, underMouse->name);
+				
+				if (selected != nullptr && selected->nodeBiRef != nullptr) {
+					selected->nodeBiRef->SetSelected(false);
+				}
+
 				selected = underMouse;
 				repaint();
+
+				if (selected != nullptr && selected->nodeBiRef != nullptr) {
+					selected->nodeBiRef->SetSelected(true);
+				}
+
 				return true;
 			}
 		}
