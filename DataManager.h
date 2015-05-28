@@ -6,6 +6,7 @@
 #include "OSUFlow.h"
 #include "glSuperquadric.h"
 #include "node.h"
+#include "TreeMapWindow.h"
 #include <unordered_map>
 
 //1 means flow data
@@ -120,8 +121,12 @@ protected:
 	float3 eigval;
 	float3 eigvec[3];
 
-	Widget::Node * graphNode = nullptr;
-	AbstractNode * haloNode = nullptr;
+	Widget::Node * graphNode = nullptr;	//Reference to the node in the regular tree graph widget
+	AbstractNode * haloNode = nullptr;	//Reference to the halo object (Dark Sky data)
+	//TODO: It was intended that this store the reference to each TreeMapPlot object so that update() can be called on them to force repaints
+	//That doesn't seem to be possible with some of the current #include circular dependence issues.  Thus for now, it is storing a reference to the entire
+	//window and forcing a repaint on the entire thing.  We should try to clean up the #inlcude situation later.
+	TreeMapWindow * treeMapWindow = nullptr;	//Reference to the tree map widget's window
 	GLSuperquadric* glyph;
 	bool isVisible = true;
 	bool isSelected = false;
@@ -137,6 +142,8 @@ public:
 	//virtual vector<AbstractNode*> GetAllNode() = 0;
 	GLSuperquadric* GetGlyph(){ return glyph; }
 	float* GetCubemap(){ return cubemap; }
+	void setTreeMapWindow(TreeMapWindow * treeMapWindow) { this->treeMapWindow = treeMapWindow; }
+	TreeMapWindow * getTreeMapWindow() { return treeMapWindow; }
 
 	void GetDim(int* _dim)
 	{

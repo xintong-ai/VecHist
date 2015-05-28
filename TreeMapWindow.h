@@ -30,7 +30,9 @@
 #include <QVBoxLayout>
 #include <qscrollarea.h>
 
-#include "DataMgrVect.h"
+//#include "DataMgrVect.h"
+
+class NodeBi;
 
 
 class TreeMapPlot;
