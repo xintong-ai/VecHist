@@ -399,6 +399,8 @@ bool TreeMapPlot::eventFilter(QObject *, QEvent *e)
 					nodePtr->update();
 				}
 
+				repaint();
+
 				return true;
 			}
 		}
