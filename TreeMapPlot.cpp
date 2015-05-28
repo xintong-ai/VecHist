@@ -351,7 +351,6 @@ void TreeMapPlot::buildLeafList(TreeMap * parent)
 
 bool TreeMapPlot::eventFilter(QObject *, QEvent *e)
 {
-
 	if (e->type() == QEvent::MouseMove) {
 		QPoint pos = static_cast<QMouseEvent*>(e)->pos();
 		TreeMap *underMouse = NULL;
@@ -384,15 +383,15 @@ bool TreeMapPlot::eventFilter(QObject *, QEvent *e)
 
 		if (button == Qt::LeftButton) {
 			TreeMap *underMouse = NULL;
-			
+
 			// look at the bottom rung.
 			foreach(TreeMap *first, leafNodes)
 				if ((underMouse = first->findAt(pos)) != NULL)
 					break;
 
 			// got one?
-			if (underMouse && underMouse ->nodeBiRef != nullptr) {
-				
+			if (underMouse && underMouse->nodeBiRef != nullptr) {
+
 				underMouse->nodeBiRef->SetSelected(!underMouse->nodeBiRef->GetSelected());
 
 				if (underMouse->nodeBiRef->GetGraphNode() != nullptr) {
@@ -400,15 +399,21 @@ bool TreeMapPlot::eventFilter(QObject *, QEvent *e)
 					nodePtr->update();
 				}
 
-				
-
 				return true;
 			}
 		}
 	}
+	else if (e->type() == QEvent::ContextMenu) {
+		cout << "Right Mouse Click" << endl;
+		if (root) {
+			root->useSquareLayout = !root->useSquareLayout;
+			root->layout(QRect(9, 9, geometry().width() - 18, geometry().height() - 18));
+			update();
+		}
+	}
+	
 
 	return false;
 }
-
 
 
