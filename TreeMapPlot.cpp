@@ -129,10 +129,11 @@ void TreeMapPlot::parseBITree(NodeBi * biNode)
 		root->insert(QString(""), 0);
 	}
 	else if (biNode->GetLeft() == nullptr && biNode->GetRight() == nullptr) {
+		biNode->setTreeMapWindow(parent);
 		root->insert(QString(""), biNode->GetEntropy());
 	}
 	else {
-
+		biNode->setTreeMapWindow(parent);
 		//Recurse to the next level in the tree
 		if (biNode->GetLeft() != nullptr) {
 			parseBITree(biNode->GetLeft(), root, 0);
@@ -146,6 +147,10 @@ void TreeMapPlot::parseBITree(NodeBi * biNode)
 
 void TreeMapPlot::parseBITree(NodeBi * biNode, TreeMap * treeMapNode, int currentDepth)
 {
+	//Record the tree window reference for each node
+	//Hopefully we will replace this later with references to individual tree map nodes, once we resolve the circular #include design issues
+	biNode->setTreeMapWindow(parent);
+
 	TreeMap * newNode = nullptr;
 
 	const int DEPTH_LIMIT = 100000; //This constant can be used to limit the number of levels used - it is useful in debugging.  For now it is set to a massive number to make there be no real limit.
@@ -270,7 +275,7 @@ void TreeMapPlot::paintChildren(TreeMap * parent, QPainter & painter, QBrush & b
 		else
 			painter.setBrush(brush);
 		
-		if (first == selected)
+		if (first->nodeBiRef != nullptr && first->nodeBiRef->GetSelected())
 			painter.setPen(selectedPen);
 		else
 			painter.setPen(textPen);
@@ -380,31 +385,23 @@ bool TreeMapPlot::eventFilter(QObject *, QEvent *e)
 
 		if (button == Qt::LeftButton) {
 			TreeMap *underMouse = NULL;
-
-			// look at the bottom rung.
-			//foreach(TreeMap *first, root->children)
-			//	if ((underMouse = first->findAt(pos)) != NULL)
-			//		break;
 			
 			// look at the bottom rung.
 			foreach(TreeMap *first, leafNodes)
 				if ((underMouse = first->findAt(pos)) != NULL)
 					break;
 
-
 			// got one?
-			if (underMouse) {
+			if (underMouse && underMouse ->nodeBiRef != nullptr) {
 				
-				if (selected != nullptr && selected->nodeBiRef != nullptr) {
-					selected->nodeBiRef->SetSelected(false);
+				underMouse->nodeBiRef->SetSelected(!underMouse->nodeBiRef->GetSelected());
+
+				if (underMouse->nodeBiRef->GetGraphNode() != nullptr) {
+					Widget::Node * nodePtr = underMouse->nodeBiRef->GetGraphNode();
+					nodePtr->update();
 				}
 
-				selected = underMouse;
-				repaint();
-
-				if (selected != nullptr && selected->nodeBiRef != nullptr) {
-					selected->nodeBiRef->SetSelected(true);
-				}
+				
 
 				return true;
 			}
