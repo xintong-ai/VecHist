@@ -110,35 +110,21 @@ class TreeMap
 			// I'll take that
 			this->rect = rect;
 
-			// need to sort in descending order
-			sort();
+			if (useSquareLayout) {
+				// need to sort in descending order
+				sort();
 
-			// Use the squarified algorithm outlined
-			// by Mark Bruls, Kees Huizing, and Jarke J. van Wijk
-			// in "http://citeseerx.ist.psu.edu/viewdoc/
-			// download?doi=10.1.1.36.6685&rep=rep1&type=pdf"
-			// ... will recurse
-			squarifyLayout(children, rect);
+				// Use the squarified algorithm outlined
+				// by Mark Bruls, Kees Huizing, and Jarke J. van Wijk
+				// in "http://citeseerx.ist.psu.edu/viewdoc/
+				// download?doi=10.1.1.36.6685&rep=rep1&type=pdf"
+				// ... will recurse
+				squarifyLayout(children, rect);
+			}
+			else {
+				slicelayout(children, rect, Qt::Horizontal);
+			}
 		}
-
-		//TODO: Unify this with the first layout method -- make it choose the layout algrorithm based on a setting (boolean or an enum)
-		void layout2(QRect rect) {
-
-			// I'll take that
-			this->rect = rect;
-
-			// need to sort in descending order
-			//sort();
-
-			// Use the squarified algorithm outlined
-			// by Mark Bruls, Kees Huizing, and Jarke J. van Wijk
-			// in "http://citeseerx.ist.psu.edu/viewdoc/
-			// download?doi=10.1.1.36.6685&rep=rep1&type=pdf"
-			// ... will recurse
-			//squarifyLayout(children, rect);
-			slicelayout(children, rect, Qt::Horizontal);
-		}
-
 
 		// we use the well-known squarify layout
 		// to maintain aspect ratios as near as possible
@@ -345,6 +331,7 @@ class TreeMap
         QString name;
         double value;
 		QList<TreeMap*> children;
+		bool useSquareLayout = false;
 
 		// geometry
 		QRect rect;
