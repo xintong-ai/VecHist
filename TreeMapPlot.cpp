@@ -111,8 +111,7 @@ void TreeMapPlot::setData(NodeBi * rootBi)
 	*/
 	
 	parseBITree(rootBi);
-	//root->insert(QString(""), 100);
-	//root->insert(QString(""), 200);
+		
 
 	leafNodes.clear();
 	buildLeafList(root);

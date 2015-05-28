@@ -68,6 +68,24 @@ class TreeMap
 			TreeMap *newone = new TreeMap(this, name, value);
 			children.append(newone);
 			return newone;
+
+			/*
+			// accumulate and update my parent too
+			this->value += value;
+			for (TreeMap *p = parent; p != NULL; p = p->parent) p->value += value;
+
+			//foreach(TreeMap *x, children) {
+			//	if (x->name == name) {
+			//		x->value += value;
+			//		return x;
+			//	}
+			//}
+
+			TreeMap *newone = new TreeMap(this, name, value);
+			children.append(newone);
+			return newone;
+			*/
+			
 		}
 
 		// find the treemap that under cursor
@@ -106,11 +124,13 @@ class TreeMap
 		// rectangle supplied. The children's rectangles can
 		// then be passed directly to painter.drawRect etc
 		void layout(QRect rect) {
-
+			
 			// I'll take that
 			this->rect = rect;
 
 			if (useSquareLayout) {
+				populateValueSums(this);
+				//printNodes(this);
 				// need to sort in descending order
 				sort();
 
@@ -124,6 +144,59 @@ class TreeMap
 			else {
 				slicelayout(children, rect, Qt::Horizontal);
 			}
+		}
+
+		//This function sets values for all non leaf nodes as the sum of their descendants
+		//It currently is only used for the squarify layout
+		//To do: make the slice and dice use this instead of totaling as it goes
+		double populateValueSums(TreeMap* currentNode)
+		{
+			/*
+			double total = 0;
+			for (int i = 0; i < currentNode->children.size(); i++) {
+				if (currentNode->children[i] != nullptr && currentNode[i].size() > 0) {
+					total += populateValueSums(currentNode->children[i]);
+				}
+				else {
+					total += currentNode->children[i]->value;
+				}
+			}
+			return total;
+			*/
+
+			//Non leaf node
+			if (currentNode->children.size() > 0) {
+				double total = 0;
+				for (int i = 0; i < currentNode->children.size(); i++) {
+					total += populateValueSums(currentNode->children[i]);
+				}
+				currentNode->value = total;
+				return total;
+
+			}
+			//Leaf node - value is already set but needs to be propagated
+			else {
+				return currentNode->value;
+			}
+
+		}
+
+		void printNodes(TreeMap* currentNode)
+		{
+			//Non leaf node
+			if (currentNode->children.size() > 0) {
+				cout << currentNode->value << " ";
+				for (int i = 0; i < currentNode->children.size(); i++) {
+					printNodes(currentNode->children[i]);
+				}
+				
+
+			}
+			//Leaf node - value is already set but needs to be propagated
+			else {
+				cout << currentNode->value << " ";
+			}
+
 		}
 
 		// we use the well-known squarify layout
@@ -331,7 +404,7 @@ class TreeMap
         QString name;
         double value;
 		QList<TreeMap*> children;
-		bool useSquareLayout = false;
+		bool useSquareLayout = true;
 
 		// geometry
 		QRect rect;
