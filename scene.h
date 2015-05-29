@@ -46,6 +46,7 @@
 #include "glextensions.h"
 #include "graphWidget.h"
 #include "qjsonview.h"
+#include "TreeMapWindow.h"
 //#include "GraphVizWidget.h"
 
 #include <QtWidgets>
@@ -151,7 +152,7 @@ public slots:
 protected slots:
     void animateFlip();
 private:
-    GraphicsWidget *m_proxyWidgets[5];
+    GraphicsWidget *m_proxyWidgets[6];
     int m_current;
     int m_angle; // angle in degrees
     int m_delta;
@@ -295,6 +296,7 @@ private:
     //bool m_updateAllCubemaps;
 
     RenderOptionsDialog *m_renderOptions;
+	TreeMapWindow * treeMapWindow;
 	GraphWidget * m_graphWidget;
 	QJsonView * m_jsonView;
 	QScrollArea * scrollArea;

@@ -1,3 +1,5 @@
+#ifndef DATAMGRVECT
+#define DATAMGRVECT
 #include <fstream>
 
 #include <vtkLookupTable.h>
@@ -174,3 +176,5 @@ public:
 	void PrintEntropies(NodeBi * nd, int level);
 
 };
+
+#endif

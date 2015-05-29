@@ -41,6 +41,7 @@
 #include "edge.h"
 #include "node.h"
 #include "graphwidget.h"
+#include "TreeMapWindow.h"
 
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
@@ -221,6 +222,7 @@ void Widget::Node::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
 	NodeBi * nodeBiPtr = getNodeBiPtr();
 	double entropyValue = nodeBiPtr->GetEntropy();
+	nodeBiPtr->getTreeMapWindow()->update();
 	setToolTip(QString("Entropy: ") + QString::number(entropyValue));
 	cout << "Entropy of Node: " << entropyValue << endl;
 	cout << "Name of Node: " << name << endl;
