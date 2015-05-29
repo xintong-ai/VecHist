@@ -35,6 +35,7 @@ TreeMapPlot::TreeMapPlot(TreeMapWindow *parent)
 	: QWidget(parent), parent(parent)
 {
 	root = new TreeMap;
+	leafNodesRoot = new TreeMap;
 	setMouseTracking(true);
 	installEventFilter(this);
     
@@ -48,6 +49,9 @@ void TreeMapPlot::setData(NodeBi * rootBi)
 {
 	if (root != nullptr) {
 		root->clear();
+	}
+	if (leafNodesRoot != nullptr) {
+		leafNodesRoot->clear();
 	}
 	
 
@@ -111,6 +115,9 @@ void TreeMapPlot::setData(NodeBi * rootBi)
 	*/
 	
 	parseBITree(rootBi);
+
+	cout << leafNodesRoot->children.size() << endl;
+
 		
 
 	leafNodes.clear();
@@ -126,10 +133,12 @@ void TreeMapPlot::parseBITree(NodeBi * biNode)
 	//Deal with edge cases
 	if (biNode == nullptr) {
 		root->insert(QString(""), 0);
+		leafNodesRoot->insert(QString(""), 0);
 	}
 	else if (biNode->GetLeft() == nullptr && biNode->GetRight() == nullptr) {
 		biNode->setTreeMapWindow(parent);
 		root->insert(QString(""), biNode->GetEntropy());
+		leafNodesRoot->insert(QString(""), biNode->GetEntropy());
 	}
 	else {
 		biNode->setTreeMapWindow(parent);
@@ -144,6 +153,9 @@ void TreeMapPlot::parseBITree(NodeBi * biNode)
 
 }
 
+//This function:
+//1) Recursively builds the main hiearchical tree that can be loaded in the tree map
+//2) Also loads a "tree of leaves" that can be loaded in the tree map (this will probably be what gets used in the paper as of now)
 void TreeMapPlot::parseBITree(NodeBi * biNode, TreeMap * treeMapNode, int currentDepth)
 {
 	//Record the tree window reference for each node
@@ -151,6 +163,7 @@ void TreeMapPlot::parseBITree(NodeBi * biNode, TreeMap * treeMapNode, int curren
 	biNode->setTreeMapWindow(parent);
 
 	TreeMap * newNode = nullptr;
+	TreeMap * newLeafNode = nullptr;
 
 	const int DEPTH_LIMIT = 100000; //This constant can be used to limit the number of levels used - it is useful in debugging.  For now it is set to a massive number to make there be no real limit.
 
@@ -158,6 +171,8 @@ void TreeMapPlot::parseBITree(NodeBi * biNode, TreeMap * treeMapNode, int curren
 	if (biNode->GetLeft() == nullptr && biNode->GetRight() == nullptr || currentDepth >= DEPTH_LIMIT) {
 		//newNode = treeMapNode->insert(QString(""), biNode->GetEntropy());
 		newNode = treeMapNode->insert(QString::number(biNode->GetEntropy(), 'g', 2), biNode->GetEntropy());
+		newLeafNode = leafNodesRoot->insert(QString::number(biNode->GetEntropy(), 'g', 2), biNode->GetEntropy());  //Build the "tree of leaves" simultaneously
+		newLeafNode->nodeBiRef = biNode;
 	}
 	//Otherwise we are not at a leaf node, in which case the value really doesn't matter.  Show that with a value of 0.
 	else {
@@ -179,15 +194,31 @@ void TreeMapPlot::parseBITree(NodeBi * biNode, TreeMap * treeMapNode, int curren
 
 void TreeMapPlot::resizeEvent(QResizeEvent *)
 {
-	// layout the map
-	//if (root) root->layout(QRect(9, 9, geometry().width() - 18, geometry().height() - 18));
-	if (root) root->layout(QRect(9, 9, geometry().width() - 18, geometry().height() - 18));
+	issueLayout();
 }
 
 void TreeMapPlot::paintEvent(QPaintEvent *)
 {
+	TreeMap * drawNode = nullptr;
+
+	switch (layoutMethod) {
+	case 0:
+	case 1:
+		drawNode = root;
+		break;
+	case 2:
+		drawNode = leafNodesRoot;
+		break;
+	default:
+		drawNode = root;
+		break;
+	}
+
+	cout << drawNode->children.size() << endl;
+
+
 	//areaReport();
-	if (!root) return;
+	if (!drawNode) return;
 
 	//resize(sizeHint() * 2);
 
@@ -205,17 +236,17 @@ void TreeMapPlot::paintEvent(QPaintEvent *)
 	painter.setPen(pen);
 
 	// draw border and background (root node)
-	painter.drawRect(root->rect.x() + 4,
-		root->rect.y() + 4,
-		root->rect.width() - 8,
-		root->rect.height() - 8);
+	painter.drawRect(drawNode->rect.x() + 4,
+		drawNode->rect.y() + 4,
+		drawNode->rect.width() - 8,
+		drawNode->rect.height() - 8);
 
 	// first level - rectangles, but not text yet
 	pen.setWidth(5);
 	pen.setColor(color);
 	painter.setPen(pen);
 
-	paintChildren(root, painter, brush, 0);
+	paintChildren(drawNode, painter, brush, 0);
 
 
 
@@ -349,6 +380,24 @@ void TreeMapPlot::buildLeafList(TreeMap * parent)
 
 }
 
+void TreeMapPlot::issueLayout() 
+{
+	if (root && leafNodesRoot) {
+		switch (layoutMethod) {
+		case 0:
+			root->layout(QRect(9, 9, geometry().width() - 18, geometry().height() - 18), true);
+			break;
+		case 1:
+			root->layout(QRect(9, 9, geometry().width() - 18, geometry().height() - 18), false);
+			break;
+		case 2:
+			leafNodesRoot->layout(QRect(9, 9, geometry().width() - 18, geometry().height() - 18), true);
+			break;
+		}
+	}
+
+}
+
 bool TreeMapPlot::eventFilter(QObject *, QEvent *e)
 {
 	if (e->type() == QEvent::MouseMove) {
@@ -389,6 +438,12 @@ bool TreeMapPlot::eventFilter(QObject *, QEvent *e)
 				if ((underMouse = first->findAt(pos)) != NULL)
 					break;
 
+			if (!underMouse) {
+				foreach(TreeMap *first, leafNodesRoot->children)
+					if ((underMouse = first->findAt(pos)) != NULL)
+						break;
+			}
+
 			// got one?
 			if (underMouse && underMouse->nodeBiRef != nullptr) {
 
@@ -407,11 +462,11 @@ bool TreeMapPlot::eventFilter(QObject *, QEvent *e)
 	}
 	else if (e->type() == QEvent::ContextMenu) {
 		cout << "Right Mouse Click" << endl;
-		if (root) {
-			root->useSquareLayout = !root->useSquareLayout;
-			root->layout(QRect(9, 9, geometry().width() - 18, geometry().height() - 18));
-			update();
-		}
+		
+		layoutMethod = (layoutMethod + 1) % 3;
+		issueLayout();
+		update();
+		
 	}
 	
 
