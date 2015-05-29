@@ -40,34 +40,10 @@ class TreeMap
 
 		// insert into children, if not there then add
 		TreeMap *insert(QString name, double value = 0.0) {
-			/*
-			// accumulate and update my parent too
-			this->value += value;
-			for (TreeMap *p = parent; p != NULL; p = p->parent) p->value += value;
-
-			foreach(TreeMap *x, children) {
-				if (x->name == name) {
-					x->value += value;
-					return x;
-				}
-			}
-
 			TreeMap *newone = new TreeMap(this, name, value);
 			children.append(newone);
 			return newone;
-			*/
-
-			//This code would prevent duplicate names if used.  Since we don't want to render labels always, I have commented this out.
-			//foreach(TreeMap *x, children) {
-			//	if (x->name == name) {
-			//		x->value += value;
-			//		return x;
-			//	}
-			//}
-
-			TreeMap *newone = new TreeMap(this, name, value);
-			children.append(newone);
-			return newone;
+			
 		}
 
 		// find the treemap that under cursor
@@ -105,40 +81,81 @@ class TreeMap
 		// node and it will layout all the children in the
 		// rectangle supplied. The children's rectangles can
 		// then be passed directly to painter.drawRect etc
-		void layout(QRect rect) {
-
+		void layout(QRect rect, bool useSquareLayout) {
+			
 			// I'll take that
 			this->rect = rect;
 
-			// need to sort in descending order
-			sort();
+			if (useSquareLayout) {
+				populateValueSums(this);
+				//printNodes(this);
+				// need to sort in descending order
+				sort();
 
-			// Use the squarified algorithm outlined
-			// by Mark Bruls, Kees Huizing, and Jarke J. van Wijk
-			// in "http://citeseerx.ist.psu.edu/viewdoc/
-			// download?doi=10.1.1.36.6685&rep=rep1&type=pdf"
-			// ... will recurse
-			squarifyLayout(children, rect);
+				// Use the squarified algorithm outlined
+				// by Mark Bruls, Kees Huizing, and Jarke J. van Wijk
+				// in "http://citeseerx.ist.psu.edu/viewdoc/
+				// download?doi=10.1.1.36.6685&rep=rep1&type=pdf"
+				// ... will recurse
+				squarifyLayout(children, rect);
+			}
+			else {
+				slicelayout(children, rect, Qt::Horizontal);
+			}
 		}
 
-		//TODO: Unify this with the first layout method -- make it choose the layout algrorithm based on a setting (boolean or an enum)
-		void layout2(QRect rect) {
+		//This function sets values for all non leaf nodes as the sum of their descendants
+		//It currently is only used for the squarify layout
+		//To do: make the slice and dice use this instead of totaling as it goes
+		double populateValueSums(TreeMap* currentNode)
+		{
+			/*
+			double total = 0;
+			for (int i = 0; i < currentNode->children.size(); i++) {
+				if (currentNode->children[i] != nullptr && currentNode[i].size() > 0) {
+					total += populateValueSums(currentNode->children[i]);
+				}
+				else {
+					total += currentNode->children[i]->value;
+				}
+			}
+			return total;
+			*/
 
-			// I'll take that
-			this->rect = rect;
+			//Non leaf node
+			if (currentNode->children.size() > 0) {
+				double total = 0;
+				for (int i = 0; i < currentNode->children.size(); i++) {
+					total += populateValueSums(currentNode->children[i]);
+				}
+				currentNode->value = total;
+				return total;
 
-			// need to sort in descending order
-			//sort();
+			}
+			//Leaf node - value is already set but needs to be propagated
+			else {
+				return currentNode->value;
+			}
 
-			// Use the squarified algorithm outlined
-			// by Mark Bruls, Kees Huizing, and Jarke J. van Wijk
-			// in "http://citeseerx.ist.psu.edu/viewdoc/
-			// download?doi=10.1.1.36.6685&rep=rep1&type=pdf"
-			// ... will recurse
-			//squarifyLayout(children, rect);
-			slicelayout(children, rect, Qt::Horizontal);
 		}
 
+		void printNodes(TreeMap* currentNode)
+		{
+			//Non leaf node
+			if (currentNode->children.size() > 0) {
+				cout << currentNode->value << " ";
+				for (int i = 0; i < currentNode->children.size(); i++) {
+					printNodes(currentNode->children[i]);
+				}
+				
+
+			}
+			//Leaf node - value is already set but needs to be propagated
+			else {
+				cout << currentNode->value << " ";
+			}
+
+		}
 
 		// we use the well-known squarify layout
 		// to maintain aspect ratios as near as possible
@@ -365,8 +382,12 @@ class TreeMapPlot : public QWidget
 		TreeMapPlot(TreeMapWindow *);
         ~TreeMapPlot();
 		void setData(NodeBi * rootBi);
-		void parseBITree(NodeBi * biNode);
-		void parseBITree(NodeBi * biNode, TreeMap * treeMapNode, int currentDepth);
+		void buildTree();
+		void buldMultiLevelTree(NodeBi * biNode);
+		void buldMultiLevelTree(NodeBi * biNode, TreeMap * treeMapNode, int currentDepth);
+		void buildTreeOfLeaves(NodeBi * biNode);
+		void buildTreeOfLeaves(NodeBi * biNode, TreeMap * treeMapNode, int currentDepth);
+
 		void areaReport();
 
 
@@ -385,13 +406,21 @@ class TreeMapPlot : public QWidget
 		virtual void paintEvent(QPaintEvent *);
 		virtual void resizeEvent(QResizeEvent *);
 		void buildLeafList(TreeMap * parent);
+		void issueLayout();
 
 	private:
 		TreeMap *root = nullptr;      // the tree map data structure
 		TreeMap *highlight = nullptr; // moused over tree map leaf node to be highlighted
 		TreeMap *selected = nullptr;  // currently selected tree map - place a prominent border around it
-		QLabel myLabel;
-		list<TreeMap *> leafNodes;
+		bool showLabel = true;		//If true labels are shown.  If false they are not.
+		list<TreeMap *> leafNodes;	//A list of all leaf nodes in the normal tree structure (TODO: unify this with the leafNodesRoot data structure below to avoid redundant data - we will no longer need this list<TreeMap *>)
+		NodeBi * rootBi = nullptr;  //The root data node
+
+		//Layout and tree structuring method
+		//0 = square layout with multilevel tree
+		//1 = slice and dice layout with multilevel tree
+		//2 = square layout with "one level" tree only containing leaf nodes from original BINode tree 
+		int layoutMethod = 2;
     
 };
 
