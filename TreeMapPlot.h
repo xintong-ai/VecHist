@@ -40,51 +40,9 @@ class TreeMap
 
 		// insert into children, if not there then add
 		TreeMap *insert(QString name, double value = 0.0) {
-			/*
-			// accumulate and update my parent too
-			this->value += value;
-			for (TreeMap *p = parent; p != NULL; p = p->parent) p->value += value;
-
-			foreach(TreeMap *x, children) {
-				if (x->name == name) {
-					x->value += value;
-					return x;
-				}
-			}
-
 			TreeMap *newone = new TreeMap(this, name, value);
 			children.append(newone);
 			return newone;
-			*/
-
-			//This code would prevent duplicate names if used.  Since we don't want to render labels always, I have commented this out.
-			//foreach(TreeMap *x, children) {
-			//	if (x->name == name) {
-			//		x->value += value;
-			//		return x;
-			//	}
-			//}
-
-			TreeMap *newone = new TreeMap(this, name, value);
-			children.append(newone);
-			return newone;
-
-			/*
-			// accumulate and update my parent too
-			this->value += value;
-			for (TreeMap *p = parent; p != NULL; p = p->parent) p->value += value;
-
-			//foreach(TreeMap *x, children) {
-			//	if (x->name == name) {
-			//		x->value += value;
-			//		return x;
-			//	}
-			//}
-
-			TreeMap *newone = new TreeMap(this, name, value);
-			children.append(newone);
-			return newone;
-			*/
 			
 		}
 
@@ -123,7 +81,7 @@ class TreeMap
 		// node and it will layout all the children in the
 		// rectangle supplied. The children's rectangles can
 		// then be passed directly to painter.drawRect etc
-		void layout(QRect rect) {
+		void layout(QRect rect, bool useSquareLayout) {
 			
 			// I'll take that
 			this->rect = rect;
@@ -404,7 +362,6 @@ class TreeMap
         QString name;
         double value;
 		QList<TreeMap*> children;
-		bool useSquareLayout = true;
 
 		// geometry
 		QRect rect;
@@ -425,8 +382,12 @@ class TreeMapPlot : public QWidget
 		TreeMapPlot(TreeMapWindow *);
         ~TreeMapPlot();
 		void setData(NodeBi * rootBi);
-		void parseBITree(NodeBi * biNode);
-		void parseBITree(NodeBi * biNode, TreeMap * treeMapNode, int currentDepth);
+		void buildTree();
+		void buldMultiLevelTree(NodeBi * biNode);
+		void buldMultiLevelTree(NodeBi * biNode, TreeMap * treeMapNode, int currentDepth);
+		void buildTreeOfLeaves(NodeBi * biNode);
+		void buildTreeOfLeaves(NodeBi * biNode, TreeMap * treeMapNode, int currentDepth);
+
 		void areaReport();
 
 
@@ -445,13 +406,16 @@ class TreeMapPlot : public QWidget
 		virtual void paintEvent(QPaintEvent *);
 		virtual void resizeEvent(QResizeEvent *);
 		void buildLeafList(TreeMap * parent);
+		void issueLayout();
 
 	private:
 		TreeMap *root = nullptr;      // the tree map data structure
 		TreeMap *highlight = nullptr; // moused over tree map leaf node to be highlighted
 		TreeMap *selected = nullptr;  // currently selected tree map - place a prominent border around it
 		QLabel myLabel;
-		list<TreeMap *> leafNodes;
+		list<TreeMap *> leafNodes;	//A list of all leaf nodes in the normal tree structure (TODO: unify this with the leafNodesRoot data structure below to avoid redundant data - we will no longer need this list<TreeMap *>)
+		int layoutMethod = 0;		//Layout and tree structuring method
+		NodeBi * rootBi = nullptr;  //The root data node
     
 };
 
