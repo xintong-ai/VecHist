@@ -267,26 +267,24 @@ void TreeMapPlot::paintChildren(TreeMap * parent, QPainter & painter, QBrush & b
 	selectedPen.setColor(Qt::yellow);
 	selectedPen.setWidth(5);
 
+	textPen.setColor(Qt::darkMagenta);
 
 	int fontSizeValue = 0;
 
+	//Make the starting font size a bit smaller for some of the lower levels
 	switch (level) {
 	case 0:
-		textPen.setColor(Qt::darkMagenta);
 		fontSizeValue = 18;
-		font.setPointSize(fontSizeValue);
 		break;
 	case 1:
-		textPen.setColor(Qt::magenta);
 		fontSizeValue = 16;
-		font.setPointSize(fontSizeValue);
 		break;
 	default:
-		textPen.setColor(Qt::white);
 		fontSizeValue = 14;
-		font.setPointSize(fontSizeValue);
 		break;
 	}
+
+	font.setPointSize(fontSizeValue);
 
 	painter.setFont(font);
 
@@ -295,18 +293,21 @@ void TreeMapPlot::paintChildren(TreeMap * parent, QPainter & painter, QBrush & b
 	double factor = double(1) / double(parent->children.count());
 
 	foreach(TreeMap *first, parent->children) {
-
-		
-
-		cHSV.setHsv((double)255 / (factor*n++), 255, 150);
-		cRGB = cHSV.convertTo(QColor::Rgb);
+		if (n % 2 == 0) {
+			cRGB.setRgb(0, 0, 255, 255);  //Blue background color for now
+		}
+		else {
+			cRGB.setRgb(0, 255, 0, 255);  //Green background color for now
+		}
 		brush.setColor(cRGB);
 		
+		//Set the brush.  Use a hightlight if a node is moused over
 		if (first == highlight)
 			painter.setBrush(hbrush);
 		else
 			painter.setBrush(brush);
 		
+		//Set the pen.  Use the selection color if a node was clicked.
 		if (first->nodeBiRef != nullptr && first->nodeBiRef->GetSelected())
 			painter.setPen(selectedPen);
 		else
@@ -324,7 +325,6 @@ void TreeMapPlot::paintChildren(TreeMap * parent, QPainter & painter, QBrush & b
 		QRect demandedTextRect;
 		textRect.setRect(first->rect.x() + 2, first->rect.y() + 2, first->rect.width() - 4, first->rect.height() - 4);
 
-		//font.setPointSize(14);
 		painter.setFont(font);
 
 		painter.setPen(textPen);
@@ -346,7 +346,11 @@ void TreeMapPlot::paintChildren(TreeMap * parent, QPainter & painter, QBrush & b
 			}
 		}
 
-		painter.drawText(textRect, Qt::AlignVCenter | Qt::AlignHCenter, first->name);
+		if (showLabel) {
+			painter.drawText(textRect, Qt::AlignVCenter | Qt::AlignHCenter, first->name);
+		}
+
+		n++;
 	}
 
 }

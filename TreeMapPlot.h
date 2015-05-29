@@ -412,10 +412,15 @@ class TreeMapPlot : public QWidget
 		TreeMap *root = nullptr;      // the tree map data structure
 		TreeMap *highlight = nullptr; // moused over tree map leaf node to be highlighted
 		TreeMap *selected = nullptr;  // currently selected tree map - place a prominent border around it
-		QLabel myLabel;
+		bool showLabel = true;		//If true labels are shown.  If false they are not.
 		list<TreeMap *> leafNodes;	//A list of all leaf nodes in the normal tree structure (TODO: unify this with the leafNodesRoot data structure below to avoid redundant data - we will no longer need this list<TreeMap *>)
-		int layoutMethod = 0;		//Layout and tree structuring method
 		NodeBi * rootBi = nullptr;  //The root data node
+
+		//Layout and tree structuring method
+		//0 = square layout with multilevel tree
+		//1 = slice and dice layout with multilevel tree
+		//2 = square layout with "one level" tree only containing leaf nodes from original BINode tree 
+		int layoutMethod = 2;
     
 };
 
