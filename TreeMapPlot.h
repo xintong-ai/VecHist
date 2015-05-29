@@ -382,8 +382,12 @@ class TreeMapPlot : public QWidget
 		TreeMapPlot(TreeMapWindow *);
         ~TreeMapPlot();
 		void setData(NodeBi * rootBi);
-		void parseBITree(NodeBi * biNode);
-		void parseBITree(NodeBi * biNode, TreeMap * treeMapNode, int currentDepth);
+		void buildTree();
+		void buldMultiLevelTree(NodeBi * biNode);
+		void buldMultiLevelTree(NodeBi * biNode, TreeMap * treeMapNode, int currentDepth);
+		void buildTreeOfLeaves(NodeBi * biNode);
+		void buildTreeOfLeaves(NodeBi * biNode, TreeMap * treeMapNode, int currentDepth);
+
 		void areaReport();
 
 
@@ -409,9 +413,9 @@ class TreeMapPlot : public QWidget
 		TreeMap *highlight = nullptr; // moused over tree map leaf node to be highlighted
 		TreeMap *selected = nullptr;  // currently selected tree map - place a prominent border around it
 		QLabel myLabel;
-		list<TreeMap *> leafNodes; //A list of all leaf nodes in the normal tree structure (TODO: unify this with the leafNodesRoot data structure below to avoid redundant data - we will no longer need this list<TreeMap *>)
-		TreeMap *leafNodesRoot;	//A separate tree with only leaf nodes existing under one root
-		int layoutMethod = 0;  //Layout and tree structuring method
+		list<TreeMap *> leafNodes;	//A list of all leaf nodes in the normal tree structure (TODO: unify this with the leafNodesRoot data structure below to avoid redundant data - we will no longer need this list<TreeMap *>)
+		int layoutMethod = 0;		//Layout and tree structuring method
+		NodeBi * rootBi = nullptr;  //The root data node
     
 };
 
