@@ -879,6 +879,9 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		m_graphWidget->buildPlainTextFileFromDot();
 		m_graphWidget->loadGraphVizTextFile();
 		//((DataMgrVect*)dataManager)->PrintEntropies((NodeBi*)dataManager->getRootNode(), 0);
+
+		//Build the master entropy tree.  We cannot do it until this point, since the various graph building functions in the widgets set information directly in the entropy tree.
+		((DataMgrVect *)dataManager)->copyToMasterTree();
 	}
 	else {
 		connect(m_listWidget, SIGNAL(itemSelectionChanged()), this, SLOT(dropBoxSelection()));

@@ -908,6 +908,34 @@ void DataMgrVect::readBinaryTree(NodeBi *&p, ifstream &fin, vector<float3> start
 	}
 }
 
+//This method takes the current entropy tree and builds the master tree as an exact copy of it
+//The master tree serves as a permanent backup of the original tree so that we can destroy it as we please and restore it later
+void DataMgrVect::copyToMasterTree()
+{
+	copyToMasterTree(rootNode, masterRootNode);
+}
+
+//This method recursively builds the bulk of the master tree described in the method above
+//Parameter original - the current entropy tree node being copied
+//Parameter master - the current master tree node being created as a copy
+void DataMgrVect::copyToMasterTree(NodeBi *& original, NodeBi *& master) 
+{
+	master = new NodeBi();
+	(*master) = (*original); //Use the default C++ implementation of the assignment operator.  We want a shallow copy of all pointers.
+		
+	master->left = nullptr;
+	master->right = nullptr;
+		
+	if (original->left != nullptr) {
+		copyToMasterTree(original->left, master->left);
+	}
+
+	if (original->right != nullptr) {
+		copyToMasterTree(original->right, master->right);
+	}
+	
+}
+
 inline vector<float3> ReadAttribute(const char* filename)
 {
 	vector<float3> ret;

@@ -118,7 +118,8 @@ class DataMgrVect:public DataManager
 	NodeBi *rootNode;		//Root node to the entropy tree structure
 	int numBlocks;
 
-	vtkLookupTable * colorTable = nullptr;
+	vtkLookupTable * colorTable = nullptr;  //Reference to the VTK color table (currently used in the entropy slider and graph structure widget)
+	NodeBi * masterRootNode = nullptr;		//Root node of the master entropy tree.  This serves as a backup to restore the entropy tree when we make a subtree out of it.
 
 	//void SplitNode(Node* parent);
 	//void ComputeCubemapNode(Node *&nd);
@@ -127,6 +128,7 @@ class DataMgrVect:public DataManager
 	void LoadOSUFlow(const char* filename);
 	void readBinaryTree(NodeBi *&p, ifstream &fin, vector<float3> starts, vector<float3> dims,
 		vector<float> entropys, vector<float3> eig_vals, vector<float3> eig_vecs);
+	void copyToMasterTree(NodeBi *&original, NodeBi *&master);
 
 public:
 	DataMgrVect();
@@ -174,6 +176,8 @@ public:
 	void SetChildrenBelowEntropyToVisible(NodeBi * nd, double _maxEntropy);
 
 	void PrintEntropies(NodeBi * nd, int level);
+
+	void copyToMasterTree();
 
 };
 
