@@ -130,6 +130,7 @@ protected:
 	GLSuperquadric* glyph;
 	bool isVisible = true;
 	bool isSelected = false;
+	GLTextureCube *texCube = nullptr;		//OpenGL texture cube used in rendering
 public:
 	bool GetVisible(){ return isVisible; }
 	void SetVisible(bool b){ isVisible = b; }
@@ -144,6 +145,8 @@ public:
 	float* GetCubemap(){ return cubemap; }
 	void setTreeMapWindow(TreeMapWindow * treeMapWindow) { this->treeMapWindow = treeMapWindow; }
 	TreeMapWindow * getTreeMapWindow() { return treeMapWindow; }
+	void setTexCube(GLTextureCube * texCube) { this->texCube = texCube; }
+	GLTextureCube * getTexCube() { return texCube; }
 
 	void GetDim(int* _dim)
 	{

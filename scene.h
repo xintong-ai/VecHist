@@ -236,6 +236,8 @@ public:
     virtual void drawBackground(QPainter *painter, const QRectF &rect);
 	void UpdateBlock();
 	void UpdateTexture();
+	void UpdateTexture(NodeBi * currentNode);
+
 
 public slots:
     //void setShader(int index);
