@@ -14,14 +14,15 @@ from scipy.optimize import curve_fit
 import time
 #from mayavi import mlab
 
-#Ko-Chih add
-from sdfpy import load_sdf
-from thingking import loadtxt
+#Chris Jacobsen - These next 2 imports are being commented out until we get the Dark Sky data working again
+#or until we separate the two flows
+#from sdfpy import load_sdf
+#from thingking import loadtxt
 import numpy as np
 import math
 import matplotlib.cm as cm
 import matplotlib.pylab as pl
-#Ko-Chih add -END
+
 
 def sum_of_squares_of_digits(value):
     return sum(int(c) ** 2 for c in str(value))

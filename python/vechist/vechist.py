@@ -6,7 +6,10 @@ import matplotlib.pyplot as plt
 import time
 import math
 
-cube.loadHaloComputeSuperquadric()
+#Chris Jacobsen -
+#This computes Super Quadrics for the Dark Sky data
+#It is being commented out for now, until we get the Dark Sky data working or create a different flow for it
+#cube.loadHaloComputeSuperquadric()
 #pause
 
 time_start = time.time()
