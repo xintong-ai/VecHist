@@ -885,7 +885,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		((DataMgrVect *)dataManager)->copyToMasterTree();
 
 		//TODO: Remove
-		initiateEntropyQuery(8);
+		initiateEntropyQuery(9.5);
 	}
 	else {
 		connect(m_listWidget, SIGNAL(itemSelectionChanged()), this, SLOT(dropBoxSelection()));
@@ -921,9 +921,14 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
 void Scene::initiateEntropyQuery(double threshold)
 {
+	//This function makes no sense for Dark Sky data now.
+	if (application != 1) {
+		return;
+	}
 	((DataMgrVect *)dataManager)->queryEntropyTreeByThreshold(threshold);
 	UpdateTexture();
 	m_graphWidget->rebuildGraphFromTree((NodeBi*)dataManager->getRootNode());
+	treeMapWindow->refreshPlot((NodeBi*)dataManager->getRootNode());
 
 }
 
