@@ -884,7 +884,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		((DataMgrVect *)dataManager)->copyToMasterTree();
 
 		//TODO: Remove
-		initiateEntropyQuery(5.0);
+		initiateEntropyQuery(10.5);
 	}
 	else {
 		connect(m_listWidget, SIGNAL(itemSelectionChanged()), this, SLOT(dropBoxSelection()));

@@ -79,11 +79,15 @@ public:
 	~NodeBi()
 	{
 		//delete[] data;
-		if (cubemap != nullptr)
-		{
-			delete[] cubemap;
+
+		//TODO: delete this outside the destructor for CubeMaps
+		//It cannot be deleted here, since we use shallow copies for copying the master tree to the regular entropy tree
+		//if (cubemap != nullptr)
+		//{
+		//	delete[] cubemap;
 			//cubemap = nullptr;
-		}
+		//}
+		
 		//for (auto nd : children)	{
 		//	delete[] nd;
 		//}
@@ -131,8 +135,8 @@ class DataMgrVect:public DataManager
 		vector<float> entropys, vector<float3> eig_vals, vector<float3> eig_vecs);
 	void copyToMasterTree(NodeBi *&original, NodeBi *&master);
 	void deleteEntropyTree(NodeBi * currentNode);
-	void copyMasterToEntropyTree(NodeBi *& regular, NodeBi *& master);
-	void queryEntropyTreeByThreshold(double theshold, NodeBi * currentNode);
+	void copyMasterToEntropyTree(NodeBi *& regular, NodeBi *& master, int level);
+	void queryEntropyTreeByThreshold(double theshold, NodeBi * currentNode, int level);
 
 public:
 	DataMgrVect();

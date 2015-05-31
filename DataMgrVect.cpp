@@ -944,10 +944,9 @@ void DataMgrVect::copyToMasterTree(NodeBi *& original, NodeBi *& master)
 
 void DataMgrVect::queryEntropyTreeByThreshold(double threshold)
 {
-	//This method currently generates an pointer exception
-	//deleteEntropyTree(masterRootNode);
-	copyMasterToEntropyTree(rootNode, masterRootNode);
-	queryEntropyTreeByThreshold(threshold, rootNode);
+	deleteEntropyTree(masterRootNode);
+	copyMasterToEntropyTree(rootNode, masterRootNode, 0);
+	queryEntropyTreeByThreshold(threshold, rootNode, 0);
 }
 
 
@@ -967,10 +966,12 @@ void DataMgrVect::deleteEntropyTree(NodeBi * currentNode)
 
 }
 
-void DataMgrVect::copyMasterToEntropyTree(NodeBi *& regular, NodeBi *& master)
+void DataMgrVect::copyMasterToEntropyTree(NodeBi *& regular, NodeBi *& master, int level)
 {
+	//cout << "Current level: " << currentLevel << endl;
 	regular = new NodeBi();
 	(*regular) = (*master); //Use the default C++ implementation of the assignment operator.  We want a shallow copy of all pointers.
+	
 
 	regular->left = nullptr;
 	regular->right = nullptr;
@@ -980,17 +981,18 @@ void DataMgrVect::copyMasterToEntropyTree(NodeBi *& regular, NodeBi *& master)
 	master->original = regular;
 
 	if (master->left != nullptr) {
-		copyMasterToEntropyTree(regular->left, master->left);
+		copyMasterToEntropyTree(regular->left, master->left, level + 1);
 	}
 
 	if (master->right != nullptr) {
-		copyMasterToEntropyTree(regular->right, master->right);
+		copyMasterToEntropyTree(regular->right, master->right, level + 1);
 	}
 
 }
 
-void DataMgrVect::queryEntropyTreeByThreshold(double threshold, NodeBi * currentNode)
+void DataMgrVect::queryEntropyTreeByThreshold(double threshold, NodeBi * currentNode, int level)
 {
+	//cout << "Current level" << level << endl;
 	if (currentNode->GetEntropy() <= threshold) {  //Opposite of inquality used in Python flow
 		
 		//Once we set a node to null, we have no way to delete it again
@@ -1006,10 +1008,10 @@ void DataMgrVect::queryEntropyTreeByThreshold(double threshold, NodeBi * current
 	}
 	else {
 		if (currentNode->left != nullptr) {
-			queryEntropyTreeByThreshold(threshold, currentNode->left);
+			queryEntropyTreeByThreshold(threshold, currentNode->left, level + 1);
 		}
 		if (currentNode->right != nullptr) {
-			queryEntropyTreeByThreshold(threshold, currentNode->right);
+			queryEntropyTreeByThreshold(threshold, currentNode->right, level + 1);
 		}
 	}
 	
