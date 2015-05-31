@@ -85,8 +85,8 @@ public:
 	void buildPlainTextFileFromDot();
 	void loadGraphVizTextFile();
 	void getTreeStats(NodeBi * p, int currentDepth, int currentPos);
-	Widget::Node * buildGraphFromTree(NodeBi * p);
-	Widget::Node * buildGraphFromTree(NodeBi * p, int currentDepth, int currentPos, double x, double y);
+	Widget::Node * rebuildGraphFromTree(NodeBi * p);
+	Widget::Node * rebuildGraphFromTree(NodeBi * p, int currentDepth);
 
 	void itemMoved();
 

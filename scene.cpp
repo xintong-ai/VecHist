@@ -591,6 +591,7 @@ void Scene::UpdateTexture()
 		UpdateTexture((NodeBi*)dataManager->getRootNode());
 
 		leafNodes = dataManager->GetAllNode();
+		cout << "Just fetched all leaf nodes.  The count is: " << leafNodes.size() << endl;
 		for (auto nd : leafNodes)	{
 			GLTextureCube *texCube = nd->getTexCube();
 			glColor3d(1.0, 1.0, 1.0);
@@ -884,7 +885,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		((DataMgrVect *)dataManager)->copyToMasterTree();
 
 		//TODO: Remove
-		initiateEntropyQuery(10.5);
+		initiateEntropyQuery(9.13);
 	}
 	else {
 		connect(m_listWidget, SIGNAL(itemSelectionChanged()), this, SLOT(dropBoxSelection()));
@@ -922,6 +923,7 @@ void Scene::initiateEntropyQuery(double threshold)
 {
 	((DataMgrVect *)dataManager)->queryEntropyTreeByThreshold(threshold);
 	UpdateTexture();
+	m_graphWidget->rebuildGraphFromTree((NodeBi*)dataManager->getRootNode());
 
 }
 

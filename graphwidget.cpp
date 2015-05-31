@@ -372,35 +372,38 @@ void GraphWidget::getTreeStats(NodeBi * p, int currentDepth, int currentPos)
 	}
 }
 
-//This method launches the recursive graph building method
-Widget::Node * GraphWidget::buildGraphFromTree(NodeBi * p)
+//This method launches the recursive graph rebuilding method
+//This allows the tree to be adjusted in the graph due to entropy threshold queries or other queries
+Widget::Node * GraphWidget::rebuildGraphFromTree(NodeBi * p)
 {
-	return buildGraphFromTree(p, 0, 0, sceneRect().width() / 2, 10); //Shove down by 10 units - for some reason the topmost node was slightly out of the scene rectangle
+	QList<QGraphicsItem*> allItems = scene()->items();
+	for (int i = 0; i < allItems.size(); i++) {
+		QGraphicsItem *item = allItems[i];
+		scene()->removeItem(item);
+	}
+	
+	return rebuildGraphFromTree(p, 0); //Shove down by 10 units - for some reason the topmost node was slightly out of the scene rectangle
+	repaint();
 }
 
-//This method builds the displayed graph from the tree data structure, using recursion to do an in order traversal
-Widget::Node * GraphWidget::buildGraphFromTree(NodeBi * p, int currentDepth, int currentPos, double x, double y)
+Widget::Node * GraphWidget::rebuildGraphFromTree(NodeBi * p, int currentDepth)
 {
-	Widget::Node *currentNode = new Widget::Node(this);
-	currentNode->setNodeBiPtr(p);
-	p->SetGraphNode(currentNode);
-	
-	currentNode->setPos(x, y);
+	cout << "Current level is: " << currentDepth << endl;
+	Widget::Node *currentNode = p->GetGraphNode();
 	scene()->addItem(currentNode);
-
-	//Use the maximum depth and maximum width of the tree to set the amount of space that each tree node takes up
-	double nodeHeight = sceneRect().height() / double(maxTreeDepth) * 0.975;  //97.5% to compensate for slight y shift mentioned in launcher method above
-	double nodeWidth = sceneRect().width() / 2;
-
+	
 	//Recurse to the next level in the tree, and then add a new graph edge for the child node
 	Widget::Node *childNode = nullptr;
+	Edge * newEdge = nullptr;
 	if (p->GetLeft() != nullptr) {
-		childNode = buildGraphFromTree(p->GetLeft(), currentDepth + 1, currentPos - 1, x - nodeWidth * (pow(0.5,currentDepth + 1)), y + nodeHeight); //The distance between nodes is cut to fraction 0.5 ^ (currentDepth + 1) to prevent node overlap
-		scene()->addItem(new Edge(currentNode, childNode));
+		childNode = rebuildGraphFromTree(p->GetLeft(), currentDepth + 1); 
+		newEdge = new Edge(currentNode, childNode);
+		scene()->addItem(newEdge);
 	}
 	if (p->GetRight() != nullptr) {
-		childNode = buildGraphFromTree(p->GetRight(), currentDepth + 1, currentPos + 1, x + nodeWidth * (pow(0.5,currentDepth + 1)), y + nodeHeight);
-		scene()->addItem(new Edge(currentNode, childNode));
+		childNode = rebuildGraphFromTree(p->GetRight(), currentDepth + 1);
+		newEdge = new Edge(currentNode, childNode);
+		scene()->addItem(newEdge);
 	}
 
 	return currentNode;

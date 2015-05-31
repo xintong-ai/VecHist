@@ -924,7 +924,7 @@ void DataMgrVect::copyToMasterTree(NodeBi *& original, NodeBi *& master)
 {
 	master = new NodeBi();
 	(*master) = (*original); //Use the default C++ implementation of the assignment operator.  We want a shallow copy of all pointers.
-		
+
 	master->left = nullptr;
 	master->right = nullptr;
 
@@ -972,7 +972,6 @@ void DataMgrVect::copyMasterToEntropyTree(NodeBi *& regular, NodeBi *& master, i
 	regular = new NodeBi();
 	(*regular) = (*master); //Use the default C++ implementation of the assignment operator.  We want a shallow copy of all pointers.
 	
-
 	regular->left = nullptr;
 	regular->right = nullptr;
 
@@ -1140,7 +1139,7 @@ void DataMgrVect::GetDescendantNodes(vector<AbstractNode*> &ret, NodeBi* nd)
 	//	else
 	//		ret.push_back(child);
 	//}
-	if (nd->GetLeft() == nullptr)
+	if (nd->GetLeft() == nullptr && nd->GetRight() == nullptr)
 		ret.push_back(nd);
 	else
 	{
