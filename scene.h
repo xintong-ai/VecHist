@@ -363,6 +363,9 @@ private:
 	//vector<CutPlane> cutplanes;
 
 	QSlider slider;
+
+	double sliderMinValue = 0;
+	double sliderMaxValue = 0;
 };
 
 #endif

@@ -834,7 +834,7 @@ DataMgrVect::~DataMgrVect()
 	delete[] curlIdx;
 	//delete[] topNode;
 
-	deleteEntropyTree(masterRootNode);
+	deleteEntropyTree(masterRootNode, 0);
 }
 
 std::vector<std::vector<double> > DataMgrVect::GetVertexPos()
@@ -944,25 +944,28 @@ void DataMgrVect::copyToMasterTree(NodeBi *& original, NodeBi *& master)
 
 void DataMgrVect::queryEntropyTreeByThreshold(double threshold)
 {
-	deleteEntropyTree(masterRootNode);
+	deleteEntropyTree(masterRootNode, 0);
 	copyMasterToEntropyTree(rootNode, masterRootNode, 0);
-	queryEntropyTreeByThreshold(threshold, rootNode, 0);
+	queryEntropyTreeByThreshold(threshold, rootNode, masterRootNode, 0);
 }
 
 
-void DataMgrVect::deleteEntropyTree(NodeBi * currentNode)
+void DataMgrVect::deleteEntropyTree(NodeBi * currentNode, int level)
 {
+	//cout << "Current level: " << level << endl;
 	if (currentNode->left != nullptr) {
-		deleteEntropyTree(currentNode->left);
+		deleteEntropyTree(currentNode->left, level + 1);
 	}
 
 	if (currentNode->right != nullptr) {
-		deleteEntropyTree(currentNode->right);
+		deleteEntropyTree(currentNode->right, level + 1);
 	}
 
 	if (currentNode->original != nullptr) {
 		delete currentNode->original;
 	}
+
+	currentNode->original = nullptr;
 
 }
 
@@ -989,28 +992,30 @@ void DataMgrVect::copyMasterToEntropyTree(NodeBi *& regular, NodeBi *& master, i
 
 }
 
-void DataMgrVect::queryEntropyTreeByThreshold(double threshold, NodeBi * currentNode, int level)
+void DataMgrVect::queryEntropyTreeByThreshold(double threshold, NodeBi * currentEntropyNode, NodeBi * currentMasterNode, int level)
 {
 	//cout << "Current level" << level << endl;
-	if (currentNode->GetEntropy() <= threshold) {  //Opposite of inquality used in Python flow
+	if (currentEntropyNode->GetEntropy() <= threshold) {  //Opposite of inquality used in Python flow
 		
 		//Once we set a node to null, we have no way to delete it again
 		//Thus we must do this now to avoid memory leaks that slowly build up as we query again and again and again...
-		if (currentNode->left != nullptr) {
-			delete currentNode->left;
+		if (currentEntropyNode->left != nullptr) {
+			currentMasterNode->left->original = nullptr;
+			delete currentEntropyNode->left;
 		}
-		if (currentNode->right != nullptr) {
-			delete currentNode->right;
+		if (currentEntropyNode->right != nullptr) {
+			currentMasterNode->right->original = nullptr;
+			delete currentEntropyNode->right;
 		}
-		currentNode->left = nullptr;
-		currentNode->right = nullptr;
+		currentEntropyNode->left = nullptr;
+		currentEntropyNode->right = nullptr;
 	}
 	else {
-		if (currentNode->left != nullptr) {
-			queryEntropyTreeByThreshold(threshold, currentNode->left, level + 1);
+		if (currentEntropyNode->left != nullptr) {
+			queryEntropyTreeByThreshold(threshold, currentEntropyNode->left, currentMasterNode->left, level + 1);
 		}
-		if (currentNode->right != nullptr) {
-			queryEntropyTreeByThreshold(threshold, currentNode->right, level + 1);
+		if (currentEntropyNode->right != nullptr) {
+			queryEntropyTreeByThreshold(threshold, currentEntropyNode->right, currentMasterNode->right, level + 1);
 		}
 	}
 	

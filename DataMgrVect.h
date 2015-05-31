@@ -134,9 +134,9 @@ class DataMgrVect:public DataManager
 	void readBinaryTree(NodeBi *&p, ifstream &fin, vector<float3> starts, vector<float3> dims,
 		vector<float> entropys, vector<float3> eig_vals, vector<float3> eig_vecs);
 	void copyToMasterTree(NodeBi *&original, NodeBi *&master);
-	void deleteEntropyTree(NodeBi * currentNode);
+	void deleteEntropyTree(NodeBi * currentNode, int level);
 	void copyMasterToEntropyTree(NodeBi *& regular, NodeBi *& master, int level);
-	void queryEntropyTreeByThreshold(double theshold, NodeBi * currentNode, int level);
+	void queryEntropyTreeByThreshold(double theshold, NodeBi * currentEntropyNode, NodeBi * currentMasterNode, int level);
 
 public:
 	DataMgrVect();

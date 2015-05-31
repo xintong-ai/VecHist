@@ -696,8 +696,10 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		sliderWidget.resize(50, 800);
 		sliderWidget.setFixedSize(50, 800);  //This might be replaced with code for a resize event later
 		
-		double min = ((DataMgrVect *)dataManager)->getMinEntropy();
-		double max = ((DataMgrVect *)dataManager)->getMaxEntropy();
+		//sliderMinValue = ((DataMgrVect *)dataManager)->getMinEntropy();
+		//sliderMaxValue = ((DataMgrVect *)dataManager)->getMaxEntropy();
+		sliderMinValue = 9.0;
+		sliderMaxValue = 12.0;
 
 		QLinearGradient gradient(0, 0, 0, sliderWidget.rect().height());
 
@@ -707,10 +709,10 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
 		//Build the gradient
 		const int NUM_ITERATIONS = 100;
-		for (double i = min; i <= max; i += (max - min) / NUM_ITERATIONS) {
+		for (double i = sliderMinValue; i <= sliderMaxValue; i += (sliderMaxValue - sliderMinValue) / NUM_ITERATIONS) {
 			((DataMgrVect *)dataManager)->getEntropyColorReversed(i, color);
 			//cout << "Color for " << i << ": " << color[0] << " " << color[1] << " " << color[2] << endl;
-			gradient.setColorAt((i - min) / (max - min), QColor(255 * color[0], 255 * color[1], 255 * color[2], 255));
+			gradient.setColorAt((i - sliderMinValue) / (sliderMaxValue - sliderMinValue), QColor(255 * color[0], 255 * color[1], 255 * color[2], 255));
 		}
 		
 		//Do the rest of the set up for the slider widget
@@ -883,9 +885,6 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
 		//Build the master entropy tree.  We cannot do it until this point, since the various graph building functions in the widgets set information directly in the entropy tree.
 		((DataMgrVect *)dataManager)->copyToMasterTree();
-
-		//TODO: Remove
-		initiateEntropyQuery(9.5);
 	}
 	else {
 		connect(m_listWidget, SIGNAL(itemSelectionChanged()), this, SLOT(dropBoxSelection()));
@@ -949,13 +948,13 @@ void Scene::dropBoxSelection()
 //Parameter newValue - the new value from the slider change (currently 0 to 99)
 void Scene::sliderSelection(int newValue) {
 	cout << "New value is: " << newValue << endl;
-	double minEntropy = ((DataMgrVect*)dataManager)->getMinEntropy();
-	double maxEntropy = ((DataMgrVect*)dataManager)->getMaxEntropy();
-	double entropyValue =  minEntropy + (maxEntropy - minEntropy) * (double(newValue) / 100);
-	slider.setToolTip(QString("Entropy: ") + QString::number(entropyValue));
-	cout << "Entropy value is: " << entropyValue << endl;
-	((DataMgrVect*)dataManager)->SetChildrenBelowEntropyToVisible((NodeBi*)dataManager->getRootNode(), entropyValue);
-	//((DataMgrVect*)dataManager)->PrintEntropies((NodeBi*)dataManager->getRootNode(), 0);
+	//sliderMinValue = ((DataMgrVect*)dataManager)->getMinEntropy();
+	//sliderMaxValue = ((DataMgrVect*)dataManager)->getMaxEntropy();
+	double entropyThresholdValue =  sliderMinValue + (sliderMaxValue - sliderMinValue) * (double(newValue) / 100);
+	slider.setToolTip(QString("Entropy Theshold Queried: ") + QString::number(entropyThresholdValue));
+	cout << "Entropy threshold value is: " << entropyThresholdValue << endl;
+	//((DataMgrVect*)dataManager)->SetChildrenBelowEntropyToVisible((NodeBi*)dataManager->getRootNode(), entropyThresholdValue);
+	initiateEntropyQuery(entropyThresholdValue);
 }
 
 Scene::~Scene()
