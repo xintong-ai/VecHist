@@ -833,6 +833,8 @@ DataMgrVect::~DataMgrVect()
 	delete[] dataIdx;
 	delete[] curlIdx;
 	//delete[] topNode;
+
+	deleteEntropyTree(masterRootNode);
 }
 
 std::vector<std::vector<double> > DataMgrVect::GetVertexPos()
@@ -925,6 +927,10 @@ void DataMgrVect::copyToMasterTree(NodeBi *& original, NodeBi *& master)
 		
 	master->left = nullptr;
 	master->right = nullptr;
+
+	//Link the master record to the original record
+	original->original = nullptr; //Should already be set, but let's be sure
+	master->original = original;  
 		
 	if (original->left != nullptr) {
 		copyToMasterTree(original->left, master->left);
@@ -935,6 +941,82 @@ void DataMgrVect::copyToMasterTree(NodeBi *& original, NodeBi *& master)
 	}
 	
 }
+
+void DataMgrVect::queryEntropyTreeByThreshold(double threshold)
+{
+	//This method currently generates an pointer exception
+	//deleteEntropyTree(masterRootNode);
+	copyMasterToEntropyTree(rootNode, masterRootNode);
+	queryEntropyTreeByThreshold(threshold, rootNode);
+}
+
+
+void DataMgrVect::deleteEntropyTree(NodeBi * currentNode)
+{
+	if (currentNode->left != nullptr) {
+		deleteEntropyTree(currentNode->left);
+	}
+
+	if (currentNode->right != nullptr) {
+		deleteEntropyTree(currentNode->right);
+	}
+
+	if (currentNode->original != nullptr) {
+		delete currentNode->original;
+	}
+
+}
+
+void DataMgrVect::copyMasterToEntropyTree(NodeBi *& regular, NodeBi *& master)
+{
+	regular = new NodeBi();
+	(*regular) = (*master); //Use the default C++ implementation of the assignment operator.  We want a shallow copy of all pointers.
+
+	regular->left = nullptr;
+	regular->right = nullptr;
+
+	//Link the master record to the entropy tree record
+	regular->original = nullptr; //Should already be set, but let's be sure
+	master->original = regular;
+
+	if (master->left != nullptr) {
+		copyMasterToEntropyTree(regular->left, master->left);
+	}
+
+	if (master->right != nullptr) {
+		copyMasterToEntropyTree(regular->right, master->right);
+	}
+
+}
+
+void DataMgrVect::queryEntropyTreeByThreshold(double threshold, NodeBi * currentNode)
+{
+	if (currentNode->GetEntropy() <= threshold) {  //Opposite of inquality used in Python flow
+		
+		//Once we set a node to null, we have no way to delete it again
+		//Thus we must do this now to avoid memory leaks that slowly build up as we query again and again and again...
+		if (currentNode->left != nullptr) {
+			delete currentNode->left;
+		}
+		if (currentNode->right != nullptr) {
+			delete currentNode->right;
+		}
+		currentNode->left = nullptr;
+		currentNode->right = nullptr;
+	}
+	else {
+		if (currentNode->left != nullptr) {
+			queryEntropyTreeByThreshold(threshold, currentNode->left);
+		}
+		if (currentNode->right != nullptr) {
+			queryEntropyTreeByThreshold(threshold, currentNode->right);
+		}
+	}
+	
+
+
+}
+
 
 inline vector<float3> ReadAttribute(const char* filename)
 {

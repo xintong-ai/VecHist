@@ -237,6 +237,7 @@ public:
 	void UpdateBlock();
 	void UpdateTexture();
 	void UpdateTexture(NodeBi * currentNode);
+	void initiateEntropyQuery(double threshold);
 
 
 public slots:

@@ -882,6 +882,9 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
 		//Build the master entropy tree.  We cannot do it until this point, since the various graph building functions in the widgets set information directly in the entropy tree.
 		((DataMgrVect *)dataManager)->copyToMasterTree();
+
+		//TODO: Remove
+		initiateEntropyQuery(5.0);
 	}
 	else {
 		connect(m_listWidget, SIGNAL(itemSelectionChanged()), this, SLOT(dropBoxSelection()));
@@ -913,6 +916,13 @@ Scene::Scene(int width, int height, int maxTextureSize)
     m_time.start();
 
 	
+}
+
+void Scene::initiateEntropyQuery(double threshold)
+{
+	((DataMgrVect *)dataManager)->queryEntropyTreeByThreshold(threshold);
+	UpdateTexture();
+
 }
 
 //Respond to selection events for the list box for tree selection for the forest

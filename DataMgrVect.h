@@ -19,6 +19,7 @@ public:
 	//TODO: these two variable should be private
 	NodeBi* left;	//Left child node
 	NodeBi* right;	//Right child node
+	NodeBi* original = nullptr; //Reference to the corresponding node in the original, regular entropy tree (if this is the master tree)
 
 	NodeBi(
 		int _start0, int _start1, int _start2,
@@ -129,6 +130,9 @@ class DataMgrVect:public DataManager
 	void readBinaryTree(NodeBi *&p, ifstream &fin, vector<float3> starts, vector<float3> dims,
 		vector<float> entropys, vector<float3> eig_vals, vector<float3> eig_vecs);
 	void copyToMasterTree(NodeBi *&original, NodeBi *&master);
+	void deleteEntropyTree(NodeBi * currentNode);
+	void copyMasterToEntropyTree(NodeBi *& regular, NodeBi *& master);
+	void queryEntropyTreeByThreshold(double theshold, NodeBi * currentNode);
 
 public:
 	DataMgrVect();
@@ -178,6 +182,7 @@ public:
 	void PrintEntropies(NodeBi * nd, int level);
 
 	void copyToMasterTree();
+	void queryEntropyTreeByThreshold(double threshold);
 
 };
 
