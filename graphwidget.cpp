@@ -388,8 +388,10 @@ Widget::Node * GraphWidget::rebuildGraphFromTree(NodeBi * p)
 
 Widget::Node * GraphWidget::rebuildGraphFromTree(NodeBi * p, int currentDepth)
 {
-	cout << "Current level is: " << currentDepth << endl;
+	//cout << "Current level is: " << currentDepth << endl;
+	
 	Widget::Node *currentNode = p->GetGraphNode();
+	currentNode->setNodeBiPtr(p);
 	scene()->addItem(currentNode);
 	
 	//Recurse to the next level in the tree, and then add a new graph edge for the child node
