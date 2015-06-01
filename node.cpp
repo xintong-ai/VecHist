@@ -228,6 +228,16 @@ void Widget::Node::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	cout << "Name of Node: " << name << endl;
 }
 
+void Widget::Node::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
+{
+	update();
+	QGraphicsItem::contextMenuEvent(event);
+
+	NodeBi * nodeBiPtr = getNodeBiPtr();
+	graph->splitSuperQuadric(nodeBiPtr);
+
+}
+
 void Widget::Node::SetChildrenVisibility(NodeBi *nd, bool _isVisible)
 {
 	nd->SetVisible(_isVisible);

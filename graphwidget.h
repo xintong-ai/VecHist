@@ -87,6 +87,8 @@ public:
 	void getTreeStats(NodeBi * p, int currentDepth, int currentPos);
 	Widget::Node * rebuildGraphFromTree(NodeBi * p);
 	Widget::Node * rebuildGraphFromTree(NodeBi * p, int currentDepth);
+	void splitSuperQuadric(NodeBi * node);
+
 
 	void itemMoved();
 
@@ -122,7 +124,7 @@ private:
 	vector<GraphVizEdge *> edges;					//The list of all edges
 	ofstream dotOut;								//The output file stream handler for the file that will be read by the dot program
 	DataManager * dataManager;					//Reference to the data manager
-	
+		
 };
 
 #endif // GRAPHWIDGET_H

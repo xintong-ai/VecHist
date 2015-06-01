@@ -544,3 +544,12 @@ void GraphWidget::zoomOut()
 	scaleView(1 / qreal(1.2));
 }
 
+//TODO: This is just terrible.  It would be better to have the split method be in the Scene class, as is done for our entropy threhsold query.
+//This, however, cannot be done very easily until we resolve the circular #include issues by making all #includes for project header files be in .cpp files
+void GraphWidget::splitSuperQuadric(NodeBi * node)
+{
+	((DataMgrVect*)dataManager)->splitSuperQuadric(node);
+	rebuildGraphFromTree((NodeBi*)dataManager->getRootNode());
+
+}
+

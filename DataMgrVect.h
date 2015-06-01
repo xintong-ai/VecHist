@@ -20,6 +20,7 @@ public:
 	NodeBi* left;	//Left child node
 	NodeBi* right;	//Right child node
 	NodeBi* original = nullptr; //Reference to the corresponding node in the original, regular entropy tree (if this is the master tree)
+	NodeBi* master = nullptr;   //Reference to the corresponding node in the master tree (if this is the regular entropy tree)
 
 	NodeBi(
 		int _start0, int _start1, int _start2,
@@ -187,6 +188,7 @@ public:
 
 	void copyToMasterTree();
 	void queryEntropyTreeByThreshold(double threshold);
+	void splitSuperQuadric(NodeBi * node);
 
 };
 
