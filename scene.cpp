@@ -698,8 +698,8 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		
 		//sliderMinValue = ((DataMgrVect *)dataManager)->getMinEntropy();
 		//sliderMaxValue = ((DataMgrVect *)dataManager)->getMaxEntropy();
-		sliderMinValue = 9.0;
-		sliderMaxValue = 12.0;
+		sliderMinValue = 8.0;
+		sliderMaxValue = 10.0;
 
 		QLinearGradient gradient(0, 0, 0, sliderWidget.rect().height());
 
@@ -726,7 +726,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		slider.resize(sliderWidget.rect().width(), sliderWidget.rect().height());
 		
 		slider.setRange(0, 100);
-		slider.setValue(100);
+		slider.setValue(0);
 
 		QHBoxLayout horizLayout;
 		horizLayout.addWidget(&slider);
@@ -885,6 +885,9 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
 		//Build the master entropy tree.  We cannot do it until this point, since the various graph building functions in the widgets set information directly in the entropy tree.
 		((DataMgrVect *)dataManager)->copyToMasterTree();
+
+		//We need to make sure the shown tree and scene match the current query setting
+		initiateEntropyQuery(sliderMinValue);
 	}
 	else {
 		connect(m_listWidget, SIGNAL(itemSelectionChanged()), this, SLOT(dropBoxSelection()));
