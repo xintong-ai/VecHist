@@ -44,10 +44,12 @@
 
 //#include <GL/glew.h>
 #include "glextensions.h"
+#include <DataMgrVect.h>
+#include "DataManager.h"
+#include <node.h>
 #include "graphWidget.h"
 #include "qjsonview.h"
 #include "TreeMapWindow.h"
-//#include "GraphVizWidget.h"
 
 #include <QtWidgets>
 #include <QtOpenGL>

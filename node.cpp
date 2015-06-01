@@ -38,8 +38,10 @@
 **
 ****************************************************************************/
 
+#include "DataManager.h"
 #include "edge.h"
 #include "node.h"
+#include <DataMgrVect.h>
 #include "graphwidget.h"
 #include "TreeMapWindow.h"
 

@@ -38,9 +38,11 @@
 **
 ****************************************************************************/
 
+#include <DataMgrVect.h>
+#include "DataManager.h"
+#include <node.h>
 #include "graphwidget.h"
 #include "edge.h"
-#include "node.h"
 
 #include <math.h>
 

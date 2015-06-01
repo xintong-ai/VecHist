@@ -38,12 +38,14 @@
 **
 ****************************************************************************/
 
+//Required #inlcude's from cpp files that use this:
+//#include "DataManager.h"
+
 #ifndef NODE_H
 #define NODE_H
 
 #include <QGraphicsItem>
 #include <QList>
-#include "DataManager.h"
 
 class Edge;
 class GraphWidget;

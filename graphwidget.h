@@ -38,13 +38,15 @@
 **
 ****************************************************************************/
 
+//#include's required before #include'ing this header file in a .cpp file:
+//#include <DataMgrVect.h>
+//#include "DataManager.h"
+//#include <node.h>
+
 #ifndef GRAPHWIDGET_H
 #define GRAPHWIDGET_H
 
 #include <QGraphicsView>
-//#include <DataManager.h>
-#include <DataMgrVect.h>
-#include <node.h>
 
 class Widget::Node;
 
