@@ -1,6 +1,8 @@
+//These files must be included before including this file in a .cpp file:
+//#include "DataManager.h"
+
 #ifndef DATA_MGR_COSM
 #define DATA_MGR_COSM
-#include "DataManager.h"
 #include <list>
 
 
