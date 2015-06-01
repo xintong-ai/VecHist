@@ -1,7 +1,6 @@
+#include "DataManager.h"
 #include "DataMgrVect.h"
 
-
-//#include "DataManager.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>

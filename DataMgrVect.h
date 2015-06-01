@@ -1,9 +1,11 @@
+//These files must be included before including this file in a .cpp file:
+//#include "DataManager.h"
+
 #ifndef DATAMGRVECT
 #define DATAMGRVECT
 #include <fstream>
 
 #include <vtkLookupTable.h>
-#include "DataManager.h"
 
 class NodeBi:public AbstractNode
 {

@@ -44,8 +44,8 @@
 
 //#include <GL/glew.h>
 #include "glextensions.h"
-#include <DataMgrVect.h>
 #include "DataManager.h"
+#include <DataMgrVect.h>
 #include <node.h>
 #include "graphWidget.h"
 #include "DataMgrCosm.h"
@@ -63,8 +63,6 @@
 //#include "box.h"
 #include "gltrianglemesh.h"
 #include "trackball.h"
-//#include "glbuffers.h"
-//#include "DataMgrVect.h"
 //#include "qtbox.h"
 //#include <cuda_runtime.h>
 //#include <cuda_gl_interop.h>
