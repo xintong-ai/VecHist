@@ -39,6 +39,11 @@
 **
 ****************************************************************************/
 
+//Must include:
+//#include "glextensions.h"
+//#include "glbuffers.h"
+//#include "gltrianglemesh.h"
+
 #ifndef GLSUPERQUADRIC_H
 #define GLSUPERQUADRIC_H
 
@@ -48,9 +53,7 @@
 #include <QtWidgets>
 #include <QtOpenGL>
 
-#include "glextensions.h"
-#include "glbuffers.h"
-#include "gltrianglemesh.h"
+
 #include <QtGui/qvector3d.h>
 #include <QtGui/qvector2d.h>
 //#include "glextensions.h"

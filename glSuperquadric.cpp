@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+#include "glextensions.h"
+#include "glbuffers.h"
+#include "gltrianglemesh.h"
 #include "glSuperquadric.h"
 
 VertexDescription P3T2N3Vertex::description[] = {

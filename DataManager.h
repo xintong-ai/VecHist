@@ -4,6 +4,9 @@
 #include <cuda/vector_types.h>
 #include <cuda/vector_functions.h>
 #include "OSUFlow.h"
+#include "glextensions.h"
+#include "glbuffers.h"
+#include "gltrianglemesh.h"
 #include "glSuperquadric.h"
 #include "node.h"
 #include "TreeMapWindow.h"

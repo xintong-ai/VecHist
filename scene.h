@@ -57,6 +57,7 @@
 
 #include "glbuffers.h"
 #include "glsphere.h"
+#include "gltrianglemesh.h"
 #include "glSuperquadric.h"
 //#include "box.h"
 #include "gltrianglemesh.h"
