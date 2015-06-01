@@ -1,4 +1,8 @@
 //From http://codereview.stackexchange.com/questions/11849/qjsonview-a-qwidget-based-json-explorer-for-qt
+//These files must be included before including this file in a cpp file:
+#include "DataManager.h"
+#include "DataMgrCosm.h"
+#include "Scene.h"
 #include "qjsonview.h"
 #include <QGridLayout>
 #include <QPainter>

@@ -1,3 +1,8 @@
+//These files must be included before including this file in a cpp file:
+//#include "DataManager.h"
+//#include "DataMgrCosm.h"
+//#include "Scene.h"
+
 //From http://codereview.stackexchange.com/questions/11849/qjsonview-a-qwidget-based-json-explorer-for-qt
 #ifndef QJSONVIEW_H
 #define QJSONVIEW_H
@@ -5,9 +10,7 @@
 #include <QWidget>
 #include <QVariant>
 #include <QLabel>
-#include "DataManager.h"
-#include "DataMgrCosm.h"
-#include "Scene.h"
+
 
 class Scene;
 

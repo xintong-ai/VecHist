@@ -48,6 +48,7 @@
 #include "DataManager.h"
 #include <node.h>
 #include "graphWidget.h"
+#include "DataMgrCosm.h"
 #include "qjsonview.h"
 #include "TreeMapWindow.h"
 
@@ -64,7 +65,6 @@
 #include "trackball.h"
 //#include "glbuffers.h"
 //#include "DataMgrVect.h"
-#include "DataMgrCosm.h"
 //#include "qtbox.h"
 //#include <cuda_runtime.h>
 //#include <cuda_gl_interop.h>
