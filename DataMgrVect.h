@@ -19,6 +19,7 @@ public:
 	//TODO: these two variable should be private
 	NodeBi* left;	//Left child node
 	NodeBi* right;	//Right child node
+	NodeBi* original = nullptr; //Reference to the corresponding node in the original, regular entropy tree (if this is the master tree)
 
 	NodeBi(
 		int _start0, int _start1, int _start2,
@@ -78,11 +79,15 @@ public:
 	~NodeBi()
 	{
 		//delete[] data;
-		if (cubemap != nullptr)
-		{
-			delete[] cubemap;
+
+		//TODO: delete this outside the destructor for CubeMaps
+		//It cannot be deleted here, since we use shallow copies for copying the master tree to the regular entropy tree
+		//if (cubemap != nullptr)
+		//{
+		//	delete[] cubemap;
 			//cubemap = nullptr;
-		}
+		//}
+		
 		//for (auto nd : children)	{
 		//	delete[] nd;
 		//}
@@ -118,7 +123,8 @@ class DataMgrVect:public DataManager
 	NodeBi *rootNode;		//Root node to the entropy tree structure
 	int numBlocks;
 
-	vtkLookupTable * colorTable = nullptr;
+	vtkLookupTable * colorTable = nullptr;  //Reference to the VTK color table (currently used in the entropy slider and graph structure widget)
+	NodeBi * masterRootNode = nullptr;		//Root node of the master entropy tree.  This serves as a backup to restore the entropy tree when we make a subtree out of it.
 
 	//void SplitNode(Node* parent);
 	//void ComputeCubemapNode(Node *&nd);
@@ -127,6 +133,10 @@ class DataMgrVect:public DataManager
 	void LoadOSUFlow(const char* filename);
 	void readBinaryTree(NodeBi *&p, ifstream &fin, vector<float3> starts, vector<float3> dims,
 		vector<float> entropys, vector<float3> eig_vals, vector<float3> eig_vecs);
+	void copyToMasterTree(NodeBi *&original, NodeBi *&master);
+	void deleteEntropyTree(NodeBi * currentNode, int level);
+	void copyMasterToEntropyTree(NodeBi *& regular, NodeBi *& master, int level);
+	void queryEntropyTreeByThreshold(double theshold, NodeBi * currentEntropyNode, NodeBi * currentMasterNode, int level);
 
 public:
 	DataMgrVect();
@@ -174,6 +184,9 @@ public:
 	void SetChildrenBelowEntropyToVisible(NodeBi * nd, double _maxEntropy);
 
 	void PrintEntropies(NodeBi * nd, int level);
+
+	void copyToMasterTree();
+	void queryEntropyTreeByThreshold(double threshold);
 
 };
 

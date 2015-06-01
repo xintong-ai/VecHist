@@ -833,6 +833,8 @@ DataMgrVect::~DataMgrVect()
 	delete[] dataIdx;
 	delete[] curlIdx;
 	//delete[] topNode;
+
+	deleteEntropyTree(masterRootNode, 0);
 }
 
 std::vector<std::vector<double> > DataMgrVect::GetVertexPos()
@@ -907,6 +909,120 @@ void DataMgrVect::readBinaryTree(NodeBi *&p, ifstream &fin, vector<float3> start
 		readBinaryTree(p->right, fin, starts, dims, entropys, eig_vals, eig_vecs);
 	}
 }
+
+//This method takes the current entropy tree and builds the master tree as an exact copy of it
+//The master tree serves as a permanent backup of the original tree so that we can destroy it as we please and restore it later
+void DataMgrVect::copyToMasterTree()
+{
+	copyToMasterTree(rootNode, masterRootNode);
+}
+
+//This method recursively builds the bulk of the master tree described in the method above
+//Parameter original - the current entropy tree node being copied
+//Parameter master - the current master tree node being created as a copy
+void DataMgrVect::copyToMasterTree(NodeBi *& original, NodeBi *& master) 
+{
+	master = new NodeBi();
+	(*master) = (*original); //Use the default C++ implementation of the assignment operator.  We want a shallow copy of all pointers.
+
+	master->left = nullptr;
+	master->right = nullptr;
+
+	//Link the master record to the original record
+	original->original = nullptr; //Should already be set, but let's be sure
+	master->original = original;  
+		
+	if (original->left != nullptr) {
+		copyToMasterTree(original->left, master->left);
+	}
+
+	if (original->right != nullptr) {
+		copyToMasterTree(original->right, master->right);
+	}
+	
+}
+
+void DataMgrVect::queryEntropyTreeByThreshold(double threshold)
+{
+	deleteEntropyTree(masterRootNode, 0);
+	copyMasterToEntropyTree(rootNode, masterRootNode, 0);
+	queryEntropyTreeByThreshold(threshold, rootNode, masterRootNode, 0);
+}
+
+
+void DataMgrVect::deleteEntropyTree(NodeBi * currentNode, int level)
+{
+	//cout << "Current level: " << level << endl;
+	if (currentNode->left != nullptr) {
+		deleteEntropyTree(currentNode->left, level + 1);
+	}
+
+	if (currentNode->right != nullptr) {
+		deleteEntropyTree(currentNode->right, level + 1);
+	}
+
+	if (currentNode->original != nullptr) {
+		delete currentNode->original;
+	}
+
+	currentNode->original = nullptr;
+
+}
+
+void DataMgrVect::copyMasterToEntropyTree(NodeBi *& regular, NodeBi *& master, int level)
+{
+	//cout << "Current level: " << currentLevel << endl;
+	regular = new NodeBi();
+	(*regular) = (*master); //Use the default C++ implementation of the assignment operator.  We want a shallow copy of all pointers.
+	
+	regular->left = nullptr;
+	regular->right = nullptr;
+
+	//Link the master record to the entropy tree record
+	regular->original = nullptr; //Should already be set, but let's be sure
+	master->original = regular;
+
+	if (master->left != nullptr) {
+		copyMasterToEntropyTree(regular->left, master->left, level + 1);
+	}
+
+	if (master->right != nullptr) {
+		copyMasterToEntropyTree(regular->right, master->right, level + 1);
+	}
+
+}
+
+void DataMgrVect::queryEntropyTreeByThreshold(double threshold, NodeBi * currentEntropyNode, NodeBi * currentMasterNode, int level)
+{
+	//cout << "Current level" << level << endl;
+	if (currentEntropyNode->GetEntropy() <= threshold) {  //Opposite of inquality used in Python flow
+		
+		//Once we set a node to null, we have no way to delete it again
+		//Thus we must do this now to avoid memory leaks that slowly build up as we query again and again and again...
+		if (currentEntropyNode->left != nullptr) {
+			currentMasterNode->left->original = nullptr;
+			delete currentEntropyNode->left;
+		}
+		if (currentEntropyNode->right != nullptr) {
+			currentMasterNode->right->original = nullptr;
+			delete currentEntropyNode->right;
+		}
+		currentEntropyNode->left = nullptr;
+		currentEntropyNode->right = nullptr;
+	}
+	else {
+		if (currentEntropyNode->left != nullptr) {
+			queryEntropyTreeByThreshold(threshold, currentEntropyNode->left, currentMasterNode->left, level + 1);
+		}
+		if (currentEntropyNode->right != nullptr) {
+			queryEntropyTreeByThreshold(threshold, currentEntropyNode->right, currentMasterNode->right, level + 1);
+		}
+	}
+	
+
+
+}
+
 
 inline vector<float3> ReadAttribute(const char* filename)
 {
@@ -1028,7 +1144,7 @@ void DataMgrVect::GetDescendantNodes(vector<AbstractNode*> &ret, NodeBi* nd)
 	//	else
 	//		ret.push_back(child);
 	//}
-	if (nd->GetLeft() == nullptr)
+	if (nd->GetLeft() == nullptr && nd->GetRight() == nullptr)
 		ret.push_back(nd);
 	else
 	{

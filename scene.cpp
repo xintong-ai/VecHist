@@ -581,18 +581,55 @@ inline int iDivUp(int a, int b)
 	return (a % b != 0) ? (a / b + 1) : (a / b);
 }
 
+//This method loads the leaf nodes list and sets the texture cubes for all data nodes
 void Scene::UpdateTexture()
 {
 	blockTex.clear();
 
-	leafNodes = dataManager->GetAllNode();
+	//For flow data, recursively process the tree and store a texture cube for each node
+	if (application == 1) {
+		UpdateTexture((NodeBi*)dataManager->getRootNode());
 
-	for (auto nd : leafNodes)	{
-		GLTextureCube *texCube = new GLTextureCube(qMin(1024, m_maxTextureSize), 1);
-		texCube->load(nd->GetCubemap(), dataManager->GetCubemapSize());
-		glColor3d(1.0, 1.0, 1.0);
-		blockTex << texCube;
+		leafNodes = dataManager->GetAllNode();
+		cout << "Just fetched all leaf nodes.  The count is: " << leafNodes.size() << endl;
+		for (auto nd : leafNodes)	{
+			GLTextureCube *texCube = nd->getTexCube();
+			glColor3d(1.0, 1.0, 1.0);
+			blockTex << texCube;
+		}
 	}
+	//For Dark Sky data, process only the leaves.  We may want to review this again later.
+	else {
+		leafNodes = dataManager->GetAllNode();
+		for (auto nd : leafNodes)	{
+			GLTextureCube *texCube = new GLTextureCube(qMin(1024, m_maxTextureSize), 1);
+			texCube->load(nd->GetCubemap(), dataManager->GetCubemapSize());
+			glColor3d(1.0, 1.0, 1.0);
+			blockTex << texCube;
+		}
+	}
+}
+
+//This method is only for flow data.  It recursiely processes the entropy tree and sets the texture cube for each data node.
+void Scene::UpdateTexture(NodeBi * currentNode)
+{
+	GLTextureCube *texCube = new GLTextureCube(qMin(1024, m_maxTextureSize), 1);
+	if (currentNode->GetCubemap() != nullptr) {
+		texCube->load(currentNode->GetCubemap(), dataManager->GetCubemapSize());
+	}
+	else
+	{
+		cerr << "In UpdateTexture method, CubeMap not set for Bi Node!!!" << endl;
+	}
+	currentNode->setTexCube(texCube);
+
+	if (currentNode->left != nullptr) {
+		UpdateTexture(currentNode->left);
+	}
+	if (currentNode->right != nullptr) {
+		UpdateTexture(currentNode->right);
+	}
+
 }
 
 
@@ -659,8 +696,10 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		sliderWidget.resize(50, 800);
 		sliderWidget.setFixedSize(50, 800);  //This might be replaced with code for a resize event later
 		
-		double min = ((DataMgrVect *)dataManager)->getMinEntropy();
-		double max = ((DataMgrVect *)dataManager)->getMaxEntropy();
+		//sliderMinValue = ((DataMgrVect *)dataManager)->getMinEntropy();
+		//sliderMaxValue = ((DataMgrVect *)dataManager)->getMaxEntropy();
+		sliderMinValue = 8.0;
+		sliderMaxValue = 10.0;
 
 		QLinearGradient gradient(0, 0, 0, sliderWidget.rect().height());
 
@@ -670,10 +709,10 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
 		//Build the gradient
 		const int NUM_ITERATIONS = 100;
-		for (double i = min; i <= max; i += (max - min) / NUM_ITERATIONS) {
+		for (double i = sliderMinValue; i <= sliderMaxValue; i += (sliderMaxValue - sliderMinValue) / NUM_ITERATIONS) {
 			((DataMgrVect *)dataManager)->getEntropyColorReversed(i, color);
 			//cout << "Color for " << i << ": " << color[0] << " " << color[1] << " " << color[2] << endl;
-			gradient.setColorAt((i - min) / (max - min), QColor(255 * color[0], 255 * color[1], 255 * color[2], 255));
+			gradient.setColorAt((i - sliderMinValue) / (sliderMaxValue - sliderMinValue), QColor(255 * color[0], 255 * color[1], 255 * color[2], 255));
 		}
 		
 		//Do the rest of the set up for the slider widget
@@ -687,7 +726,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		slider.resize(sliderWidget.rect().width(), sliderWidget.rect().height());
 		
 		slider.setRange(0, 100);
-		slider.setValue(100);
+		slider.setValue(0);
 
 		QHBoxLayout horizLayout;
 		horizLayout.addWidget(&slider);
@@ -843,6 +882,12 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		m_graphWidget->buildPlainTextFileFromDot();
 		m_graphWidget->loadGraphVizTextFile();
 		//((DataMgrVect*)dataManager)->PrintEntropies((NodeBi*)dataManager->getRootNode(), 0);
+
+		//Build the master entropy tree.  We cannot do it until this point, since the various graph building functions in the widgets set information directly in the entropy tree.
+		((DataMgrVect *)dataManager)->copyToMasterTree();
+
+		//We need to make sure the shown tree and scene match the current query setting
+		initiateEntropyQuery(sliderMinValue);
 	}
 	else {
 		connect(m_listWidget, SIGNAL(itemSelectionChanged()), this, SLOT(dropBoxSelection()));
@@ -876,6 +921,19 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	
 }
 
+void Scene::initiateEntropyQuery(double threshold)
+{
+	//This function makes no sense for Dark Sky data now.
+	if (application != 1) {
+		return;
+	}
+	((DataMgrVect *)dataManager)->queryEntropyTreeByThreshold(threshold);
+	UpdateTexture();
+	m_graphWidget->rebuildGraphFromTree((NodeBi*)dataManager->getRootNode());
+	treeMapWindow->refreshPlot((NodeBi*)dataManager->getRootNode());
+
+}
+
 //Respond to selection events for the list box for tree selection for the forest
 void Scene::dropBoxSelection()
 {
@@ -893,13 +951,13 @@ void Scene::dropBoxSelection()
 //Parameter newValue - the new value from the slider change (currently 0 to 99)
 void Scene::sliderSelection(int newValue) {
 	cout << "New value is: " << newValue << endl;
-	double minEntropy = ((DataMgrVect*)dataManager)->getMinEntropy();
-	double maxEntropy = ((DataMgrVect*)dataManager)->getMaxEntropy();
-	double entropyValue =  minEntropy + (maxEntropy - minEntropy) * (double(newValue) / 100);
-	slider.setToolTip(QString("Entropy: ") + QString::number(entropyValue));
-	cout << "Entropy value is: " << entropyValue << endl;
-	((DataMgrVect*)dataManager)->SetChildrenBelowEntropyToVisible((NodeBi*)dataManager->getRootNode(), entropyValue);
-	//((DataMgrVect*)dataManager)->PrintEntropies((NodeBi*)dataManager->getRootNode(), 0);
+	//sliderMinValue = ((DataMgrVect*)dataManager)->getMinEntropy();
+	//sliderMaxValue = ((DataMgrVect*)dataManager)->getMaxEntropy();
+	double entropyThresholdValue =  sliderMinValue + (sliderMaxValue - sliderMinValue) * (double(newValue) / 100);
+	slider.setToolTip(QString("Entropy Theshold Queried: ") + QString::number(entropyThresholdValue));
+	cout << "Entropy threshold value is: " << entropyThresholdValue << endl;
+	//((DataMgrVect*)dataManager)->SetChildrenBelowEntropyToVisible((NodeBi*)dataManager->getRootNode(), entropyThresholdValue);
+	initiateEntropyQuery(entropyThresholdValue);
 }
 
 Scene::~Scene()
@@ -1394,12 +1452,6 @@ void Scene::render3D(const QMatrix4x4 &view)
 		if (nd->GetVisible()) {
 			nd->GetGlyph()->draw();
 		}
-
-		//if (nd->GetSelected()) {
-		//	
-		//}
-
-		//nd->
 		
 		tex->unbind();
 

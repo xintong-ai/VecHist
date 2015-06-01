@@ -9,8 +9,10 @@ import time
 print ('Starting the gen ids script\n')
 time_start = time.time()
 
-
-read_vec.readMergerTree("C:\\Users\\datahead8888\\Documents\\DarkSkyDataDownloaded\\tree_0_0_0.dat")
+#Chris Jacobsen -
+#This loads the dark sky tree data.
+#It is commented out for now, until we need the Dark Sky data or get time to provide an alternate Python flow
+#read_vec.readMergerTree("C:\\Users\\datahead8888\\Documents\\DarkSkyDataDownloaded\\tree_0_0_0.dat")
 
 #######read data########
 #d = sample_ball.sample(2**8)

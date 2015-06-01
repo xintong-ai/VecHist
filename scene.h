@@ -236,6 +236,9 @@ public:
     virtual void drawBackground(QPainter *painter, const QRectF &rect);
 	void UpdateBlock();
 	void UpdateTexture();
+	void UpdateTexture(NodeBi * currentNode);
+	void initiateEntropyQuery(double threshold);
+
 
 public slots:
     //void setShader(int index);
@@ -360,6 +363,9 @@ private:
 	//vector<CutPlane> cutplanes;
 
 	QSlider slider;
+
+	double sliderMinValue = 0;
+	double sliderMaxValue = 0;
 };
 
 #endif
