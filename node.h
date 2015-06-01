@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-//Required #inlcude's from cpp files that use this:
+//Required #include's from cpp files that use this:
 //#include "DataManager.h"
 
 #ifndef NODE_H
@@ -46,11 +46,14 @@
 
 #include <QGraphicsItem>
 #include <QList>
+#include <string>
 
 class Edge;
 class GraphWidget;
 class QGraphicsSceneMouseEvent;
 class NodeBi;
+
+using namespace std;
 
 namespace Widget
 {

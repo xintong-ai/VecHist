@@ -38,9 +38,14 @@
 **
 ****************************************************************************/
 
+#include "glextensions.h"
+#include "glbuffers.h"
+#include "gltrianglemesh.h"
+#include "glSuperquadric.h"
+#include "node.h"
+#include "TreeMapWindow.h"
 #include "DataManager.h"
 #include "edge.h"
-#include "node.h"
 
 #include <math.h>
 

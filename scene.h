@@ -44,22 +44,22 @@
 
 //#include <GL/glew.h>
 #include "glextensions.h"
+#include "glbuffers.h"
+#include "gltrianglemesh.h"
+#include "glSuperquadric.h"
+#include "node.h"
+#include "TreeMapWindow.h"
 #include "DataManager.h"
 #include <DataMgrVect.h>
-#include <node.h>
 #include "graphWidget.h"
 #include "DataMgrCosm.h"
 #include "qjsonview.h"
-#include "TreeMapWindow.h"
 
 #include <QtWidgets>
 #include <QtOpenGL>
 #include <QtGui>
 
-#include "glbuffers.h"
 #include "glsphere.h"
-#include "gltrianglemesh.h"
-#include "glSuperquadric.h"
 //#include "box.h"
 #include "gltrianglemesh.h"
 #include "trackball.h"

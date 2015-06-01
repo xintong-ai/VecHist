@@ -1,16 +1,20 @@
+//Must include:
+//#include "glextensions.h"
+//#include "glbuffers.h"
+//#include "gltrianglemesh.h"
+//#include "glSuperquadric.h"
+//#include "node.h"
+//#include "TreeMapWindow.h"
+
 #ifndef DATA_MANAGER_H
 #define DATA_MANAGER_H
 #include <vector>
 #include <cuda/vector_types.h>
 #include <cuda/vector_functions.h>
 #include "OSUFlow.h"
-#include "glextensions.h"
-#include "glbuffers.h"
-#include "gltrianglemesh.h"
-#include "glSuperquadric.h"
-#include "node.h"
-#include "TreeMapWindow.h"
+
 #include <unordered_map>
+
 
 //1 means flow data
 //2 means cosmology data

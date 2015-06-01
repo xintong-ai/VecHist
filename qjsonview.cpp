@@ -1,5 +1,11 @@
 //From http://codereview.stackexchange.com/questions/11849/qjsonview-a-qwidget-based-json-explorer-for-qt
 //These files must be included before including this file in a cpp file:
+#include "glextensions.h"
+#include "glbuffers.h"
+#include "gltrianglemesh.h"
+#include "glSuperquadric.h"
+#include "node.h"
+#include "TreeMapWindow.h"
 #include "DataManager.h"
 #include "DataMgrCosm.h"
 #include "Scene.h"
