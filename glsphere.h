@@ -39,19 +39,23 @@
 **
 ****************************************************************************/
 
+//When this file is included in a .cpp file, the following files must be included first:
+//#include "glextensions.h"
+//#include "glbuffers.h"
+
 #ifndef GLSPHERE_H
 #define GLSPHERE_H
 
 //#include <GL/glew.h>
-#include "glextensions.h"
 
 #include <QtWidgets>
 #include <QtOpenGL>
 
+#include "glextensions.h"
+#include "glbuffers.h"
 #include "gltrianglemesh.h"
 #include <QtGui/qvector3d.h>
 #include <QtGui/qvector2d.h>
-#include "glbuffers.h"
 
 //
 //struct P3T2N3Vertex

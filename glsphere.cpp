@@ -38,7 +38,8 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
+#include "glextensions.h"
+#include "glbuffers.h"
 #include "glsphere.h"
 
 

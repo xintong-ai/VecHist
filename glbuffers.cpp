@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "glextensions.h"
 #include "glbuffers.h"
 #include <QtGui/qmatrix4x4.h>
 

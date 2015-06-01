@@ -39,16 +39,19 @@
 **
 ****************************************************************************/
 
+//Before including this header file in a cpp file, the following files must be included:
+//#include "glextensions.h"
+//#include "glbuffers.h"
+
 #ifndef GLTRIANGLEMESH_H
 #define GLTRIANGLEMESH_H
 
 //#include <GL/glew.h>
-#include "glextensions.h"
 
 #include <QtWidgets>
 #include <QtOpenGL>
 
-#include "glbuffers.h"
+
 
 //============================================================================//
 //                                P3T2N3Vertex                                //

@@ -39,11 +39,13 @@
 **
 ****************************************************************************/
 
+//The following files must be included before including this file in a .cpp file:
+//#include "glextensions.h"
+
 #ifndef GLBUFFERS_H
 #define GLBUFFERS_H
 
 //#include <GL/glew.h>
-#include "glextensions.h"
 
 #include <QtWidgets>
 #include <QtOpenGL>

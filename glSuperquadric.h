@@ -48,10 +48,13 @@
 #include <QtWidgets>
 #include <QtOpenGL>
 
+#include "glextensions.h"
+#include "glbuffers.h"
 #include "gltrianglemesh.h"
 #include <QtGui/qvector3d.h>
 #include <QtGui/qvector2d.h>
-#include "glbuffers.h"
+//#include "glextensions.h"
+//#include "glbuffers.h"
 #include "cuda/vector_types.h"
 
 
