@@ -1035,12 +1035,16 @@ void DataMgrVect::splitSuperQuadric(NodeBi * node)
 				(*node->left) = (*node->master->left);
 				node->master->left->original = node->left;
 				node->left->master = node->master->left;
+				node->left->left = nullptr;
+				node->left->right = nullptr;
 			}
 			if (node->master->right != nullptr) {
 				node->right = new NodeBi();
 				(*node->right) = (*node->master->right);
 				node->master->right->original = node->right;
 				node->right->master = node->master->right;
+				node->right->left = nullptr;
+				node->right->right = nullptr;
 			}
 		}
 	}
