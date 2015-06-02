@@ -46,10 +46,11 @@
 
 #include <QKeyEvent>
 
-GraphWidget::GraphWidget(DataManager * dataManager, QWidget *parent, NodeBi *p)
+GraphWidget::GraphWidget(DataManager * dataManager, TreeMapWindow * treeMapWindow, QWidget *parent, NodeBi *p)
 	: QGraphicsView(parent), timerId(0)
 {
 	this->dataManager = dataManager;
+	this->treeMapWindow = treeMapWindow;
 	QGraphicsScene *scene = new QGraphicsScene(this);
 	scene->setItemIndexMethod(QGraphicsScene::NoIndex);
 	//scene->setSceneRect(0, 0, 800, 800);
@@ -544,12 +545,12 @@ void GraphWidget::zoomOut()
 	scaleView(1 / qreal(1.2));
 }
 
-//TODO: This is just terrible.  It would be better to have the split method be in the Scene class, as is done for our entropy threhsold query.
+//TODO: It would be better to have the split method be in the Scene class, as is done for our entropy threhsold query.
 //This, however, cannot be done very easily until we resolve the circular #include issues by making all #includes for project header files be in .cpp files
 void GraphWidget::splitSuperQuadric(NodeBi * node)
 {
 	((DataMgrVect*)dataManager)->splitSuperQuadric(node);
 	rebuildGraphFromTree((NodeBi*)dataManager->getRootNode());
-
+	treeMapWindow->refreshPlot((NodeBi*)dataManager->getRootNode());
 }
 

@@ -41,9 +41,12 @@
 #ifndef NODE_H
 #define NODE_H
 
+using namespace std;
+
 #include <QGraphicsItem>
 #include <QList>
 #include "DataManager.h"
+
 
 class Edge;
 class GraphWidget;

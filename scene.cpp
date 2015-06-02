@@ -760,17 +760,15 @@ Scene::Scene(int width, int height, int maxTextureSize)
     m_renderOptions->resize(m_renderOptions->sizeHint());
 
 	if (1 == application) {
-		
-		
-		m_graphWidget = new GraphWidget(dataManager);
-		m_graphWidget->move(20, 30);
-		//m_graphWidget->resize(m_graphWidget->sizeHint());
-		m_graphWidget->resize(1000, 1000);
-
 		treeMapWindow = new TreeMapWindow();
 		treeMapWindow->move(20, 30);
 		treeMapWindow->resize(8000, 8000);
 		treeMapWindow->refreshPlot((NodeBi*)dataManager->getRootNode());
+
+		m_graphWidget = new GraphWidget(dataManager, treeMapWindow);
+		m_graphWidget->move(20, 30);
+		//m_graphWidget->resize(m_graphWidget->sizeHint());
+		m_graphWidget->resize(1000, 1000);
 
 		scrollArea = new QScrollArea;
 		scrollArea->setWidget(treeMapWindow);
@@ -793,7 +791,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
 	}
 	else {
-		m_graphWidget = new GraphWidget(dataManager);
+		m_graphWidget = new GraphWidget(dataManager, nullptr);
 		m_graphWidget->move(20, 30);
 		m_graphWidget->resize(m_graphWidget->sizeHint());
 
