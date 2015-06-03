@@ -927,6 +927,7 @@ void DataMgrVect::copyToMasterTree(NodeBi *& original, NodeBi *& master)
 
 	master->left = nullptr;
 	master->right = nullptr;
+	master->master = nullptr;
 
 	//Link the master record to the original record
 	original->original = nullptr; //Should already be set, but let's be sure
@@ -981,6 +982,7 @@ void DataMgrVect::copyMasterToEntropyTree(NodeBi *& regular, NodeBi *& master, i
 	//Link the master record to the entropy tree record
 	regular->original = nullptr; //Should already be set, but let's be sure
 	master->original = regular;
+	regular->master = master;
 
 	if (master->left != nullptr) {
 		copyMasterToEntropyTree(regular->left, master->left, level + 1);
@@ -1019,6 +1021,36 @@ void DataMgrVect::queryEntropyTreeByThreshold(double threshold, NodeBi * current
 		}
 	}
 	
+
+
+}
+
+void DataMgrVect::splitSuperQuadric(NodeBi * node)
+{
+	
+	if (node->left == nullptr && node->right == nullptr) { //Only a leaf node can be split
+		if (node->master != nullptr && (node->master->left != nullptr || node->master->right != nullptr)) { //There must be at least one child in the corresponding master tree node to do a split
+			if (node->master->left != nullptr) {
+				node->left = new NodeBi();
+				(*node->left) = (*node->master->left);
+				node->master->left->original = node->left;
+				node->left->master = node->master->left;
+				node->left->left = nullptr;
+				node->left->right = nullptr;
+			}
+			if (node->master->right != nullptr) {
+				node->right = new NodeBi();
+				(*node->right) = (*node->master->right);
+				node->master->right->original = node->right;
+				node->right->master = node->master->right;
+				node->right->left = nullptr;
+				node->right->right = nullptr;
+			}
+		}
+	}
+
+	//node->GetGraphNode()->update();
+	//node->
 
 
 }

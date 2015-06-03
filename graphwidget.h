@@ -45,6 +45,9 @@
 //#include <DataManager.h>
 #include <DataMgrVect.h>
 #include <node.h>
+#include "TreeMapWindow.h"
+//#include "Scene.h"
+#include "TextureCubeManager.h"
 
 class Widget::Node;
 
@@ -77,7 +80,7 @@ class GraphWidget : public QGraphicsView
 	//Q_OBJECT
 
 public:
-	GraphWidget(DataManager * dataManager, QWidget *parent = 0, NodeBi *p = 0);
+	GraphWidget(DataManager * dataManager, TreeMapWindow * treeMapPlot, TextureCubeManager * textureCubeManager, QWidget *parent = 0, NodeBi *p = 0);
 	~GraphWidget();
 	
 	void buildDotFileFromTree(NodeBi * root);
@@ -87,6 +90,8 @@ public:
 	void getTreeStats(NodeBi * p, int currentDepth, int currentPos);
 	Widget::Node * rebuildGraphFromTree(NodeBi * p);
 	Widget::Node * rebuildGraphFromTree(NodeBi * p, int currentDepth);
+	void splitSuperQuadric(NodeBi * node);
+
 
 	void itemMoved();
 
@@ -122,7 +127,9 @@ private:
 	vector<GraphVizEdge *> edges;					//The list of all edges
 	ofstream dotOut;								//The output file stream handler for the file that will be read by the dot program
 	DataManager * dataManager;					//Reference to the data manager
-	
+	TreeMapWindow * treeMapWindow;					//Reference to the scene object
+	TextureCubeManager * textureCubeManager;
+		
 };
 
 #endif // GRAPHWIDGET_H

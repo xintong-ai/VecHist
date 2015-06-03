@@ -41,14 +41,18 @@
 #ifndef NODE_H
 #define NODE_H
 
+using namespace std;
+
 #include <QGraphicsItem>
 #include <QList>
+//#include "TextureCubeManager.h"
 #include "DataManager.h"
 
 class Edge;
 class GraphWidget;
 class QGraphicsSceneMouseEvent;
 class NodeBi;
+class TextureCubeManager;
 
 namespace Widget
 {
@@ -57,7 +61,7 @@ namespace Widget
 	public:
 		double RADIUS = 0.5;
 
-		Node(GraphWidget *graphWidget);
+		Node(GraphWidget *graphWidget, TextureCubeManager * textureCubeManager);
 
 		void setNodeBiPtr(NodeBi * _nodeBiPtr) { this->nodeBiPtr = _nodeBiPtr; }
 		NodeBi * getNodeBiPtr() { return nodeBiPtr; }
@@ -85,6 +89,7 @@ namespace Widget
 		void mousePressEvent(QGraphicsSceneMouseEvent *event) Q_DECL_OVERRIDE;
 		void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) Q_DECL_OVERRIDE;
 		//void mouseMoveEvent(QGraphicsSceneMouseEvent *event) Q_DECL_OVERRIDE;
+		void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) Q_DECL_OVERRIDE;
 
 	private:
 		QList<Edge *> edgeList;
@@ -94,6 +99,7 @@ namespace Widget
 		QColor foreDisplayColor;
 		QColor backDisplayColor;
 		string name;		//Name as loaded from GraphViz dot output file
+		TextureCubeManager * textureCubeManager;
 	};
 };
 

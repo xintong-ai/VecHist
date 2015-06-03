@@ -46,10 +46,12 @@
 
 #include <QKeyEvent>
 
-GraphWidget::GraphWidget(DataManager * dataManager, QWidget *parent, NodeBi *p)
+GraphWidget::GraphWidget(DataManager * dataManager, TreeMapWindow * treeMapWindow, TextureCubeManager * textureCubeManager, QWidget *parent, NodeBi *p)
 	: QGraphicsView(parent), timerId(0)
 {
 	this->dataManager = dataManager;
+	this->treeMapWindow = treeMapWindow;
+	this->textureCubeManager = textureCubeManager;
 	QGraphicsScene *scene = new QGraphicsScene(this);
 	scene->setItemIndexMethod(QGraphicsScene::NoIndex);
 	//scene->setSceneRect(0, 0, 800, 800);
@@ -266,7 +268,7 @@ void GraphWidget::loadGraphVizTextFile()
 
 	//Add the nodes to the graph widget's scene
 	for (int i = 0; i < nodes.size(); i++) {
-		Widget::Node * childNode = new Widget::Node(this);
+		Widget::Node * childNode = new Widget::Node(this, textureCubeManager);
 		nodes[i]->widgetNode = childNode;
 		childNode->setPos(nodes[i]->x*widthRatio, scene()-> height() - nodes[i]->y*heightRatio);
 		childNode->RADIUS = nodes[i]->width / 2;
@@ -542,5 +544,14 @@ void GraphWidget::zoomIn()
 void GraphWidget::zoomOut()
 {
 	scaleView(1 / qreal(1.2));
+}
+
+//TODO: It would be better to have the split method be in the Scene class, as is done for our entropy threhsold query.
+//This, however, cannot be done very easily until we resolve the circular #include issues by making all #includes for project header files be in .cpp files
+void GraphWidget::splitSuperQuadric(NodeBi * node)
+{
+	((DataMgrVect*)dataManager)->splitSuperQuadric(node);
+	rebuildGraphFromTree((NodeBi*)dataManager->getRootNode());
+	treeMapWindow->refreshPlot((NodeBi*)dataManager->getRootNode());
 }
 

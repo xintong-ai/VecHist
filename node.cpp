@@ -42,6 +42,7 @@
 #include "node.h"
 #include "graphwidget.h"
 #include "TreeMapWindow.h"
+#include "TextureCubeManager.h"
 
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
@@ -49,9 +50,10 @@
 #include <QStyleOption>
 
 //Node constructor
-Widget::Node::Node(GraphWidget *graphWidget)
+Widget::Node::Node(GraphWidget *graphWidget, TextureCubeManager * textureCubeManager)
 	: graph(graphWidget)
 {
+	this->textureCubeManager = textureCubeManager;
 	setFlag(ItemIsMovable);
 	setFlag(ItemSendsGeometryChanges);
 	setCacheMode(DeviceCoordinateCache);
@@ -226,6 +228,18 @@ void Widget::Node::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	setToolTip(QString("Entropy: ") + QString::number(entropyValue));
 	cout << "Entropy of Node: " << entropyValue << endl;
 	cout << "Name of Node: " << name << endl;
+}
+
+void Widget::Node::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
+{
+	update();
+	QGraphicsItem::contextMenuEvent(event);
+
+	NodeBi * nodeBiPtr = getNodeBiPtr();
+	graph->splitSuperQuadric(nodeBiPtr);
+	//TODO: Externalize setting of application (1) for this
+	textureCubeManager->UpdateTexture(1);
+
 }
 
 void Widget::Node::SetChildrenVisibility(NodeBi *nd, bool _isVisible)
