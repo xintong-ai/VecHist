@@ -715,7 +715,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		treeMapWindow->resize(8000, 8000);
 		treeMapWindow->refreshPlot((NodeBi*)dataManager->getRootNode());
 
-		m_graphWidget = new GraphWidget(dataManager, treeMapWindow);
+		m_graphWidget = new GraphWidget(dataManager, treeMapWindow, m_textureCubeManager);
 		m_graphWidget->move(20, 30);
 		//m_graphWidget->resize(m_graphWidget->sizeHint());
 		m_graphWidget->resize(1000, 1000);
@@ -741,7 +741,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
 	}
 	else {
-		m_graphWidget = new GraphWidget(dataManager, nullptr);
+		m_graphWidget = new GraphWidget(dataManager, nullptr, m_textureCubeManager);
 		m_graphWidget->move(20, 30);
 		m_graphWidget->resize(m_graphWidget->sizeHint());
 

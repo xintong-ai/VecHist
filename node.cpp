@@ -42,6 +42,7 @@
 #include "node.h"
 #include "graphwidget.h"
 #include "TreeMapWindow.h"
+#include "TextureCubeManager.h"
 
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
@@ -49,9 +50,10 @@
 #include <QStyleOption>
 
 //Node constructor
-Widget::Node::Node(GraphWidget *graphWidget)
+Widget::Node::Node(GraphWidget *graphWidget, TextureCubeManager * textureCubeManager)
 	: graph(graphWidget)
 {
+	this->textureCubeManager = textureCubeManager;
 	setFlag(ItemIsMovable);
 	setFlag(ItemSendsGeometryChanges);
 	setCacheMode(DeviceCoordinateCache);
@@ -235,6 +237,8 @@ void Widget::Node::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 
 	NodeBi * nodeBiPtr = getNodeBiPtr();
 	graph->splitSuperQuadric(nodeBiPtr);
+	//TODO: Externalize setting of application (1) for this
+	textureCubeManager->UpdateTexture(1);
 
 }
 

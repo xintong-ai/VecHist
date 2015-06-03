@@ -52,6 +52,7 @@ class Edge;
 class GraphWidget;
 class QGraphicsSceneMouseEvent;
 class NodeBi;
+class TextureCubeManager;
 
 namespace Widget
 {
@@ -60,7 +61,7 @@ namespace Widget
 	public:
 		double RADIUS = 0.5;
 
-		Node(GraphWidget *graphWidget);
+		Node(GraphWidget *graphWidget, TextureCubeManager * textureCubeManager);
 
 		void setNodeBiPtr(NodeBi * _nodeBiPtr) { this->nodeBiPtr = _nodeBiPtr; }
 		NodeBi * getNodeBiPtr() { return nodeBiPtr; }
@@ -98,7 +99,7 @@ namespace Widget
 		QColor foreDisplayColor;
 		QColor backDisplayColor;
 		string name;		//Name as loaded from GraphViz dot output file
-		//TextureCubeManager * textureCubeManager;
+		TextureCubeManager * textureCubeManager;
 	};
 };
 
