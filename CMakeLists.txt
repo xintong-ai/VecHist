@@ -28,11 +28,11 @@ source_group("widgets_cpp" FILES edge.cpp node.cpp graphwidget.cpp qjson.cpp qjs
 
 set( Srcs main.cpp DataManager.cpp glsphere.cpp glSuperquadric.cpp
 	scene.cpp glbuffers.cpp glextensions.cpp trackball.cpp edge.cpp graphwidget.cpp node.cpp qjson.cpp qjsonview.cpp
-	DataMgrCosm.cpp DataMgrVect.cpp EntropySlider.cpp TreeMapPlot.cpp TreeMapWindow.cpp
+	DataMgrCosm.cpp DataMgrVect.cpp EntropySlider.cpp TreeMapPlot.cpp TreeMapWindow.cpp TextureCubeManager.cpp
 	)
 set( Hdrs DataManager.h glsphere.h glSuperquadric.h gltrianglemesh.h
 	scene.h glbuffers.h glextensions.h trackball.h edge.h graphwidget.h node.h
-	DataMgrCosm.h DataMgrVect.h qjson.h qjsonview.h EntropySlider.h TreeMapPlot.h TreeMapWindow.h
+	DataMgrCosm.h DataMgrVect.h qjson.h qjsonview.h EntropySlider.h TreeMapPlot.h TreeMapWindow.h TextureCubeManager.h
     )
 set( Rcs resources/vechist.qrc)
 

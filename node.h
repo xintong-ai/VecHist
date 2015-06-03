@@ -45,8 +45,8 @@ using namespace std;
 
 #include <QGraphicsItem>
 #include <QList>
+//#include "TextureCubeManager.h"
 #include "DataManager.h"
-
 
 class Edge;
 class GraphWidget;
@@ -98,6 +98,7 @@ namespace Widget
 		QColor foreDisplayColor;
 		QColor backDisplayColor;
 		string name;		//Name as loaded from GraphViz dot output file
+		//TextureCubeManager * textureCubeManager;
 	};
 };
 

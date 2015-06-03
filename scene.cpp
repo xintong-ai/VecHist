@@ -581,58 +581,6 @@ inline int iDivUp(int a, int b)
 	return (a % b != 0) ? (a / b + 1) : (a / b);
 }
 
-//This method loads the leaf nodes list and sets the texture cubes for all data nodes
-void Scene::UpdateTexture()
-{
-	blockTex.clear();
-
-	//For flow data, recursively process the tree and store a texture cube for each node
-	if (application == 1) {
-		UpdateTexture((NodeBi*)dataManager->getRootNode());
-
-		leafNodes = dataManager->GetAllNode();
-		cout << "Just fetched all leaf nodes.  The count is: " << leafNodes.size() << endl;
-		for (auto nd : leafNodes)	{
-			GLTextureCube *texCube = nd->getTexCube();
-			glColor3d(1.0, 1.0, 1.0);
-			blockTex << texCube;
-		}
-	}
-	//For Dark Sky data, process only the leaves.  We may want to review this again later.
-	else {
-		leafNodes = dataManager->GetAllNode();
-		for (auto nd : leafNodes)	{
-			GLTextureCube *texCube = new GLTextureCube(qMin(1024, m_maxTextureSize), 1);
-			texCube->load(nd->GetCubemap(), dataManager->GetCubemapSize());
-			glColor3d(1.0, 1.0, 1.0);
-			blockTex << texCube;
-		}
-	}
-}
-
-//This method is only for flow data.  It recursiely processes the entropy tree and sets the texture cube for each data node.
-void Scene::UpdateTexture(NodeBi * currentNode)
-{
-	GLTextureCube *texCube = new GLTextureCube(qMin(1024, m_maxTextureSize), 1);
-	if (currentNode->GetCubemap() != nullptr) {
-		texCube->load(currentNode->GetCubemap(), dataManager->GetCubemapSize());
-	}
-	else
-	{
-		cerr << "In UpdateTexture method, CubeMap not set for Bi Node!!!" << endl;
-	}
-	currentNode->setTexCube(texCube);
-
-	if (currentNode->left != nullptr) {
-		UpdateTexture(currentNode->left);
-	}
-	if (currentNode->right != nullptr) {
-		UpdateTexture(currentNode->right);
-	}
-
-}
-
-
 Scene::Scene(int width, int height, int maxTextureSize)
     : m_distExp(600)
     , m_frame(0)
@@ -646,7 +594,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
     //, m_environmentShader(0)
     //, m_environmentProgram(0)
 {
-//	if (dataManager->GetStringVal("datatype").compare("flow") == 0)
+	//	if (dataManager->GetStringVal("datatype").compare("flow") == 0)
 	if (1 == application)
 		dataManager = new DataMgrVect();
 	else //if (dataManager->GetStringVal("datatype").compare("cosmology") == 0)
@@ -683,7 +631,9 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	//TO DO: Make this work:
 	//dataManager->LoadVec(dataManager->GetFilename("vectorfield").c_str());
 	dataManager->LoadData();
-	UpdateTexture();
+
+	m_textureCubeManager = new TextureCubeManager(dataManager, m_maxTextureSize);
+	m_textureCubeManager->UpdateTexture(application);
 
 	//for (int i = 0; i < 500; i++)	{
 	//	COLOUR tmp = GetColour(i, 0, 500);
@@ -926,7 +876,7 @@ void Scene::initiateEntropyQuery(double threshold)
 		return;
 	}
 	((DataMgrVect *)dataManager)->queryEntropyTreeByThreshold(threshold);
-	UpdateTexture();
+	m_textureCubeManager->UpdateTexture(application);
 	m_graphWidget->rebuildGraphFromTree((NodeBi*)dataManager->getRootNode());
 	treeMapWindow->refreshPlot((NodeBi*)dataManager->getRootNode());
 
@@ -1416,9 +1366,9 @@ void Scene::render3D(const QMatrix4x4 &view)
 	int dim[3];
 	int start[3];
 	AbstractNode* selectedNode = nullptr;
-	for (int i = 0; i < leafNodes.size(); i++)	{
-		GLTextureCube* tex = blockTex[i];
-		auto nd = leafNodes[i];
+	for (int i = 0; i < m_textureCubeManager->getLeafNodes().size(); i++)	{
+		GLTextureCube* tex = m_textureCubeManager->getBlockTex()[i];
+		auto nd = m_textureCubeManager->getLeafNodes()[i];
 
 		
 
@@ -1477,9 +1427,9 @@ void Scene::render3D(const QMatrix4x4 &view)
 
 	//Render all selection box(es)
 	//Note: these are done after the shader program is no longer needed in order to prevent color conflicts
-	for (int i = 0; i < leafNodes.size(); i++)	{
-		GLTextureCube* tex = blockTex[i];
-		auto nd = leafNodes[i];
+	for (int i = 0; i < m_textureCubeManager->getLeafNodes().size(); i++)	{
+		GLTextureCube* tex = m_textureCubeManager->getBlockTex()[i];
+		auto nd = m_textureCubeManager->getLeafNodes()[i];
 
 		nd->GetDim(dim);
 		nd->GetStart(start);

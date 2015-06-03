@@ -61,6 +61,7 @@
 #include "glbuffers.h"
 //#include "DataMgrVect.h"
 #include "DataMgrCosm.h"
+#include "TextureCubeManager.h"
 //#include "qtbox.h"
 //#include <cuda_runtime.h>
 //#include <cuda_gl_interop.h>
@@ -234,9 +235,9 @@ public:
     Scene(int width, int height, int maxTextureSize);
     ~Scene();
     virtual void drawBackground(QPainter *painter, const QRectF &rect);
+	//TODO: Remove this after JSON Component is either removed or revised:
+	void UpdateTexture() { m_textureCubeManager->UpdateTexture(application); }
 	void UpdateBlock();
-	void UpdateTexture();
-	void UpdateTexture(NodeBi * currentNode);
 	void initiateEntropyQuery(double threshold);
 
 
@@ -313,8 +314,8 @@ private:
 	GLSuperquadric *m_superWidget;
     TrackBall m_trackBalls[3];
     //QVector<GLTexture *> m_textures;
+	TextureCubeManager * m_textureCubeManager;
     GLTextureCube *m_environment;	//the used cubemap
-	QVector<GLTextureCube*> blockTex;
 	//GLTexture3D *m_vec3DTex;
     //GLTexture3D *m_noise;
     //GLRenderTargetCube *m_mainCubemap;
@@ -358,10 +359,9 @@ private:
 	//GLuint m_depthTexture;
 
 	//
-	vector<AbstractNode*> leafNodes;
 	vector<float3> colorMap;
 	//vector<CutPlane> cutplanes;
-
+	
 	QSlider slider;
 
 	double sliderMinValue = 0;
