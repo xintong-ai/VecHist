@@ -477,7 +477,7 @@ void GraphWidget::timerEvent(QTimerEvent *event)
 #ifndef QT_NO_WHEELEVENT
 void GraphWidget::wheelEvent(QWheelEvent *event)
 {
-	scaleView(pow((double)2, -event->delta() / 240.0));
+	scaleView(1 / (pow((double)2, -event->delta() / 240.0)));
 }
 #endif
 
