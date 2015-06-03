@@ -116,20 +116,25 @@ void TreeMapWindow::wheelEvent(QWheelEvent *event)
 	else if (event->delta() < 0) {
 		factor = 1 / (fabs(event->delta() / 100.0));
 	}
-	
-
-	int width = this->width();
-	int height = this->height();
-
-	setFixedSize(width * factor, height*factor);
 
 	QPoint point = event->pos();
 
 	int x = point.x();
 	int y = point.y();
-
 	
+	zoom(factor, x, y);
+	
+}
+
+void TreeMapWindow::zoom(double factor, int x, int y)
+{
+	int width = this->width();
+	int height = this->height();
+
+	setFixedSize(width * factor, height*factor);
+
 	scrollArea->ensureVisible(x * factor, y * factor);
+
 }
 #endif
 

@@ -48,6 +48,7 @@ class TreeMapWindow : public QFrame
 		#ifndef QT_NO_WHEELEVENT
 		void wheelEvent(QWheelEvent *event) Q_DECL_OVERRIDE;
 		#endif
+		void zoom(double factor, int x, int y);
 
 		void setScrollArea(QScrollArea * scrollArea) { this->scrollArea = scrollArea; }
 

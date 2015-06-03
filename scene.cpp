@@ -725,6 +725,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		scrollArea->move(20, 120);
 		scrollArea->resize(900, 800);
 		treeMapWindow->setScrollArea(scrollArea);
+		treeMapWindow->zoom(0.1, 0, 0);
 
 		////////////////////////m_graphWidget->getTreeStats((NodeBi*)dataManager->getRootNode(), 0, 0);
 		////////////////////////m_graphWidget->buildGraphFromTree((NodeBi*)dataManager->getRootNode());
