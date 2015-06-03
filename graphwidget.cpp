@@ -123,7 +123,7 @@ void GraphWidget::buildDotFileFromTree(NodeBi * p, int currentDepth, int previou
 void GraphWidget::buildPlainTextFileFromDot()
 {
 	//C:\Graphviz2.38\bin\dot - Tplain - ext tree.txt > tree.ptxt
-	system("C:\\Graphviz2.38\\bin\\dot -Tplain-ext entropyTree.dot > tree.ptxt");
+	system("dot -Tplain-ext entropyTree.dot > tree.ptxt");
 }
 
 void GraphWidget::loadGraphVizTextFile()
