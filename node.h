@@ -38,6 +38,9 @@
 **
 ****************************************************************************/
 
+//To use this header file in a .cpp file, you may need to include:
+//#include "TextureCubeManager.h"
+
 #ifndef NODE_H
 #define NODE_H
 

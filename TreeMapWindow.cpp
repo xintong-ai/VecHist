@@ -16,6 +16,9 @@
  * Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#include "DataManager.h"
+#include "DataMgrVect.h"
+
 #include "TreeMapWindow.h"
 #include "TreeMapPlot.h"
 
@@ -27,12 +30,12 @@
 #include <iostream>
 
 
-
-TreeMapWindow::TreeMapWindow()
+TreeMapWindow::TreeMapWindow(DataManager * dataManager)
 {
+	this->dataManager = dataManager;
 	// the plot
 	mainLayout = new QVBoxLayout;  //Lines widgets up vertically
-	ltmPlot = new TreeMapPlot(this);
+	ltmPlot = new TreeMapPlot(this, dataManager);
 	mainLayout->addWidget(ltmPlot);
 	mainLayout->setSpacing(0);
 	mainLayout->setContentsMargins(0, 0, 0, 0);

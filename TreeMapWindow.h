@@ -16,6 +16,10 @@
  * Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+//To use this in a cpp file, you may need to include:
+//#include "DataManager.h"
+//#include "DataMgrVect.h"
+
 #ifndef _GC_TreeMapWindow_h
 #define _GC_TreeMapWindow_h 1
 
@@ -30,9 +34,10 @@
 #include <QVBoxLayout>
 #include <qscrollarea.h>
 
-//#include "DataMgrVect.h"
+
 
 class NodeBi;
+class DataManager;
 
 
 class TreeMapPlot;
@@ -42,7 +47,7 @@ class TreeMapWindow : public QFrame
 
     public:
 
-		TreeMapWindow();
+		TreeMapWindow(DataManager * dataManager);
         ~TreeMapWindow();
 		void refreshPlot(NodeBi * root);
 		#ifndef QT_NO_WHEELEVENT
@@ -60,6 +65,7 @@ class TreeMapWindow : public QFrame
 		QVBoxLayout *mainLayout;
 		TreeMapPlot *ltmPlot;
 		QScrollArea * scrollArea = nullptr;
+		DataManager * dataManager = nullptr;
 };
 
 #endif // _GC_TreeMapWindow_h

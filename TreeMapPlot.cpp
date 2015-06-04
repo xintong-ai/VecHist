@@ -16,6 +16,8 @@
  * Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#include "DataManager.h"
+#include "DataMgrVect.h"
 
 #include "TreeMapPlot.h"
 #include "TreeMapWindow.h"
@@ -33,9 +35,10 @@ bool TreeMapLessThan(const TreeMap *a, const TreeMap *b) {
 
 //Constructor
 //Parameter parent - the TreeMapWindow object to which the tree map belongs
-TreeMapPlot::TreeMapPlot(TreeMapWindow *parent)
+TreeMapPlot::TreeMapPlot(TreeMapWindow *parent, DataManager * dataManager)
 	: QWidget(parent), parent(parent)
 {
+	this->dataManager = dataManager;
 	root = new TreeMap;
 	setMouseTracking(true);
 	installEventFilter(this);
@@ -291,14 +294,17 @@ void TreeMapPlot::paintChildren(TreeMap * parent, QPainter & painter, QBrush & b
 	int n = 1;
 	QColor cHSV, cRGB;
 	double factor = double(1) / double(parent->children.count());
+	double color[3];
 
 	foreach(TreeMap *first, parent->children) {
-		if (n % 2 == 0) {
-			cRGB.setRgb(0, 0, 255, 255);  //Blue background color for now
-		}
-		else {
-			cRGB.setRgb(0, 255, 0, 255);  //Green background color for now
-		}
+
+		//Use color map based on entropy value to determine color of rendered square
+		double entropyValue = first->value;
+
+		((DataMgrVect *)dataManager)->getEntropyColor(entropyValue, color);
+		cRGB.setRgb(255 * color[0], 255 * color[1], 255 * color[2], 255);
+
+
 		brush.setColor(cRGB);
 		
 		//Set the brush.  Use a hightlight if a node is moused over

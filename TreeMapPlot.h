@@ -16,20 +16,26 @@
  * Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+//To use this in a cpp file, you may need to include:
+//#include "DataManager.h"
+//#include "DataMgrVect.h"
+
 #ifndef _GC_TreeMapPlot_h
 #define _GC_TreeMapPlot_h 1
 
 #include <QtGui>
 #include <vector>
+#include <iostream>
 
 #include "TreeMapWindow.h"
-#include "DataMgrVect.h"
 
 using namespace std;
 
 
 // for sorting
 class TreeMap;
+class DataManager;
+
 bool TreeMapLessThan(const TreeMap *, const TreeMap *);
 
 class TreeMap
@@ -379,7 +385,7 @@ class TreeMapPlot : public QWidget
 
 
     public:
-		TreeMapPlot(TreeMapWindow *);
+		TreeMapPlot(TreeMapWindow *, DataManager * dataManager);
         ~TreeMapPlot();
 		void setData(NodeBi * rootBi);
 		void buildTree();
@@ -415,6 +421,7 @@ class TreeMapPlot : public QWidget
 		bool showLabel = true;		//If true labels are shown.  If false they are not.
 		list<TreeMap *> leafNodes;	//A list of all leaf nodes in the normal tree structure (TODO: unify this with the leafNodesRoot data structure below to avoid redundant data - we will no longer need this list<TreeMap *>)
 		NodeBi * rootBi = nullptr;  //The root data node
+		DataManager * dataManager = nullptr;
 
 		//Layout and tree structuring method
 		//0 = square layout with multilevel tree
