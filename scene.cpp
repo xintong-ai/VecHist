@@ -961,7 +961,7 @@ void Scene::initGL()
 		//cout << "Loading shader: " << &file.absoluteFilePath();
 		//cout << "Loading shader: "<< file.absoluteFilePath().toStdString();
 		QString myString = file.absoluteFilePath();
-		//cout << myString.toStdString() << endl;
+		cout << "Compiling: " << myString.toStdString() << endl;
 		shader->compileSourceFile(file.absoluteFilePath());
         // The program does not take ownership over the shaders, so store them in a vector so they can be deleted afterwards.
         program->addShader(m_vertexShader);
@@ -982,6 +982,9 @@ void Scene::initGL()
 
         m_fragmentShaders << shader;
 		string filename = file.fileName().toStdString();
+
+		cout << "New program recoerded: " << filename.substr(0, filename.find(".", 0)) << endl;
+
 		m_programs[filename.substr(0, filename.find(".", 0))] = program;
         m_renderOptions->addShader(file.baseName());
 
@@ -1299,10 +1302,11 @@ void Scene::render3D(const QMatrix4x4 &view)
 	//	m_environment->bind();
 	//}
 
-
+	/*
 	m_programs["distribution"]->bind();
 //	m_programs["distribution"]->setUniformValue("tex", GLint(0));
 	m_programs["distribution"]->setUniformValue("env", GLint(0));
+	//m_programs["distribution"]->
 	//NewColor Newlight
 	QVector4D lightPos[2];
 	lightPos[0] = QVector4D(0.0, 0.0, 1.0, 0.0);
@@ -1321,6 +1325,30 @@ void Scene::render3D(const QMatrix4x4 &view)
 	m_programs["distribution"]->setUniformValueArray("cm", colmap, 33);
 	//NewColor Newlight over
 	//m_programs["distribution"]->setUniformValue("view", qModelview);
+	*/
+
+	m_programs["picking"]->bind();
+	//	m_programs["picking"]->setUniformValue("tex", GLint(0));
+	m_programs["picking"]->setUniformValue("env", GLint(0));
+	//m_programs["picking"]->
+	//NewColor Newlight
+	QVector4D lightPos[2];
+	lightPos[0] = QVector4D(0.0, 0.0, 1.0, 0.0);
+	lightPos[1] = QVector4D(0.0, 0.0, -1.0, 0.0);
+	m_programs["picking"]->setUniformValueArray("lightposn", lightPos, 2);
+	QVector4D ambientMat(0.2, 0.2, 0.2, 1.0);
+	m_programs["picking"]->setUniformValue("ambient", ambientMat);
+	QVector4D diffuseMat(0.8, 0.8, 0.8, 1.0);
+	m_programs["picking"]->setUniformValue("diffuse", diffuseMat);
+	QVector4D specularMat(0.3, 0.3, 0.3, 1.0);
+	m_programs["picking"]->setUniformValue("specular", specularMat);
+	QVector4D emissionMat(0.1, 0.1, 0.1, 1.0);
+	m_programs["picking"]->setUniformValue("emission", emissionMat);
+	float shininessMat = 20.0;
+	m_programs["picking"]->setUniformValue("shininess", shininessMat);
+	m_programs["picking"]->setUniformValueArray("cm", colmap, 33);
+	//NewColor Newlight over
+	//m_programs["picking"]->setUniformValue("view", qModelview);s
 
 #if 0
 	//draw sphere by the side
@@ -1423,7 +1451,8 @@ void Scene::render3D(const QMatrix4x4 &view)
 		//	}
 		//}
 	}
-	m_programs["distribution"]->release();
+	//m_programs["distribution"]->release();
+	m_programs["picking"]->release();
 
 	//Render all selection box(es)
 	//Note: these are done after the shader program is no longer needed in order to prevent color conflicts

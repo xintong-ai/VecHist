@@ -2,6 +2,7 @@
     <qresource prefix="/res/vechist">
         <file>basic.vsh</file>
         <file>distribution.fsh</file>
+		<file>picking.fsh</file>
         <file>parameters.par</file>
     </qresource>
 </RCC>
