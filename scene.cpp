@@ -1302,6 +1302,7 @@ void Scene::render3D(const QMatrix4x4 &view)
 	//	m_environment->bind();
 	//}
 
+	//Regular SuperQuadric Rendering
 	/*
 	m_programs["distribution"]->bind();
 //	m_programs["distribution"]->setUniformValue("tex", GLint(0));
@@ -1327,29 +1328,10 @@ void Scene::render3D(const QMatrix4x4 &view)
 	//m_programs["distribution"]->setUniformValue("view", qModelview);
 	*/
 
+	//Picking for Superquadrics
 	m_programs["picking"]->bind();
-	//	m_programs["picking"]->setUniformValue("tex", GLint(0));
-	m_programs["picking"]->setUniformValue("env", GLint(0));
-	//m_programs["picking"]->
-	//NewColor Newlight
-	QVector4D lightPos[2];
-	lightPos[0] = QVector4D(0.0, 0.0, 1.0, 0.0);
-	lightPos[1] = QVector4D(0.0, 0.0, -1.0, 0.0);
-	m_programs["picking"]->setUniformValueArray("lightposn", lightPos, 2);
-	QVector4D ambientMat(0.2, 0.2, 0.2, 1.0);
-	m_programs["picking"]->setUniformValue("ambient", ambientMat);
-	QVector4D diffuseMat(0.8, 0.8, 0.8, 1.0);
-	m_programs["picking"]->setUniformValue("diffuse", diffuseMat);
-	QVector4D specularMat(0.3, 0.3, 0.3, 1.0);
-	m_programs["picking"]->setUniformValue("specular", specularMat);
-	QVector4D emissionMat(0.1, 0.1, 0.1, 1.0);
-	m_programs["picking"]->setUniformValue("emission", emissionMat);
-	float shininessMat = 20.0;
-	m_programs["picking"]->setUniformValue("shininess", shininessMat);
-	m_programs["picking"]->setUniformValueArray("cm", colmap, 33);
-	//NewColor Newlight over
-	//m_programs["picking"]->setUniformValue("view", qModelview);s
-
+	
+	
 #if 0
 	//draw sphere by the side
 	glEnable(GL_CULL_FACE);
@@ -1398,7 +1380,8 @@ void Scene::render3D(const QMatrix4x4 &view)
 		GLTextureCube* tex = m_textureCubeManager->getBlockTex()[i];
 		auto nd = m_textureCubeManager->getLeafNodes()[i];
 
-		
+		//GLint indexValue = 1;
+		m_programs["picking"]->setUniformValue("drawIndex", i);
 
 		nd->GetDim(dim);
 		nd->GetStart(start);
