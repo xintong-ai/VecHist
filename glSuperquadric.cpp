@@ -142,7 +142,8 @@ GLSuperquadric::GLSuperquadric(float3 e_val, float3 e_vec_0, float3 e_vec_1, flo
 			}
 			QVector4D v = trans * QVector4D(x, y, z, 1);
 			vp[vidx].position = QVector3D(v.x(), v.y(), v.z()) * scale;
-			vp[vidx].normal = vp[vidx].position;// QVector3D(0.0f, 0.0f, 1.0f);// QVector3D(v.x(), v.y(), v.z()).normalized();
+			//new normal
+			//vp[vidx].normal = vp[vidx].position;// QVector3D(0.0f, 0.0f, 1.0f);// QVector3D(v.x(), v.y(), v.z()).normalized();
 			vp[vidx].texCoord = vp[vidx].position;
 			vidx++;
 
@@ -157,6 +158,38 @@ GLSuperquadric::GLSuperquadric(float3 e_val, float3 e_vec_0, float3 e_vec_1, flo
 			}
 		}
 	}
+
+	//new normal
+	QVector3D normal_1, normal_2, normal_3;
+        QVector3D normal_4, normal_5, normal_6;
+
+	for (int i = 0; i <= ni; i++){
+		for (int j = 0; j < nj; j++){
+			int j_minus_1 = ((j == 0) ? (nj - 1) : (j - 1));
+			if (i == 0){
+				normal_1 = QVector3D::normal(vp[i*nj + j].position, vp[(i + 1)*nj + j].position, vp[(i + 1)*nj + ((j + 1) % nj)].position);
+				normal_2 = QVector3D::normal(vp[i*nj + j].position, vp[(i + 1)*nj + ((j + 1) % nj)].position, vp[i*nj + ((j + 1) % nj)].position);
+				normal_3 = QVector3D::normal(vp[i*nj + j_minus_1].position, vp[(i + 1)*nj + ((j_minus_1 + 1) % nj)].position, vp[i*nj + ((j_minus_1 + 1) % nj)].position);
+				vp[i*nj + j].normal = (normal_1 + normal_2 + normal_3).normalized();
+			}
+			else if (i == ni){
+				normal_1 = QVector3D::normal(vp[(i - 1)*nj + j].position, vp[i*nj + j].position, vp[i*nj + ((j + 1) % nj)].position);
+				normal_2 = QVector3D::normal(vp[(i - 1)*nj + j_minus_1].position, vp[i*nj + j_minus_1].position, vp[i*nj + ((j_minus_1 + 1) % nj)].position);
+				normal_3 = QVector3D::normal(vp[(i - 1)*nj + j_minus_1].position, vp[i*nj + ((j_minus_1 + 1) % nj)].position, vp[(i - 1)*nj + ((j_minus_1 + 1) % nj)].position);
+				vp[i*nj + j].normal = (normal_1 + normal_2 + normal_3).normalized();
+			}
+			else{
+				normal_1 = QVector3D::normal(vp[i*nj + j].position, vp[(i + 1)*nj + j].position, vp[(i + 1)*nj + ((j + 1) % nj)].position);
+				normal_2 = QVector3D::normal(vp[i*nj + j].position, vp[(i + 1)*nj + ((j + 1) % nj)].position, vp[i*nj + ((j + 1) % nj)].position);
+				normal_3 = QVector3D::normal(vp[i*nj + j_minus_1].position, vp[(i + 1)*nj + ((j_minus_1 + 1) % nj)].position, vp[i*nj + ((j_minus_1 + 1) % nj)].position);
+				normal_4 = QVector3D::normal(vp[(i - 1)*nj + j].position, vp[i*nj + j].position, vp[i*nj + ((j + 1) % nj)].position);
+				normal_5 = QVector3D::normal(vp[(i - 1)*nj + j_minus_1].position, vp[i*nj + j_minus_1].position, vp[i*nj + ((j_minus_1 + 1) % nj)].position);
+				normal_6 = QVector3D::normal(vp[(i - 1)*nj + j_minus_1].position, vp[i*nj + ((j_minus_1 + 1) % nj)].position, vp[(i - 1)*nj + ((j_minus_1 + 1) % nj)].position);
+				vp[i*nj + j].normal = (normal_1 + normal_2 + normal_3 + normal_4 + normal_5 + normal_6).normalized();
+			}
+		}
+	}
+	//new normal over
 
 	m_ib.unlock();
 	m_vb.unlock();
