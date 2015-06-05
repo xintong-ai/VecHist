@@ -635,12 +635,6 @@ void Scene::UpdateTexture(NodeBi * currentNode)
 
 Scene::Scene(int width, int height, int maxTextureSize)
     : m_distExp(600)
-	, translateX(0.0)		//new translation
-	, translateY(0.0)		//new translation
-	, preMouseX(0)			//new translation
-	, preMouseY(0)			//new translation
-	, curMouseX(0)			//new translation
-	, curMouseY(0)			//new translation
     , m_frame(0)
     , m_maxTextureSize(maxTextureSize)
    // , m_currentShader(0)
@@ -1173,7 +1167,6 @@ inline void Scene::RenderBox(const QMatrix4x4 &view, int sx, int sy, int sz, int
 
 	double distance = selectionBoxWidth;
 
-
 	glBegin(GL_LINES);
 
 	
@@ -1260,7 +1253,7 @@ void Scene::renderQCube(const QMatrix4x4 &view)
 	dataManager->GetQCube(x, y, z, nx, ny, nz);
 
 	glPushAttrib(GL_LINE_BIT | GL_CURRENT_BIT);
-	
+
 	glColor3f(0.0f, 0.0f, 1.0f);
 	glLineWidth(3.0f);
 	glBegin(GL_LINES);
@@ -1346,10 +1339,6 @@ void Scene::render3D(const QMatrix4x4 &view)
 
 	float s = 1.0f / maxdim;
 	glScalef(s, s, s);
-
-	//glPushMatrix();
-	//glTranslatef(translateX, translateY, 0.0);
-
 	//glTranslatef(m_translate[0], m_translate[1], m_translate[2]);
 	glTranslatef(-(nx - 1) * 0.5, -(ny - 1) * 0.5, -(nz - 1)* 0.5);
 
@@ -1367,32 +1356,21 @@ void Scene::render3D(const QMatrix4x4 &view)
 //	m_programs["distribution"]->setUniformValue("tex", GLint(0));
 	m_programs["distribution"]->setUniformValue("env", GLint(0));
 	//NewColor Newlight
-
-	//add new four lights
-	QVector4D lightPos[10];
-	int light_num = 6;
-	m_programs["distribution"]->setUniformValue("numLights", light_num);
-
+	QVector4D lightPos[2];
 	lightPos[0] = QVector4D(0.0, 0.0, 1.0, 0.0);
 	lightPos[1] = QVector4D(0.0, 0.0, -1.0, 0.0);
-	lightPos[2] = QVector4D(1.0, 0.0, 0.0, 0.0);
-	lightPos[3] = QVector4D(-1.0, 0.0, 0.0, 0.0);
-	lightPos[4] = QVector4D(0.0, 1.0, 0.0, 0.0);
-	lightPos[5] = QVector4D(0.0, -1.0, 0.0, 0.0);
-	m_programs["distribution"]->setUniformValueArray("lightposn", lightPos, light_num);
-	QVector4D ambientMat(0.1, 0.1, 0.1, 1.0);
+	m_programs["distribution"]->setUniformValueArray("lightposn", lightPos, 2);
+	QVector4D ambientMat(0.2, 0.2, 0.2, 1.0);
 	m_programs["distribution"]->setUniformValue("ambient", ambientMat);
-	QVector4D diffuseMat(0.5, 0.5, 0.5, 1.0);
+	QVector4D diffuseMat(0.8, 0.8, 0.8, 1.0);
 	m_programs["distribution"]->setUniformValue("diffuse", diffuseMat);
-	QVector4D specularMat(0.1, 0.1, 0.1, 1.0);
+	QVector4D specularMat(0.3, 0.3, 0.3, 1.0);
 	m_programs["distribution"]->setUniformValue("specular", specularMat);
 	QVector4D emissionMat(0.1, 0.1, 0.1, 1.0);
 	m_programs["distribution"]->setUniformValue("emission", emissionMat);
 	float shininessMat = 20.0;
 	m_programs["distribution"]->setUniformValue("shininess", shininessMat);
 	m_programs["distribution"]->setUniformValueArray("cm", colmap, 33);
-	//add new four lights over
-
 	//NewColor Newlight over
 	//m_programs["distribution"]->setUniformValue("view", qModelview);
 
@@ -1687,7 +1665,6 @@ void Scene::render3D(const QMatrix4x4 &view)
 
 
 	//glPopAttrib();
-	//glPopMatrix();
 
 }
 
@@ -1778,11 +1755,6 @@ void Scene::drawBackground(QPainter *painter, const QRectF &)
 	//zoom in/out
     view(2, 3) -= 0.5f * exp(m_distExp / 1200.0f);
 
-	//new translation
-	view(0, 3) = translateX;
-	view(1, 3) = translateY;
-	//new translation over
-
 	render3D(view);
 
 
@@ -1824,24 +1796,9 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 	//	m_trackBalls[0].translate(pixelPosToViewPos(event->scenePos()), m_trackBalls[0].rotation().conjugate());
 	//	event->accept();
 	//}
-	//new translation
-	else if (event->buttons() & Qt::RightButton){
-		curMouseX = event->scenePos().x();
-		curMouseY = event->scenePos().y();
-
-		translateX += (double)(curMouseX - preMouseX) / width();
-		translateY -= (double)(curMouseY - preMouseY) / height();
-
-		preMouseX = curMouseX;
-		preMouseY = curMouseY;
-
-		event->accept();
-	}
 	else {
         m_trackBalls[0].release(pixelPosToViewPos(event->scenePos()), m_trackBalls[0].rotation().conjugate());
     }
-
-	
 }
 
 void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
@@ -1854,14 +1811,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
         m_trackBalls[0].push(pixelPosToViewPos(event->scenePos()), m_trackBalls[0].rotation().conjugate());
         event->accept();
     }
-	//new translation
 	else if (event->button() == Qt::RightButton)	{
-		preMouseX = event->scenePos().x();
-		preMouseY = event->scenePos().y();
-		curMouseX = preMouseX;
-		curMouseY = preMouseY;
-		event->accept();
-
 		//float3 b = ReadPixel(event->scenePos().x(), event->scenePos().y());
 		////int3 dim = dataManager->GetVolumeDim();
 		////The boundary is from 0 to (dim - 1)
@@ -1879,8 +1829,6 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 		//else
 		//	cutplanes.back() = cp;
 		//cout << "(" << normal.x << "," << normal.y << "," << normal.z << endl;
-
-
 	}
 }
 
@@ -1894,21 +1842,6 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         m_trackBalls[0].release(pixelPosToViewPos(event->scenePos()), m_trackBalls[0].rotation().conjugate());
         event->accept();
     }
-
-	//new translation
-	/*if (event->button() == Qt::RightButton){
-		curMouseX = event->scenePos().x();
-		curMouseY = event->scenePos().y();
-
-		translateX += (double)(curMouseX - preMouseX) / width();
-		translateY -= (double)(curMouseY - preMouseY) / height();
-
-		preMouseX = curMouseX;
-		preMouseY = curMouseY;
-		event->accept();
-	}*/
-
-	
 }
 
 void Scene::wheelEvent(QGraphicsSceneWheelEvent * event)

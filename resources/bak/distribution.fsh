@@ -49,8 +49,7 @@ varying vec3 texcoord;
 uniform samplerCube env;
 //uniform mat4 view;
 
-uniform int numLights;		//add for more lights(less than 10)
-uniform vec4 lightposn[10];
+uniform vec4 lightposn[2];
 uniform vec4 ambient;
 uniform vec4 diffuse; 
 uniform vec4 specular; 
@@ -245,7 +244,7 @@ void main()
 	vec4 unlitColor = GetColor(v, 0, 1); //vec4((normal.x + 1) * 0.5, (normal.y + 1), (normal.z + 1) * 0.5, 1.0f);
 	
     vec4 final_color = vec4(0.0, 0.0, 0.0, 1.0);
-    for(int i = 0; i < numLights; i++){			//add for more lights(less than 10)
+    for(int i = 0; i < 2; i++){
 	const vec3 eyepos = vec3(0, 0, 0);
 	vec4 _mypos = gl_ModelViewMatrix * myposition;
 	vec3 mypos = _mypos.xyz / _mypos.w;

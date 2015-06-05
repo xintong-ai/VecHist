@@ -293,15 +293,6 @@ private:
     int m_frame;
     int m_maxTextureSize;
 
-	//new translation
-	double translateX;
-	double translateY;
-	int preMouseX;
-	int preMouseY;
-	int curMouseX;
-	int curMouseY;
-	//new translation over
-
     //int m_currentShader;
     //int m_currentTexture;
     bool m_dynamicCubemap;

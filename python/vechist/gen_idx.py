@@ -23,7 +23,7 @@ time_start = time.time()
 #d = read_vec.read("/home/datahead/research/rawData/15plume3d430.vec")
 #d = read_vec.read("C:\\Users\\datahead8888\\Documents\\sciVis\\data\\15plume3d421.vec")
 #d = read_vec.read("D:/data/sample/test3.vec")
-d = read_vec.read("C:\\Users\\datahead8888\\Documents\\sciVis\\data\\15plume3d421.vec")
+d = read_vec.read("C:/Users/Temp_CSECS/Zhanghj/Dreese/HaloWork/vechist_data/15plume3d421.vec")
 np.save("d_vec", d)
 #dim = d.shape
 #d = np.reshape(d, (dim[2], dim[1], dim[0], 3))

@@ -19,7 +19,7 @@ time_start = time.time()
 #d = sample_random.sample(2**24)
 #d = read_vec.read("D:/data/isabel/UVWf01.vec")
 #d = read_vec.read("D:/data/plume/15plume3d421.vec")
-#d = read_vec.read("D:/data/sample/test3.vec")
+#d = read_vec.read("C:/Users/Temp_CSECS/Zhanghj/Dreese/HaloWork/vechist_data/15plume3d421.vec")
 
 cubemap_size = 16
 
