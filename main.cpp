@@ -60,8 +60,10 @@ public:
 
 protected:
     void resizeEvent(QResizeEvent *event) {
-        if (scene())
-            scene()->setSceneRect(QRect(QPoint(0, 0), event->size()));
+		if (scene()) {
+			scene()->setSceneRect(QRect(QPoint(0, 0), event->size()));
+			((Scene*)scene())->adjustPickingTextureForResize(event->size().width(), event->size().height());
+		}
         QGraphicsView::resizeEvent(event);
     }
 };

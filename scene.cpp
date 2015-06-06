@@ -431,7 +431,8 @@ void GraphicsWidget::resizeEvent(QGraphicsSceneResizeEvent *event)
 {
     setCacheMode(QGraphicsItem::NoCache);
     setCacheMode(QGraphicsItem::ItemCoordinateCache);
-    QGraphicsProxyWidget::resizeEvent(event);
+
+	QGraphicsProxyWidget::resizeEvent(event);
 }
 
 void GraphicsWidget::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
@@ -1038,7 +1039,6 @@ void Scene::initGL()
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	//return GLCheckError();
 	////////////////////////////////////////////////
 }
 
@@ -1598,6 +1598,67 @@ QPointF Scene::pixelPosToViewPos(const QPointF& p)
 {
     return QPointF(2.0 * float(p.x()) / width() - 1.0,
                    1.0 - 2.0 * float(p.y()) / height());
+}
+
+void Scene::adjustPickingTextureForResize(int width, int height)
+{
+	m_width = width;
+	m_height = height;
+
+	//cout << "Resize eventg received" << endl;
+	//cout << "Width: " << width << " Height: " << height << endl;
+
+	if (m_fbo) {
+		glDeleteFramebuffers(1, &m_fbo);
+	}
+
+	if (m_pickingTexture) {
+		glDeleteRenderbuffers(1, &m_pickingTexture);
+	}
+
+	/////////////////////////////////
+	//Modified From http://ogldev.atspace.co.uk/www/tutorial29/tutorial29.html
+	//GNU License
+	/////////////////////////////////
+
+	glGenFramebuffers(1, &m_fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+
+	// Create the texture object for the primitive information buffer
+	glGenTextures(1, &m_pickingTexture);
+	glBindTexture(GL_TEXTURE_2D, m_pickingTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height,
+		0, GL_RGB, GL_FLOAT, NULL);
+	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+		m_pickingTexture, 0);
+
+	// Create the texture object for the depth buffer
+	glGenTextures(1, &m_depthTexture);
+	glBindTexture(GL_TEXTURE_2D, m_depthTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height,
+		0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
+		m_depthTexture, 0);
+
+	// Disable reading to avoid problems with older GPUs
+	glReadBuffer(GL_NONE);
+
+	glDrawBuffer(GL_COLOR_ATTACHMENT0);
+
+	// Verify that the FBO is correct
+	GLenum Status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
+	if (Status != GL_FRAMEBUFFER_COMPLETE) {
+		printf("FB error, status: 0x%x\n", Status);
+	}
+
+	// Restore the default framebuffer
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+
+
 }
 
 void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)

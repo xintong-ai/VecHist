@@ -239,6 +239,7 @@ public:
 	void UpdateTexture() { m_textureCubeManager->UpdateTexture(application); }
 	void UpdateBlock();
 	void initiateEntropyQuery(double threshold);
+	void adjustPickingTextureForResize(int width, int height);
 
 
 public slots:
