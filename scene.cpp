@@ -1768,6 +1768,18 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
         return;
 
 	if (event->button() == Qt::LeftButton) {
+		//QPoint mousePosition = event->
+		//QPoint mousePosition = ((QMouseEvent*)event)->pos();
+		QPointF mousePosition = ((QGraphicsSceneMouseEvent*)event)->scenePos();
+		int x = mousePosition.x();
+		int y = mousePosition.y();
+		
+		GLfloat dataRecord[3];
+		glReadPixels(x, y, 1, 1, GL_RGB, GL_FLOAT, dataRecord);
+
+		cout << "Click was registered.  X: " << x << " Y: " << y << " Index received: " << dataRecord[0] << ", " << dataRecord[1] << ", " << dataRecord[2] << ", " << dataRecord[3] << ", " << endl;
+
+
         m_trackBalls[0].push(pixelPosToViewPos(event->scenePos()), m_trackBalls[0].rotation().conjugate());
         event->accept();
     }
