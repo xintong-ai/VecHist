@@ -997,6 +997,49 @@ void Scene::initGL()
     //    m_programs << new QGLShaderProgram;
 
     m_renderOptions->emitParameterChanged();
+
+	/////////////////////////////////
+	//From http://ogldev.atspace.co.uk/www/tutorial29/tutorial29.html
+	//GNU License
+	/////////////////////////////////
+	// Create the FBO
+	glGenFramebuffers(1, &m_fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+
+	// Create the texture object for the primitive information buffer
+	glGenTextures(1, &m_pickingTexture);
+	glBindTexture(GL_TEXTURE_2D, m_pickingTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, m_width, m_height,
+		0, GL_RGB, GL_FLOAT, NULL);
+	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+		m_pickingTexture, 0);
+
+	// Create the texture object for the depth buffer
+	glGenTextures(1, &m_depthTexture);
+	glBindTexture(GL_TEXTURE_2D, m_depthTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, m_width, m_height,
+		0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
+		m_depthTexture, 0);
+
+	// Disable reading to avoid problems with older GPUs
+	glReadBuffer(GL_NONE);
+
+	glDrawBuffer(GL_COLOR_ATTACHMENT0);
+
+	// Verify that the FBO is correct
+	GLenum Status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
+	if (Status != GL_FRAMEBUFFER_COMPLETE) {
+		printf("FB error, status: 0x%x\n", Status);
+	}
+
+	// Restore the default framebuffer
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	//return GLCheckError();
+	////////////////////////////////////////////////
 }
 
 static void loadMatrix(const QMatrix4x4& m)
@@ -1262,7 +1305,6 @@ void Scene::render3D(const QMatrix4x4 &view)
 	int nx, ny, nz;
 	dataManager->GetVolumeSize(nx, ny, nz);
 	int dataDim[3] = { nx, ny, nz };
-	//copyDataDim(dataDim, sizeof(int3));
 
 	int qx, qy, qz;
 	int qnx, qny, qnz;
@@ -1286,24 +1328,14 @@ void Scene::render3D(const QMatrix4x4 &view)
 		mv[12], mv[13], mv[14], mv[15]);
 	qModelview = qModelview.transposed();
 
-	//glPushMatrix();
-
 	float s = 1.0f / maxdim;
 	glScalef(s, s, s);
-	//glTranslatef(m_translate[0], m_translate[1], m_translate[2]);
 	glTranslatef(-(nx - 1) * 0.5, -(ny - 1) * 0.5, -(nz - 1)* 0.5);
 
-	/****** Volume rendering ******/
-	//displayVolume();
-
-	///***** Draw sphere ****/
-	//if (glActiveTexture) {
-	//	glActiveTexture(GL_TEXTURE0);
-	//	m_environment->bind();
-	//}
+	int dim[3];
+	int start[3];
 
 	//Regular SuperQuadric Rendering
-	/*
 	m_programs["distribution"]->bind();
 //	m_programs["distribution"]->setUniformValue("tex", GLint(0));
 	m_programs["distribution"]->setUniformValue("env", GLint(0));
@@ -1326,61 +1358,49 @@ void Scene::render3D(const QMatrix4x4 &view)
 	m_programs["distribution"]->setUniformValueArray("cm", colmap, 33);
 	//NewColor Newlight over
 	//m_programs["distribution"]->setUniformValue("view", qModelview);
-	*/
+	
+	for (int i = 0; i < m_textureCubeManager->getLeafNodes().size(); i++)	{
+		GLTextureCube* tex = m_textureCubeManager->getBlockTex()[i];
+		auto nd = m_textureCubeManager->getLeafNodes()[i];
+
+		nd->GetDim(dim);
+		nd->GetStart(start);
+		glPushMatrix();
+		glTranslatef(
+			dim[0] / 2 + start[0],
+			dim[1] / 2 + start[1],
+			dim[2] / 2 + start[2]);
+		float min_dim = min(min(dim[0], dim[1]), dim[2]);
+		glScalef(min_dim, min_dim, min_dim);
+
+		tex->bind();
+
+		if (nd->GetVisible()) {
+			//TODO: Put back
+			nd->GetGlyph()->draw();
+		}
+
+		tex->unbind();
+
+		glPopMatrix();
+
+	}
+		
+	m_programs["distribution"]->release();
 
 	//Picking for Superquadrics
 	m_programs["picking"]->bind();
-	
-	
-#if 0
-	//draw sphere by the side
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_FRONT);
-	glPushMatrix();
-	loadMatrix(view);
-	//glLoadIdentity();
-	glTranslatef(0.3, -0.25, 0.2);
-	glColor3f(1.0f, 1.0f, 1.0f);
-	glScalef(0.2, 0.2, 0.2);
-	glMultMatrixf(m.constData());
-	m_vecWidget->draw();
-	glPopMatrix();
-	glCullFace(GL_BACK);
 
-	glPushMatrix();
-	loadMatrix(view);
-	//glLoadIdentity();
-	glTranslatef(-0.3, -0.25, 0.2);
-	glColor3f(1.0f, 1.0f, 1.0f);
-	glScalef(0.2, 0.2, 0.2);
-	glMultMatrixf(m.constData());
-	m_vecWidget->draw();
-	glPopMatrix();
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_fbo);
 
-	glDisable(GL_CULL_FACE);
-	//draw sphere at the queried region
-	glPushMatrix();
-	glTranslatef(qnx / 2 + qx, qny / 2 + qy, qnz / 2 + qz);
-	glScalef(minqsize, minqsize, minqsize);
-	m_vecWidget->draw();
-	glPopMatrix();
-#endif
-	//glPolygonMode(GL_FRONT, GL_LINE);
-	//glPolygonMode(GL_BACK, GL_LINE);
+	glClearColor(-1, -1, -1, -1);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
-	//if (glActiveTexture) {
-	//	m_environment->unbind();
-	//}
-
-	int dim[3];
-	int start[3];
 	AbstractNode* selectedNode = nullptr;
 	for (int i = 0; i < m_textureCubeManager->getLeafNodes().size(); i++)	{
 		GLTextureCube* tex = m_textureCubeManager->getBlockTex()[i];
 		auto nd = m_textureCubeManager->getLeafNodes()[i];
 
-		//GLint indexValue = 1;
 		m_programs["picking"]->setUniformValue("drawIndex", i);
 
 		nd->GetDim(dim);
@@ -1392,10 +1412,6 @@ void Scene::render3D(const QMatrix4x4 &view)
 			dim[2] / 2 + start[2]);
 		float min_dim = min(min(dim[0], dim[1]), dim[2]);
 		glScalef(min_dim, min_dim, min_dim);
-		//Scale the size of glyphs
-		//glScalef(0.5, 0.5, 0.5);
-
-
 
 		tex->bind();
 		
@@ -1406,36 +1422,22 @@ void Scene::render3D(const QMatrix4x4 &view)
 			///////////////RenderBox(view, dim[0], dim[1], dim[2], start[0], start[1], start[2]);
 		}
 		
-		//m_vecWidget->draw();
-		//m_superWidget->draw();
 		if (nd->GetVisible()) {
 			nd->GetGlyph()->draw();
 		}
 		
 		tex->unbind();
 
-		
-
 		glPopMatrix();
 
-		//draw the links
-		//for (int j = 0; j < 6; j++)	{
-		//	if (nd->flux[j] > 0)	{
-		//		float3 c1 = make_float3(
-		//			nd->start[0] + nd->dim[0] * 0.5, 
-		//			nd->start[1] + nd->dim[1] * 0.5, 
-		//			nd->start[2] + nd->dim[2] * 0.5);
-		//		float3 c2 = make_float3(
-		//			nd->neighbor[j]->start[0] + nd->neighbor[j]->dim[0] * 0.5,
-		//			nd->neighbor[j]->start[1] + nd->neighbor[j]->dim[1] * 0.5,
-		//			nd->neighbor[j]->start[2] + nd->neighbor[j]->dim[2] * 0.5);
-		//		//renderCylinder_convenient(c1.x, c1.y, c1.z, c2.x, c2.y, c2.z, 0.1 * log2( nd->flux[j]), 16);
-		//		renderCone_convenient(c1.x, c1.y, c1.z, c2.x, c2.y, c2.z, 0.2 * log2( nd->flux[j]), 16);
-		//	}
-		//}
 	}
-	//m_programs["distribution"]->release();
+	
 	m_programs["picking"]->release();
+		
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+
+	//Restore old clear color
+	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 
 	//Render all selection box(es)
 	//Note: these are done after the shader program is no longer needed in order to prevent color conflicts
@@ -1465,167 +1467,24 @@ void Scene::render3D(const QMatrix4x4 &view)
 
 	}
 
-	/*
-	if (nullptr != selectedNode)	{
-		glPushAttrib(GL_LINE_BIT | GL_CURRENT_BIT);
-		glColor3f(1.0f, 1.0f, 0.0f); //Currently has no effect
-		glLineWidth(6);
-		selectedNode->GetStart(start);
-		selectedNode->GetDim(dim);
-		//renderSelectionBox(view);
-		glPushMatrix();
-		//glTranslatef(
-		//	dim[0] / 2 + start[0],
-		//	dim[1] / 2 + start[1],
-		//	dim[2] / 2 + start[2]);
-		//float min_dim = min(min(dim[0], dim[1]), dim[2]);
-		//glScalef(min_dim, min_dim, min_dim);
-		//RenderBox(view, start[0], start[1], start[2], dim[0], dim[1], dim[2]);
-		glTranslatef(
-			dim[0] / 2 + start[0],
-			dim[1] / 2 + start[1],
-			dim[2] / 2 + start[2]);
-		float min_dim = min(min(dim[0], dim[1]), dim[2]);
-		glScalef(min_dim, min_dim, min_dim);
-
-		RenderBox(view, dim[0], dim[1], dim[2], start[0], start[1], start[2]);
-		glPopMatrix();
-		glPopAttrib();
-	}
-
-	*/
-
-//	m_programs["sphere_brush"]->bind();
-//	/********Draw for picking******/
-//	//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_fbo);
-////	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//	//draw sphere at the queried region
-//	glPushMatrix();
-//	glTranslatef(qnx / 2 + qx, qny / 2 + qy, qnz / 2 + qz);
-//	glScalef(minqsize, minqsize, minqsize);
-//	//this following line has to be called
-//	m_vecWidget->draw();
-//	glPopMatrix();
-//
-//	//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-//	/********end******/
-//	m_programs["sphere_brush"]->release();
-
-	/*
-	glLineWidth(8.0f);
-	float axis_len = 32;
-	glColor3f(1.0f, 0.0f, 0.0f);
-	glBegin(GL_LINES);
-	glVertex3f(0.0f, 0.0f, 0.0f);
-	glVertex3f(1.0f * axis_len, 0.0f, 0.0f);
-	glEnd();
-
-	glColor3f(0.0f, 1.0f, 0.0f);
-	glBegin(GL_LINES);
-	glVertex3f(0.0f, 0.0f, 0.0f);
-	glVertex3f(0.0f, 2.0f * axis_len, 0.0f);
-	glEnd();
-
-	glColor3f(0.0f, 0.0f, 1.0f);
-	glBegin(GL_LINES);
-	glVertex3f(0.0f, 0.0f, 0.0f);
-	glVertex3f(0.0f, 0.0f, 3.0f * axis_len);
-	glEnd();
-	glLineWidth(1.0f);
-	*/
-
-	//draw streamlines
-	//glUseProgram(0);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	vector<vector<float4>> lines = dataManager->GetStreamlines();
 	//TODO: figure out why I have to put the following line
 	for (auto line : lines)
 	{
 		// activate and specify pointer to vertex array
-		//glEnableClientState(GL_COLOR_ARRAY);
 		glEnableClientState(GL_VERTEX_ARRAY);
 
-		//glColorPointer(3, GL_FLOAT, line.size() * sizeof(float3), &colorMap[0]);
 		glVertexPointer(4, GL_FLOAT, 0, &(line[0].x));
 
 		// draw a cube
-		//TODO: uncomment
 		glDrawArrays(GL_LINE_STRIP, 0, line.size());
 
 		// deactivate vertex arrays after drawing
 		glDisableClientState(GL_VERTEX_ARRAY);
-		//glDisableClientState(GL_COLOR_ARRAY);
 	}
 
-	//glColor4f(1.0f, 0.0f, 0.0f, 1.0f);
-	//vector<vector<float4>> linesInCube = dataManager->GetStreamlinesInCube();
-	//for (auto line : linesInCube)
-	//{
-	//	// activate and specify pointer to vertex array
-	//	//glEnableClientState(GL_COLOR_ARRAY);
-	//	glEnableClientState(GL_VERTEX_ARRAY);
-
-	//	//glColorPointer(3, GL_FLOAT, line.size() * sizeof(float3), &colorMap[0]);
-	//	glVertexPointer(4, GL_FLOAT, 0, &line[0]);
-
-	//	// draw a cube
-	//	glDrawArrays(GL_LINE_STRIP, 0, line.size());
-
-	//	// deactivate vertex arrays after drawing
-	//	glDisableClientState(GL_VERTEX_ARRAY);
-	//	//glDisableClientState(GL_COLOR_ARRAY);
-	//}
-
-//	/**********draw plane********/
-////	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-//	/***** Draw sphere ****/
-//	m_programs["cut_plane"]->bind();
-//	if (glActiveTexture) {
-//		glActiveTexture(GL_TEXTURE0);
-//		m_vec3DTex->bind();
-//	}
-//	m_programs["cut_plane"]->setUniformValue("tex", GLint(0));
-//	m_programs["cut_plane"]->setUniformValue("data_dim", GLfloat(nx), GLfloat(ny), GLfloat(nz));
-//
-//	for (CutPlane p : cutplanes){
-//		//glDrawArrays(GL_TRIANGLE_FAN, 0, );
-//		vector<float3> vs = p.vertices;
-//		QVector3D plane_normal(p.normal.x, p.normal.y, p.normal.z);
-//
-//		m_programs["cut_plane"]->setUniformValue("plane_normal",
-//			GLfloat(plane_normal.x()), GLfloat(plane_normal.y()), GLfloat(plane_normal.z()));
-//
-//		glBegin(GL_TRIANGLE_FAN);
-//
-////	glUniform1fv(glGetUniformLocation(program, "v"), 10, v);
-//		for (auto v : vs)
-//			glVertex3fv(&v.x);
-//		glEnd();
-//	}
-//	if (glActiveTexture) {
-//		m_vec3DTex->unbind();
-//	}
-//	m_programs["cut_plane"]->release();
-//	//	glPolygonMode(GL_FRONT, GL_FILL);
-
-
-	//renderQCube(view);
 	renderBBox(view);
-	
-
-	//glPopMatrix();
-
-	//glPushMatrix();
-	//glScalef(0.5, 0.5, 0.5);
-	//glTranslatef(-1, -1, -1);
-
-	//m_vecWidget->draw();
-	//glPopMatrix();
-
-
-
-	//glPopAttrib();
-
 }
 
 void Scene::setStates()
@@ -1768,17 +1627,32 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
         return;
 
 	if (event->button() == Qt::LeftButton) {
-		//QPoint mousePosition = event->
-		//QPoint mousePosition = ((QMouseEvent*)event)->pos();
+		
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo);
+		glReadBuffer(GL_COLOR_ATTACHMENT0);
+
 		QPointF mousePosition = ((QGraphicsSceneMouseEvent*)event)->scenePos();
 		int x = mousePosition.x();
-		int y = mousePosition.y();
+		int y = m_height - mousePosition.y();
 		
 		GLfloat dataRecord[3];
 		glReadPixels(x, y, 1, 1, GL_RGB, GL_FLOAT, dataRecord);
 
 		cout << "Click was registered.  X: " << x << " Y: " << y << " Index received: " << dataRecord[0] << ", " << dataRecord[1] << ", " << dataRecord[2] << ", " << dataRecord[3] << ", " << endl;
 
+		int objectId = int(dataRecord[0]);
+		cout << "Object id: " << objectId;
+
+		if (objectId >= 0 && objectId < m_textureCubeManager->getLeafNodes().size()) {
+
+			auto nd = m_textureCubeManager->getLeafNodes()[objectId];
+
+			nd->SetSelected(!nd->GetSelected());
+		}
+		
+
+		glReadBuffer(GL_NONE);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 
         m_trackBalls[0].push(pixelPosToViewPos(event->scenePos()), m_trackBalls[0].rotation().conjugate());
         event->accept();

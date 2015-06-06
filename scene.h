@@ -366,6 +366,14 @@ private:
 
 	double sliderMinValue = 0;
 	double sliderMaxValue = 0;
+
+	//Declarations From http://ogldev.atspace.co.uk/www/tutorial29/tutorial29.html
+	//GNU License
+	////////////////////////////////////////
+	GLuint m_fbo;
+	GLuint m_pickingTexture;
+	GLuint m_depthTexture;
+	////////////////////////////////////////
 };
 
 #endif
