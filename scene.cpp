@@ -1699,10 +1699,10 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 		GLfloat dataRecord[3];
 		glReadPixels(x, y, 1, 1, GL_RGB, GL_FLOAT, dataRecord);
 
-		//cout << "Click was registered.  X: " << x << " Y: " << y << " Index received: " << dataRecord[0] << ", " << dataRecord[1] << ", " << dataRecord[2] << ", " << dataRecord[3] << ", " << endl;
+		cout << "Click was registered.  X: " << x << " Y: " << y << " Index received: " << dataRecord[0] << ", " << dataRecord[1] << ", " << dataRecord[2] << ", " << dataRecord[3] << ", " << endl;
 
 		int objectId = int(dataRecord[0]);
-		//cout << "Object id: " << objectId;
+		cout << "Object id: " << objectId;
 
 		if (objectId >= 0 && objectId < m_textureCubeManager->getLeafNodes().size()) {
 
@@ -1722,6 +1722,9 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
     }
 	else if (event->button() == Qt::RightButton)	{
 		if (application == 1) { //Splits are only supported for entropy data
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo);
+			glReadBuffer(GL_COLOR_ATTACHMENT0);
+
 			QPointF mousePosition = ((QGraphicsSceneMouseEvent*)event)->scenePos();
 			int x = mousePosition.x();
 			int y = m_height - mousePosition.y();
@@ -1729,10 +1732,10 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 			GLfloat dataRecord[3];
 			glReadPixels(x, y, 1, 1, GL_RGB, GL_FLOAT, dataRecord);
 
-			//cout << "Click was registered.  X: " << x << " Y: " << y << " Index received: " << dataRecord[0] << ", " << dataRecord[1] << ", " << dataRecord[2] << ", " << dataRecord[3] << ", " << endl;
+			cout << "Click was registered.  X: " << x << " Y: " << y << " Index received: " << dataRecord[0] << ", " << dataRecord[1] << ", " << dataRecord[2] << ", " << dataRecord[3] << ", " << endl;
 
 			int objectId = int(dataRecord[0]);
-			//cout << "Object id: " << objectId;
+			cout << "Object id: " << objectId;
 
 			if (objectId >= 0 && objectId < m_textureCubeManager->getLeafNodes().size()) {
 
@@ -1744,6 +1747,9 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 				m_textureCubeManager->UpdateTexture(1);
 
 			}
+
+			glReadBuffer(GL_NONE);
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 		}
 
 
