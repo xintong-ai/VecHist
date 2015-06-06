@@ -41,6 +41,11 @@ TreeMapWindow::TreeMapWindow(DataManager * dataManager)
 	mainLayout->setContentsMargins(0, 0, 0, 0);
 	setLayout(mainLayout);
 
+	QPalette myPalette(palette());
+	myPalette.setColor(QPalette::Background, QColor(255, 255, 255, 255));
+	setPalette(myPalette);
+	setAutoFillBackground(true);
+
 	//resize(sizeHint() * 10);
 
 	// user clicked on a cell in the plot

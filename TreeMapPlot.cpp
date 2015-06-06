@@ -228,7 +228,7 @@ void TreeMapPlot::paintEvent(QPaintEvent *)
 	// Init paint settings
 	QPainter painter(this);
 
-	QColor color = QColor(0, 0, 255, 255);
+	QColor color = QColor(255, 255, 255, 255);
 	QPen pen(color);
 	pen.setWidth(10); // root
 	QBrush brush(color);
@@ -267,7 +267,7 @@ void TreeMapPlot::paintChildren(TreeMap * parent, QPainter & painter, QBrush & b
 	QBrush hbrush(hcolor);
 
 	QPen selectedPen;
-	selectedPen.setColor(Qt::yellow);
+	selectedPen.setColor(Qt::magenta);
 	selectedPen.setWidth(5);
 
 	textPen.setColor(Qt::darkMagenta);

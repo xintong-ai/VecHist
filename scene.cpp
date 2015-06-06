@@ -730,6 +730,12 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		scrollArea->setWidget(treeMapWindow);
 		scrollArea->move(20, 120);
 		scrollArea->resize(900, 800);
+
+		QPalette myPalette(palette());
+		myPalette.setColor(QPalette::Background, QColor(255, 255, 255, 255));
+		scrollArea->setPalette(myPalette);
+		scrollArea->setAutoFillBackground(true);
+
 		treeMapWindow->setScrollArea(scrollArea);
 		treeMapWindow->zoom(0.1, 0, 0);
 
