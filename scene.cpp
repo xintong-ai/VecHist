@@ -1605,7 +1605,7 @@ void Scene::adjustPickingTextureForResize(int width, int height)
 	m_width = width;
 	m_height = height;
 
-	//cout << "Resize eventg received" << endl;
+	//cout << "Resize event received" << endl;
 	//cout << "Width: " << width << " Height: " << height << endl;
 
 	if (m_fbo) {
@@ -1699,16 +1699,18 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 		GLfloat dataRecord[3];
 		glReadPixels(x, y, 1, 1, GL_RGB, GL_FLOAT, dataRecord);
 
-		cout << "Click was registered.  X: " << x << " Y: " << y << " Index received: " << dataRecord[0] << ", " << dataRecord[1] << ", " << dataRecord[2] << ", " << dataRecord[3] << ", " << endl;
+		//cout << "Click was registered.  X: " << x << " Y: " << y << " Index received: " << dataRecord[0] << ", " << dataRecord[1] << ", " << dataRecord[2] << ", " << dataRecord[3] << ", " << endl;
 
 		int objectId = int(dataRecord[0]);
-		cout << "Object id: " << objectId;
+		//cout << "Object id: " << objectId;
 
 		if (objectId >= 0 && objectId < m_textureCubeManager->getLeafNodes().size()) {
 
 			auto nd = m_textureCubeManager->getLeafNodes()[objectId];
 
 			nd->SetSelected(!nd->GetSelected());
+			nd->GetGraphNode()->update();
+			treeMapWindow->update();
 		}
 		
 
