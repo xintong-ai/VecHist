@@ -1721,23 +1721,32 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
         event->accept();
     }
 	else if (event->button() == Qt::RightButton)	{
-		//float3 b = ReadPixel(event->scenePos().x(), event->scenePos().y());
-		////int3 dim = dataManager->GetVolumeDim();
-		////The boundary is from 0 to (dim - 1)
-		//int qx, qy, qz;
-		//int qnx, qny, qnz;
-		//dataManager->GetQCube(qx, qy, qz, qnx, qny, qnz);
+		if (application == 1) { //Splits are only supported for entropy data
+			QPointF mousePosition = ((QGraphicsSceneMouseEvent*)event)->scenePos();
+			int x = mousePosition.x();
+			int y = m_height - mousePosition.y();
 
-		//float3 aabb_min = make_float3(qx, qy, qz);
-		//float3 aabb_max = make_float3(qx + qnx - 1, qy + qny - 1, qz + qnz - 1);
-		//float3 normal = make_float3(b.x * 2 - 1, b.y * 2 - 1, b.z * 2 - 1);
-		//CutPlane cp(normal, dataManager->GetQCubeCenter(), aabb_min, aabb_max);
+			GLfloat dataRecord[3];
+			glReadPixels(x, y, 1, 1, GL_RGB, GL_FLOAT, dataRecord);
 
-		//if (cutplanes.size() == 0)
-		//	cutplanes.push_back(cp);
-		//else
-		//	cutplanes.back() = cp;
-		//cout << "(" << normal.x << "," << normal.y << "," << normal.z << endl;
+			//cout << "Click was registered.  X: " << x << " Y: " << y << " Index received: " << dataRecord[0] << ", " << dataRecord[1] << ", " << dataRecord[2] << ", " << dataRecord[3] << ", " << endl;
+
+			int objectId = int(dataRecord[0]);
+			//cout << "Object id: " << objectId;
+
+			if (objectId >= 0 && objectId < m_textureCubeManager->getLeafNodes().size()) {
+
+				auto nd = m_textureCubeManager->getLeafNodes()[objectId];
+
+				((DataMgrVect*)dataManager)->splitSuperQuadric((NodeBi*)nd);
+				m_graphWidget->rebuildGraphFromTree((NodeBi*)dataManager->getRootNode());
+				treeMapWindow->refreshPlot((NodeBi*)dataManager->getRootNode());
+				m_textureCubeManager->UpdateTexture(1);
+
+			}
+		}
+
+
 	}
 }
 
