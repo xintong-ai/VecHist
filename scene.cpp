@@ -653,8 +653,6 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		sliderWidget.resize(50, 800);
 		sliderWidget.setFixedSize(50, 800);  //This might be replaced with code for a resize event later
 		
-		double minEntropy = ((DataMgrVect *)dataManager)->getMinEntropy();
-		double maxEntropy = ((DataMgrVect *)dataManager)->getMaxEntropy();
 		sliderMinValue = 8.0;
 		sliderMaxValue = 10.0;
 

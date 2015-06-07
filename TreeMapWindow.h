@@ -62,10 +62,12 @@ class TreeMapWindow : public QFrame
 		void cellClicked(QString, QString); // cell clicked
 
 	private:
-		QVBoxLayout *mainLayout;
+		QHBoxLayout *mainLayout;
 		TreeMapPlot *ltmPlot;
 		QScrollArea * scrollArea = nullptr;
 		DataManager * dataManager = nullptr;
+		QWidget * placeholder = nullptr;
+		QWidget * colorBar = nullptr;
 };
 
 #endif // _GC_TreeMapWindow_h
