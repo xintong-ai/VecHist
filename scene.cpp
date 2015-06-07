@@ -1739,7 +1739,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
 			nd->SetSelected(!nd->GetSelected());
 			nd->GetGraphNode()->update();
-			treeMapWindow->update();
+			treeMapWindow->updateChildren();
 		}
 		
 

@@ -71,6 +71,8 @@ class TreeMapWindow : public QFrame
 		void setScrollArea(MyScrollArea * scrollArea) { this->scrollArea = scrollArea; }
 		virtual void resizeEvent(QResizeEvent *) Q_DECL_OVERRIDE;
 
+		void updateChildren();
+
 	public slots:
 
 		void cellClicked(QString, QString); // cell clicked

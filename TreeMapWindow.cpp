@@ -221,4 +221,8 @@ void TreeMapWindow::resizeEvent(QResizeEvent * event)
 	colorBar->setAutoFillBackground(true);
 }
 
+void TreeMapWindow::updateChildren()
+{
+	ltmPlot->update();
+}
 

@@ -224,7 +224,7 @@ void Widget::Node::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
 	NodeBi * nodeBiPtr = getNodeBiPtr();
 	double entropyValue = nodeBiPtr->GetEntropy();
-	nodeBiPtr->getTreeMapWindow()->update();
+	nodeBiPtr->getTreeMapWindow()->updateChildren();
 	setToolTip(QString("Entropy: ") + QString::number(entropyValue));
 	cout << "Entropy of Node: " << entropyValue << endl;
 	cout << "Name of Node: " << name << endl;
