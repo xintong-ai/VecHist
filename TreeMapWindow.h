@@ -63,8 +63,9 @@ class TreeMapWindow : public QFrame
 
 	private:
 		QHBoxLayout *mainLayout;
-		TreeMapPlot *ltmPlot;
 		QScrollArea * scrollArea = nullptr;
+		TreeMapPlot *ltmPlot;
+		//QScrollArea * scrollArea = nullptr;
 		DataManager * dataManager = nullptr;
 		QWidget * placeholder = nullptr;
 		QWidget * colorBar = nullptr;

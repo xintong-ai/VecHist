@@ -1,3 +1,4 @@
+//This is the hacked up version
 /*
  * Copyright (c) 2010 Mark Liversedge (liversedge@gmail.com)
  *
@@ -33,9 +34,14 @@
 TreeMapWindow::TreeMapWindow(DataManager * dataManager)
 {
 	this->dataManager = dataManager;
+
+	scrollArea = new QScrollArea;
+	
+
 	// the plot
 	mainLayout = new QHBoxLayout;  //Lines widgets up vertically
 	ltmPlot = new TreeMapPlot(this, dataManager);
+	scrollArea->setWidget(ltmPlot);
 
 	QWidget * placeholder = new QWidget();
 	QWidget * colorBar = new QWidget();
@@ -89,8 +95,7 @@ TreeMapWindow::TreeMapWindow(DataManager * dataManager)
 	colorBar->setAutoFillBackground(true);
 
 	// user clicked on a cell in the plot
-	connect(ltmPlot, SIGNAL(clicked(QString, QString)), this, SLOT(cellClicked(QString, QString)));
-    
+	connect(ltmPlot, SIGNAL(clicked(QString, QString)), this, SLOT(cellClicked(QString, QString)));    
 }
 
 TreeMapWindow::~TreeMapWindow()
@@ -182,9 +187,10 @@ void TreeMapWindow::zoom(double factor, int x, int y)
 	int width = this->width();
 	int height = this->height();
 
-	setFixedSize(width * factor, height*factor);
+	//setFixedSize(width * factor, height*factor);
+	//resize(width * factor, height*factor);
 
-	scrollArea->ensureVisible(x * factor, y * factor);
+	//scrollArea->ensureVisible(x * factor, y * factor);
 
 }
 #endif

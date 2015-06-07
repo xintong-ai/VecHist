@@ -1,4 +1,5 @@
-﻿/****************************************************************************
+﻿//This is the hacked up version
+/****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
@@ -715,17 +716,20 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
 	if (1 == application) {
 		treeMapWindow = new TreeMapWindow(dataManager);
-		treeMapWindow->move(20, 30);
-		treeMapWindow->resize(8000, 8000);
+		//treeMapWindow->move(20, 30);
+		treeMapWindow->move(500, 500);
+		//treeMapWindow->resize(8000, 8000);
+		treeMapWindow->resize(500, 500);
 		treeMapWindow->refreshPlot((NodeBi*)dataManager->getRootNode());
 
 		m_graphWidget = new GraphWidget(dataManager, treeMapWindow, m_textureCubeManager);
 		m_graphWidget->move(20, 30);
 		//m_graphWidget->resize(m_graphWidget->sizeHint());
-		m_graphWidget->resize(1000, 1000);
+		//m_graphWidget->resize(1000, 1000);
+		m_graphWidget->setFixedSize(1000, 1000);
 
 		scrollArea = new QScrollArea;
-		scrollArea->setWidget(treeMapWindow);
+		//scrollArea->setWidget(treeMapWindow);
 		scrollArea->move(20, 120);
 		scrollArea->resize(900, 800);
 
@@ -734,7 +738,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		scrollArea->setPalette(myPalette);
 		scrollArea->setAutoFillBackground(true);
 
-		treeMapWindow->setScrollArea(scrollArea);
+		//treeMapWindow->setScrollArea(scrollArea);
 		treeMapWindow->zoom(0.1, 0, 0);
 
 		////////////////////////m_graphWidget->getTreeStats((NodeBi*)dataManager->getRootNode(), 0, 0);
@@ -826,9 +830,9 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		connect(&slider, SIGNAL(valueChanged(int)), SLOT(sliderSelection(int)));
 
 		
-		twoSided->setWidget(0, scrollArea);
+		//twoSided->setWidget(0, scrollArea);
+		twoSided->setWidget(0, treeMapWindow);
 		twoSided->setWidget(1, m_graphWidget);
-		//twoSided->setWidget(0, treeMapWindow);
 		//twoSided->setWidget(1, m_renderOptions);
 		twoSided->setWidget(2, &sliderWidget);
 		
