@@ -313,7 +313,7 @@ private:
 	TreeMapWindow * treeMapWindow;
 	GraphWidget * m_graphWidget;
 	QJsonView * m_jsonView;
-	QScrollArea * scrollArea;
+	QScrollArea * scrollArea = nullptr;
 	QListWidget * m_listWidget;
 	QWidget sliderWidget;
 	//GraphVizWidget * m_graphVizWidget;
