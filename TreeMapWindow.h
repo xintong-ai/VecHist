@@ -41,6 +41,19 @@ class DataManager;
 
 
 class TreeMapPlot;
+
+class MyScrollArea : public QScrollArea
+{
+private:
+public:
+	void wheelEvent(QWheelEvent *event)
+	{
+		if (event->type() == QEvent::Wheel) {
+			event->ignore();
+		}
+	}
+};
+
 class TreeMapWindow : public QFrame
 {
     Q_OBJECT
@@ -55,17 +68,23 @@ class TreeMapWindow : public QFrame
 		#endif
 		void zoom(double factor, int x, int y);
 
-		void setScrollArea(QScrollArea * scrollArea) { this->scrollArea = scrollArea; }
+		void setScrollArea(MyScrollArea * scrollArea) { this->scrollArea = scrollArea; }
+		virtual void resizeEvent(QResizeEvent *) Q_DECL_OVERRIDE;
+
+		void updateChildren();
 
 	public slots:
 
 		void cellClicked(QString, QString); // cell clicked
 
 	private:
-		QVBoxLayout *mainLayout;
+		QHBoxLayout *mainLayout;
+		MyScrollArea * scrollArea = nullptr;
 		TreeMapPlot *ltmPlot;
-		QScrollArea * scrollArea = nullptr;
+		//QScrollArea * scrollArea = nullptr;
 		DataManager * dataManager = nullptr;
+		QWidget * placeholder = nullptr;
+		QFrame * colorBar = nullptr;
 };
 
 #endif // _GC_TreeMapWindow_h
