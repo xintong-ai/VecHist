@@ -12,4 +12,5 @@ string colormap C:/XinCode/VecHist/resources/colormap.bin
 string halosuffix 000_haloEigen.bin
 string datatype flow
 string starttimestep 18
+string useTreeMapLabels 0
 

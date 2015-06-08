@@ -60,7 +60,7 @@ class TreeMapWindow : public QFrame
 
     public:
 
-		TreeMapWindow(DataManager * dataManager);
+		TreeMapWindow(DataManager * dataManager, bool useTreeMapLabels);
         ~TreeMapWindow();
 		void refreshPlot(NodeBi * root);
 		#ifndef QT_NO_WHEELEVENT

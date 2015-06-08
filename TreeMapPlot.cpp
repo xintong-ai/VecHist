@@ -35,10 +35,11 @@ bool TreeMapLessThan(const TreeMap *a, const TreeMap *b) {
 
 //Constructor
 //Parameter parent - the TreeMapWindow object to which the tree map belongs
-TreeMapPlot::TreeMapPlot(TreeMapWindow *parent, DataManager * dataManager)
+TreeMapPlot::TreeMapPlot(TreeMapWindow *parent, DataManager * dataManager, bool showLabel)
 	: QWidget(parent), parent(parent)
 {
 	this->dataManager = dataManager;
+	this->showLabel = showLabel;
 	root = new TreeMap;
 	setMouseTracking(true);
 	installEventFilter(this);

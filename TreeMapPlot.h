@@ -385,7 +385,7 @@ class TreeMapPlot : public QWidget
 
 
     public:
-		TreeMapPlot(TreeMapWindow *, DataManager * dataManager);
+		TreeMapPlot(TreeMapWindow *, DataManager * dataManager, bool showLabel);
         ~TreeMapPlot();
 		void setData(NodeBi * rootBi);
 		void buildTree();

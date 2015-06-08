@@ -31,7 +31,7 @@
 #include <iostream>
 
 
-TreeMapWindow::TreeMapWindow(DataManager * dataManager)
+TreeMapWindow::TreeMapWindow(DataManager * dataManager, bool useTreeMapLabels)
 {
 	this->dataManager = dataManager;
 
@@ -40,7 +40,7 @@ TreeMapWindow::TreeMapWindow(DataManager * dataManager)
 
 	// the plot
 	mainLayout = new QHBoxLayout;  //Lines widgets up vertically
-	ltmPlot = new TreeMapPlot(this, dataManager);
+	ltmPlot = new TreeMapPlot(this, dataManager, useTreeMapLabels);
 	ltmPlot->resize(800, 800);
 	scrollArea->setWidget(ltmPlot);
 	scrollArea->setFrameStyle(QFrame::NoFrame);

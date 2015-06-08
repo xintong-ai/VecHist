@@ -715,7 +715,16 @@ Scene::Scene(int width, int height, int maxTextureSize)
     m_renderOptions->resize(m_renderOptions->sizeHint());
 
 	if (1 == application) {
-		treeMapWindow = new TreeMapWindow(dataManager);
+		string useTreeMapLabelsStr = dataManager->GetStringVal("useTreeMapLabels");
+		bool useTreeMapLabels = false;
+		if (useTreeMapLabelsStr == "0") {
+			useTreeMapLabels = false;
+		}
+		else {
+			useTreeMapLabels = true;
+		}
+
+		treeMapWindow = new TreeMapWindow(dataManager, useTreeMapLabels);
 		//treeMapWindow->move(20, 30);
 		treeMapWindow->move(500, 500);
 		//treeMapWindow->resize(8000, 8000);
