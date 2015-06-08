@@ -52,15 +52,17 @@ TreeMapWindow::TreeMapWindow(DataManager * dataManager)
 	plotPolicy.setHorizontalStretch(90);
 	scrollArea->setSizePolicy(plotPolicy);
 
-	QSizePolicy placeholderPolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+	QSizePolicy placeholderPolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
 	placeholderPolicy.setHorizontalStretch(4);
 	placeholder->setSizePolicy(placeholderPolicy);
+	placeholder->setMaximumWidth(50);
 
-	QSizePolicy colorBarPolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+	QSizePolicy colorBarPolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
 	colorBarPolicy.setHorizontalStretch(6);
 	colorBar->setSizePolicy(colorBarPolicy);
 	colorBar->setFrameStyle(QFrame::Box);
-	//colorBar->setMaximumWidth(1000);
+	colorBar->setMinimumWidth(30);
+	colorBar->setMaximumWidth(50);
 
 
 	mainLayout->addWidget(scrollArea);
