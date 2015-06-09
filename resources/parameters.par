@@ -13,5 +13,5 @@ string halosuffix 000_haloEigen.bin
 string datatype flow
 string starttimestep 18
 string useTreeMapLabels 0
-string useTreeLeavesForColorMap 0
+string useTreeLeavesForColorMap 1
 
