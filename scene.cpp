@@ -715,7 +715,6 @@ Scene::Scene(int width, int height, int maxTextureSize)
     m_renderOptions->resize(m_renderOptions->sizeHint());
 
 	string useTreeLeavesForColorMapStr = dataManager->GetStringVal("useTreeLeavesForColorMap");
-	bool useTreeLeavesForColorMap = false;
 	if (useTreeLeavesForColorMapStr == "0") {
 		useTreeLeavesForColorMap = false;
 	}
@@ -892,8 +891,17 @@ void Scene::initiateEntropyQuery(double threshold)
 	}
 	((DataMgrVect *)dataManager)->queryEntropyTreeByThreshold(threshold);
 	m_textureCubeManager->UpdateTexture(application);
+
+	if (useTreeLeavesForColorMap) {
+		((DataMgrVect *)dataManager)->calculateEntropyExtremes();
+		((DataMgrVect *)dataManager)->BuildColorMap();
+
+	}
+
 	m_graphWidget->rebuildGraphFromTree((NodeBi*)dataManager->getRootNode());
 	treeMapWindow->refreshPlot((NodeBi*)dataManager->getRootNode());
+
+	
 
 }
 

@@ -384,6 +384,10 @@ private:
 	GLuint m_pickingTexture;
 	GLuint m_depthTexture;
 	////////////////////////////////////////
+
+	//TODO: Get rid of the declaration (duplicate of declaration in the GraphWidget class)
+	//We probably need to add a new AppSettings class
+	bool useTreeLeavesForColorMap = false;
 };
 
 #endif
