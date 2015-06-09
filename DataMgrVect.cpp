@@ -1246,35 +1246,54 @@ void DataMgrVect::UpdateCubeMap(float* cubemap)
 //This function calculates the min and max entropy values, storing them in class members minEntropy and maxEntropy respectively
 void DataMgrVect::calculateEntropyExtremes()
 {
+	string useTreeLeavesForColorMapStr = GetStringVal("useTreeLeavesForColorMap");
+	bool useTreeLeavesForColorMap = false;
+	if (useTreeLeavesForColorMapStr == "0") {
+		useTreeLeavesForColorMap = false;
+	}
+	else {
+		useTreeLeavesForColorMap = true;
+	}
+
 	NodeBi *rootNode = getRootNode();
-	minEntropy = maxEntropy = rootNode->GetEntropy();
 
-	calculateEntropyExtremes(rootNode);
+	//Travel to a leaf node and use this for the starting value for the min/max entropy values (until we find the true min/max)
+	//Starting with a leaf node is required if useTreeLeavesForColorMap is true, but it also works if useTreeLeavesForColorMap is false.
+	NodeBi * currentNode = nullptr;
+	for (currentNode = rootNode; currentNode != nullptr && currentNode->left != nullptr; currentNode = currentNode->left);
+	minEntropy = maxEntropy = currentNode->GetEntropy();
+	
+	calculateEntropyExtremes(rootNode, useTreeLeavesForColorMap);
 
+	//Prevent weird floating point comparison issues in entropy threshold queries
 	minEntropy -= EPSILON;
 	maxEntropy += EPSILON;
 }
 
 //This function recursively finds the min and max entropy values, storing them in class members minEntropy and maxEntropy respectively
 //It is called by calculateEntropyExtremes() above
-//Input parameters: p - the entropy tree structure
-void DataMgrVect::calculateEntropyExtremes(NodeBi *p)
+//Input parameters:
+//p - the entropy tree structure
+//useTreeLeavesForColorMap - true if only tree laves should be used for min/max entropy values.  False if any node is assessed.  Has a big impact on colormap.
+void DataMgrVect::calculateEntropyExtremes(NodeBi *p, bool useTreeLeavesForColorMap)
 {
 	float currentEntropy = p->GetEntropy();
 
-	if (currentEntropy < minEntropy) {
-		minEntropy = currentEntropy;
-	}
+	if (!useTreeLeavesForColorMap || (p->left == nullptr && p->right == nullptr)) {
+		if (currentEntropy < minEntropy) {
+			minEntropy = currentEntropy;
+		}
 
-	if (currentEntropy > maxEntropy) {
-		maxEntropy = currentEntropy;
+		if (currentEntropy > maxEntropy) {
+			maxEntropy = currentEntropy;
+		}
 	}
 
 	if (p->left != nullptr) {
-		calculateEntropyExtremes(p->left);
+		calculateEntropyExtremes(p->left, useTreeLeavesForColorMap);
 	}
 	if (p->right != nullptr) {
-		calculateEntropyExtremes(p->right);
+		calculateEntropyExtremes(p->right, useTreeLeavesForColorMap);
 	}
 
 }

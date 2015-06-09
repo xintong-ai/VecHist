@@ -46,12 +46,13 @@
 
 #include <QKeyEvent>
 
-GraphWidget::GraphWidget(DataManager * dataManager, TreeMapWindow * treeMapWindow, TextureCubeManager * textureCubeManager, QWidget *parent, NodeBi *p)
+GraphWidget::GraphWidget(DataManager * dataManager, TreeMapWindow * treeMapWindow, TextureCubeManager * textureCubeManager, bool useTreeLeavesForColorMap, QWidget *parent, NodeBi *p)
 	: QGraphicsView(parent), timerId(0)
 {
 	this->dataManager = dataManager;
 	this->treeMapWindow = treeMapWindow;
 	this->textureCubeManager = textureCubeManager;
+	this->useTreeLeavesForColorMap = useTreeLeavesForColorMap;
 	QGraphicsScene *scene = new QGraphicsScene(this);
 	scene->setItemIndexMethod(QGraphicsScene::NoIndex);
 	//scene->setSceneRect(0, 0, 800, 800);
@@ -295,9 +296,16 @@ void GraphWidget::loadGraphVizTextFile()
 		//cout << "Name: " << nodes[i]->name << endl;
 		//cout << "Color: " << color[0] << " " << color[1] << " " << color[2] << endl;
 		QColor entropyColor(255 * color[0], 255 * color[1], 255 * color[2], 255);
+		QColor grayColor(100, 100, 100, 255);
 
-		childNode->setForeDisplayColor(entropyColor);
-		childNode->setBackDisplayColor(entropyColor);  //TODO: Make work with node's gradient
+		if (useTreeLeavesForColorMap && (childNode->getNodeBiPtr()->left != nullptr || childNode->getNodeBiPtr()->right != nullptr)) {
+			childNode->setForeDisplayColor(grayColor);
+			childNode->setBackDisplayColor(grayColor);
+		}
+		else {
+			childNode->setForeDisplayColor(entropyColor);
+			childNode->setBackDisplayColor(entropyColor);  //TODO: Make work with node's gradient
+		}
 		childNode->setName(nodes[i]->name);
 
 		scene()->addItem(childNode);
@@ -394,8 +402,42 @@ Widget::Node * GraphWidget::rebuildGraphFromTree(NodeBi * p, int currentDepth)
 	
 	Widget::Node *currentNode = p->GetGraphNode();
 	currentNode->setNodeBiPtr(p);
+
+	///////////////////////////////////////////////////////
+	//TODO: Share this code with function loadGraphVizTextFile above - reduce duplication
+	////////////////////////////////////////////////////////
+	double entropyValue = 0;
+	if (p != nullptr) {
+		entropyValue = p->GetEntropy();
+	}
+	else {
+		entropyValue = 0;
+		cerr << "Warning - no node bi record!" << endl;
+	}
+
+	//Set the color of the node based on the entropy
+	double color[3];
+	((DataMgrVect *)dataManager)->getEntropyColor(entropyValue, color);
+	//cout << "Name: " << nodes[i]->name << endl;
+	//cout << "Color: " << color[0] << " " << color[1] << " " << color[2] << endl;
+	QColor entropyColor(255 * color[0], 255 * color[1], 255 * color[2], 255);
+	QColor grayColor(100, 100, 100, 255);
+
+	if (useTreeLeavesForColorMap && (p->left != nullptr || p->right != nullptr)) {
+		currentNode->setForeDisplayColor(grayColor);
+		currentNode->setBackDisplayColor(grayColor);
+	}
+	else {
+		currentNode->setForeDisplayColor(entropyColor);
+		currentNode->setBackDisplayColor(entropyColor);  //TODO: Make work with node's gradient
+	}
+
+	///////////////////////////////////////////////////////
+
 	scene()->addItem(currentNode);
-	
+
+	currentNode->update();
+
 	//Recurse to the next level in the tree, and then add a new graph edge for the child node
 	Widget::Node *childNode = nullptr;
 	Edge * newEdge = nullptr;

@@ -178,7 +178,7 @@ public:
 	virtual NodeBi* getRootNode();
 	virtual void UpdateCubeMap(float* cubemap);
 	void calculateEntropyExtremes();
-	void calculateEntropyExtremes(NodeBi *p);
+	void calculateEntropyExtremes(NodeBi *p, bool useTreeLeavesForColorMap);
 	float getMinEntropy() { return minEntropy; }
 	float getMaxEntropy() { return maxEntropy; }
 

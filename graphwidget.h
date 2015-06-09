@@ -80,7 +80,7 @@ class GraphWidget : public QGraphicsView
 	//Q_OBJECT
 
 public:
-	GraphWidget(DataManager * dataManager, TreeMapWindow * treeMapPlot, TextureCubeManager * textureCubeManager, QWidget *parent = 0, NodeBi *p = 0);
+	GraphWidget(DataManager * dataManager, TreeMapWindow * treeMapPlot, TextureCubeManager * textureCubeManager, bool useTreeLeavesForColorMap, QWidget *parent = 0, NodeBi *p = 0);
 	~GraphWidget();
 	
 	void buildDotFileFromTree(NodeBi * root);
@@ -129,6 +129,7 @@ private:
 	DataManager * dataManager;					//Reference to the data manager
 	TreeMapWindow * treeMapWindow;					//Reference to the scene object
 	TextureCubeManager * textureCubeManager;
+	bool useTreeLeavesForColorMap = false;
 		
 };
 
