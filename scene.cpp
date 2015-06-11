@@ -404,27 +404,25 @@ void TwoSidedGraphicsWidget::animateFlip()
         QTimer::singleShot(25, this, SLOT(animateFlip()));
 }
 
+//This function prevents parts of a window from being dragged out of the bounds such that the Window is "lost"
 QVariant GraphicsWidget::itemChange(GraphicsItemChange change, const QVariant &value)
-{
-	//@datahead8888 - This code is intended to prevent a child window from being dragged outside of the larger window's bounds
-	//I am deactivating this code, since it breaks in some cases when the parent window is set to a smaller size.  In this case
-	//the child window usually ends up anchored above the parent window, unable to be moved.
-	/*
+{	
     if (change == ItemPositionChange && scene()) {
         QRectF rect = boundingRect();
         QPointF pos = value.toPointF();
         QRectF sceneRect = scene()->sceneRect();
-        if (pos.x() + rect.left() < sceneRect.left())
-            pos.setX(sceneRect.left() - rect.left());
-        else if (pos.x() + rect.right() >= sceneRect.right())
-            pos.setX(sceneRect.right() - rect.right());
-        if (pos.y() + rect.top() < sceneRect.top())
-            pos.setY(sceneRect.top() - rect.top());
-        else if (pos.y() + rect.bottom() >= sceneRect.bottom())
-            pos.setY(sceneRect.bottom() - rect.bottom());
+
+		if (pos.x() < sceneRect.left())
+			pos.setX(sceneRect.left());
+		else if (pos.x() >= sceneRect.right() - 25)
+			pos.setX(sceneRect.right() - 25);
+		if (pos.y() < sceneRect.top() + 10)
+			pos.setY(sceneRect.top() + 10);
+		else if (pos.y() >= sceneRect.bottom())
+			pos.setY(sceneRect.bottom());
         return pos;
     }
-	*/
+	
     return QGraphicsProxyWidget::itemChange(change, value);
 }
 
