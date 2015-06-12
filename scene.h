@@ -63,6 +63,7 @@
 #include "DataMgrCosm.h"
 #include "TextureCubeManager.h"
 #include "ArrowButton.h"
+#include "ArrowWidget.h"
 //#include "qtbox.h"
 //#include <cuda_runtime.h>
 //#include <cuda_gl_interop.h>
@@ -319,9 +320,8 @@ private:
 	QWidget sliderWidget;
 	//GraphVizWidget * m_graphVizWidget;
 
-	QFrame * arrowWidget;
-	ArrowButton * arrowButton1;
-	ArrowButton * arrowButton2;
+	ArrowWidget * arrowWidget;
+	
 
     //ItemDialog *m_itemDialog;
     QTimer *m_timer;
