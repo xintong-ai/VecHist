@@ -1,13 +1,9 @@
-#include <QVBoxLayout>
 #include "ArrowWidget.h"
 #include "qpushbutton.h"
 
 
 ArrowWidget::ArrowWidget()
 {
-	//QPushButton * button1 = new QPushButton();
-	//QPushButton * button2 = new QPushButton();
-
 	arrowButton1 = new ArrowButton(false);
 	placeHolder = new QWidget();
 	arrowButton2 = new ArrowButton(true);
@@ -30,16 +26,13 @@ ArrowWidget::ArrowWidget()
 
 
 
-	QVBoxLayout layout;
-	layout.addWidget(arrowButton1);
-	layout.addWidget(placeHolder);
-	layout.addWidget(arrowButton2);
+	layout = new QVBoxLayout();
+	layout->addWidget(arrowButton1);
+	layout->addWidget(placeHolder);
+	layout->addWidget(arrowButton2);
 
-	layout.setSpacing(0);
-	layout.setContentsMargins(0, 0, 0, 0);
+	layout->setSpacing(0);
+	layout->setContentsMargins(0, 0, 0, 0);
 
-
-	//layout.addWidget(button1);
-	//layout.addWidget(button2);
-	this->setLayout(&layout);
+	this->setLayout(layout);
 }

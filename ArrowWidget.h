@@ -3,6 +3,7 @@
 
 #include <qframe.h>
 #include <QWidget>
+#include <QVBoxLayout>
 #include "ArrowButton.h"
 
 class ArrowWidget : public QFrame
@@ -12,9 +13,10 @@ public:
 	ArrowWidget();
 
 private:
-	ArrowButton * arrowButton1;
-	QWidget * placeHolder;
-	ArrowButton * arrowButton2;
+	ArrowButton * arrowButton1 = nullptr;
+	QWidget * placeHolder = nullptr;
+	ArrowButton * arrowButton2 = nullptr;
+	QVBoxLayout * layout = nullptr;
 };
 
 #endif //ARROW_SLIDER_H
