@@ -412,8 +412,8 @@ QVariant GraphicsWidget::itemChange(GraphicsItemChange change, const QVariant &v
         QPointF pos = value.toPointF();
         QRectF sceneRect = scene()->sceneRect();
 
-		if (pos.x() < sceneRect.left())
-			pos.setX(sceneRect.left());
+		if (pos.x() < sceneRect.left() - rect.width() + 55)
+			pos.setX(sceneRect.left() - rect.width() + 55);
 		else if (pos.x() >= sceneRect.right() - 25)
 			pos.setX(sceneRect.right() - 25);
 		if (pos.y() < sceneRect.top() + 10)
