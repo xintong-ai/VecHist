@@ -62,6 +62,7 @@
 //#include "DataMgrVect.h"
 #include "DataMgrCosm.h"
 #include "TextureCubeManager.h"
+#include "ArrowButton.h"
 //#include "qtbox.h"
 //#include <cuda_runtime.h>
 //#include <cuda_gl_interop.h>
@@ -153,7 +154,7 @@ public slots:
 protected slots:
     void animateFlip();
 private:
-    GraphicsWidget *m_proxyWidgets[6];
+    GraphicsWidget *m_proxyWidgets[7];
     int m_current;
     int m_angle; // angle in degrees
     int m_delta;
@@ -317,6 +318,10 @@ private:
 	QListWidget * m_listWidget;
 	QWidget sliderWidget;
 	//GraphVizWidget * m_graphVizWidget;
+
+	QFrame * arrowWidget;
+	ArrowButton * arrowButton1;
+	ArrowButton * arrowButton2;
 
     //ItemDialog *m_itemDialog;
     QTimer *m_timer;

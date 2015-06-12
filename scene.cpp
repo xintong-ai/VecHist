@@ -337,13 +337,13 @@ TwoSidedGraphicsWidget::TwoSidedGraphicsWidget(QGraphicsScene *scene)
     , m_angle(0)
     , m_delta(0)
 {
-    for (int i = 0; i < 3; ++i)
+    for (int i = 0; i < 7; ++i)
         m_proxyWidgets[i] = 0;
 }
 
 void TwoSidedGraphicsWidget::setWidget(int index, QWidget *widget)
 {
-    if (index < 0 || index >= 3)
+    if (index < 0 || index >= 6)
     {
         qWarning("TwoSidedGraphicsWidget::setWidget: Index out of bounds, index == %d", index);
         return;
@@ -743,6 +743,47 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		//m_graphWidget->resize(1000, 1000);
 		m_graphWidget->setFixedSize(1000, 1000);
 
+		arrowWidget = new QFrame();
+		arrowWidget->resize(500, 500);
+
+		QPushButton * button1 = new QPushButton();
+		QPushButton * button2 = new QPushButton();
+
+		arrowButton1 = new ArrowButton(false);
+		QWidget * placeHolder = new QWidget();
+		arrowButton2 = new ArrowButton(true);
+
+		arrowButton1->resize(100, 100);
+		arrowButton2->resize(100, 100);
+
+		QSizePolicy arrow1Policy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+		arrow1Policy.setHorizontalStretch(5);
+		arrowButton1->setSizePolicy(arrow1Policy);
+
+		QSizePolicy placeHolderPolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+		placeHolderPolicy.setHorizontalStretch(5);
+		placeHolder->setSizePolicy(placeHolderPolicy);
+
+
+		QSizePolicy arrow2Policy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+		arrow2Policy.setHorizontalStretch(5);
+		arrowButton2->setSizePolicy(arrow2Policy);
+
+		
+
+		QVBoxLayout layout;
+		layout.addWidget(arrowButton1);
+		layout.addWidget(placeHolder);
+		layout.addWidget(arrowButton2);
+
+		layout.setSpacing(0);
+		layout.setContentsMargins(0, 0, 0, 0);
+
+
+		//layout.addWidget(button1);
+		//layout.addWidget(button2);
+		arrowWidget->setLayout(&layout);
+
 		//treeMapWindow->setScrollArea(scrollArea);
 		//treeMapWindow->zoom(0.1, 0, 0);
 
@@ -832,7 +873,10 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		twoSided->setWidget(1, m_graphWidget);
 		//twoSided->setWidget(1, m_renderOptions);
 		twoSided->setWidget(2, &sliderWidget);
+		twoSided->setWidget(3, arrowWidget);
 		
+		//this->addWidget(arrowWidget);
+		arrowWidget->move(50, 50);
 
 		//((DataMgrVect * )dataManager)->buildDotFileFromTree();
 		//((DataMgrVect *)dataManager)->buildPlainTextFileFromDot();
