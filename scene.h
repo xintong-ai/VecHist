@@ -65,6 +65,7 @@
 #include "ArrowButton.h"
 #include "ArrowWidget.h"
 #include "AppSettings.h"
+#include "EntropySlider.h"
 //#include "qtbox.h"
 //#include <cuda_runtime.h>
 //#include <cuda_gl_interop.h>
@@ -380,7 +381,7 @@ private:
 	vector<float3> colorMap;
 	//vector<CutPlane> cutplanes;
 	
-	QSlider slider;
+	EntropySlider slider;
 
 	//Declarations From http://ogldev.atspace.co.uk/www/tutorial29/tutorial29.html
 	//GNU License

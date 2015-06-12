@@ -2,11 +2,14 @@
 #include <qpainter.h>
 #include <qbrush.h>
 
+//Constructor
+//Parameter type - signifies whether the arrow button points up or down when rendered
 ArrowButton::ArrowButton(bool type)
 {
 	this->type = type;
 }
 
+//Override of the paint event - paints the arrow on the button
 void ArrowButton::paintEvent(QPaintEvent * p)
 {
 	QPushButton::paintEvent(p);

@@ -6,7 +6,7 @@
 
 using namespace std;
 
-ArrowWidget::ArrowWidget(AppSettings * appSettings, Scene * scene, QSlider * slider)
+ArrowWidget::ArrowWidget(AppSettings * appSettings, Scene * scene, EntropySlider * slider)
 {
 	this->appSettings = appSettings;
 	this->scene = scene;
@@ -60,6 +60,8 @@ void ArrowWidget::doQueryUp()
 	}
 	cout << "Current entropy threshold value: " << appSettings->currentEntropyThreshold << endl;
 
+	slider->setRunEntropyQueries(false);
+
 	bool entropyQueryChanged = false;
 	do
 	{
@@ -76,6 +78,8 @@ void ArrowWidget::doQueryUp()
 	if (appSettings->currentEntropyThreshold > appSettings->maxEntropyThreshold) {
 		appSettings->currentEntropyThreshold = appSettings->maxEntropyThreshold;
 	}
+
+	slider->setRunEntropyQueries(true);
 }
 
 void ArrowWidget::doQueryDown()
@@ -89,6 +93,8 @@ void ArrowWidget::doQueryDown()
 	//scene->initiateEntropyQuery(appSettings->currentEntropyThreshold);
 
 	//slider->setValue((appSettings->currentEntropyThreshold - appSettings->minEntropyThreshold) / (appSettings->maxEntropyThreshold - appSettings->minEntropyThreshold) * 100);
+
+	slider->setRunEntropyQueries(false);
 
 	bool entropyQueryChanged = false;
 	do
@@ -107,5 +113,6 @@ void ArrowWidget::doQueryDown()
 		appSettings->currentEntropyThreshold = appSettings->minEntropyThreshold;
 	}
 
+	slider->setRunEntropyQueries(true);
 
 }

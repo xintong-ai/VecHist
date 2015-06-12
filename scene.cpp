@@ -938,7 +938,9 @@ void Scene::sliderSelection(int newValue) {
 	slider.setToolTip(QString("Entropy Theshold Queried: ") + QString::number(appSettings->currentEntropyThreshold));
 	cout << "Entropy threshold value is: " << appSettings->currentEntropyThreshold << endl;
 	//((DataMgrVect*)dataManager)->SetChildrenBelowEntropyToVisible((NodeBi*)dataManager->getRootNode(), entropyThresholdValue);
-	initiateEntropyQuery(appSettings->currentEntropyThreshold);
+	if (slider.getRunEntropyQueries()) {
+		initiateEntropyQuery(appSettings->currentEntropyThreshold);
+	}
 }
 
 Scene::~Scene()

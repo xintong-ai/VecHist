@@ -7,6 +7,7 @@
 #include <qslider.h>
 #include "ArrowButton.h"
 #include "AppSettings.h"
+#include "EntropySlider.h"
 
 //Must #include "Scene.h" in any .cpp file that uses this header file
 
@@ -16,13 +17,13 @@ class ArrowWidget : public QFrame
 {
 	Q_OBJECT
 public:
-	ArrowWidget(AppSettings * appSettings, Scene * scene, QSlider * slider);
+	ArrowWidget(AppSettings * appSettings, Scene * scene, EntropySlider * slider);
 public slots:
 	void doQueryUp();
 	void doQueryDown();
 
 private:
-	QSlider * slider = nullptr;
+	EntropySlider * slider = nullptr;
 	Scene * scene = nullptr;
 	AppSettings * appSettings = nullptr;
 	ArrowButton * arrowButton1 = nullptr;

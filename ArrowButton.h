@@ -11,7 +11,7 @@ public:
 	void paintEvent(QPaintEvent *);
 
 private:
-	bool type = false;
+	bool type = false;		//Represents whether the arrow button points up or down when rendered
 };
 
 #endif //ARROW_SLIDER_H
