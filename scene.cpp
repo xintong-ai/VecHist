@@ -606,6 +606,8 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	else //if (dataManager->GetStringVal("datatype").compare("cosmology") == 0)
 		dataManager = new DataMgrCosm();
 
+	appSettings = new AppSettings();
+
 	//Read the starting time step value from the .par file, and convert it to an integer
 	string startTimeStepStr = dataManager->GetStringVal("starttimestep");
 	istringstream iss(startTimeStepStr);
@@ -652,8 +654,9 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		sliderWidget.resize(50, 800);
 		sliderWidget.setFixedSize(50, 800);  //This might be replaced with code for a resize event later
 		
-		sliderMinValue = 8.0;
-		sliderMaxValue = 10.0;
+		appSettings->minEntropyThreshold = 8.0;
+		appSettings->maxEntropyThreshold = 10.0;
+		appSettings->entropyThresholdIncrement = (appSettings->maxEntropyThreshold - appSettings->minEntropyThreshold) / 100;
 
 		QLinearGradient gradient(0, 0, 0, sliderWidget.rect().height());
 
@@ -663,9 +666,9 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
 		//Build the gradient
 		const int NUM_ITERATIONS = 100;
-		for (double i = sliderMinValue; i <= sliderMaxValue; i += (sliderMaxValue - sliderMinValue) / NUM_ITERATIONS) {
+		for (double i = appSettings->minEntropyThreshold; i <= appSettings->maxEntropyThreshold; i += (appSettings->maxEntropyThreshold - appSettings->minEntropyThreshold) / NUM_ITERATIONS) {
 			((DataMgrVect *)dataManager)->getEntropyColor(i, color);
-			gradient.setColorAt(1.0 - (i - sliderMinValue) / (sliderMaxValue - sliderMinValue), QColor(255 * color[0], 255 * color[1], 255 * color[2], 255));
+			gradient.setColorAt(1.0 - (i - appSettings->minEntropyThreshold) / (appSettings->maxEntropyThreshold - appSettings->minEntropyThreshold), QColor(255 * color[0], 255 * color[1], 255 * color[2], 255));
 		}
 		
 		//Do the rest of the set up for the slider widget
@@ -743,8 +746,8 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		//m_graphWidget->resize(1000, 1000);
 		m_graphWidget->setFixedSize(1000, 1000);
 
-		arrowWidget = new ArrowWidget();
-		arrowWidget->resize(500, 500);
+		arrowWidget = new ArrowWidget(appSettings);
+		arrowWidget->setFixedSize(100, 200);
 
 		
 
@@ -855,7 +858,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		((DataMgrVect *)dataManager)->copyToMasterTree();
 
 		//We need to make sure the shown tree and scene match the current query setting
-		initiateEntropyQuery(sliderMinValue);
+		initiateEntropyQuery(appSettings->minEntropyThreshold);
 	}
 	else {
 		connect(m_listWidget, SIGNAL(itemSelectionChanged()), this, SLOT(dropBoxSelection()));
@@ -930,7 +933,7 @@ void Scene::sliderSelection(int newValue) {
 	cout << "New value is: " << newValue << endl;
 	//sliderMinValue = ((DataMgrVect*)dataManager)->getMinEntropy();
 	//sliderMaxValue = ((DataMgrVect*)dataManager)->getMaxEntropy();
-	double entropyThresholdValue =  sliderMinValue + (sliderMaxValue - sliderMinValue) * (double(newValue) / 100);
+	double entropyThresholdValue = appSettings->minEntropyThreshold + (appSettings->maxEntropyThreshold - appSettings->minEntropyThreshold) * (double(newValue) / 100);
 	slider.setToolTip(QString("Entropy Theshold Queried: ") + QString::number(entropyThresholdValue));
 	cout << "Entropy threshold value is: " << entropyThresholdValue << endl;
 	//((DataMgrVect*)dataManager)->SetChildrenBelowEntropyToVisible((NodeBi*)dataManager->getRootNode(), entropyThresholdValue);
@@ -956,6 +959,7 @@ Scene::~Scene()
 	delete m_renderOptions;
 	delete m_graphWidget;
 	//delete m_jsonView;
+	delete appSettings;
 
 //	cudaDeviceReset();
 //	cleanup();

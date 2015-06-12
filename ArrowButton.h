@@ -5,6 +5,7 @@
 
 class ArrowButton : public QPushButton
 {
+	Q_OBJECT
 public:
 	ArrowButton(bool type);
 	void paintEvent(QPaintEvent *);

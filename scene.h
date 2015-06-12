@@ -64,6 +64,7 @@
 #include "TextureCubeManager.h"
 #include "ArrowButton.h"
 #include "ArrowWidget.h"
+#include "AppSettings.h"
 //#include "qtbox.h"
 //#include <cuda_runtime.h>
 //#include <cuda_gl_interop.h>
@@ -311,6 +312,8 @@ private:
     bool m_dynamicCubemap;
     //bool m_updateAllCubemaps;
 
+	AppSettings * appSettings = nullptr;
+
     RenderOptionsDialog *m_renderOptions;
 	TreeMapWindow * treeMapWindow;
 	GraphWidget * m_graphWidget;
@@ -378,9 +381,6 @@ private:
 	//vector<CutPlane> cutplanes;
 	
 	QSlider slider;
-
-	double sliderMinValue = 0;
-	double sliderMaxValue = 0;
 
 	//Declarations From http://ogldev.atspace.co.uk/www/tutorial29/tutorial29.html
 	//GNU License

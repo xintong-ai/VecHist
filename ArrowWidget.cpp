@@ -1,9 +1,16 @@
+#include <iostream>
+
 #include "ArrowWidget.h"
 #include "qpushbutton.h"
 
+using namespace std;
 
-ArrowWidget::ArrowWidget()
+ArrowWidget::ArrowWidget(AppSettings * appSettings)
 {
+	this->appSettings = appSettings;
+
+	currentEntropyThreshold = appSettings->minEntropyThreshold;
+
 	arrowButton1 = new ArrowButton(false);
 	placeHolder = new QWidget();
 	arrowButton2 = new ArrowButton(true);
@@ -35,4 +42,28 @@ ArrowWidget::ArrowWidget()
 	layout->setContentsMargins(0, 0, 0, 0);
 
 	this->setLayout(layout);
+
+	//(QObject*)&arrowButton1;
+
+	connect((QObject*)arrowButton1, SIGNAL(clicked()), this, SLOT(doQueryUp()));
+	connect((QObject*)arrowButton2, SIGNAL(clicked()), this, SLOT(doQueryDown()));
+}
+
+void ArrowWidget::doQueryUp()
+{
+	this->currentEntropyThreshold += appSettings->entropyThresholdIncrement;
+	if (currentEntropyThreshold > appSettings->maxEntropyThreshold) {
+		currentEntropyThreshold = appSettings->maxEntropyThreshold;
+	}
+	cout << "Current entropy threshold value: " << currentEntropyThreshold << endl;
+
+}
+
+void ArrowWidget::doQueryDown()
+{
+	this->currentEntropyThreshold -= appSettings->entropyThresholdIncrement;
+	if (currentEntropyThreshold < appSettings->minEntropyThreshold) {
+		currentEntropyThreshold = appSettings->minEntropyThreshold;
+	}
+	cout << "Current entropy threshold value: " << currentEntropyThreshold << endl;
 }
