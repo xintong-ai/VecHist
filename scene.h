@@ -241,7 +241,7 @@ public:
 	//TODO: Remove this after JSON Component is either removed or revised:
 	void UpdateTexture() { m_textureCubeManager->UpdateTexture(application); }
 	void UpdateBlock();
-	void initiateEntropyQuery(double threshold);
+	bool initiateEntropyQuery(double threshold);
 	void adjustPickingTextureForResize(int width, int height);
 
 

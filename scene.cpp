@@ -892,13 +892,14 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	
 }
 
-void Scene::initiateEntropyQuery(double threshold)
+bool Scene::initiateEntropyQuery(double threshold)
 {
+	bool queryChanged = false;
 	//This function makes no sense for Dark Sky data now.
 	if (application != 1) {
-		return;
+		return false;
 	}
-	((DataMgrVect *)dataManager)->queryEntropyTreeByThreshold(threshold);
+	queryChanged = ((DataMgrVect *)dataManager)->queryEntropyTreeByThreshold(threshold);
 	m_textureCubeManager->UpdateTexture(application);
 
 	if (useTreeLeavesForColorMap) {
@@ -910,7 +911,7 @@ void Scene::initiateEntropyQuery(double threshold)
 	m_graphWidget->rebuildGraphFromTree((NodeBi*)dataManager->getRootNode());
 	treeMapWindow->refreshPlot((NodeBi*)dataManager->getRootNode());
 
-	
+	return queryChanged;
 
 }
 

@@ -60,10 +60,22 @@ void ArrowWidget::doQueryUp()
 	}
 	cout << "Current entropy threshold value: " << appSettings->currentEntropyThreshold << endl;
 
-	scene->initiateEntropyQuery(appSettings->currentEntropyThreshold);
+	bool entropyQueryChanged = false;
+	do
+	{
+		entropyQueryChanged = scene->initiateEntropyQuery(appSettings->currentEntropyThreshold);
 
-	slider->setValue((appSettings->currentEntropyThreshold - appSettings->minEntropyThreshold) / (appSettings->maxEntropyThreshold - appSettings->minEntropyThreshold) * 100);
+		slider->setValue((appSettings->currentEntropyThreshold - appSettings->minEntropyThreshold) / (appSettings->maxEntropyThreshold - appSettings->minEntropyThreshold) * 100);
 
+		if (!entropyQueryChanged) {
+			this->appSettings->currentEntropyThreshold += appSettings->entropyThresholdIncrement;
+			
+		}
+	} while (!entropyQueryChanged && appSettings->currentEntropyThreshold <= appSettings->maxEntropyThreshold);
+
+	if (appSettings->currentEntropyThreshold > appSettings->maxEntropyThreshold) {
+		appSettings->currentEntropyThreshold = appSettings->maxEntropyThreshold;
+	}
 }
 
 void ArrowWidget::doQueryDown()
@@ -74,7 +86,26 @@ void ArrowWidget::doQueryDown()
 	}
 	cout << "Current entropy threshold value: " << appSettings->currentEntropyThreshold << endl;
 
-	scene->initiateEntropyQuery(appSettings->currentEntropyThreshold);
+	//scene->initiateEntropyQuery(appSettings->currentEntropyThreshold);
 
-	slider->setValue((appSettings->currentEntropyThreshold - appSettings->minEntropyThreshold) / (appSettings->maxEntropyThreshold - appSettings->minEntropyThreshold) * 100);
+	//slider->setValue((appSettings->currentEntropyThreshold - appSettings->minEntropyThreshold) / (appSettings->maxEntropyThreshold - appSettings->minEntropyThreshold) * 100);
+
+	bool entropyQueryChanged = false;
+	do
+	{
+		entropyQueryChanged = scene->initiateEntropyQuery(appSettings->currentEntropyThreshold);
+
+		slider->setValue((appSettings->currentEntropyThreshold - appSettings->minEntropyThreshold) / (appSettings->maxEntropyThreshold - appSettings->minEntropyThreshold) * 100);
+
+		if (!entropyQueryChanged) {
+			this->appSettings->currentEntropyThreshold -= appSettings->entropyThresholdIncrement;
+
+		}
+	} while (!entropyQueryChanged && appSettings->currentEntropyThreshold >= appSettings->minEntropyThreshold);
+
+	if (appSettings->currentEntropyThreshold < appSettings->minEntropyThreshold) {
+		appSettings->currentEntropyThreshold = appSettings->minEntropyThreshold;
+	}
+
+
 }
