@@ -654,9 +654,13 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		sliderWidget.resize(50, 800);
 		sliderWidget.setFixedSize(50, 800);  //This might be replaced with code for a resize event later
 		
-		appSettings->minEntropyThreshold = 8.0;
-		appSettings->maxEntropyThreshold = 10.0;
-		appSettings->entropyThresholdIncrement = (appSettings->maxEntropyThreshold - appSettings->minEntropyThreshold) / 100;
+		string minEntropyThresholdStr = dataManager->GetStringVal("minEntropyThreshold");
+		string maxEntropyThresholdStr = dataManager->GetStringVal("maxEntropyThreshold");
+		string entropyThresholdIncrementStr = dataManager->GetStringVal("entropyThresholdIncrement");
+
+		appSettings->minEntropyThreshold = stod(minEntropyThresholdStr);
+		appSettings->maxEntropyThreshold = stod(maxEntropyThresholdStr);
+		appSettings->entropyThresholdIncrement = stod(entropyThresholdIncrementStr);
 
 		QLinearGradient gradient(0, 0, 0, sliderWidget.rect().height());
 

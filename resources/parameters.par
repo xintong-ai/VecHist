@@ -14,4 +14,7 @@ string datatype flow
 string starttimestep 18
 string useTreeMapLabels 0
 string useTreeLeavesForColorMap 1
+string minEntropyThreshold = 8
+string maxEntropyThreshold = 10
+string entropyThresholdIncrement = 0.1
 
