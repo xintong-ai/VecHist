@@ -137,7 +137,7 @@ class DataMgrVect:public DataManager
 	void copyToMasterTree(NodeBi *&original, NodeBi *&master);
 	void deleteEntropyTree(NodeBi * currentNode, int level);
 	void copyMasterToEntropyTree(NodeBi *& regular, NodeBi *& master, int level);
-	void queryEntropyTreeByThreshold(double theshold, NodeBi * currentEntropyNode, NodeBi * currentMasterNode, int level);
+	bool queryEntropyTreeByThreshold(double theshold, NodeBi * currentEntropyNode, NodeBi * currentMasterNode, int level);
 
 public:
 	DataMgrVect();
@@ -187,7 +187,7 @@ public:
 	void PrintEntropies(NodeBi * nd, int level);
 
 	void copyToMasterTree();
-	void queryEntropyTreeByThreshold(double threshold);
+	bool queryEntropyTreeByThreshold(double threshold);
 	void splitSuperQuadric(NodeBi * node);
 
 };

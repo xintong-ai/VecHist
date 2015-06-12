@@ -943,14 +943,17 @@ void DataMgrVect::copyToMasterTree(NodeBi *& original, NodeBi *& master)
 	
 }
 
-void DataMgrVect::queryEntropyTreeByThreshold(double threshold)
+//This function carries out all of the steps required to query for a subtree with a given entropy threshold, modeled after the Python flow
+//The long term intent is to phase out the entropy sub tree so that only a master tree is used with a boolean isQueriedNull field implicitly representing the subtree
+bool DataMgrVect::queryEntropyTreeByThreshold(double threshold)
 {
 	deleteEntropyTree(masterRootNode, 0);
 	copyMasterToEntropyTree(rootNode, masterRootNode, 0);
-	queryEntropyTreeByThreshold(threshold, rootNode, masterRootNode, 0);
+	return queryEntropyTreeByThreshold(threshold, rootNode, masterRootNode, 0);
 }
 
-
+//This function deletes the entire entropy query subtree
+//It currently is used before copying the master tree to the entropy query subtree (which will be phased out), but it is also used in the destructor
 void DataMgrVect::deleteEntropyTree(NodeBi * currentNode, int level)
 {
 	//cout << "Current level: " << level << endl;
@@ -970,6 +973,11 @@ void DataMgrVect::deleteEntropyTree(NodeBi * currentNode, int level)
 
 }
 
+//This function copies the entropy tree to the query result suubtree
+//The intent is to phase out this method because the technique leads to obscure bugs.  See the discussion in queryEntropyTreeByThreshold for more info
+//Parameters: regular - current entropy query subtree node
+//master - current master tree node
+//level - current level in tree (0 based) - useful for debugging
 void DataMgrVect::copyMasterToEntropyTree(NodeBi *& regular, NodeBi *& master, int level)
 {
 	//cout << "Current level: " << currentLevel << endl;
@@ -994,11 +1002,29 @@ void DataMgrVect::copyMasterToEntropyTree(NodeBi *& regular, NodeBi *& master, i
 
 }
 
-void DataMgrVect::queryEntropyTreeByThreshold(double threshold, NodeBi * currentEntropyNode, NodeBi * currentMasterNode, int level)
+//This function queries the entropy tree to find nodes that would have passed the entropy threshold test in the python flow
+//It then builds a subtree to represent this.  The master tree is always maintained but referenced
+//The intent, however, is to phase out the subtree and use only the master tree, marking the isQueriedNull flag in each node to represent the subtree implicitly
+//We are having to mark data in the master tree anyways, so we might as well make the transition - the current method is very prone to difficult to debug pointer bugs when we make changes
+//Parameters:
+//threshold - the entropy query threshold (corresponding to the Python flow)
+//currentEntropyNode - our current position in the subtree we are forming as a result of the query
+//currentMaterNode - our current position in the master tree
+//level - an 0 based integer reprenting how deep we are in the tree structure - useful for debugging sometimes
+bool DataMgrVect::queryEntropyTreeByThreshold(double threshold, NodeBi * currentEntropyNode, NodeBi * currentMasterNode, int level)
 {
 	//cout << "Current level" << level << endl;
+	bool queryResultChanged = false; //This is false if the query subtree did not change from last time and true if it did.
+
+	//If we got to this node, it's obviously not null.  Mark it in the master tree
+	if (currentMasterNode->GetQueriedNull()) {
+		queryResultChanged = true;
+	}
+	currentMasterNode->SetQueriedNull(false);
+
 	if (currentEntropyNode->GetEntropy() <= threshold) {  //Opposite of inquality used in Python flow
-		
+		//We have met the threshold and can stop recursing
+
 		//Once we set a node to null, we have no way to delete it again
 		//Thus we must do this now to avoid memory leaks that slowly build up as we query again and again and again...
 		if (currentEntropyNode->left != nullptr) {
@@ -1009,19 +1035,35 @@ void DataMgrVect::queryEntropyTreeByThreshold(double threshold, NodeBi * current
 			currentMasterNode->right->original = nullptr;
 			delete currentEntropyNode->right;
 		}
+
+		//Because we have met the threshold, mark the child nodes null
 		currentEntropyNode->left = nullptr;
 		currentEntropyNode->right = nullptr;
+		if (currentMasterNode->left != nullptr) {
+			if (!currentMasterNode->left->GetQueriedNull()) {
+				queryResultChanged = true;
+			}
+
+			currentMasterNode->left->SetQueriedNull(true);
+		}
+		if (currentMasterNode->right != nullptr) {
+			if (!currentMasterNode->right->GetQueriedNull()) {
+				queryResultChanged = true;
+			}
+			currentMasterNode->right->SetQueriedNull(true);
+		}
 	}
 	else {
+		//Recurse to the next level if we did not meet the threshold
 		if (currentEntropyNode->left != nullptr) {
-			queryEntropyTreeByThreshold(threshold, currentEntropyNode->left, currentMasterNode->left, level + 1);
+			queryResultChanged = queryResultChanged | queryEntropyTreeByThreshold(threshold, currentEntropyNode->left, currentMasterNode->left, level + 1);  //Note: bitwise or is required to prevent short circuiting and not calling the function
 		}
 		if (currentEntropyNode->right != nullptr) {
-			queryEntropyTreeByThreshold(threshold, currentEntropyNode->right, currentMasterNode->right, level + 1);
+			queryResultChanged = queryResultChanged | queryEntropyTreeByThreshold(threshold, currentEntropyNode->right, currentMasterNode->right, level + 1);
 		}
 	}
 	
-
+	return queryResultChanged;
 
 }
 

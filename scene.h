@@ -62,6 +62,10 @@
 //#include "DataMgrVect.h"
 #include "DataMgrCosm.h"
 #include "TextureCubeManager.h"
+#include "ArrowButton.h"
+#include "ArrowWidget.h"
+#include "AppSettings.h"
+#include "EntropySlider.h"
 //#include "qtbox.h"
 //#include <cuda_runtime.h>
 //#include <cuda_gl_interop.h>
@@ -153,7 +157,7 @@ public slots:
 protected slots:
     void animateFlip();
 private:
-    GraphicsWidget *m_proxyWidgets[6];
+    GraphicsWidget *m_proxyWidgets[7];
     int m_current;
     int m_angle; // angle in degrees
     int m_delta;
@@ -238,7 +242,7 @@ public:
 	//TODO: Remove this after JSON Component is either removed or revised:
 	void UpdateTexture() { m_textureCubeManager->UpdateTexture(application); }
 	void UpdateBlock();
-	void initiateEntropyQuery(double threshold);
+	bool initiateEntropyQuery(double threshold);
 	void adjustPickingTextureForResize(int width, int height);
 
 
@@ -309,6 +313,8 @@ private:
     bool m_dynamicCubemap;
     //bool m_updateAllCubemaps;
 
+	AppSettings * appSettings = nullptr;
+
     RenderOptionsDialog *m_renderOptions;
 	TreeMapWindow * treeMapWindow;
 	GraphWidget * m_graphWidget;
@@ -317,6 +323,9 @@ private:
 	QListWidget * m_listWidget;
 	QWidget sliderWidget;
 	//GraphVizWidget * m_graphVizWidget;
+
+	ArrowWidget * arrowWidget;
+	
 
     //ItemDialog *m_itemDialog;
     QTimer *m_timer;
@@ -372,10 +381,7 @@ private:
 	vector<float3> colorMap;
 	//vector<CutPlane> cutplanes;
 	
-	QSlider slider;
-
-	double sliderMinValue = 0;
-	double sliderMaxValue = 0;
+	EntropySlider slider;
 
 	//Declarations From http://ogldev.atspace.co.uk/www/tutorial29/tutorial29.html
 	//GNU License

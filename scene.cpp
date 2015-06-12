@@ -337,13 +337,13 @@ TwoSidedGraphicsWidget::TwoSidedGraphicsWidget(QGraphicsScene *scene)
     , m_angle(0)
     , m_delta(0)
 {
-    for (int i = 0; i < 3; ++i)
+    for (int i = 0; i < 7; ++i)
         m_proxyWidgets[i] = 0;
 }
 
 void TwoSidedGraphicsWidget::setWidget(int index, QWidget *widget)
 {
-    if (index < 0 || index >= 3)
+    if (index < 0 || index >= 6)
     {
         qWarning("TwoSidedGraphicsWidget::setWidget: Index out of bounds, index == %d", index);
         return;
@@ -606,6 +606,8 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	else //if (dataManager->GetStringVal("datatype").compare("cosmology") == 0)
 		dataManager = new DataMgrCosm();
 
+	appSettings = new AppSettings();
+
 	//Read the starting time step value from the .par file, and convert it to an integer
 	string startTimeStepStr = dataManager->GetStringVal("starttimestep");
 	istringstream iss(startTimeStepStr);
@@ -652,8 +654,13 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		sliderWidget.resize(50, 800);
 		sliderWidget.setFixedSize(50, 800);  //This might be replaced with code for a resize event later
 		
-		sliderMinValue = 8.0;
-		sliderMaxValue = 10.0;
+		string minEntropyThresholdStr = dataManager->GetStringVal("minEntropyThreshold");
+		string maxEntropyThresholdStr = dataManager->GetStringVal("maxEntropyThreshold");
+		string entropyThresholdIncrementStr = dataManager->GetStringVal("entropyThresholdIncrement");
+
+		appSettings->minEntropyThreshold = stod(minEntropyThresholdStr);
+		appSettings->maxEntropyThreshold = stod(maxEntropyThresholdStr);
+		appSettings->entropyThresholdIncrement = stod(entropyThresholdIncrementStr);
 
 		QLinearGradient gradient(0, 0, 0, sliderWidget.rect().height());
 
@@ -663,9 +670,9 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
 		//Build the gradient
 		const int NUM_ITERATIONS = 100;
-		for (double i = sliderMinValue; i <= sliderMaxValue; i += (sliderMaxValue - sliderMinValue) / NUM_ITERATIONS) {
+		for (double i = appSettings->minEntropyThreshold; i <= appSettings->maxEntropyThreshold; i += (appSettings->maxEntropyThreshold - appSettings->minEntropyThreshold) / NUM_ITERATIONS) {
 			((DataMgrVect *)dataManager)->getEntropyColor(i, color);
-			gradient.setColorAt(1.0 - (i - sliderMinValue) / (sliderMaxValue - sliderMinValue), QColor(255 * color[0], 255 * color[1], 255 * color[2], 255));
+			gradient.setColorAt(1.0 - (i - appSettings->minEntropyThreshold) / (appSettings->maxEntropyThreshold - appSettings->minEntropyThreshold), QColor(255 * color[0], 255 * color[1], 255 * color[2], 255));
 		}
 		
 		//Do the rest of the set up for the slider widget
@@ -742,6 +749,11 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		//m_graphWidget->resize(m_graphWidget->sizeHint());
 		//m_graphWidget->resize(1000, 1000);
 		m_graphWidget->setFixedSize(1000, 1000);
+
+		arrowWidget = new ArrowWidget(appSettings, this, &slider);
+		arrowWidget->setFixedSize(100, 200);
+
+		
 
 		//treeMapWindow->setScrollArea(scrollArea);
 		//treeMapWindow->zoom(0.1, 0, 0);
@@ -832,7 +844,10 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		twoSided->setWidget(1, m_graphWidget);
 		//twoSided->setWidget(1, m_renderOptions);
 		twoSided->setWidget(2, &sliderWidget);
+		twoSided->setWidget(3, arrowWidget);
 		
+		//this->addWidget(arrowWidget);
+		arrowWidget->move(50, 50);
 
 		//((DataMgrVect * )dataManager)->buildDotFileFromTree();
 		//((DataMgrVect *)dataManager)->buildPlainTextFileFromDot();
@@ -847,7 +862,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		((DataMgrVect *)dataManager)->copyToMasterTree();
 
 		//We need to make sure the shown tree and scene match the current query setting
-		initiateEntropyQuery(sliderMinValue);
+		initiateEntropyQuery(appSettings->minEntropyThreshold);
 	}
 	else {
 		connect(m_listWidget, SIGNAL(itemSelectionChanged()), this, SLOT(dropBoxSelection()));
@@ -881,13 +896,14 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	
 }
 
-void Scene::initiateEntropyQuery(double threshold)
+bool Scene::initiateEntropyQuery(double threshold)
 {
+	bool queryChanged = false;
 	//This function makes no sense for Dark Sky data now.
 	if (application != 1) {
-		return;
+		return false;
 	}
-	((DataMgrVect *)dataManager)->queryEntropyTreeByThreshold(threshold);
+	queryChanged = ((DataMgrVect *)dataManager)->queryEntropyTreeByThreshold(threshold);
 	m_textureCubeManager->UpdateTexture(application);
 
 	if (useTreeLeavesForColorMap) {
@@ -899,7 +915,7 @@ void Scene::initiateEntropyQuery(double threshold)
 	m_graphWidget->rebuildGraphFromTree((NodeBi*)dataManager->getRootNode());
 	treeMapWindow->refreshPlot((NodeBi*)dataManager->getRootNode());
 
-	
+	return queryChanged;
 
 }
 
@@ -922,11 +938,13 @@ void Scene::sliderSelection(int newValue) {
 	cout << "New value is: " << newValue << endl;
 	//sliderMinValue = ((DataMgrVect*)dataManager)->getMinEntropy();
 	//sliderMaxValue = ((DataMgrVect*)dataManager)->getMaxEntropy();
-	double entropyThresholdValue =  sliderMinValue + (sliderMaxValue - sliderMinValue) * (double(newValue) / 100);
-	slider.setToolTip(QString("Entropy Theshold Queried: ") + QString::number(entropyThresholdValue));
-	cout << "Entropy threshold value is: " << entropyThresholdValue << endl;
+	appSettings->currentEntropyThreshold = appSettings->minEntropyThreshold + (appSettings->maxEntropyThreshold - appSettings->minEntropyThreshold) * (double(newValue) / 100);
+	slider.setToolTip(QString("Entropy Theshold Queried: ") + QString::number(appSettings->currentEntropyThreshold));
+	cout << "Entropy threshold value is: " << appSettings->currentEntropyThreshold << endl;
 	//((DataMgrVect*)dataManager)->SetChildrenBelowEntropyToVisible((NodeBi*)dataManager->getRootNode(), entropyThresholdValue);
-	initiateEntropyQuery(entropyThresholdValue);
+	if (slider.getRunEntropyQueries()) {
+		initiateEntropyQuery(appSettings->currentEntropyThreshold);
+	}
 }
 
 Scene::~Scene()
@@ -948,6 +966,7 @@ Scene::~Scene()
 	delete m_renderOptions;
 	delete m_graphWidget;
 	//delete m_jsonView;
+	delete appSettings;
 
 //	cudaDeviceReset();
 //	cleanup();

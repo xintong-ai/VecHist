@@ -130,8 +130,10 @@ protected:
 	GLSuperquadric* glyph;
 	bool isVisible = true;
 	bool isSelected = false;
+	bool isQueriedNull = false;					//Is the queried entropy tree null at this node (The intention is to eventually only have the master tree be THE tree and not have a second tree data structure)
 	GLTextureCube *texCube = nullptr;		//OpenGL texture cube used in rendering
 public:
+	//TODO: Use capital letter for method names always or don't - but make it consistent
 	bool GetVisible(){ return isVisible; }
 	void SetVisible(bool b){ isVisible = b; }
 	bool GetSelected() { return isSelected; }
@@ -147,6 +149,8 @@ public:
 	TreeMapWindow * getTreeMapWindow() { return treeMapWindow; }
 	void setTexCube(GLTextureCube * texCube) { this->texCube = texCube; }
 	GLTextureCube * getTexCube() { return texCube; }
+	void SetQueriedNull(bool isQueriedNull) { this->isQueriedNull = isQueriedNull; }
+	bool GetQueriedNull() { return isQueriedNull; }
 
 	void GetDim(int* _dim)
 	{
