@@ -77,6 +77,8 @@ void ArrowWidget::doQueryUp()
 
 	if (appSettings->currentEntropyThreshold > appSettings->maxEntropyThreshold) {
 		appSettings->currentEntropyThreshold = appSettings->maxEntropyThreshold;
+		scene->initiateEntropyQuery(appSettings->currentEntropyThreshold);
+		slider->setValue((appSettings->currentEntropyThreshold - appSettings->minEntropyThreshold) / (appSettings->maxEntropyThreshold - appSettings->minEntropyThreshold) * 100);
 	}
 
 	slider->setRunEntropyQueries(true);
@@ -111,6 +113,8 @@ void ArrowWidget::doQueryDown()
 
 	if (appSettings->currentEntropyThreshold < appSettings->minEntropyThreshold) {
 		appSettings->currentEntropyThreshold = appSettings->minEntropyThreshold;
+		scene->initiateEntropyQuery(appSettings->currentEntropyThreshold);
+		slider->setValue((appSettings->currentEntropyThreshold - appSettings->minEntropyThreshold) / (appSettings->maxEntropyThreshold - appSettings->minEntropyThreshold) * 100);
 	}
 
 	slider->setRunEntropyQueries(true);
