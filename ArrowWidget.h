@@ -4,26 +4,31 @@
 #include <qframe.h>
 #include <QWidget>
 #include <QVBoxLayout>
+#include <qslider.h>
 #include "ArrowButton.h"
 #include "AppSettings.h"
+
+//Must #include "Scene.h" in any .cpp file that uses this header file
+
+class Scene;
 
 class ArrowWidget : public QFrame
 {
 	Q_OBJECT
 public:
-	ArrowWidget(AppSettings * appSettings);
+	ArrowWidget(AppSettings * appSettings, Scene * scene, QSlider * slider);
 public slots:
 	void doQueryUp();
 	void doQueryDown();
 
 private:
+	QSlider * slider = nullptr;
+	Scene * scene = nullptr;
 	AppSettings * appSettings = nullptr;
 	ArrowButton * arrowButton1 = nullptr;
 	QWidget * placeHolder = nullptr;
 	ArrowButton * arrowButton2 = nullptr;
 	QVBoxLayout * layout = nullptr;
-
-	double currentEntropyThreshold = 0;
 };
 
 #endif //ARROW_SLIDER_H

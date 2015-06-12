@@ -746,7 +746,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		//m_graphWidget->resize(1000, 1000);
 		m_graphWidget->setFixedSize(1000, 1000);
 
-		arrowWidget = new ArrowWidget(appSettings);
+		arrowWidget = new ArrowWidget(appSettings, this, &slider);
 		arrowWidget->setFixedSize(100, 200);
 
 		
@@ -933,11 +933,11 @@ void Scene::sliderSelection(int newValue) {
 	cout << "New value is: " << newValue << endl;
 	//sliderMinValue = ((DataMgrVect*)dataManager)->getMinEntropy();
 	//sliderMaxValue = ((DataMgrVect*)dataManager)->getMaxEntropy();
-	double entropyThresholdValue = appSettings->minEntropyThreshold + (appSettings->maxEntropyThreshold - appSettings->minEntropyThreshold) * (double(newValue) / 100);
-	slider.setToolTip(QString("Entropy Theshold Queried: ") + QString::number(entropyThresholdValue));
-	cout << "Entropy threshold value is: " << entropyThresholdValue << endl;
+	appSettings->currentEntropyThreshold = appSettings->minEntropyThreshold + (appSettings->maxEntropyThreshold - appSettings->minEntropyThreshold) * (double(newValue) / 100);
+	slider.setToolTip(QString("Entropy Theshold Queried: ") + QString::number(appSettings->currentEntropyThreshold));
+	cout << "Entropy threshold value is: " << appSettings->currentEntropyThreshold << endl;
 	//((DataMgrVect*)dataManager)->SetChildrenBelowEntropyToVisible((NodeBi*)dataManager->getRootNode(), entropyThresholdValue);
-	initiateEntropyQuery(entropyThresholdValue);
+	initiateEntropyQuery(appSettings->currentEntropyThreshold);
 }
 
 Scene::~Scene()

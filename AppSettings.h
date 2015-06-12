@@ -8,6 +8,7 @@ public:
 	double minEntropyThreshold = 0;
 	double maxEntropyThreshold = 0;
 	double entropyThresholdIncrement = 0;
+	double currentEntropyThreshold = 0;
 
 };
 

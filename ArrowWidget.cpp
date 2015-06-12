@@ -2,14 +2,17 @@
 
 #include "ArrowWidget.h"
 #include "qpushbutton.h"
+#include "Scene.h"
 
 using namespace std;
 
-ArrowWidget::ArrowWidget(AppSettings * appSettings)
+ArrowWidget::ArrowWidget(AppSettings * appSettings, Scene * scene, QSlider * slider)
 {
 	this->appSettings = appSettings;
+	this->scene = scene;
+	this->slider = slider;
 
-	currentEntropyThreshold = appSettings->minEntropyThreshold;
+	appSettings->currentEntropyThreshold = appSettings->minEntropyThreshold;
 
 	arrowButton1 = new ArrowButton(false);
 	placeHolder = new QWidget();
@@ -51,19 +54,27 @@ ArrowWidget::ArrowWidget(AppSettings * appSettings)
 
 void ArrowWidget::doQueryUp()
 {
-	this->currentEntropyThreshold += appSettings->entropyThresholdIncrement;
-	if (currentEntropyThreshold > appSettings->maxEntropyThreshold) {
-		currentEntropyThreshold = appSettings->maxEntropyThreshold;
+	this->appSettings->currentEntropyThreshold += appSettings->entropyThresholdIncrement;
+	if (appSettings->currentEntropyThreshold > appSettings->maxEntropyThreshold) {
+		appSettings->currentEntropyThreshold = appSettings->maxEntropyThreshold;
 	}
-	cout << "Current entropy threshold value: " << currentEntropyThreshold << endl;
+	cout << "Current entropy threshold value: " << appSettings->currentEntropyThreshold << endl;
+
+	scene->initiateEntropyQuery(appSettings->currentEntropyThreshold);
+
+	slider->setValue((appSettings->currentEntropyThreshold - appSettings->minEntropyThreshold) / (appSettings->maxEntropyThreshold - appSettings->minEntropyThreshold) * 100);
 
 }
 
 void ArrowWidget::doQueryDown()
 {
-	this->currentEntropyThreshold -= appSettings->entropyThresholdIncrement;
-	if (currentEntropyThreshold < appSettings->minEntropyThreshold) {
-		currentEntropyThreshold = appSettings->minEntropyThreshold;
+	this->appSettings->currentEntropyThreshold -= appSettings->entropyThresholdIncrement;
+	if (appSettings->currentEntropyThreshold < appSettings->minEntropyThreshold) {
+		appSettings->currentEntropyThreshold = appSettings->minEntropyThreshold;
 	}
-	cout << "Current entropy threshold value: " << currentEntropyThreshold << endl;
+	cout << "Current entropy threshold value: " << appSettings->currentEntropyThreshold << endl;
+
+	scene->initiateEntropyQuery(appSettings->currentEntropyThreshold);
+
+	slider->setValue((appSettings->currentEntropyThreshold - appSettings->minEntropyThreshold) / (appSettings->maxEntropyThreshold - appSettings->minEntropyThreshold) * 100);
 }
