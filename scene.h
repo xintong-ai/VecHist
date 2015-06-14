@@ -66,6 +66,7 @@
 #include "ArrowWidget.h"
 #include "AppSettings.h"
 #include "EntropySlider.h"
+#include "EntropyQueryContainer.h"
 //#include "qtbox.h"
 //#include <cuda_runtime.h>
 //#include <cuda_gl_interop.h>
@@ -321,10 +322,11 @@ private:
 	QJsonView * m_jsonView;
 	QScrollArea * scrollArea = nullptr;
 	QListWidget * m_listWidget;
-	QWidget sliderWidget;
+	EntropySlider * sliderWidget;
+	EntropyQueryContainer * entropyQueryContainer;
 	//GraphVizWidget * m_graphVizWidget;
 
-	ArrowWidget * arrowWidget;
+	//ArrowWidget * arrowWidget;
 	
 
     //ItemDialog *m_itemDialog;
@@ -380,8 +382,6 @@ private:
 	//
 	vector<float3> colorMap;
 	//vector<CutPlane> cutplanes;
-	
-	EntropySlider slider;
 
 	//Declarations From http://ogldev.atspace.co.uk/www/tutorial29/tutorial29.html
 	//GNU License
@@ -390,10 +390,6 @@ private:
 	GLuint m_pickingTexture;
 	GLuint m_depthTexture;
 	////////////////////////////////////////
-
-	//TODO: Get rid of the declaration (duplicate of declaration in the GraphWidget class)
-	//We probably need to add a new AppSettings class
-	bool useTreeLeavesForColorMap = false;
 };
 
 #endif

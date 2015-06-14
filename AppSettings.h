@@ -9,7 +9,7 @@ public:
 	double maxEntropyThreshold = 0;				//Maximum value for entropy threshold for queries
 	double entropyThresholdIncrement = 0;		//Amount by which to increment the entropy threshold for queries each time - currently only used in the arrow widget
 	double currentEntropyThreshold = 0;			//Current value for entropy threshold for queries
-
+	bool useTreeLeavesForColorMap = true;		//True if color map is made based on values stored in leaves and false if not
 };
 
 #endif //ARROW_SETTIGS_H
