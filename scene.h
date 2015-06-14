@@ -321,7 +321,7 @@ private:
 	QJsonView * m_jsonView;
 	QScrollArea * scrollArea = nullptr;
 	QListWidget * m_listWidget;
-	QWidget sliderWidget;
+	EntropySlider * sliderWidget;
 	//GraphVizWidget * m_graphVizWidget;
 
 	ArrowWidget * arrowWidget;
@@ -380,8 +380,6 @@ private:
 	//
 	vector<float3> colorMap;
 	//vector<CutPlane> cutplanes;
-	
-	EntropySlider slider;
 
 	//Declarations From http://ogldev.atspace.co.uk/www/tutorial29/tutorial29.html
 	//GNU License

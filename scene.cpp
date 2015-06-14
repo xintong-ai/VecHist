@@ -650,9 +650,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
 	//Set up the gradient and slider widget
 	if (application == 1) {
-		//Set up the slider widget initial size
-		sliderWidget.resize(50, 800);
-		sliderWidget.setFixedSize(50, 800);  //This might be replaced with code for a resize event later
+		//Load entropy related app settings		
 		
 		string minEntropyThresholdStr = dataManager->GetStringVal("minEntropyThreshold");
 		string maxEntropyThresholdStr = dataManager->GetStringVal("maxEntropyThreshold");
@@ -661,37 +659,18 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		appSettings->minEntropyThreshold = stod(minEntropyThresholdStr);
 		appSettings->maxEntropyThreshold = stod(maxEntropyThresholdStr);
 		appSettings->entropyThresholdIncrement = stod(entropyThresholdIncrementStr);
-
-		QLinearGradient gradient(0, 0, 0, sliderWidget.rect().height());
-
-		const double INCREMENT = 0.01;
-
-		double color[3];
-
-		//Build the gradient
-		const int NUM_ITERATIONS = 100;
-		for (double i = appSettings->minEntropyThreshold; i <= appSettings->maxEntropyThreshold; i += (appSettings->maxEntropyThreshold - appSettings->minEntropyThreshold) / NUM_ITERATIONS) {
-			((DataMgrVect *)dataManager)->getEntropyColor(i, color);
-			gradient.setColorAt(1.0 - (i - appSettings->minEntropyThreshold) / (appSettings->maxEntropyThreshold - appSettings->minEntropyThreshold), QColor(255 * color[0], 255 * color[1], 255 * color[2], 255));
-		}
 		
-		//Do the rest of the set up for the slider widget
-		//based on http://www.codeprogress.com/cpp/libraries/qt/showQtExample.php?key=QLinearGradientManyColor&index=583
-		QPalette palette;
-		palette.setBrush(QPalette::Background, QBrush(gradient));
-		sliderWidget.setPalette(palette);
-		sliderWidget.setWindowTitle("Entropy Query");
-		
-		sliderWidget.move(1100, 30);
-		slider.resize(sliderWidget.rect().width(), sliderWidget.rect().height());
-		
-		slider.setRange(0, 100);
-		slider.setValue(0);
+		//Set up the slider widget initial size
 
-		QHBoxLayout horizLayout;
-		horizLayout.addWidget(&slider);
-
-		sliderWidget.setLayout(&horizLayout);
+		sliderWidget = new EntropySlider(dataManager, appSettings);
+		sliderWidget->resize(50, 800);
+		sliderWidget->setFixedSize(50, 800);  //This might be replaced with code for a resize event later
+		
+		sliderWidget->move(1100, 30);
+		sliderWidget->resize(sliderWidget->rect().width(), sliderWidget->rect().height());
+		
+		sliderWidget->setRange(0, 100);
+		sliderWidget->setValue(0);
 	}
 
 	//dataManager->LoadVec("D:/data/nek/nek.d_4.vec");
@@ -750,7 +729,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		//m_graphWidget->resize(1000, 1000);
 		m_graphWidget->setFixedSize(1000, 1000);
 
-		arrowWidget = new ArrowWidget(appSettings, this, &slider);
+		arrowWidget = new ArrowWidget(appSettings, this, sliderWidget);
 		arrowWidget->setFixedSize(100, 200);
 
 		
@@ -838,12 +817,12 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	connect(m_renderOptions, SIGNAL(segmentationRequested()), this, SLOT(Segmentation()));
 
 	if (application == 1) {
-		connect(&slider, SIGNAL(valueChanged(int)), SLOT(sliderSelection(int)));
+		connect(sliderWidget, SIGNAL(valueChanged(int)), SLOT(sliderSelection(int)));
 
 		twoSided->setWidget(0, treeMapWindow);
 		twoSided->setWidget(1, m_graphWidget);
 		//twoSided->setWidget(1, m_renderOptions);
-		twoSided->setWidget(2, &sliderWidget);
+		twoSided->setWidget(2, sliderWidget);
 		twoSided->setWidget(3, arrowWidget);
 		
 		//this->addWidget(arrowWidget);
@@ -939,10 +918,10 @@ void Scene::sliderSelection(int newValue) {
 	//sliderMinValue = ((DataMgrVect*)dataManager)->getMinEntropy();
 	//sliderMaxValue = ((DataMgrVect*)dataManager)->getMaxEntropy();
 	appSettings->currentEntropyThreshold = appSettings->minEntropyThreshold + (appSettings->maxEntropyThreshold - appSettings->minEntropyThreshold) * (double(newValue) / 100);
-	slider.setToolTip(QString("Entropy Theshold Queried: ") + QString::number(appSettings->currentEntropyThreshold));
+	sliderWidget->setToolTip(QString("Entropy Theshold Queried: ") + QString::number(appSettings->currentEntropyThreshold));
 	cout << "Entropy threshold value is: " << appSettings->currentEntropyThreshold << endl;
 	//((DataMgrVect*)dataManager)->SetChildrenBelowEntropyToVisible((NodeBi*)dataManager->getRootNode(), entropyThresholdValue);
-	if (slider.getRunEntropyQueries()) {
+	if (sliderWidget->getRunEntropyQueries()) {
 		initiateEntropyQuery(appSettings->currentEntropyThreshold);
 	}
 }
@@ -967,6 +946,8 @@ Scene::~Scene()
 	delete m_graphWidget;
 	//delete m_jsonView;
 	delete appSettings;
+
+	delete sliderWidget;
 
 //	cudaDeviceReset();
 //	cleanup();
