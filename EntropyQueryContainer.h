@@ -9,13 +9,13 @@
 #include "ArrowButton.h"
 
 #include "EntropySlider.h"
-#include "ArrowWidget.h"
 
 class Scene;
 
 //This class manages is a widget containing both the entropy query slider and the two arrow buttons
 class EntropyQueryContainer : public QFrame
 {
+	Q_OBJECT
 public:
 	EntropyQueryContainer(AppSettings * appSettings, Scene * scene, EntropySlider * entropySlider);
 
