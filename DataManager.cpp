@@ -10,8 +10,9 @@
 #include <cuda/vector_functions.h>
 #include <fstream>
 
-DataManager::DataManager()
+DataManager::DataManager(AppSettings * appSettings)
 {
+	this->appSettings = appSettings;
 	LoadParameters();
 }
 

@@ -213,6 +213,9 @@ QVariant Widget::Node::itemChange(GraphicsItemChange change, const QVariant &val
 	return QGraphicsItem::itemChange(change, value);
 }
 
+//Mouse press event for a node
+//Toggles the selected state for a node
+//Also prints information about it to the console - useful for debugging
 void Widget::Node::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
 	update();
@@ -224,9 +227,11 @@ void Widget::Node::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
 	NodeBi * nodeBiPtr = getNodeBiPtr();
 	double entropyValue = nodeBiPtr->GetEntropy();
+	int volumeValue = nodeBiPtr->GetVolume();
 	nodeBiPtr->getTreeMapWindow()->updateChildren();
 	setToolTip(QString("Entropy: ") + QString::number(entropyValue));
 	cout << "Entropy of Node: " << entropyValue << endl;
+	cout << "Volume of Node: " << volumeValue << endl;
 	cout << "Name of Node: " << name << endl;
 }
 

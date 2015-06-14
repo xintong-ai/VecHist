@@ -130,7 +130,7 @@ public:
 	vector<MergeNode *> getNodesAtGivenTimestepFromTree(int desiredTimeStep, int currentTimeStep, MergeNode * mergeNode);
 	
 
-	DataMgrCosm();
+	DataMgrCosm(AppSettings * appSettings);
 	~DataMgrCosm();
 
 };

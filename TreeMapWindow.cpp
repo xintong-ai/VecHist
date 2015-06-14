@@ -30,17 +30,18 @@
 #include <qformlayout.h>
 #include <iostream>
 
-
-TreeMapWindow::TreeMapWindow(DataManager * dataManager, bool useTreeMapLabels)
+//Constructor
+TreeMapWindow::TreeMapWindow(DataManager * dataManager, AppSettings * appSettings, bool useTreeMapLabels)
 {
 	this->dataManager = dataManager;
+	this->appSettings = appSettings;
 
 	scrollArea = new MyScrollArea;
 	
 
 	// the plot
-	mainLayout = new QHBoxLayout;  //Lines widgets up vertically
-	ltmPlot = new TreeMapPlot(this, dataManager, useTreeMapLabels);
+	mainLayout = new QHBoxLayout;  //Lines widgets up horizontally
+	ltmPlot = new TreeMapPlot(this, dataManager, appSettings, useTreeMapLabels);
 	ltmPlot->resize(800, 800);
 	scrollArea->setWidget(ltmPlot);
 	scrollArea->setFrameStyle(QFrame::NoFrame);
@@ -79,20 +80,40 @@ TreeMapWindow::TreeMapWindow(DataManager * dataManager, bool useTreeMapLabels)
 	placeholder->setPalette(myPalette);
 	placeholder->setAutoFillBackground(true);
 
-	double minEntropy = ((DataMgrVect *)dataManager)->getMinEntropy();
-	double maxEntropy = ((DataMgrVect *)dataManager)->getMaxEntropy();
+	rebuildGradient();
 
+	// user clicked on a cell in the plot
+	connect(ltmPlot, SIGNAL(clicked(QString, QString)), this, SLOT(cellClicked(QString, QString)));    
+}
+
+//This function builds/rebuilds the color map gradient
+void TreeMapWindow::rebuildGradient()
+{
 	QLinearGradient gradient(0, 0, 0, this->rect().height());
-
 	const double INCREMENT = 0.01;
-
 	double color[3];
 
-	//Build the gradient for the color bar
-	const int NUM_ITERATIONS = 100;
-	for (double i = minEntropy; i <= maxEntropy; i += (maxEntropy - minEntropy) / NUM_ITERATIONS) {
-		((DataMgrVect *)dataManager)->getEntropyColor(i, color);
-		gradient.setColorAt(1.0 - (i - minEntropy) / (maxEntropy - minEntropy), QColor(255 * color[0], 255 * color[1], 255 * color[2], 255));
+	if (appSettings->useEntropyForTreeMapColor) {
+		double minEntropy = ((DataMgrVect *)dataManager)->getMinEntropy();
+		double maxEntropy = ((DataMgrVect *)dataManager)->getMaxEntropy();
+
+		//Build the gradient for the color bar
+		const int NUM_ITERATIONS = 100;
+		for (double i = minEntropy; i <= maxEntropy; i += (maxEntropy - minEntropy) / NUM_ITERATIONS) {
+			((DataMgrVect *)dataManager)->getEntropyColor(i, color);
+			gradient.setColorAt(1.0 - (i - minEntropy) / (maxEntropy - minEntropy), QColor(255 * color[0], 255 * color[1], 255 * color[2], 255));
+		}
+	}
+	else {
+		double minVolume = ((DataMgrVect *)dataManager)->getMinVolume();
+		double maxVolume = ((DataMgrVect *)dataManager)->getMaxVolume();
+
+		//Build the gradient for the color bar
+		const int NUM_ITERATIONS = 100;
+		for (double i = minVolume; i <= maxVolume; i += (maxVolume - minVolume) / NUM_ITERATIONS) {
+			((DataMgrVect *)dataManager)->getVolumeColor(i, color);
+			gradient.setColorAt(1.0 - (i - minVolume) / (maxVolume - minVolume), QColor(255 * color[0], 255 * color[1], 255 * color[2], 255));
+		}
 	}
 
 	QPalette palette;
@@ -100,8 +121,6 @@ TreeMapWindow::TreeMapWindow(DataManager * dataManager, bool useTreeMapLabels)
 	colorBar->setPalette(palette);
 	colorBar->setAutoFillBackground(true);
 
-	// user clicked on a cell in the plot
-	connect(ltmPlot, SIGNAL(clicked(QString, QString)), this, SLOT(cellClicked(QString, QString)));    
 }
 
 TreeMapWindow::~TreeMapWindow()
@@ -199,28 +218,10 @@ void TreeMapWindow::zoom(double factor, int x, int y)
 }
 #endif
 
+//This method responds to resize events, rebuilding the color map gradient according to the window height
 void TreeMapWindow::resizeEvent(QResizeEvent * event)
 {
-	double minEntropy = ((DataMgrVect *)dataManager)->getMinEntropy();
-	double maxEntropy = ((DataMgrVect *)dataManager)->getMaxEntropy();
-
-	QLinearGradient gradient(0, 0, 0, this->rect().height());
-
-	const double INCREMENT = 0.01;
-
-	double color[3];
-
-	//Build the gradient for the color bar
-	const int NUM_ITERATIONS = 100;
-	for (double i = minEntropy; i <= maxEntropy; i += (maxEntropy - minEntropy) / NUM_ITERATIONS) {
-		((DataMgrVect *)dataManager)->getEntropyColor(i, color);
-		gradient.setColorAt(1.0 - (i - minEntropy) / (maxEntropy - minEntropy), QColor(255 * color[0], 255 * color[1], 255 * color[2], 255));
-	}
-
-	QPalette palette;
-	palette.setBrush(QPalette::Background, QBrush(gradient));
-	colorBar->setPalette(palette);
-	colorBar->setAutoFillBackground(true);
+	rebuildGradient();
 }
 
 void TreeMapWindow::updateChildren()

@@ -600,13 +600,47 @@ Scene::Scene(int width, int height, int maxTextureSize)
     //, m_environmentShader(0)
     //, m_environmentProgram(0)
 {
+	appSettings = new AppSettings();
+
+	//Instantiate the data manager object
 	//	if (dataManager->GetStringVal("datatype").compare("flow") == 0)
 	if (1 == application)
-		dataManager = new DataMgrVect();
+		dataManager = new DataMgrVect(appSettings);
 	else //if (dataManager->GetStringVal("datatype").compare("cosmology") == 0)
-		dataManager = new DataMgrCosm();
+		dataManager = new DataMgrCosm(appSettings);
 
-	appSettings = new AppSettings();
+	//Load app settings	into AppSettings object instance
+	string minEntropyThresholdStr = dataManager->GetStringVal("minEntropyThreshold");
+	string maxEntropyThresholdStr = dataManager->GetStringVal("maxEntropyThreshold");
+	string entropyThresholdIncrementStr = dataManager->GetStringVal("entropyThresholdIncrement");
+	string useTreeLeavesForColorMapStr = dataManager->GetStringVal("useTreeLeavesForColorMap");
+	string useEntropyForTreeMapColorStr = dataManager->GetStringVal("useEntropyForTreeMapColor");
+	string useEntropyForTreeMapAreaStr = dataManager->GetStringVal("useEntropyForTreeMapArea");
+
+	appSettings->minEntropyThreshold = stod(minEntropyThresholdStr);
+	appSettings->maxEntropyThreshold = stod(maxEntropyThresholdStr);
+	appSettings->entropyThresholdIncrement = stod(entropyThresholdIncrementStr);
+	
+	if (useTreeLeavesForColorMapStr == "0") {
+		appSettings->useTreeLeavesForColorMap = false;
+	}
+	else {
+		appSettings->useTreeLeavesForColorMap = true;
+	}
+
+	if (useEntropyForTreeMapColorStr == "0") {
+		appSettings->useEntropyForTreeMapColor = false;
+	}
+	else {
+		appSettings->useEntropyForTreeMapColor = true;
+	}
+
+	if (useEntropyForTreeMapAreaStr == "0") {
+		appSettings->useEntropyForTreeMapArea = false;
+	}
+	else {
+		appSettings->useEntropyForTreeMapArea = true;
+	}
 
 	//Read the starting time step value from the .par file, and convert it to an integer
 	string startTimeStepStr = dataManager->GetStringVal("starttimestep");
@@ -674,24 +708,9 @@ Scene::Scene(int width, int height, int maxTextureSize)
     m_renderOptions->resize(m_renderOptions->sizeHint());
 	
 	if (1 == application) {
-		//Load app settings		
-		string minEntropyThresholdStr = dataManager->GetStringVal("minEntropyThreshold");
-		string maxEntropyThresholdStr = dataManager->GetStringVal("maxEntropyThreshold");
-		string entropyThresholdIncrementStr = dataManager->GetStringVal("entropyThresholdIncrement");
-		string useTreeLeavesForColorMapStr = dataManager->GetStringVal("useTreeLeavesForColorMap");
+		//Load tree map labels setting from config file (TODO: put in AppSettings class)
 		string useTreeMapLabelsStr = dataManager->GetStringVal("useTreeMapLabels");
 
-		appSettings->minEntropyThreshold = stod(minEntropyThresholdStr);
-		appSettings->maxEntropyThreshold = stod(maxEntropyThresholdStr);
-		appSettings->entropyThresholdIncrement = stod(entropyThresholdIncrementStr);
-
-		if (useTreeLeavesForColorMapStr == "0") {
-			appSettings->useTreeLeavesForColorMap = false;
-		}
-		else {
-			appSettings->useTreeLeavesForColorMap = true;
-		}
-				
 		bool useTreeMapLabels = false;
 		if (useTreeMapLabelsStr == "0") {
 			useTreeMapLabels = false;
@@ -700,7 +719,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 			useTreeMapLabels = true;
 		}
 
-		treeMapWindow = new TreeMapWindow(dataManager, useTreeMapLabels);
+		treeMapWindow = new TreeMapWindow(dataManager, appSettings, useTreeMapLabels);
 		//treeMapWindow->move(20, 30);
 		treeMapWindow->move(500, 500);
 		//treeMapWindow->resize(8000, 8000);
@@ -721,6 +740,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		sliderWidget->setRange(0, 100);
 		sliderWidget->setValue(0);
 
+		//Set up the entropy query container
 		entropyQueryContainer = new EntropyQueryContainer(appSettings, this, sliderWidget);
 		entropyQueryContainer->setFixedSize(50, 850);
 		entropyQueryContainer->move(1100, 50);
@@ -866,8 +886,9 @@ bool Scene::initiateEntropyQuery(double threshold)
 	m_textureCubeManager->UpdateTexture(application);
 
 	if (appSettings->useTreeLeavesForColorMap) {
-		((DataMgrVect *)dataManager)->calculateEntropyExtremes();
-		((DataMgrVect *)dataManager)->BuildColorMap();
+		((DataMgrVect *)dataManager)->calculateExtremes();
+		((DataMgrVect *)dataManager)->BuildEntropyColorMap();
+		((DataMgrVect *)dataManager)->BuildVolumeColorMap();
 
 	}
 

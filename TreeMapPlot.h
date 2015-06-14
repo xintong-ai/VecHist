@@ -28,6 +28,7 @@
 #include <iostream>
 
 #include "TreeMapWindow.h"
+#include "AppSettings.h"
 
 using namespace std;
 
@@ -385,7 +386,7 @@ class TreeMapPlot : public QWidget
 
 
     public:
-		TreeMapPlot(TreeMapWindow *, DataManager * dataManager, bool showLabel);
+		TreeMapPlot(TreeMapWindow *, DataManager * dataManager, AppSettings * appSettings, bool showLabel);
         ~TreeMapPlot();
 		void setData(NodeBi * rootBi);
 		void buildTree();
@@ -421,7 +422,8 @@ class TreeMapPlot : public QWidget
 		bool showLabel = true;		//If true labels are shown.  If false they are not.
 		list<TreeMap *> leafNodes;	//A list of all leaf nodes in the normal tree structure (TODO: unify this with the leafNodesRoot data structure below to avoid redundant data - we will no longer need this list<TreeMap *>)
 		NodeBi * rootBi = nullptr;  //The root data node
-		DataManager * dataManager = nullptr;
+		DataManager * dataManager = nullptr;	//Reference to the data manager object
+		AppSettings * appSettings = nullptr;	//Reference to the app setting object
 
 		//Layout and tree structuring method
 		//0 = square layout with multilevel tree

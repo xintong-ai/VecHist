@@ -9,7 +9,7 @@ using namespace std;
 
 
 
-DataMgrCosm::DataMgrCosm()
+DataMgrCosm::DataMgrCosm(AppSettings * appSettings) : DataManager(appSettings)
 {
 }
 

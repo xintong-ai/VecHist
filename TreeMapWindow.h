@@ -34,7 +34,7 @@
 #include <QVBoxLayout>
 #include <qscrollarea.h>
 
-
+#include "AppSettings.h"
 
 class NodeBi;
 class DataManager;
@@ -60,8 +60,9 @@ class TreeMapWindow : public QFrame
 
     public:
 
-		TreeMapWindow(DataManager * dataManager, bool useTreeMapLabels);
+		TreeMapWindow(DataManager * dataManager, AppSettings * appSettings, bool useTreeMapLabels);
         ~TreeMapWindow();
+		void TreeMapWindow::rebuildGradient();
 		void refreshPlot(NodeBi * root);
 		#ifndef QT_NO_WHEELEVENT
 		void wheelEvent(QWheelEvent *event) Q_DECL_OVERRIDE;
@@ -85,6 +86,7 @@ class TreeMapWindow : public QFrame
 		DataManager * dataManager = nullptr;
 		QWidget * placeholder = nullptr;
 		QFrame * colorBar = nullptr;
+		AppSettings * appSettings = nullptr;
 };
 
 #endif // _GC_TreeMapWindow_h

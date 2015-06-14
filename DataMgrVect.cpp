@@ -465,13 +465,15 @@ void DataMgrVect::ResizeCube(int x, int y, int z)
 	qCubeSize[2] += z;
 }
 
+//This method begins the data loading process for vector field data
 void DataMgrVect::LoadData()
 {
 	cubemap_size = 16;
 	LoadVec(GetStringVal("vectorfield").c_str());
 	LoadSegmentation();
-	calculateEntropyExtremes();
-	BuildColorMap();
+	calculateExtremes();
+	BuildEntropyColorMap();
+	BuildVolumeColorMap();
 }
 
 
@@ -818,7 +820,7 @@ void DataMgrVect::QueryByBin(int f, int x, int y, unsigned char* result)
 	std::cout << "perc:" << (float)cnt / (dim[0] * dim[1] * dim[2]) << std::endl;
 }
 
-DataMgrVect::DataMgrVect()
+DataMgrVect::DataMgrVect(AppSettings * appSettings) : DataManager(appSettings)
 {
 	numBlocks = 0;
 	osuflow = new OSUFlow();
@@ -1145,29 +1147,47 @@ void DataMgrVect::LoadSegmentation()
 	readBinaryTree(rootNode, fin, starts, dims, entropys, eig_vals, eig_vecs);
 }
 
-//This function builds the vtk color map used for both the gradient in the slider widget and used to determine the colors of graph nodes
+//This function builds the entropy vtk color map used for both the gradient in the slider widget and is used to determine the colors of graph nodes (tree structure widget and tree map)
 //It corresponds to different values of entropy
-void DataMgrVect::BuildColorMap()
+void DataMgrVect::BuildEntropyColorMap()
 {	
-	colorTable = vtkLookupTable::New();
+	entropyColorTable = vtkLookupTable::New();
 
-	colorTable->SetHueRange(0.0, 0.55); //Was 0.0 to 0.66
+	entropyColorTable->SetHueRange(0.0, 0.55); //Was 0.0 to 0.66
 
-	colorTable->SetNumberOfColors(256);
-	colorTable->SetNanColor(0.1, 0.1, 0.1, 1.0);
-	colorTable->SetTableRange(minEntropy, maxEntropy);
+	entropyColorTable->SetNumberOfColors(256);
+	entropyColorTable->SetNanColor(0.1, 0.1, 0.1, 1.0);
+	entropyColorTable->SetTableRange(minEntropy, maxEntropy);
 	//colorTable->SetRampToLinear();
 
 	//colorTable->SetValueRange(MIN, MAX);
 
-	colorTable->Build();
+	entropyColorTable->Build();
+}
+
+//This function builds the volume vtk color map used in the tree map
+//It corresponds to different values of volume
+void DataMgrVect::BuildVolumeColorMap()
+{
+	volumeColorTable = vtkLookupTable::New();
+
+	volumeColorTable->SetHueRange(0.0, 0.55); //Was 0.0 to 0.66
+
+	volumeColorTable->SetNumberOfColors(256);
+	volumeColorTable->SetNanColor(0.1, 0.1, 0.1, 1.0);
+	volumeColorTable->SetTableRange(minVolume, maxVolume);
+	//colorTable->SetRampToLinear();
+
+	//colorTable->SetValueRange(MIN, MAX);
+
+	volumeColorTable->Build();
 }
 
 //This function gets an entropy color based on the values in the vtk color map
 //Notably, it flips the result so that blue is the lowest value and so that red is the largest value
 void DataMgrVect::getEntropyColor(double entropyValue, double color[3])
 {
-	if (colorTable == nullptr) {
+	if (entropyColorTable == nullptr) {
 		color[0] = color[1] = color[2] = 0.0;
 		cerr << "getEntropyColor was called, but the color map was null" << endl;
 	}
@@ -1175,8 +1195,8 @@ void DataMgrVect::getEntropyColor(double entropyValue, double color[3])
 		entropyValue = entropyValue - minEntropy;
 		entropyValue = maxEntropy - minEntropy - entropyValue;
 		entropyValue = entropyValue + minEntropy;
-
-		colorTable->GetColor(entropyValue, color);
+		
+		entropyColorTable->GetColor(entropyValue, color);
 	}
 }
 
@@ -1185,13 +1205,46 @@ void DataMgrVect::getEntropyColor(double entropyValue, double color[3])
 //this is what the gradient uses.
 void DataMgrVect::getEntropyColorReversed(double entropyValue, double color[3])
 {
-	if (colorTable == nullptr) {
+	if (entropyColorTable == nullptr) {
 		color[0] = color[1] = color[2] = 0.0;
-		cerr << "getEntropyColor was called, but the color map was null" << endl;
+		cerr << "getEntropyColorReversed was called, but the color map was null" << endl;
 	}
 	else {
-		colorTable->GetColor(entropyValue, color);
+		entropyColorTable->GetColor(entropyValue, color);
 	}
+}
+
+//This function gets a volume color based on the values in the vtk color map
+//Notably, it flips the result so that blue is the lowest value and so that red is the largest value
+void DataMgrVect::getVolumeColor(double volumeValue, double color[3])
+{
+	if (volumeColorTable == nullptr) {
+		color[0] = color[1] = color[2] = 0.0;
+		cerr << "getVolumeColor was called, but the color map was null" << endl;
+	}
+	else {
+		volumeValue = volumeValue - minVolume;
+		volumeValue = maxVolume - minVolume - volumeValue;
+		volumeValue = volumeValue + minVolume;
+		
+		volumeColorTable->GetColor(volumeValue, color);
+	}
+
+}
+
+//This function gets a volume color based on the values in the vtk color map
+//Notably, it does not flip the result -- thus making it "reversed" from what we normally use;
+//this is what the gradient uses.
+void DataMgrVect::getVolumeColorReversed(double volumeValue, double color[3])
+{
+	if (volumeColorTable == nullptr) {
+		color[0] = color[1] = color[2] = 0.0;
+		cerr << "getVolumeColorReversed was called, but the color map was null" << endl;
+	}
+	else {
+		volumeColorTable->GetColor(volumeValue, color);
+	}
+
 }
 
 vector<AbstractNode*> DataMgrVect::GetAllNode()
@@ -1201,6 +1254,7 @@ vector<AbstractNode*> DataMgrVect::GetAllNode()
 	return ret;
 }
 
+//This function returns the root node from the entropy split tree
 NodeBi* DataMgrVect::getRootNode()
 { 
 	return rootNode; 
@@ -1285,8 +1339,8 @@ void DataMgrVect::UpdateCubeMap(float* cubemap)
 	ComputeCubeMap(datablock.get(), cubeSizeTotal, cubemap, cubemap_size);
 }
 
-//This function calculates the min and max entropy values, storing them in class members minEntropy and maxEntropy respectively
-void DataMgrVect::calculateEntropyExtremes()
+//This function calculates the min and max entropy/volume values, storing them in class members minEntropy and maxEntropy / minVolume and maxVolume respectively
+void DataMgrVect::calculateExtremes()
 {
 	string useTreeLeavesForColorMapStr = GetStringVal("useTreeLeavesForColorMap");
 	bool useTreeLeavesForColorMap = false;
@@ -1299,27 +1353,29 @@ void DataMgrVect::calculateEntropyExtremes()
 
 	NodeBi *rootNode = getRootNode();
 
-	//Travel to a leaf node and use this for the starting value for the min/max entropy values (until we find the true min/max)
+	//Travel to a leaf node and use this for the starting value for the min/max data values (until we find the true min/max)
 	//Starting with a leaf node is required if useTreeLeavesForColorMap is true, but it also works if useTreeLeavesForColorMap is false.
 	NodeBi * currentNode = nullptr;
 	for (currentNode = rootNode; currentNode != nullptr && currentNode->left != nullptr; currentNode = currentNode->left);
 	minEntropy = maxEntropy = currentNode->GetEntropy();
+	minVolume = maxVolume = currentNode->GetVolume();
 	
-	calculateEntropyExtremes(rootNode, useTreeLeavesForColorMap);
+	calculateExtremes(rootNode, useTreeLeavesForColorMap);
 
 	//Prevent weird floating point comparison issues in entropy threshold queries
 	minEntropy -= EPSILON;
 	maxEntropy += EPSILON;
 }
 
-//This function recursively finds the min and max entropy values, storing them in class members minEntropy and maxEntropy respectively
+//This function recursively finds the min and max entropy/volume values, storing them in class members minEntropy and maxEntropy / minVolume and maxVolume respectively
 //It is called by calculateEntropyExtremes() above
 //Input parameters:
 //p - the entropy tree structure
 //useTreeLeavesForColorMap - true if only tree laves should be used for min/max entropy values.  False if any node is assessed.  Has a big impact on colormap.
-void DataMgrVect::calculateEntropyExtremes(NodeBi *p, bool useTreeLeavesForColorMap)
+void DataMgrVect::calculateExtremes(NodeBi *p, bool useTreeLeavesForColorMap)
 {
 	float currentEntropy = p->GetEntropy();
+	int currentVolume = p->GetVolume();
 
 	if (!useTreeLeavesForColorMap || (p->left == nullptr && p->right == nullptr)) {
 		if (currentEntropy < minEntropy) {
@@ -1329,13 +1385,22 @@ void DataMgrVect::calculateEntropyExtremes(NodeBi *p, bool useTreeLeavesForColor
 		if (currentEntropy > maxEntropy) {
 			maxEntropy = currentEntropy;
 		}
+
+		if (currentVolume < minVolume) {
+			minVolume = currentVolume;
+		}
+
+		if (currentVolume > maxVolume) {
+			maxVolume = currentVolume;
+		}
+		
 	}
 
 	if (p->left != nullptr) {
-		calculateEntropyExtremes(p->left, useTreeLeavesForColorMap);
+		calculateExtremes(p->left, useTreeLeavesForColorMap);
 	}
 	if (p->right != nullptr) {
-		calculateEntropyExtremes(p->right, useTreeLeavesForColorMap);
+		calculateExtremes(p->right, useTreeLeavesForColorMap);
 	}
 
 }

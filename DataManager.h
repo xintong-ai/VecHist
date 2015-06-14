@@ -7,6 +7,7 @@
 #include "glSuperquadric.h"
 #include "node.h"
 #include "TreeMapWindow.h"
+#include "AppSettings.h"
 #include <unordered_map>
 
 //1 means flow data
@@ -166,6 +167,7 @@ public:
 
 	float GetEntropy() { return entropy; }
 	void SetEntropy(float entropy) { this->entropy = entropy; }
+	int GetVolume() { return dim[0] * dim[1] * dim[2]; }
 
 	AbstractNode(int _cube_size)
 	{
@@ -190,7 +192,8 @@ protected:
 	bool CubeInsideVolumeX(int x, int nx);
 	bool CubeInsideVolumeY(int x, int nx);
 	bool CubeInsideVolumeZ(int x, int nx);
-	unordered_map<int, AbstractNode *> haloTable;  //Hash table to link halo ids to Halo struct records
+	unordered_map<int, AbstractNode *> haloTable;	//Hash table to link halo ids to Halo struct records
+	AppSettings * appSettings;						//Reference to the app settings object
 
 public:
 	virtual void LoadData() = 0;
@@ -215,7 +218,7 @@ public:
 	int getStartTimeStep() { return startTimeStep; }
 	void setStartTimeStep(int startTimeStep) { this->startTimeStep = startTimeStep; }
 
-	DataManager();
+	DataManager(AppSettings * appSettings);
 	~DataManager();
 };
 

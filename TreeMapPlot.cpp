@@ -34,11 +34,16 @@ bool TreeMapLessThan(const TreeMap *a, const TreeMap *b) {
 }
 
 //Constructor
-//Parameter parent - the TreeMapWindow object to which the tree map belongs
-TreeMapPlot::TreeMapPlot(TreeMapWindow *parent, DataManager * dataManager, bool showLabel)
+//Parameters:
+//parent - the TreeMapWindow object to which the tree map belongs
+//dataManager - reference to the data manager object
+//appSettings - reference to the AppSettings object
+//showLabel - true if labels should be shown in the widget, false if not (this will be moved to the AppSettings class later)
+TreeMapPlot::TreeMapPlot(TreeMapWindow *parent, DataManager * dataManager, AppSettings * appSettings, bool showLabel)
 	: QWidget(parent), parent(parent)
 {
 	this->dataManager = dataManager;
+	this->appSettings = appSettings;
 	this->showLabel = showLabel;
 	root = new TreeMap;
 	setMouseTracking(true);
@@ -57,13 +62,14 @@ void TreeMapPlot::setData(NodeBi * rootBi)
 	this->rootBi = rootBi;
 
 	//Issue a resize event
-	//This will cause a new layout to be issued,
+	//This will cause a new layout to be issued, calling function resizeEvent,
 	//which will both build the display tree from the root Bi node and
 	//then run the necessary layout algorithms
 	resizeEvent(NULL);
 }
 
 //Builds the display tree used by the layout system
+//Calls different methods depending on the layout method
 void TreeMapPlot::buildTree() 
 {
 	if (root != nullptr) {
@@ -299,10 +305,16 @@ void TreeMapPlot::paintChildren(TreeMap * parent, QPainter & painter, QBrush & b
 
 	foreach(TreeMap *first, parent->children) {
 
-		//Use color map based on entropy value to determine color of rendered square
-		double entropyValue = first->value;
+		//Use color map based on entropy value or volume depending on AppSettings to determine color of rendered square
+		if (appSettings->useEntropyForTreeMapColor) {
+			double entropyValue = first->value;
+			((DataMgrVect *)dataManager)->getEntropyColor(entropyValue, color);
+		}
+		else {
+			double volumeValue = first->value;
+			((DataMgrVect *)dataManager)->getVolumeColor(volumeValue, color);
+		}
 
-		((DataMgrVect *)dataManager)->getEntropyColor(entropyValue, color);
 		cRGB.setRgb(255 * color[0], 255 * color[1], 255 * color[2], 255);
 
 

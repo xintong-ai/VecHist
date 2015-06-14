@@ -108,6 +108,8 @@ class DataMgrVect:public DataManager
 	//	int nCells;
 	double minEntropy = 0;  //Minimum entropy found in the entropy tree
 	double maxEntropy = 0;  //Maximum entropy found in the entropy tree
+	int minVolume = 0;		//Minimum computed volume found in the entropy tree
+	int maxVolume = 0;		//Maximum computed volume found in the entropy tree
 	std::vector<std::vector<double> > vV;
 	std::vector<std::vector<int> > vF;
 	std::vector<float> vertexValue;
@@ -124,7 +126,8 @@ class DataMgrVect:public DataManager
 	NodeBi *rootNode;		//Root node to the entropy tree structure
 	int numBlocks;
 
-	vtkLookupTable * colorTable = nullptr;  //Reference to the VTK color table (currently used in the entropy slider and graph structure widget)
+	vtkLookupTable * entropyColorTable = nullptr;  //Reference to the VTK color table for entropy (currently used in the entropy slider, graph structure widget, and tree map)
+	vtkLookupTable * volumeColorTable = nullptr;  //Reference to the VTK color table for volume (currently used in the tree map widget)
 	NodeBi * masterRootNode = nullptr;		//Root node of the master entropy tree.  This serves as a backup to restore the entropy tree when we make a subtree out of it.
 
 	//void SplitNode(Node* parent);
@@ -140,7 +143,7 @@ class DataMgrVect:public DataManager
 	bool queryEntropyTreeByThreshold(double theshold, NodeBi * currentEntropyNode, NodeBi * currentMasterNode, int level);
 
 public:
-	DataMgrVect();
+	DataMgrVect(AppSettings * appSettings);
 	~DataMgrVect();
 
 	void LoadVec(const char* filename);
@@ -163,9 +166,12 @@ public:
 	int GetNumOfCells();
 	//void Segmentation();
 	void LoadSegmentation();
-	void BuildColorMap();
+	void BuildEntropyColorMap();
+	void BuildVolumeColorMap();
 	void getEntropyColor(double entropyValue, double color[3]);
 	void getEntropyColorReversed(double entropyValue, double color[3]);
+	void getVolumeColor(double volumeValue, double color[3]);
+	void getVolumeColorReversed(double volumeValue, double color[3]);
 	//void SplitTopNode();
 	//void BuildOctree(Node *nd);
 	vector<vector<float4>> GetStreamlines();
@@ -177,10 +183,12 @@ public:
 	virtual vector<AbstractNode*> GetAllNode();
 	virtual NodeBi* getRootNode();
 	virtual void UpdateCubeMap(float* cubemap);
-	void calculateEntropyExtremes();
-	void calculateEntropyExtremes(NodeBi *p, bool useTreeLeavesForColorMap);
+	void calculateExtremes();
+	void calculateExtremes(NodeBi *p, bool useTreeLeavesForColorMap);
 	float getMinEntropy() { return minEntropy; }
 	float getMaxEntropy() { return maxEntropy; }
+	int getMinVolume() { return minVolume; }
+	int getMaxVolume() { return maxVolume; }
 
 	void SetChildrenBelowEntropyToVisible(NodeBi * nd, double _maxEntropy);
 
