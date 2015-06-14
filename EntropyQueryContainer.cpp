@@ -17,10 +17,10 @@ EntropyQueryContainer::EntropyQueryContainer(AppSettings * appSettings, Scene * 
 	arrowButton1->resize(100, 100);
 	arrowButton2->resize(100, 100);
 
+	//Sizing policies for the layout
 	QSizePolicy arrow1Policy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 	arrow1Policy.setHorizontalStretch(5);
 	arrowButton1->setSizePolicy(arrow1Policy);
-
 
 	QSizePolicy arrow2Policy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 	arrow2Policy.setHorizontalStretch(5);
@@ -31,7 +31,7 @@ EntropyQueryContainer::EntropyQueryContainer(AppSettings * appSettings, Scene * 
 	placeHolderPolicy.setHorizontalStretch(5);
 	placeHolder->setSizePolicy(placeHolderPolicy);
 
-
+	//Build the layout
 	layout = new QVBoxLayout();
 	layout->addWidget(arrowButton1);
 	layout->addWidget(placeHolder);
@@ -43,6 +43,7 @@ EntropyQueryContainer::EntropyQueryContainer(AppSettings * appSettings, Scene * 
 
 	this->setLayout(layout);
 
+	//Set up events
 	connect((QObject*)arrowButton1, SIGNAL(clicked()), this, SLOT(doQueryUp()));
 	connect((QObject*)arrowButton2, SIGNAL(clicked()), this, SLOT(doQueryDown()));
 
@@ -50,6 +51,9 @@ EntropyQueryContainer::EntropyQueryContainer(AppSettings * appSettings, Scene * 
 
 }
 
+//This function increases the current entropy threshold query value then runs the query on the split tree structure
+//It will first try to increase by the configured threshold but will continue increasing the value bit by bit until some sort of
+//change in the tree structure is detected.  This way a change always happens when the button is clicked.
 void EntropyQueryContainer::doQueryUp()
 {
 	this->appSettings->currentEntropyThreshold += appSettings->entropyThresholdIncrement;
@@ -82,6 +86,9 @@ void EntropyQueryContainer::doQueryUp()
 	entropySlider->setRunEntropyQueries(true);
 }
 
+//This function decreases the current entropy threshold query value then runs the query on the split tree structure
+//It will first try to decrease by the configured threshold but will continue decreasing the value bit by bit until some sort of
+//change in the tree structure is detected.  This way a change always happens when the button is clicked.
 void EntropyQueryContainer::doQueryDown()
 {
 	this->appSettings->currentEntropyThreshold -= appSettings->entropyThresholdIncrement;

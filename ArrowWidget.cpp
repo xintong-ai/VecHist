@@ -6,6 +6,7 @@
 
 using namespace std;
 
+//Constructor
 ArrowWidget::ArrowWidget(AppSettings * appSettings, Scene * scene, EntropySlider * slider)
 {
 	this->appSettings = appSettings;
@@ -46,12 +47,13 @@ ArrowWidget::ArrowWidget(AppSettings * appSettings, Scene * scene, EntropySlider
 
 	this->setLayout(layout);
 
-	//(QObject*)&arrowButton1;
-
-	//connect((QObject*)arrowButton1, SIGNAL(clicked()), this, SLOT(doQueryUp()));
-	//connect((QObject*)arrowButton2, SIGNAL(clicked()), this, SLOT(doQueryDown()));
+	connect((QObject*)arrowButton1, SIGNAL(clicked()), this, SLOT(doQueryUp()));
+	connect((QObject*)arrowButton2, SIGNAL(clicked()), this, SLOT(doQueryDown()));
 }
 
+//This function increases the current entropy threshold query value then runs the query on the split tree structure
+//It will first try to increase by the configured threshold but will continue increasing the value bit by bit until some sort of
+//change in the tree structure is detected.  This way a change always happens when the button is clicked.
 void ArrowWidget::doQueryUp()
 {
 	this->appSettings->currentEntropyThreshold += appSettings->entropyThresholdIncrement;
@@ -84,6 +86,9 @@ void ArrowWidget::doQueryUp()
 	slider->setRunEntropyQueries(true);
 }
 
+//This function decreases the current entropy threshold query value then runs the query on the split tree structure
+//It will first try to decrease by the configured threshold but will continue decreasing the value bit by bit until some sort of
+//change in the tree structure is detected.  This way a change always happens when the button is clicked.
 void ArrowWidget::doQueryDown()
 {
 	this->appSettings->currentEntropyThreshold -= appSettings->entropyThresholdIncrement;
@@ -91,10 +96,6 @@ void ArrowWidget::doQueryDown()
 		appSettings->currentEntropyThreshold = appSettings->minEntropyThreshold;
 	}
 	cout << "Current entropy threshold value: " << appSettings->currentEntropyThreshold << endl;
-
-	//scene->initiateEntropyQuery(appSettings->currentEntropyThreshold);
-
-	//slider->setValue((appSettings->currentEntropyThreshold - appSettings->minEntropyThreshold) / (appSettings->maxEntropyThreshold - appSettings->minEntropyThreshold) * 100);
 
 	slider->setRunEntropyQueries(false);
 

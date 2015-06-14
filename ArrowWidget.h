@@ -13,6 +13,10 @@
 
 class Scene;
 
+//This class represents a widget with two arrow buttons, one up and down,
+//used for entropy threshold querying
+//It is likely to be deprecated if we continue using the equivalent functionality
+//in the new EntropyQueryContainer class
 class ArrowWidget : public QWidget
 {
 	Q_OBJECT
@@ -23,13 +27,13 @@ public slots:
 	void doQueryDown();
 
 private:
-	EntropySlider * slider = nullptr;
-	Scene * scene = nullptr;
-	AppSettings * appSettings = nullptr;
-	ArrowButton * arrowButton1 = nullptr;
-	QWidget * placeHolder = nullptr;
-	ArrowButton * arrowButton2 = nullptr;
-	QVBoxLayout * layout = nullptr;
+	EntropySlider * slider = nullptr;	//Reference to the slider widget
+	Scene * scene = nullptr;			//Reference to the scene object
+	AppSettings * appSettings = nullptr;	//Reference to the app settings
+	ArrowButton * arrowButton1 = nullptr;	//First arrow button widget
+	QWidget * placeHolder = nullptr;		//Place holder
+	ArrowButton * arrowButton2 = nullptr;	//Second arrow button widget 
+	QVBoxLayout * layout = nullptr;			//Layout
 };
 
 #endif //ARROW_SLIDER_H
