@@ -648,39 +648,6 @@ Scene::Scene(int width, int height, int maxTextureSize)
 	//	colorMap.push_back(make_float3(tmp.r, tmp.g, tmp.b));
 	//}
 
-	//Set up the gradient and slider widget
-	if (application == 1) {
-		//Load entropy related app settings		
-		
-		string minEntropyThresholdStr = dataManager->GetStringVal("minEntropyThreshold");
-		string maxEntropyThresholdStr = dataManager->GetStringVal("maxEntropyThreshold");
-		string entropyThresholdIncrementStr = dataManager->GetStringVal("entropyThresholdIncrement");
-		string useTreeLeavesForColorMapStr = dataManager->GetStringVal("useTreeLeavesForColorMap");
-		
-		appSettings->minEntropyThreshold = stod(minEntropyThresholdStr);
-		appSettings->maxEntropyThreshold = stod(maxEntropyThresholdStr);
-		appSettings->entropyThresholdIncrement = stod(entropyThresholdIncrementStr);
-
-		if (useTreeLeavesForColorMapStr == "0") {
-			appSettings->useTreeLeavesForColorMap = false;
-		}
-		else {
-			appSettings->useTreeLeavesForColorMap = true;
-		}
-		
-		//Set up the slider widget initial size
-
-		sliderWidget = new EntropySlider(dataManager, appSettings);
-		sliderWidget->resize(50, 800);
-		sliderWidget->setFixedSize(50, 800);  //This might be replaced with code for a resize event later
-		
-		sliderWidget->move(1100, 30);
-		sliderWidget->resize(sliderWidget->rect().width(), sliderWidget->rect().height());
-		
-		sliderWidget->setRange(0, 100);
-		sliderWidget->setValue(0);
-	}
-
 	//dataManager->LoadVec("D:/data/nek/nek.d_4.vec");
 	
 	//dataManager->LoadVec("D:/data/brain_dti/vector-field.vec");
@@ -707,7 +674,24 @@ Scene::Scene(int width, int height, int maxTextureSize)
     m_renderOptions->resize(m_renderOptions->sizeHint());
 	
 	if (1 == application) {
+		//Load app settings		
+		string minEntropyThresholdStr = dataManager->GetStringVal("minEntropyThreshold");
+		string maxEntropyThresholdStr = dataManager->GetStringVal("maxEntropyThreshold");
+		string entropyThresholdIncrementStr = dataManager->GetStringVal("entropyThresholdIncrement");
+		string useTreeLeavesForColorMapStr = dataManager->GetStringVal("useTreeLeavesForColorMap");
 		string useTreeMapLabelsStr = dataManager->GetStringVal("useTreeMapLabels");
+
+		appSettings->minEntropyThreshold = stod(minEntropyThresholdStr);
+		appSettings->maxEntropyThreshold = stod(maxEntropyThresholdStr);
+		appSettings->entropyThresholdIncrement = stod(entropyThresholdIncrementStr);
+
+		if (useTreeLeavesForColorMapStr == "0") {
+			appSettings->useTreeLeavesForColorMap = false;
+		}
+		else {
+			appSettings->useTreeLeavesForColorMap = true;
+		}
+				
 		bool useTreeMapLabels = false;
 		if (useTreeMapLabelsStr == "0") {
 			useTreeMapLabels = false;
@@ -729,21 +713,19 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		//m_graphWidget->resize(1000, 1000);
 		m_graphWidget->setFixedSize(1000, 1000);
 
-		//arrowWidget = new ArrowWidget(appSettings, this, sliderWidget);
-		//arrowWidget->setFixedSize(100, 200);
+		//Set up the slider widget
+		sliderWidget = new EntropySlider(dataManager, appSettings);
+		sliderWidget->resize(50, 800);
+		sliderWidget->setFixedSize(50, 800);  //This might be replaced with code for a resize event later
+
+		sliderWidget->setRange(0, 100);
+		sliderWidget->setValue(0);
 
 		entropyQueryContainer = new EntropyQueryContainer(appSettings, this, sliderWidget);
-				
+		entropyQueryContainer->setFixedSize(50, 850);
+		entropyQueryContainer->move(1100, 50);
 
-		//treeMapWindow->setScrollArea(scrollArea);
-		//treeMapWindow->zoom(0.1, 0, 0);
 
-		////////////////////////m_graphWidget->getTreeStats((NodeBi*)dataManager->getRootNode(), 0, 0);
-		////////////////////////m_graphWidget->buildGraphFromTree((NodeBi*)dataManager->getRootNode());
-
-		//m_graphVizWidget = new GraphVizWidget();
-		//m_graphVizWidget->move(60, 120);
-		//m_graphVizWidget->resize(m_graphVizWidget->sizeHint());
 
 	}
 	else {
@@ -824,12 +806,8 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		twoSided->setWidget(1, m_graphWidget);
 		//twoSided->setWidget(1, m_renderOptions);
 		//twoSided->setWidget(2, sliderWidget);
-		//twoSided->setWidget(3, arrowWidget);
 		twoSided->setWidget(2, entropyQueryContainer);
 		
-		//this->addWidget(arrowWidget);
-		entropyQueryContainer->move(50, 50);
-
 		//((DataMgrVect * )dataManager)->buildDotFileFromTree();
 		//((DataMgrVect *)dataManager)->buildPlainTextFileFromDot();
 		//m_graphVizWidget->loadGraphVizTextFile();
