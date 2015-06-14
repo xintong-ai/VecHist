@@ -15,6 +15,8 @@ public:
 	EntropySlider(DataManager * dataManager, AppSettings * appSettings);
 	void setRunEntropyQueries(bool runEntropyQueries) { this->runEntropyQueries = runEntropyQueries; }
 	bool getRunEntropyQueries() { return runEntropyQueries; }
+	QLinearGradient * getGradient() { return gradient; }
+	void paintEvent(QPaintEvent *);
 
 private:
 	bool runEntropyQueries = true;		//If true, slider events associated with this widget will initiate new entropy queries.  If false, they will not.  This is needed becuase sometimes we must do a setValue function call without having another event fire.

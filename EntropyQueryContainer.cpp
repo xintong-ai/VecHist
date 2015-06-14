@@ -1,4 +1,6 @@
 
+#include <QLinearGradient>
+
 #include "EntropyQueryContainer.h"
 #include "Scene.h"
 
@@ -14,8 +16,8 @@ EntropyQueryContainer::EntropyQueryContainer(AppSettings * appSettings, Scene * 
 	arrowButton1 = new ArrowButton(false);
 	arrowButton2 = new ArrowButton(true);
 
-	arrowButton1->resize(100, 100);
-	arrowButton2->resize(100, 100);
+	//arrowButton1->resize(100, 100);
+	//arrowButton2->resize(100, 100);
 
 	//Sizing policies for the layout
 	QSizePolicy arrow1Policy(QSizePolicy::Preferred, QSizePolicy::Preferred);
@@ -26,15 +28,9 @@ EntropyQueryContainer::EntropyQueryContainer(AppSettings * appSettings, Scene * 
 	arrow2Policy.setHorizontalStretch(5);
 	arrowButton2->setSizePolicy(arrow2Policy);
 
-	QWidget * placeHolder = new QWidget();
-	QSizePolicy placeHolderPolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-	placeHolderPolicy.setHorizontalStretch(5);
-	placeHolder->setSizePolicy(placeHolderPolicy);
-
 	//Build the layout
 	layout = new QVBoxLayout();
 	layout->addWidget(arrowButton1);
-	layout->addWidget(placeHolder);
 	layout->addWidget(entropySlider);
 	layout->addWidget(arrowButton2);
 
