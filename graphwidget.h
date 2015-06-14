@@ -48,6 +48,7 @@
 #include "TreeMapWindow.h"
 //#include "Scene.h"
 #include "TextureCubeManager.h"
+#include "AppSettings.h"
 
 class Widget::Node;
 
@@ -80,7 +81,7 @@ class GraphWidget : public QGraphicsView
 	//Q_OBJECT
 
 public:
-	GraphWidget(DataManager * dataManager, TreeMapWindow * treeMapPlot, TextureCubeManager * textureCubeManager, bool useTreeLeavesForColorMap, QWidget *parent = 0, NodeBi *p = 0);
+	GraphWidget(DataManager * dataManager, TreeMapWindow * treeMapPlot, TextureCubeManager * textureCubeManager, AppSettings * appSettings, QWidget *parent = 0, NodeBi *p = 0);
 	~GraphWidget();
 	
 	void buildDotFileFromTree(NodeBi * root);
@@ -128,8 +129,8 @@ private:
 	ofstream dotOut;								//The output file stream handler for the file that will be read by the dot program
 	DataManager * dataManager;					//Reference to the data manager
 	TreeMapWindow * treeMapWindow;					//Reference to the scene object
-	TextureCubeManager * textureCubeManager;
-	bool useTreeLeavesForColorMap = false;
+	TextureCubeManager * textureCubeManager;	//Reference to the texture cube manager
+	AppSettings * appSettings;					//Reference to the app settings object
 		
 };
 

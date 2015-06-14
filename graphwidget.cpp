@@ -46,13 +46,13 @@
 
 #include <QKeyEvent>
 
-GraphWidget::GraphWidget(DataManager * dataManager, TreeMapWindow * treeMapWindow, TextureCubeManager * textureCubeManager, bool useTreeLeavesForColorMap, QWidget *parent, NodeBi *p)
+GraphWidget::GraphWidget(DataManager * dataManager, TreeMapWindow * treeMapWindow, TextureCubeManager * textureCubeManager, AppSettings * appSettings, QWidget *parent, NodeBi *p)
 	: QGraphicsView(parent), timerId(0)
 {
 	this->dataManager = dataManager;
 	this->treeMapWindow = treeMapWindow;
 	this->textureCubeManager = textureCubeManager;
-	this->useTreeLeavesForColorMap = useTreeLeavesForColorMap;
+	this->appSettings = appSettings;
 	QGraphicsScene *scene = new QGraphicsScene(this);
 	scene->setItemIndexMethod(QGraphicsScene::NoIndex);
 	//scene->setSceneRect(0, 0, 800, 800);
@@ -298,7 +298,7 @@ void GraphWidget::loadGraphVizTextFile()
 		QColor entropyColor(255 * color[0], 255 * color[1], 255 * color[2], 255);
 		QColor grayColor(100, 100, 100, 255);
 
-		if (useTreeLeavesForColorMap && (childNode->getNodeBiPtr()->left != nullptr || childNode->getNodeBiPtr()->right != nullptr)) {
+		if (appSettings->useTreeLeavesForColorMap && (childNode->getNodeBiPtr()->left != nullptr || childNode->getNodeBiPtr()->right != nullptr)) {
 			childNode->setForeDisplayColor(grayColor);
 			childNode->setBackDisplayColor(grayColor);
 		}
@@ -423,7 +423,7 @@ Widget::Node * GraphWidget::rebuildGraphFromTree(NodeBi * p, int currentDepth)
 	QColor entropyColor(255 * color[0], 255 * color[1], 255 * color[2], 255);
 	QColor grayColor(100, 100, 100, 255);
 
-	if (useTreeLeavesForColorMap && (p->left != nullptr || p->right != nullptr)) {
+	if (appSettings->useTreeLeavesForColorMap && (p->left != nullptr || p->right != nullptr)) {
 		currentNode->setForeDisplayColor(grayColor);
 		currentNode->setBackDisplayColor(grayColor);
 	}

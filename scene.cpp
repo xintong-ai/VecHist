@@ -655,10 +655,18 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		string minEntropyThresholdStr = dataManager->GetStringVal("minEntropyThreshold");
 		string maxEntropyThresholdStr = dataManager->GetStringVal("maxEntropyThreshold");
 		string entropyThresholdIncrementStr = dataManager->GetStringVal("entropyThresholdIncrement");
-
+		string useTreeLeavesForColorMapStr = dataManager->GetStringVal("useTreeLeavesForColorMap");
+		
 		appSettings->minEntropyThreshold = stod(minEntropyThresholdStr);
 		appSettings->maxEntropyThreshold = stod(maxEntropyThresholdStr);
 		appSettings->entropyThresholdIncrement = stod(entropyThresholdIncrementStr);
+
+		if (useTreeLeavesForColorMapStr == "0") {
+			appSettings->useTreeLeavesForColorMap = false;
+		}
+		else {
+			appSettings->useTreeLeavesForColorMap = true;
+		}
 		
 		//Set up the slider widget initial size
 
@@ -697,15 +705,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
     m_renderOptions = new RenderOptionsDialog();
     m_renderOptions->move(1500, 30);
     m_renderOptions->resize(m_renderOptions->sizeHint());
-
-	string useTreeLeavesForColorMapStr = dataManager->GetStringVal("useTreeLeavesForColorMap");
-	if (useTreeLeavesForColorMapStr == "0") {
-		useTreeLeavesForColorMap = false;
-	}
-	else {
-		useTreeLeavesForColorMap = true;
-	}
-
+	
 	if (1 == application) {
 		string useTreeMapLabelsStr = dataManager->GetStringVal("useTreeMapLabels");
 		bool useTreeMapLabels = false;
@@ -723,7 +723,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		treeMapWindow->resize(500, 500);
 		treeMapWindow->refreshPlot((NodeBi*)dataManager->getRootNode());
 
-		m_graphWidget = new GraphWidget(dataManager, treeMapWindow, m_textureCubeManager, useTreeLeavesForColorMap);
+		m_graphWidget = new GraphWidget(dataManager, treeMapWindow, m_textureCubeManager, appSettings);
 		m_graphWidget->move(20, 30);
 		//m_graphWidget->resize(m_graphWidget->sizeHint());
 		//m_graphWidget->resize(1000, 1000);
@@ -747,7 +747,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
 	}
 	else {
-		m_graphWidget = new GraphWidget(dataManager, nullptr, m_textureCubeManager, useTreeLeavesForColorMap);
+		m_graphWidget = new GraphWidget(dataManager, nullptr, m_textureCubeManager, appSettings);
 		m_graphWidget->move(20, 30);
 		m_graphWidget->resize(m_graphWidget->sizeHint());
 
@@ -887,7 +887,7 @@ bool Scene::initiateEntropyQuery(double threshold)
 	queryChanged = ((DataMgrVect *)dataManager)->queryEntropyTreeByThreshold(threshold);
 	m_textureCubeManager->UpdateTexture(application);
 
-	if (useTreeLeavesForColorMap) {
+	if (appSettings->useTreeLeavesForColorMap) {
 		((DataMgrVect *)dataManager)->calculateEntropyExtremes();
 		((DataMgrVect *)dataManager)->BuildColorMap();
 
