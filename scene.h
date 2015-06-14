@@ -66,6 +66,7 @@
 #include "ArrowWidget.h"
 #include "AppSettings.h"
 #include "EntropySlider.h"
+#include "EntropyQueryContainer.h"
 //#include "qtbox.h"
 //#include <cuda_runtime.h>
 //#include <cuda_gl_interop.h>
@@ -322,9 +323,10 @@ private:
 	QScrollArea * scrollArea = nullptr;
 	QListWidget * m_listWidget;
 	EntropySlider * sliderWidget;
+	EntropyQueryContainer * entropyQueryContainer;
 	//GraphVizWidget * m_graphVizWidget;
 
-	ArrowWidget * arrowWidget;
+	//ArrowWidget * arrowWidget;
 	
 
     //ItemDialog *m_itemDialog;

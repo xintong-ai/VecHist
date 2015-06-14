@@ -729,10 +729,11 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		//m_graphWidget->resize(1000, 1000);
 		m_graphWidget->setFixedSize(1000, 1000);
 
-		arrowWidget = new ArrowWidget(appSettings, this, sliderWidget);
-		arrowWidget->setFixedSize(100, 200);
+		//arrowWidget = new ArrowWidget(appSettings, this, sliderWidget);
+		//arrowWidget->setFixedSize(100, 200);
 
-		
+		entropyQueryContainer = new EntropyQueryContainer(appSettings, this, sliderWidget);
+				
 
 		//treeMapWindow->setScrollArea(scrollArea);
 		//treeMapWindow->zoom(0.1, 0, 0);
@@ -822,11 +823,12 @@ Scene::Scene(int width, int height, int maxTextureSize)
 		twoSided->setWidget(0, treeMapWindow);
 		twoSided->setWidget(1, m_graphWidget);
 		//twoSided->setWidget(1, m_renderOptions);
-		twoSided->setWidget(2, sliderWidget);
-		twoSided->setWidget(3, arrowWidget);
+		//twoSided->setWidget(2, sliderWidget);
+		//twoSided->setWidget(3, arrowWidget);
+		twoSided->setWidget(2, entropyQueryContainer);
 		
 		//this->addWidget(arrowWidget);
-		arrowWidget->move(50, 50);
+		entropyQueryContainer->move(50, 50);
 
 		//((DataMgrVect * )dataManager)->buildDotFileFromTree();
 		//((DataMgrVect *)dataManager)->buildPlainTextFileFromDot();
@@ -948,6 +950,8 @@ Scene::~Scene()
 	delete appSettings;
 
 	delete sliderWidget;
+
+	delete entropyQueryContainer;
 
 //	cudaDeviceReset();
 //	cleanup();

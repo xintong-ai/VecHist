@@ -13,7 +13,7 @@
 
 class Scene;
 
-class ArrowWidget : public QFrame
+class ArrowWidget : public QWidget
 {
 	Q_OBJECT
 public:
