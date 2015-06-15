@@ -484,6 +484,8 @@ bool TreeMapPlot::eventFilter(QObject *, QEvent *e)
 			// got one?
 			if (underMouse && underMouse->nodeBiRef != nullptr) {
 
+				cout << "Node has: entropy = " << underMouse->nodeBiRef->GetEntropy() << " volume = " << underMouse->nodeBiRef->GetVolume() << endl;
+
 				underMouse->nodeBiRef->SetSelected(!underMouse->nodeBiRef->GetSelected());
 
 				if (underMouse->nodeBiRef->GetGraphNode() != nullptr) {
