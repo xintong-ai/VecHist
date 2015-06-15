@@ -37,17 +37,42 @@ using namespace std;
 class TreeMap;
 class DataManager;
 
-bool TreeMapLessThan(const TreeMap *, const TreeMap *);
+bool TreeMapEntropyLessThan(const TreeMap *, const TreeMap *);
+bool TreeMapVolumeLessThan(const TreeMap *, const TreeMap *);
+
+//This is the struct used to represent data values for the tree map
+struct TreeMapRecord
+{
+	//Default constructor to make compiler happy
+	TreeMapRecord()
+	{
+		this->entropy = 0;
+		this->volume = 0;
+	}
+
+	//Regular Constructor
+	TreeMapRecord(double entropy, int volume) 
+	{ 
+		this->entropy = entropy; 
+		this->volume = volume; 
+	}
+	double entropy = 0;		//The entropy value for the node
+	int volume = 0;			//The volume value for the node
+};
 
 class TreeMap
 {
     public:
-        TreeMap(TreeMap *parent = NULL, QString name = "", double value = 0.0) :
-            parent(parent), name(name), value(value) {}
+		TreeMap(TreeMap *parent, QString name, TreeMapRecord value, AppSettings * appSettings) :
+            parent(parent), name(name)
+		{
+			this->value = value;
+			this->appSettings = appSettings;
+		}
 
 		// insert into children, if not there then add
-		TreeMap *insert(QString name, double value = 0.0) {
-			TreeMap *newone = new TreeMap(this, name, value);
+		TreeMap *insert(QString name, TreeMapRecord value) {
+			TreeMap *newone = new TreeMap(this, name, value, appSettings);
 			children.append(newone);
 			return newone;
 			
@@ -75,12 +100,18 @@ class TreeMap
 			}
 			children.clear();
 			name = "tr((unknown))";
-			value = 0.00;
+			value = TreeMapRecord(0, 0);
 		}
 
 		void sort() {
-			// sort the children in descending order
-			qSort(children.begin(), children.end(), TreeMapLessThan);
+			// Sort the children in descending order
+			// It currently sorts based on whichever data attribute is used for tree map area
+			if (appSettings->useEntropyForTreeMapArea) {
+				qSort(children.begin(), children.end(), TreeMapEntropyLessThan);
+			}
+			else {
+				qSort(children.begin(), children.end(), TreeMapVolumeLessThan);
+			}
 			foreach(TreeMap *child, children) child->sort();
 		}
 
@@ -114,26 +145,16 @@ class TreeMap
 		//This function sets values for all non leaf nodes as the sum of their descendants
 		//It currently is only used for the squarify layout
 		//To do: make the slice and dice use this instead of totaling as it goes
-		double populateValueSums(TreeMap* currentNode)
+		TreeMapRecord populateValueSums(TreeMap* currentNode)
 		{
-			/*
-			double total = 0;
-			for (int i = 0; i < currentNode->children.size(); i++) {
-				if (currentNode->children[i] != nullptr && currentNode[i].size() > 0) {
-					total += populateValueSums(currentNode->children[i]);
-				}
-				else {
-					total += currentNode->children[i]->value;
-				}
-			}
-			return total;
-			*/
-
 			//Non leaf node
 			if (currentNode->children.size() > 0) {
-				double total = 0;
+				TreeMapRecord total = TreeMapRecord(0, 0);
+
 				for (int i = 0; i < currentNode->children.size(); i++) {
-					total += populateValueSums(currentNode->children[i]);
+					TreeMapRecord childSum = populateValueSums(currentNode->children[i]);
+					total.entropy += total.entropy;
+					total.volume += total.volume;
 				}
 				currentNode->value = total;
 				return total;
@@ -150,7 +171,7 @@ class TreeMap
 		{
 			//Non leaf node
 			if (currentNode->children.size() > 0) {
-				cout << currentNode->value << " ";
+				cout << currentNode->value.entropy << ", " << currentNode->value.volume << "; ";
 				for (int i = 0; i < currentNode->children.size(); i++) {
 					printNodes(currentNode->children[i]);
 				}
@@ -159,7 +180,7 @@ class TreeMap
 			}
 			//Leaf node - value is already set but needs to be propagated
 			else {
-				cout << currentNode->value << " ";
+				cout << currentNode->value.entropy << ", " << currentNode->value.volume << "; ";
 			}
 
 		}
@@ -198,9 +219,24 @@ class TreeMap
 				h = bounds.height();
 
 			double total = 0;
-			for (int i = start; i <= end; i++) total += items[i]->value;
+			for (int i = start; i <= end; i++) {
+				if (appSettings->useEntropyForTreeMapArea) {
+					total += items[i]->value.entropy;
+				}
+				else {
+					total += items[i]->value.volume;
+				}
+			}
 			int mid = start;
-			double a = items[start]->value / total;
+
+			double a = 0;
+			if (appSettings->useEntropyForTreeMapArea) {
+				a = items[start]->value.entropy / total;
+			}
+			else {
+				a = items[start]->value.volume / total;
+			}
+
 			double b = a;
 
 			if (w<h) {
@@ -209,7 +245,13 @@ class TreeMap
 				while (mid <= end) {
 
 					double aspect = normAspect(h, w, a, b);
-					double q = items[mid]->value / total;
+					double q = 0;
+					if (appSettings->useEntropyForTreeMapArea) {
+						q = items[mid]->value.entropy / total;
+					}
+					else {
+						q = items[mid]->value.volume / total;
+					}
 
 					if (normAspect(h, w, a, b + q)>aspect) break;
 
@@ -227,7 +269,13 @@ class TreeMap
 				while (mid <= end) {
 
 					double aspect = normAspect(w, h, a, b);
-					double q = items[mid]->value / total;
+					double q = 0;
+					if (appSettings->useEntropyForTreeMapArea) {
+						q = items[mid]->value.entropy / total;
+					}
+					else {
+						q = items[mid]->value.volume / total;
+					}
 
 					if (normAspect(w, h, a, b + q)>aspect) break;
 
@@ -257,13 +305,27 @@ class TreeMap
 
 			// setup
 			double total = 0, accumulator = 0; // total value of items and running total
-			for (int i = start; i <= end && i<items.count(); i++) total += items[i]->value;
+			for (int i = start; i <= end && i<items.count(); i++) {
+				if (appSettings->useEntropyForTreeMapArea) {
+					total += items[i]->value.entropy;
+				}
+				else {
+					total += items[i]->value.volume;
+				}
+			}
 			Qt::Orientation orientation = (bounds.width() > bounds.height()) ? Qt::Horizontal : Qt::Vertical;
 
 			// slice em up!
 			for (int i = start; i <= end && i<items.count(); i++) {
 
-				double factor = items[i]->value / total;
+				double factor = 0;
+				if (appSettings->useEntropyForTreeMapArea) {
+					factor = items[i]->value.entropy / total;
+				}
+				else
+				{
+					factor = items[i]->value.volume / total;
+				}
 				if (orientation == Qt::Vertical) {
 					// slice em into a vertical stack
 					items[i]->rect.setX(bounds.x());
@@ -292,7 +354,12 @@ class TreeMap
 					total += getValueSum(items[i]->children);
 				}
 				else {
-					total += items[i]->value;
+					if (appSettings->useEntropyForTreeMapArea) {
+						total += items[i]->value.entropy;
+					}
+					else {
+						total += items[i]->value.volume;
+					}
 				}
 			}
 			return total;
@@ -320,8 +387,14 @@ class TreeMap
 					total += sumValue;
 				}
 				else {
-					values.push_back(items[i]->value);
-					total += items[i]->value;
+					if (appSettings->useEntropyForTreeMapArea) {
+						values.push_back(items[i]->value.entropy);
+						total += items[i]->value.entropy;
+					}
+					else {
+						values.push_back(items[i]->value.volume);
+						total += items[i]->value.volume;
+					}
 				}
 			}
 			
@@ -367,7 +440,7 @@ class TreeMap
         // data
         TreeMap *parent;
         QString name;
-        double value;
+        TreeMapRecord value;
 		QList<TreeMap*> children;
 
 		// geometry
@@ -375,6 +448,7 @@ class TreeMap
 
 		//TODO: Make this private
 		NodeBi* nodeBiRef = nullptr;
+		AppSettings * appSettings = nullptr;
         
 };
 

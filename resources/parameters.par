@@ -13,9 +13,9 @@ string halosuffix 000_haloEigen.bin
 string datatype flow
 string starttimestep 18
 string useTreeMapLabels 0
-string useTreeLeavesForColorMap 0
-string useEntropyForTreeMapColor 0
-string useEntropyForTreeMapArea 0
+string useTreeLeavesForColorMap 1
+string useEntropyForTreeMapColor 1
+string useEntropyForTreeMapArea 1
 string minEntropyThreshold = 8
 string maxEntropyThreshold = 10
 string entropyThresholdIncrement = 0.1

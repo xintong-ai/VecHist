@@ -29,8 +29,12 @@
 
 using namespace std;
 
-bool TreeMapLessThan(const TreeMap *a, const TreeMap *b) {
-	return (a->value) > (b->value);
+bool TreeMapEntropyLessThan(const TreeMap *a, const TreeMap *b) {
+	return (a->value.entropy) > (b->value.entropy);
+}
+
+bool TreeMapVolumeLessThan(const TreeMap *a, const TreeMap *b) {
+	return (a->value.volume) > (b->value.volume);
 }
 
 //Constructor
@@ -45,7 +49,7 @@ TreeMapPlot::TreeMapPlot(TreeMapWindow *parent, DataManager * dataManager, AppSe
 	this->dataManager = dataManager;
 	this->appSettings = appSettings;
 	this->showLabel = showLabel;
-	root = new TreeMap;
+	root = new TreeMap(nullptr, "", TreeMapRecord(0,0), appSettings);
 	setMouseTracking(true);
 	installEventFilter(this);
     
@@ -98,11 +102,11 @@ void TreeMapPlot::buldMultiLevelTree(NodeBi * biNode)
 {
 	//Deal with edge cases
 	if (biNode == nullptr) {
-		root->insert(QString(""), 0);
+		root->insert(QString(""), TreeMapRecord(0, 0));
 	}
 	else if (biNode->GetLeft() == nullptr && biNode->GetRight() == nullptr) {
 		biNode->setTreeMapWindow(parent);
-		root->insert(QString(""), biNode->GetEntropy());
+		root->insert(QString(""), TreeMapRecord(biNode->GetEntropy(), biNode->GetVolume()));
 	}
 	else {
 		biNode->setTreeMapWindow(parent);
@@ -134,11 +138,11 @@ void TreeMapPlot::buldMultiLevelTree(NodeBi * biNode, TreeMap * treeMapNode, int
 	//If we are at a leaf node, add a regular value to the tree map
 	if (biNode->GetLeft() == nullptr && biNode->GetRight() == nullptr || currentDepth >= DEPTH_LIMIT) {
 		//newNode = treeMapNode->insert(QString(""), biNode->GetEntropy());
-		newNode = treeMapNode->insert(QString::number(biNode->GetEntropy(), 'g', 2), biNode->GetEntropy());
+		newNode = treeMapNode->insert(QString::number(biNode->GetEntropy(), 'g', 2), TreeMapRecord(biNode->GetEntropy(), biNode->GetVolume()));
 	}
 	//Otherwise we are not at a leaf node, in which case the value really doesn't matter.  Show that with a value of 0.
 	else {
-		newNode = treeMapNode->insert(QString(""), 0);
+		newNode = treeMapNode->insert(QString(""), TreeMapRecord(0, 0));
 	}
 
 	newNode->nodeBiRef = biNode;
@@ -160,11 +164,11 @@ void TreeMapPlot::buildTreeOfLeaves(NodeBi * biNode)
 {
 	//Deal with edge cases
 	if (biNode == nullptr) {
-		root->insert(QString(""), 0);
+		root->insert(QString(""), TreeMapRecord(0, 0));
 	}
 	else if (biNode->GetLeft() == nullptr && biNode->GetRight() == nullptr) {
 		biNode->setTreeMapWindow(parent);
-		root->insert(QString(""), biNode->GetEntropy());
+		root->insert(QString(""), TreeMapRecord(biNode->GetEntropy(), biNode->GetVolume()));
 	}
 	else {
 		biNode->setTreeMapWindow(parent);
@@ -196,7 +200,7 @@ void TreeMapPlot::buildTreeOfLeaves(NodeBi * biNode, TreeMap * treeMapNode, int 
 	//If we are at a leaf node, add a regular value to the tree map
 	if (biNode->GetLeft() == nullptr && biNode->GetRight() == nullptr || currentDepth >= DEPTH_LIMIT) {
 		//newNode = treeMapNode->insert(QString(""), biNode->GetEntropy());
-		newNode = root->insert(QString::number(biNode->GetEntropy(), 'g', 2), biNode->GetEntropy());
+		newNode = root->insert(QString::number(biNode->GetEntropy(), 'g', 2), TreeMapRecord(biNode->GetEntropy(), biNode->GetVolume()));
 		newNode->nodeBiRef = biNode;
 	}
 	
@@ -307,11 +311,11 @@ void TreeMapPlot::paintChildren(TreeMap * parent, QPainter & painter, QBrush & b
 
 		//Use color map based on entropy value or volume depending on AppSettings to determine color of rendered square
 		if (appSettings->useEntropyForTreeMapColor) {
-			double entropyValue = first->value;
+			double entropyValue = first->value.entropy;
 			((DataMgrVect *)dataManager)->getEntropyColor(entropyValue, color);
 		}
 		else {
-			double volumeValue = first->value;
+			double volumeValue = first->value.volume;
 			((DataMgrVect *)dataManager)->getVolumeColor(volumeValue, color);
 		}
 
@@ -377,7 +381,7 @@ void TreeMapPlot::paintChildren(TreeMap * parent, QPainter & painter, QBrush & b
 //This is a debugging method to print areas of rectangles to the console
 void TreeMapPlot::areaReport()
 {
-	foreach(TreeMap *first, root->children) {
+	/*foreach(TreeMap *first, root->children) {
 		QRect firstRect = first->rect;
 		cout << "First level rectangle::: Width: " << firstRect.width() << " Height: " << firstRect.height() << " Area: " << firstRect.width() * firstRect.height() << " Value " << first->value << endl;
 
@@ -386,7 +390,7 @@ void TreeMapPlot::areaReport()
 			cout << "Second level rectangle::: Width: " << secondRect.width() << " Height: " << secondRect.height() << " Area: " << secondRect.width() * secondRect.height() << " Value: " << second->value << endl;
 		}
 
-	}
+	}*/
 
 }
 
