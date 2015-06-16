@@ -468,6 +468,13 @@ void DataMgrVect::ResizeCube(int x, int y, int z)
 //This method begins the data loading process for vector field data
 void DataMgrVect::LoadData()
 {
+	ofstream perfLog;
+	perfLog.open("perflog.log", ios::out);
+	if (!perfLog.is_open()) {
+		cerr << "perflog.log did not open successfully!" << endl;
+	}
+
+
 	//Load the vector data file and time the processing
 	cubemap_size = 16;
 	timer.reinit();
@@ -475,11 +482,11 @@ void DataMgrVect::LoadData()
 	LoadVec(GetStringVal("vectorfield").c_str());
 	timer.stopTimer();
 	int totalTime = timer.getTimeElapsed();
-	cout << "-------------------------------------------------------" << endl;
-	cout << "Vector data loading time:::" << endl;
-	cout << totalTime << " milliseconds" << endl;
-	cout << "-------------------------------------------------------" << endl;
-	cout << endl;
+	perfLog << "-------------------------------------------------------" << endl;
+	perfLog << "Vector data loading time:::" << endl;
+	perfLog << totalTime << " milliseconds" << endl;
+	perfLog << "-------------------------------------------------------" << endl;
+	perfLog << endl;
 
 	//Load the segmentation - includes loading the binary tree structure and calculating the cube map for the textures (very important computation)
 	//Time it as well.
@@ -488,11 +495,13 @@ void DataMgrVect::LoadData()
 	LoadSegmentation();
 	timer.stopTimer();
 	totalTime = timer.getTimeElapsed();
-	cout << "-------------------------------------------------------" << endl;
-	cout << "LoadSegmentation data loading time (includes cube map computation):::" << endl;
-	cout << totalTime << " milliseconds" << endl;
-	cout << "-------------------------------------------------------" << endl;
-	cout << endl;
+	perfLog << "-------------------------------------------------------" << endl;
+	perfLog << "LoadSegmentation data loading time (includes cube map computation):::" << endl;
+	perfLog << totalTime << " milliseconds" << endl;
+	perfLog << "-------------------------------------------------------" << endl;
+	perfLog << endl;
+
+	perfLog.close();
 	
 	calculateExtremes();
 	BuildEntropyColorMap();
