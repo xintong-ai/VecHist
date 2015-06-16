@@ -8,6 +8,7 @@
 #include "node.h"
 #include "TreeMapWindow.h"
 #include "AppSettings.h"
+#include "windowsCpuTimer.h"
 #include <unordered_map>
 
 //1 means flow data
@@ -194,6 +195,7 @@ protected:
 	bool CubeInsideVolumeZ(int x, int nx);
 	unordered_map<int, AbstractNode *> haloTable;	//Hash table to link halo ids to Halo struct records
 	AppSettings * appSettings;						//Reference to the app settings object
+	WindowsCpuTimer timer;							//Timing object (done through Windows API's for now)
 
 public:
 	virtual void LoadData() = 0;

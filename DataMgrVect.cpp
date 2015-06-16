@@ -468,9 +468,32 @@ void DataMgrVect::ResizeCube(int x, int y, int z)
 //This method begins the data loading process for vector field data
 void DataMgrVect::LoadData()
 {
+	//Load the vector data file and time the processing
 	cubemap_size = 16;
+	timer.reinit();
+	timer.startTimer();
 	LoadVec(GetStringVal("vectorfield").c_str());
+	timer.stopTimer();
+	int totalTime = timer.getTimeElapsed();
+	cout << "-------------------------------------------------------" << endl;
+	cout << "Vector data loading time:::" << endl;
+	cout << totalTime << " milliseconds" << endl;
+	cout << "-------------------------------------------------------" << endl;
+	cout << endl;
+
+	//Load the segmentation - includes loading the binary tree structure and calculating the cube map for the textures (very important computation)
+	//Time it as well.
+	timer.reinit();
+	timer.startTimer();
 	LoadSegmentation();
+	timer.stopTimer();
+	totalTime = timer.getTimeElapsed();
+	cout << "-------------------------------------------------------" << endl;
+	cout << "LoadSegmentation data loading time (includes cube map computation):::" << endl;
+	cout << totalTime << " milliseconds" << endl;
+	cout << "-------------------------------------------------------" << endl;
+	cout << endl;
+	
 	calculateExtremes();
 	BuildEntropyColorMap();
 	BuildVolumeColorMap();
