@@ -156,7 +156,9 @@ void GraphWidget::loadGraphVizTextFile()
 	while (!inFile.fail()) {
 		inFile >> token;
 		if (token == "graph") {
+			#ifdef DEBUG_PRINTING
 			cout << "New graph record: " << endl;
+			#endif
 			inFile >> graphScale;
 			inFile >> graphWidth;
 			inFile >> graphHeight;
@@ -164,19 +166,31 @@ void GraphWidget::loadGraphVizTextFile()
 		}
 		else if (token == "node") {
 			//Parse the Node Record
+			#ifdef DEBUG_PRINTING
 			cout << "New node record: " << endl;
+			#endif
 			inFile >> name;
+			#ifdef DEBUG_PRINTING
 			cout << "Name: " << name << endl;
+			#endif
 			inFile >> x >> y;
+			#ifdef DEBUG_PRINTING
 			cout << "x = " << x << " y = " << y << endl;
+			#endif
 			inFile >> width >> height;
+			#ifdef DEBUG_PRINTING
 			cout << "width = " << width << " height = " << height << endl;
 			cout << "Unused tokens: " << endl;
+			#endif
 			for (int i = 0; i < 5; i++) {
 				inFile >> token;
+				#ifdef DEBUG_PRINTING
 				cout << token << " ";
+				#endif
 			}
+			#ifdef DEBUG_PRINTING
 			cout << endl;
+			#endif
 
 			//Store the node record
 			GraphVizNode * node = new GraphVizNode;
@@ -194,13 +208,21 @@ void GraphWidget::loadGraphVizTextFile()
 		}
 		else if (token == "edge") {
 			//////////////Parse the main part of the edge record//////////////////
+			#ifdef DEBUG_PRINTING
 			cout << "New edge record:" << endl;
+			#endif
 			inFile >> headName;
+			#ifdef DEBUG_PRINTING
 			cout << "Head Name: " << headName << endl;
+			#endif
 			inFile >> tailName;
+			#ifdef DEBUG_PRINTING
 			cout << "Tail Name: " << tailName << endl;
+			#endif
 			inFile >> numNodes;
+			#ifdef DEBUG_PRINTING
 			cout << "Num Nodes: " << numNodes << endl;
+			#endif
 
 			///////////Store the edge record///////////////////////
 			GraphVizNode * headPtr = nodeTable[headName];
@@ -225,7 +247,9 @@ void GraphWidget::loadGraphVizTextFile()
 			for (int i = 0; i < numNodes; i++) {
 				inFile >> x;
 				inFile >> y;
+				#ifdef DEBUG_PRINTING
 				cout << "Control Point # " << i << ": " << x << " " << y << endl;
+				#endif
 
 				ControlPoint controlPoint;
 				controlPoint.x = x;
@@ -236,17 +260,25 @@ void GraphWidget::loadGraphVizTextFile()
 			//Add the new edge to the list
 			edges.push_back(edge);
 
+			#ifdef DEBUG_PRINTING
 			cout << "Unused tokens: " << endl;
+			#endif
 			for (int i = 0; i < 2; i++) {
 				inFile >> token;
+				#ifdef DEBUG_PRINTING
 				cout << token << " ";
+				#endif
 			}
+			#ifdef DEBUG_PRINTING
 			cout << endl;
+			#endif
 
 
 		}
 		else if (token == "stop") {
+			#ifdef DEBUG_PRINTING
 			cout << "Stop request encountered" << endl;
+			#endif
 		}
 		else {
 			cerr << "Warning: unexpected token " << token << " found in plain text dot" << endl;
