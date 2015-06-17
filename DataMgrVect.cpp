@@ -583,14 +583,18 @@ void DataMgrVect::LoadOSUFlow(const char* filename)
 	maxB[0] = maxLen[0]; maxB[1] = maxLen[1];  maxB[2] = maxLen[2];
 	//  osuflow->SetBoundary(minB, maxB);  // set the boundary. just to test
 	// the subsetting feature of OSUFlow
+	#ifdef DEBUG_PRINTING
 	printf(" volume boundary X: [%f %f] Y: [%f %f] Z: [%f %f]\n",
 		minLen[0], maxLen[0], minLen[1], maxLen[1],
 		minLen[2], maxLen[2]);
+	#endif
 
 	center[0] = (minLen[0] + maxLen[0]) / 2.0;
 	center[1] = (minLen[1] + maxLen[1]) / 2.0;
 	center[2] = (minLen[2] + maxLen[2]) / 2.0;
+	#ifdef DEBUG_PRINTING
 	printf("center is at %f %f %f \n", center[0], center[1], center[2]);
+	#endif
 	len[0] = maxLen[0] - minLen[0];
 	len[1] = maxLen[1] - minLen[1];
 	len[2] = maxLen[2] - minLen[2];
@@ -607,8 +611,10 @@ void DataMgrVect::LoadOSUFlow(const char* filename)
 	int nSeeds;
 	VECTOR3* seeds = osuflow->GetSeeds(nSeeds);
 	for (int i = 0; i<nSeeds; i++)
+		#ifdef DEBUG_PRINTING
 		printf(" seed no. %d : [%f %f %f]\n", i, seeds[i][0],
 		seeds[i][1], seeds[i][2]);
+		#endif
 
 	sl_list.clear();
 
@@ -654,9 +660,11 @@ void DataMgrVect::GenStreamInCube()
 	osuflow->SetRandomSeedPoints(from, to, 16);
 	int nSeeds;
 	VECTOR3* seeds = osuflow->GetSeeds(nSeeds);
+	#ifdef DEBUG_PRINTING
 	for (int i = 0; i<nSeeds; i++)
 		printf(" seed no. %d : [%f %f %f]\n", i, seeds[i][0],
 		seeds[i][1], seeds[i][2]);
+	#endif
 
 	sl_list.clear();
 
@@ -849,7 +857,9 @@ void DataMgrVect::QueryByBin(int f, int x, int y, unsigned char* result)
 			}
 		}
 	}
+	#ifdef DEBUG_PRINTING
 	std::cout << "perc:" << (float)cnt / (dim[0] * dim[1] * dim[2]) << std::endl;
+	#endif
 }
 
 DataMgrVect::DataMgrVect(AppSettings * appSettings) : DataManager(appSettings)

@@ -1,6 +1,8 @@
 #ifndef APP_SETTINGS_H
 #define APP_SETTINGS_H
 
+//#define DEBUG_PRINTING 1
+
 class AppSettings
 {
 public:

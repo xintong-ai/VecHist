@@ -567,7 +567,7 @@ def SplitEntropy(ret, _d_idx, d_3d, cubemap_size):
     else:
         side1 = m_idx[:, :, :1]
         side2 = m_idx[:, :, 1:]
-    print("percentage: " + str(float(1) / ret.dim[imax]))
+    ####################print("percentage: " + str(float(1) / ret.dim[imax]))
 
     cube_hist_1 = GenCubemapCut(side1.ravel(), cubemap_size)
     cube_hist_2 = GenCubemapCut(side2.ravel(), cubemap_size)
@@ -613,7 +613,7 @@ def SplitEntropy(ret, _d_idx, d_3d, cubemap_size):
             side = m_idx[:, spl_pt - 1, :]
         else:
             side = m_idx[:, :, spl_pt - 1]
-        print("percentage: " + str(float(spl_pt) / ret.dim[imax]))
+        ####################print("percentage: " + str(float(spl_pt) / ret.dim[imax]))
         cube_hist_single = GenCubemapCut(side.ravel(), cubemap_size)
         cube_hist_1 = cube_hist_1 + cube_hist_single
         cube_hist_2 = cube_hist_2 - cube_hist_single
@@ -656,7 +656,8 @@ def SplitEntropy(ret, _d_idx, d_3d, cubemap_size):
     #print('Final Entropy Sum:')
     #print(entropy_sum)
     endT = time.time()
-    print('Total time for optimized split is: ' + str(endT - startT))
+	#Note: The following time printing may not really be useful, since it is the time for one recursive invocation - we might remove this later if we don't find a use for it:
+    ####################print('Total time for optimized split is: ' + str(endT - startT))
 
     # print('--------------------------------------------------------------')
     # print('End of Optimized Version')
@@ -705,8 +706,8 @@ def SplitEntropy(ret, _d_idx, d_3d, cubemap_size):
     entropy_2 = get_histogram_entropy(cube_hist_2.ravel())
 
     threshold = 8
-    print("entropy_1: " + str(entropy_1))
-    print("entropy_2: " + str(entropy_2))
+    ####################print("entropy_1: " + str(entropy_1))
+    ####################print("entropy_2: " + str(entropy_2))
     ret.left = TreeNode(ret.start, side1.shape, entropy_1, eig_val_1, eig_vec_1)
     ret.right = TreeNode(start_pos_2, side2.shape, entropy_2, eig_val_2, eig_vec_2)
     if ret.left.entropy > threshold:# or cube_hist_1[0, 0] > 0.999:
