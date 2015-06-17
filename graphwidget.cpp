@@ -162,7 +162,9 @@ void GraphWidget::loadGraphVizTextFile()
 			inFile >> graphScale;
 			inFile >> graphWidth;
 			inFile >> graphHeight;
+			#ifdef DEBUG_PRINTING
 			cout << "Scale: " << graphScale << " Width: " << graphWidth << " Height: " << graphHeight << endl;
+			#endif
 		}
 		else if (token == "node") {
 			//Parse the Node Record
@@ -285,6 +287,7 @@ void GraphWidget::loadGraphVizTextFile()
 		}
 	}
 
+	#ifdef DEBUG_PRINTING
 	cout << "-----------------------------" << endl;
 	cout << "End of file reached" << endl;
 	cout << "-----------------------------" << endl;
@@ -295,6 +298,7 @@ void GraphWidget::loadGraphVizTextFile()
 	cout << "Graph Height: " << graphHeight << endl;
 	cout << "Scene Width: " << scene()->width() << endl;
 	cout << "Scene Height: " << scene()->height() << endl;
+	#endif
 
 	double widthRatio = scene()->width() / (double)graphWidth;
 	double heightRatio = scene()->height() / (double)graphHeight;

@@ -487,6 +487,11 @@ void DataMgrVect::LoadData()
 	perfLog << totalTime << " milliseconds" << endl;
 	perfLog << "-------------------------------------------------------" << endl;
 	perfLog << endl;
+	cout << "-------------------------------------------------------" << endl;
+	cout << "Vector data loading time:::" << endl;
+	cout << totalTime << " milliseconds" << endl;
+	cout << "-------------------------------------------------------" << endl;
+	cout << endl;
 
 	//Load the segmentation - includes loading the binary tree structure and calculating the cube map for the textures (very important computation)
 	//Time it as well.
@@ -500,9 +505,15 @@ void DataMgrVect::LoadData()
 	perfLog << totalTime << " milliseconds" << endl;
 	perfLog << "-------------------------------------------------------" << endl;
 	perfLog << endl;
+	cout << "-------------------------------------------------------" << endl;
+	cout << "LoadSegmentation data loading time (includes cube map computation):::" << endl;
+	cout << totalTime << " milliseconds" << endl;
+	cout << "-------------------------------------------------------" << endl;
+	cout << endl;
 
 	perfLog.close();
 	
+	//Build the color maps used with the tree widgets
 	calculateExtremes();
 	BuildEntropyColorMap();
 	BuildVolumeColorMap();
