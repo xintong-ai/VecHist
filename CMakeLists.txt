@@ -1,10 +1,15 @@
 project(VecHist)
 
 cmake_minimum_required(VERSION 2.6)
+
+Set(CMAKE_PREFIX_PATH "C:/Program Files (x86)/Windows Kits/8.0/Lib/win8/um/x64")
+
 find_package(OpenGL REQUIRED)
 find_package(OSUFlow REQUIRED)
 find_package(Qt5Widgets)
 find_package(VTK REQUIRED)
+
+include(${VTK_USE_FILE})
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
@@ -13,7 +18,7 @@ include_directories( ${CMAKE_CURRENT_SOURCE_DIR} ${OSUFLOW_INCLUDE_DIR} ${VTK_IN
 set(SHARED_LIBRARIES
 		${OPENGL_LIBRARIES}
 		${OSUFLOW_LIBRARY}
-		${VTK_LIBRARY_DIRS}
+		${VTK_LIBRARIES}
 )
 
 message("OSUFLOW_LIBRARY_DEBUG")
