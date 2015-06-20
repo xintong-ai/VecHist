@@ -960,12 +960,22 @@ void DataMgrVect::readBinaryTree(NodeBi *&p, ifstream &fin, vector<float3> start
 	//	cubemap[i] = cube_hists[token * numBins + i];
 	//}
 
+	float * nodeData = cubemaps + token * numBins;
+	float * copyData = new float[numBins];
+	this->CubemapConvert(copyData, nodeData, cubemap_size);
+
+	for (int i = 0; i < numBins; i++) {
+		nodeData[i] = copyData[i];
+	}
+
+	delete [] copyData;
+
 	if (isNumber) {
 		p = new NodeBi(
 			starts[token].x, starts[token].y, starts[token].z,
 			dims[token].x, dims[token].y, dims[token].z,
 			entropys[token], eig_vals[token],
-			eig_vecs[3 * token], eig_vecs[3 * token + 1], eig_vecs[3 * token + 2], cubemaps + token * numBins,
+			eig_vecs[3 * token], eig_vecs[3 * token + 1], eig_vecs[3 * token + 2], nodeData,
 			cubemap_size, 0);
 		//cout << "New entropy record: "  << entropys[token] << endl;
 		//ComputeCubemapNode(p);
