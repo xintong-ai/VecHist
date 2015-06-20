@@ -230,9 +230,21 @@ void Widget::Node::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	int volumeValue = nodeBiPtr->GetVolume();
 	nodeBiPtr->getTreeMapWindow()->updateChildren();
 	setToolTip(QString("Entropy: ") + QString::number(entropyValue));
-	cout << "Entropy of Node: " << entropyValue << endl;
-	cout << "Volume of Node: " << volumeValue << endl;
-	cout << "Name of Node: " << name << endl;
+	//cout << "Entropy of Node: " << entropyValue << endl;
+	//cout << "Volume of Node: " << volumeValue << endl;
+	//cout << "Name of Node: " << name << endl;
+
+	float * cubemap = nodeBiPtr->GetCubemap();
+
+	cout << "Printing cubemap contents:" << endl;
+	for (int i = 0; i < 16; i++) {
+		for (int j = 0; j < 16 * 6; j++) {
+			cout << cubemap[i] << " ";
+		}
+		cout << endl;
+
+	}
+	cout << endl;
 }
 
 void Widget::Node::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)

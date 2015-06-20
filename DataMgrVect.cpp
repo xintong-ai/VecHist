@@ -1238,9 +1238,11 @@ void DataMgrVect::LoadCubemaps()
 		return;
 	}
 
+	int scaleFactor = 1000;
 	cubemaps = new float[numberNodes * cubemap_size * cubemap_size * 6];
 	for (int i = 0; i < numberNodes * cubemap_size * cubemap_size * 6; i++) {
 		cubeIn >> cubemaps[i];
+		cubemaps[i] *= scaleFactor;
 	}
 
 	cubeIn.close();
