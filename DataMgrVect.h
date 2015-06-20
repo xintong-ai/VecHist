@@ -26,7 +26,7 @@ public:
 		int _start0, int _start1, int _start2,
 		int _dim0, int _dim1, int _dim2,
 		float entropy,
-		float3 eig_vals, float3 eig_vec_0, float3 eig_vec_1, float3 eig_vec_2,
+		float3 eig_vals, float3 eig_vec_0, float3 eig_vec_1, float3 eig_vec_2, float * cubemap,
 		int _cube_size, int _level) : AbstractNode(_cube_size)
 	{
 		//cubemap = _cubemap;
@@ -46,7 +46,8 @@ public:
 		//left = nullptr;
 		//right = nullptr;
 		//cubemap = nullptr;
-		cubemap = new float[_cube_size * _cube_size * 6];
+		//cubemap = new float[_cube_size * _cube_size * 6];
+		this->cubemap = cubemap;
 
 		level = _level;
 
@@ -136,7 +137,7 @@ class DataMgrVect:public DataManager
 	void GetDescendantNodes(vector<AbstractNode*> &ret, NodeBi* nd);
 	void LoadOSUFlow(const char* filename);
 	void readBinaryTree(NodeBi *&p, ifstream &fin, vector<float3> starts, vector<float3> dims,
-		vector<float> entropys, vector<float3> eig_vals, vector<float3> eig_vecs);
+		vector<float> entropys, vector<float3> eig_vals, vector<float3> eig_vecs, vector<float> cube_hists);
 	void copyToMasterTree(NodeBi *&original, NodeBi *&master);
 	void deleteEntropyTree(NodeBi * currentNode, int level);
 	void copyMasterToEntropyTree(NodeBi *& regular, NodeBi *& master, int level);

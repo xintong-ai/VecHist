@@ -945,23 +945,31 @@ inline bool readNextToken(std::istream &in, int &token, bool &isNumber)
 	return isNumber;
 }
 
+//This function recursively read the entropy split tree generated from the Python flow and loads it into a binary tree data structure in C++
 void DataMgrVect::readBinaryTree(NodeBi *&p, ifstream &fin, vector<float3> starts, vector<float3> dims,
-	vector<float> entropys, vector<float3> eig_vals, vector<float3> eig_vecs) {
+	vector<float> entropys, vector<float3> eig_vals, vector<float3> eig_vecs, vector<float> cube_hists) {
 	int token;
 	bool isNumber;
 	if (!readNextToken(fin, token, isNumber))
 		return;
+
+	int numBins = cubemap_size * cubemap_size * 6;
+	float * cubemap = new float[numBins];
+	for (int i = 0; i < numBins; i++) {
+		cubemap[i] = cube_hists[token * numBins + i];
+	}
+
 	if (isNumber) {
 		p = new NodeBi(
 			starts[token].x, starts[token].y, starts[token].z,
 			dims[token].x, dims[token].y, dims[token].z,
 			entropys[token], eig_vals[token],
-			eig_vecs[3 * token], eig_vecs[3 * token + 1], eig_vecs[3 * token + 2],
+			eig_vecs[3 * token], eig_vecs[3 * token + 1], eig_vecs[3 * token + 2], cubemap,
 			cubemap_size, 0);
 		//cout << "New entropy record: "  << entropys[token] << endl;
-		ComputeCubemapNode(p);
-		readBinaryTree(p->left, fin, starts, dims, entropys, eig_vals, eig_vecs);
-		readBinaryTree(p->right, fin, starts, dims, entropys, eig_vals, eig_vecs);
+		//ComputeCubemapNode(p);
+		readBinaryTree(p->left, fin, starts, dims, entropys, eig_vals, eig_vecs, cube_hists);
+		readBinaryTree(p->right, fin, starts, dims, entropys, eig_vals, eig_vecs, cube_hists);
 	}
 }
 
@@ -1186,6 +1194,7 @@ inline vector<float> ReadAttribute1D(const char* filename)
 	return ret;
 }
 
+//This function loads the aggregate set of results produced for the segmentation by the Python flow
 void DataMgrVect::LoadSegmentation()
 {
 	std::ifstream fin(valStrings["tree"], std::fstream::in);
@@ -1194,10 +1203,11 @@ void DataMgrVect::LoadSegmentation()
 	vector<float> entropys = ReadAttribute1D(valStrings["entropy"].c_str());
 	vector<float3> eig_vals = ReadAttribute(valStrings["eigval"].c_str());
 	vector<float3> eig_vecs = ReadAttribute(valStrings["eigvec"].c_str());
+	vector<float> cube_hists = ReadAttribute1D(valStrings["cubehist"].c_str());
 
 	int token;
 	bool isNumber;
-	readBinaryTree(rootNode, fin, starts, dims, entropys, eig_vals, eig_vecs);
+	readBinaryTree(rootNode, fin, starts, dims, entropys, eig_vals, eig_vecs, cube_hists);
 }
 
 //This function builds the entropy vtk color map used for both the gradient in the slider widget and is used to determine the colors of graph nodes (tree structure widget and tree map)
