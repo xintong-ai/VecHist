@@ -7,7 +7,8 @@ string dims C:/XinCode/VecHist/python/vechist/dims.txt
 string entropy C:/XinCode/VecHist/python/vechist/entropys.txt
 string eigval C:/XinCode/VecHist/python/vechist/eig_vals.txt
 string eigvec C:/XinCode/VecHist/python/vechist/eig_vecs.txt
-string cubehist C:/XinCode/VecHist/python/vechist/cube_hists.txt
+string cubehist C:/XinCodeFixPython/VecHist/python/vechist/cube_hists.txt
+string datasetinfo C:/XinCodeFixPython/VecHist/python/vechist/data_set_info.txt
 string halodir C:/Users/datahead8888/Documents/DarkSkyDataDownloaded
 string colormap C:/XinCode/VecHist/resources/colormap.bin
 string halosuffix 000_haloEigen.bin

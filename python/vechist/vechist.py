@@ -66,5 +66,9 @@ np.savetxt('eig_vals.txt', eig_vals, newline=" ")
 np.savetxt('eig_vecs.txt', eig_vecs, newline=" ")
 np.savetxt('cube_hists.txt', cube_hists, newline=" ")
 
+f = open('data_set_info.txt', 'w')
+f.write(str(len(entropys))) #Number of tree nodes is equal to the size of each of the arrays
+f.close()
+
 time_end = time.time()
 print(str(time_end - time_start) + " seconds")

@@ -116,6 +116,7 @@ class DataMgrVect:public DataManager
 	std::vector<float> vertexValue;
 	std::vector<std::vector<double> > vVScaled;
 	float* cubemap_data;// (new float[size * size * 6]);
+	float * cubemaps = nullptr;     //The full set of cubemaps for all nodes
 
 	OSUFlow *osuflow;
 	vector < vector<float4> > streamlines;
@@ -137,7 +138,7 @@ class DataMgrVect:public DataManager
 	void GetDescendantNodes(vector<AbstractNode*> &ret, NodeBi* nd);
 	void LoadOSUFlow(const char* filename);
 	void readBinaryTree(NodeBi *&p, ifstream &fin, vector<float3> starts, vector<float3> dims,
-		vector<float> entropys, vector<float3> eig_vals, vector<float3> eig_vecs, vector<float> cube_hists);
+		vector<float> entropys, vector<float3> eig_vals, vector<float3> eig_vecs);
 	void copyToMasterTree(NodeBi *&original, NodeBi *&master);
 	void deleteEntropyTree(NodeBi * currentNode, int level);
 	void copyMasterToEntropyTree(NodeBi *& regular, NodeBi *& master, int level);
@@ -167,6 +168,7 @@ public:
 	int GetNumOfCells();
 	//void Segmentation();
 	void LoadSegmentation();
+	void LoadCubemaps();
 	void BuildEntropyColorMap();
 	void BuildVolumeColorMap();
 	void getEntropyColor(double entropyValue, double color[3]);

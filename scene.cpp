@@ -1972,7 +1972,7 @@ void Scene::UpdateBlock(int x, int y, int z, int nx, int ny, int nz)
 	int size = dataManager->GetCubemapSize();
 	//	std::unique_ptr<float[]> cubemap(new float[size * size * 6]);
 	float* cubemap = nullptr;
-	dataManager->GenCubeMap(x, y, z, nx, ny, nz, cubemap);
+	////dataManager->GenCubeMap(x, y, z, nx, ny, nz, cubemap);
 	m_environment->load(cubemap, size);
 }
 
