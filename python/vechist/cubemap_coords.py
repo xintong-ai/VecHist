@@ -37,7 +37,7 @@ def normalize(d):
 
 #Definition for a  binary tree node
 class TreeNode:
-    def __init__(self, start, dim, entropy, eig_val, eig_vec):
+    def __init__(self, start, dim, entropy, eig_val, eig_vec, cube_hist):
 #        self.val = x
         self.left = None
         self.right = None
@@ -50,6 +50,7 @@ class TreeNode:
         self.entropy = entropy
         self.eig_val = eig_val
         self.eig_vec = eig_vec
+        self.cube_hist = cube_hist
         
     def SetCenter(p):
         self.center = p
@@ -711,15 +712,15 @@ def SplitEntropy(ret, _d_idx, d_3d, cubemap_size):
     threshold = 8
     ####################print("entropy_1: " + str(entropy_1))
     ####################print("entropy_2: " + str(entropy_2))
-    ret.left = TreeNode(ret.start, side1.shape, entropy_1, eig_val_1, eig_vec_1)
-    ret.right = TreeNode(start_pos_2, side2.shape, entropy_2, eig_val_2, eig_vec_2)
+    ret.left = TreeNode(ret.start, side1.shape, entropy_1, eig_val_1, eig_vec_1, cube_hist_1)
+    ret.right = TreeNode(start_pos_2, side2.shape, entropy_2, eig_val_2, eig_vec_2, cube_hist_2)
     if ret.left.entropy > threshold:# or cube_hist_1[0, 0] > 0.999:
         SplitEntropy(ret.left, _d_idx, d_3d, cubemap_size)
     if ret.right.entropy > threshold:# or cube_hist_2[0, 0] > 0.999:
         SplitEntropy(ret.right, _d_idx, d_3d, cubemap_size)
     
     
-def writeBinaryTree(node, f, starts, dims, entropys, eig_vals, eig_vecs, node_id):
+def writeBinaryTree(node, f, starts, dims, entropys, eig_vals, eig_vecs, node_id, cube_hists, cubemap_size):
     if node == None:
         f.write("-1 ")
     else:
@@ -733,10 +734,15 @@ def writeBinaryTree(node, f, starts, dims, entropys, eig_vals, eig_vecs, node_id
         eig_vecs.append(node.eig_vec[0, :])
         eig_vecs.append(node.eig_vec[1, :])
         eig_vecs.append(node.eig_vec[2, :])
+
+        cubehist_raveled = node.cube_hist.ravel()
+        for i in range(0, cubemap_size * cubemap_size * 6 - 1):
+            cube_hists.append(cubehist_raveled[i])
+
         node_id[0] += 1
         #out << p->data << " ";
-        writeBinaryTree(node.left, f, starts, dims, entropys, eig_vals, eig_vecs, node_id)
-        writeBinaryTree(node.right, f, starts, dims, entropys, eig_vals, eig_vecs, node_id)
+        writeBinaryTree(node.left, f, starts, dims, entropys, eig_vals, eig_vecs, node_id, cube_hists, cubemap_size)
+        writeBinaryTree(node.right, f, starts, dims, entropys, eig_vals, eig_vecs, node_id, cube_hists, cubemap_size)
 
 
 #Ko-Chih add

@@ -39,7 +39,7 @@ cube_hist = cube.GenCubemap(m_idx.ravel(), cubemap_size)
 entropy = cube.get_histogram_entropy(cube_hist.ravel())
 
 ######do the splitting computation########
-root = cube.TreeNode(np.array([0, 0, 0]), np.array([shape[0], shape[1], shape[2]]), entropy, [0, 0, 0], np.array([[0,0,0], [0,0,0], [0,0,0]]))#np.array(d_idx.shape) / 2, np.array([0.0, 0.0, 0.0]))
+root = cube.TreeNode(np.array([0, 0, 0]), np.array([shape[0], shape[1], shape[2]]), entropy, [0, 0, 0], np.array([[0,0,0], [0,0,0], [0,0,0]]), cube_hist)#np.array(d_idx.shape) / 2, np.array([0.0, 0.0, 0.0]))
 cube.SplitEntropy(root, d_idx, d_3d, cubemap_size)
 
 f = open('binary_tree.txt', 'w')
@@ -49,7 +49,8 @@ vectors = []
 entropys = []
 eig_vals = []
 eig_vecs = []
-cube.writeBinaryTree(root, f, centers, vectors, entropys, eig_vals, eig_vecs, node_id)
+cube_hists = []
+cube.writeBinaryTree(root, f, centers, vectors, entropys, eig_vals, eig_vecs, node_id, cube_hists, cubemap_size)
 f.write("\n")
 f.close()
 
@@ -63,6 +64,7 @@ np.savetxt('dims.txt', vectors, newline=" ")
 np.savetxt('entropys.txt', entropys, newline=" ")
 np.savetxt('eig_vals.txt', eig_vals, newline=" ")
 np.savetxt('eig_vecs.txt', eig_vecs, newline=" ")
+np.savetxt('cube_hists.txt', cube_hists, newline=" ")
 
 time_end = time.time()
 print(str(time_end - time_start) + " seconds")
