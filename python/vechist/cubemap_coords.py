@@ -735,9 +735,18 @@ def writeBinaryTree(node, f, starts, dims, entropys, eig_vals, eig_vecs, node_id
         eig_vecs.append(node.eig_vec[1, :])
         eig_vecs.append(node.eig_vec[2, :])
 
-        cubehist_raveled = node.cube_hist.ravel()
-        for i in range(0, cubemap_size * cubemap_size * 6 - 1):
-            cube_hists.append(cubehist_raveled[i])
+        #cubehist_raveled = node.cube_hist.ravel()
+        #for i in range(0, cubemap_size * cubemap_size * 6 - 1):
+        #    cube_hists.append(cubehist_raveled[i])
+        #cube_hists.append(node.cube_hist)
+        #optData[i, 16: 16+1536] = cube_hist.ravel()
+        index = len(entropys) - 1
+        binCount = cubemap_size * cubemap_size * 6
+        print("Index:")
+        print(index)
+        print("Bin Count:")
+        print(binCount)
+        cube_hists[binCount * index : binCount * (index+1)] = node.cube_hist.ravel()
 
         node_id[0] += 1
         #out << p->data << " ";
