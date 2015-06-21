@@ -945,8 +945,8 @@ inline bool readNextToken(std::istream &in, int &token, bool &isNumber)
 	return isNumber;
 }
 
-void DataMgrVect::readBinaryTree(NodeBi *&p, ifstream &fin, vector<float3> starts, vector<float3> dims,
-	vector<float> entropys, vector<float3> eig_vals, vector<float3> eig_vecs) {
+void DataMgrVect::readBinaryTree(NodeBi *&p, ifstream &fin, vector<float3> & starts, vector<float3> & dims,
+	vector<float> & entropys, vector<float3> & eig_vals, vector<float3> & eig_vecs) {
 	int token;
 	bool isNumber;
 	if (!readNextToken(fin, token, isNumber))
