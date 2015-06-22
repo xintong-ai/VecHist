@@ -292,6 +292,7 @@ def SolidAngles(nbin):
 
 def GenCubemap(d, size):
     [hist, bin_edges] = np.histogram(d, np.arange(0, size * size * 6 + 1))
+    hist = hist.astype(np.float32)
     #TODO: this is for the empty entries in DTI dataset
     hist[0] = 0
 #    hist = np.arange(0, size * size * 6)       
@@ -709,7 +710,7 @@ def SplitEntropy(ret, _d_idx, d_3d, cubemap_size):
     entropy_1 = get_histogram_entropy(cube_hist_1.ravel())
     entropy_2 = get_histogram_entropy(cube_hist_2.ravel())
 
-    threshold = 8
+    threshold = 8.6
     ####################print("entropy_1: " + str(entropy_1))
     ####################print("entropy_2: " + str(entropy_2))
     ret.left = TreeNode(ret.start, side1.shape, entropy_1, eig_val_1, eig_vec_1, cube_hist_1)
