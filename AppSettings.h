@@ -14,6 +14,7 @@ public:
 	bool useTreeLeavesForColorMap = true;		//True if color map is made based on values stored in leaves and false if not
 	bool useEntropyForTreeMapColor = true;		//True if entropy should be used to determine tree map widget color; false if not
 	bool useEntropyForTreeMapArea = true;		//True if entropy should be used to determione tree map widget square areas; false if not
+	bool showStreamlines = false;				//True if should show streamlines in program.  False if not
 };
 
 #endif //ARROW_SETTIGS_H

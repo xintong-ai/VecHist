@@ -1503,20 +1503,24 @@ void Scene::render3D(const QMatrix4x4 &view)
 	}
 
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	vector<vector<float4>> lines = dataManager->GetStreamlines();
-	//TODO: figure out why I have to put the following line
-	for (auto line : lines)
-	{
-		// activate and specify pointer to vertex array
-		glEnableClientState(GL_VERTEX_ARRAY);
 
-		glVertexPointer(4, GL_FLOAT, 0, &(line[0].x));
+	//Render streamlines if desired
+	if (appSettings->showStreamlines) {
+		vector<vector<float4>> lines = dataManager->GetStreamlines();
+		//TODO: figure out why I have to put the following line
+		for (auto line : lines)
+		{
+			// activate and specify pointer to vertex array
+			glEnableClientState(GL_VERTEX_ARRAY);
 
-		// draw a cube
-		glDrawArrays(GL_LINE_STRIP, 0, line.size());
+			glVertexPointer(4, GL_FLOAT, 0, &(line[0].x));
 
-		// deactivate vertex arrays after drawing
-		glDisableClientState(GL_VERTEX_ARRAY);
+			// draw a cube
+			glDrawArrays(GL_LINE_STRIP, 0, line.size());
+
+			// deactivate vertex arrays after drawing
+			glDisableClientState(GL_VERTEX_ARRAY);
+		}
 	}
 
 	renderBBox(view);
