@@ -49,7 +49,7 @@ vectors = []
 entropys = []
 eig_vals = []
 eig_vecs = []
-cube_hists = np.zeros(cubemap_size * cubemap_size * 6 * 349)
+cube_hists = np.zeros(cubemap_size * cubemap_size * 6 * 497)
 cube.writeBinaryTree(root, f, centers, vectors, entropys, eig_vals, eig_vecs, node_id, cube_hists, cubemap_size)
 f.write("\n")
 f.close()

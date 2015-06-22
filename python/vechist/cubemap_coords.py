@@ -743,10 +743,12 @@ def writeBinaryTree(node, f, starts, dims, entropys, eig_vals, eig_vecs, node_id
         #optData[i, 16: 16+1536] = cube_hist.ravel()
         index = len(entropys) - 1
         binCount = cubemap_size * cubemap_size * 6
-        print("Index:")
-        print(index)
-        print("Bin Count:")
-        print(binCount)
+        #print("Index:")
+        #print(index)
+        #print("Bin Count:")
+        #print(binCount)
+        #print("Length of cube_hists:")
+        #print(len(cube_hists))
         cube_hists[binCount * index : binCount * (index+1)] = node.cube_hist.ravel()
 
         node_id[0] += 1
