@@ -15,7 +15,7 @@ public:
 	bool useEntropyForTreeMapColor = true;		//True if entropy should be used to determine tree map widget color; false if not
 	bool useEntropyForTreeMapArea = true;		//True if entropy should be used to determione tree map widget square areas; false if not
 	bool showStreamlines = false;				//True if should show streamlines in program.  False if not
-	int glyphType = 1;							//0 = superquadrics, 1 = spheres
+	int glyphType = 0;							//0 = superquadrics, 1 = spheres
 };
 
 #endif //ARROW_SETTIGS_H
