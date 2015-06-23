@@ -1419,8 +1419,8 @@ void Scene::render3D(const QMatrix4x4 &view)
 			tex->unbind();
 
 			glPopMatrix();
-
 		}
+
 	}
 	else if (appSettings->glyphType == 1) {
 		//Draw Sphere
@@ -1549,7 +1549,9 @@ void Scene::render3D(const QMatrix4x4 &view)
 		}
 	}
 
-	renderBBox(view);
+	if (appSettings->showBoundingBox) {
+		renderBBox(view);
+	}
 }
 
 void Scene::setStates()
@@ -1895,7 +1897,7 @@ void Scene::keyPressEvent(QKeyEvent *event)
 	if (event->key() == Qt::Key_W || event->key() == Qt::Key_S
 		|| event->key() == Qt::Key_A || event->key() == Qt::Key_D
 		|| event->key() == Qt::Key_Q || event->key() == Qt::Key_E
-		|| event->key() == Qt::Key_Space)
+		|| event->key() == Qt::Key_Space || event->key() == Qt::Key_B)
 	{
 		//int change = 50;
 		int qx, qy, qz;
@@ -1936,10 +1938,14 @@ void Scene::keyPressEvent(QKeyEvent *event)
 				return;
 			qz -= qnz;
 			break;
+		case Qt::Key_B:
+			appSettings->showBoundingBox = !appSettings->showBoundingBox;
+			break;
 		case Qt::Key_Space:
 			appSettings->glyphType = (appSettings->glyphType + 1) % 2;
 			m_textureCubeManager->UpdateTexture(application);
 			break;
+		
 
 
 		}

@@ -16,6 +16,7 @@ public:
 	bool useEntropyForTreeMapArea = true;		//True if entropy should be used to determione tree map widget square areas; false if not
 	bool showStreamlines = false;				//True if should show streamlines in program.  False if not
 	int glyphType = 0;							//0 = superquadrics, 1 = spheres
+	bool showBoundingBox = true;				//Boolean to determine if bounding box around whole scene should be shown
 };
 
 #endif //ARROW_SETTIGS_H
