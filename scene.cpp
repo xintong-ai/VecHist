@@ -1393,32 +1393,58 @@ void Scene::render3D(const QMatrix4x4 &view)
 
 	//NewColor Newlight over
 	//m_programs["distribution"]->setUniformValue("view", qModelview);
-	
-	for (int i = 0; i < m_textureCubeManager->getLeafNodes().size(); i++)	{
-		GLTextureCube* tex = m_textureCubeManager->getBlockTex()[i];
-		auto nd = m_textureCubeManager->getLeafNodes()[i];
+	if (appSettings->glyphType == 0) {
+		//Draw Superquadric
+		for (int i = 0; i < m_textureCubeManager->getLeafNodes().size(); i++)	{
+			GLTextureCube* tex = m_textureCubeManager->getBlockTex()[i];
+			auto nd = m_textureCubeManager->getLeafNodes()[i];
 
-		nd->GetDim(dim);
-		nd->GetStart(start);
-		glPushMatrix();
-		glTranslatef(
-			dim[0] / 2 + start[0],
-			dim[1] / 2 + start[1],
-			dim[2] / 2 + start[2]);
-		float min_dim = min(min(dim[0], dim[1]), dim[2]);
-		glScalef(min_dim, min_dim, min_dim);
+			nd->GetDim(dim);
+			nd->GetStart(start);
+			glPushMatrix();
+			glTranslatef(
+				dim[0] / 2 + start[0],
+				dim[1] / 2 + start[1],
+				dim[2] / 2 + start[2]);
+			float min_dim = min(min(dim[0], dim[1]), dim[2]);
+			glScalef(min_dim, min_dim, min_dim);
 
-		tex->bind();
+			tex->bind();
 
-		if (nd->GetVisible()) {
-			//TODO: Put back
-			nd->GetGlyph()->draw();
+			if (nd->GetVisible()) {
+				//TODO: Put back
+				nd->GetGlyph()->draw();
+			}
+
+			tex->unbind();
+
+			glPopMatrix();
+
 		}
+	}
+	else if (appSettings->glyphType == 1) {
+		//Draw Sphere
+		for (int i = 0; i < m_textureCubeManager->getLeafNodes().size(); i++)	{
+			GLTextureCube* tex = m_textureCubeManager->getBlockTex()[i];
+			auto nd = m_textureCubeManager->getLeafNodes()[i];
 
-		tex->unbind();
+			nd->GetDim(dim);
+			nd->GetStart(start);
+			glPushMatrix();
+			glTranslatef(
+				dim[0] / 2 + start[0],
+				dim[1] / 2 + start[1],
+				dim[2] / 2 + start[2]);
+			float min_dim = min(min(dim[0], dim[1]), dim[2]);
+			glScalef(min_dim, min_dim, min_dim);
 
-		glPopMatrix();
+			tex->bind();
 
+			if (nd->GetVisible()) {
+				m_vecWidget->draw();
+			}
+			glPopMatrix();
+		}
 	}
 		
 	m_programs["distribution"]->release();
@@ -1868,7 +1894,8 @@ void Scene::keyPressEvent(QKeyEvent *event)
 	QGraphicsScene::keyPressEvent(event);
 	if (event->key() == Qt::Key_W || event->key() == Qt::Key_S
 		|| event->key() == Qt::Key_A || event->key() == Qt::Key_D
-		|| event->key() == Qt::Key_Q || event->key() == Qt::Key_E)
+		|| event->key() == Qt::Key_Q || event->key() == Qt::Key_E
+		|| event->key() == Qt::Key_Space)
 	{
 		//int change = 50;
 		int qx, qy, qz;
@@ -1908,6 +1935,10 @@ void Scene::keyPressEvent(QKeyEvent *event)
 			if (qz - qnz < 0)
 				return;
 			qz -= qnz;
+			break;
+		case Qt::Key_Space:
+			appSettings->glyphType = (appSettings->glyphType + 1) % 2;
+			m_textureCubeManager->UpdateTexture(application);
 			break;
 
 
