@@ -1476,15 +1476,17 @@ void Scene::render3D(const QMatrix4x4 &view)
 
 		tex->bind();
 		
-		if (nd->GetSelected()) {
-			//selectedNode = (AbstractNode*)nd;
-			//RenderBox(view, start[0], start[1], start[2], dim[0], dim[1], dim[2]);
-			//glColor3f(1.0f, 1.0f, 0.0f);
-			///////////////RenderBox(view, dim[0], dim[1], dim[2], start[0], start[1], start[2]);
+		if (appSettings->glyphType == 0) {
+			//Superquadric picking rendering
+			if (nd->GetVisible()) {
+				nd->GetGlyph()->draw();
+			}
 		}
-		
-		if (nd->GetVisible()) {
-			nd->GetGlyph()->draw();
+		else {
+			//Sphere picking rendering
+			if (nd->GetVisible()) {
+				m_vecWidget->draw();
+			}
 		}
 		
 		tex->unbind();
