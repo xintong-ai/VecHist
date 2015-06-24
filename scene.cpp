@@ -883,6 +883,8 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
 bool Scene::initiateEntropyQuery(double threshold)
 {
+	cout << "Entropy query initiated for threshold of: " << threshold << endl;
+
 	bool queryChanged = false;
 	//This function makes no sense for Dark Sky data now.
 	if (application != 1) {
@@ -900,6 +902,11 @@ bool Scene::initiateEntropyQuery(double threshold)
 
 	m_graphWidget->rebuildGraphFromTree((NodeBi*)dataManager->getRootNode());
 	treeMapWindow->refreshPlot((NodeBi*)dataManager->getRootNode());
+
+	//Reset the FPS calculations for the new entropy threshold value
+	summedTime = 0;
+	frameCount = 0;
+	
 
 	return queryChanged;
 
