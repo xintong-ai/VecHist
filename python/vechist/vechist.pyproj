@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{390a092e-e39d-4682-87e7-e67e14f4976b}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>gen_idx.py</StartupFile>
+    <StartupFile>solid_angle.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -31,6 +31,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="read_vec.py" />
+    <Compile Include="sample_random_ball.py" />
+    <Compile Include="solid_angle.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="vechist.py" />
   </ItemGroup>
   <Import Project="$(PtvsTargetsFile)" Condition="Exists($(PtvsTargetsFile))" />
