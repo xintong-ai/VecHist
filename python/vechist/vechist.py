@@ -12,8 +12,6 @@ import math
 #cube.loadHaloComputeSuperquadric()
 #pause
 
-time_start = time.time()
-
 #d = sample_ball.sample(2**8)
 #d = sample_uniform.sample(2**20)
 #d = sample_random.sample(2**24)
@@ -30,6 +28,7 @@ shape = d_idx.shape
 d_3d = np.load('d_vec.npy')
 d_3d = cube.normalize(d_3d)
 
+time_start = time.time()
 #Calculate entropy for root node (needed for tree visualization)
 start = np.array([0, 0, 0])
 dim = np.array([shape[0], shape[1], shape[2]])
@@ -37,7 +36,10 @@ m_idx = d_idx[start[0]:(start[0]+dim[0]), start[1]:(start[1]+dim[1]), start[2]:(
 
 cube_hist = cube.GenCubemap(m_idx.ravel(), cubemap_size)
 entropy = cube.get_histogram_entropy(cube_hist.ravel())
+time_end = time.time()
+print(str(time_end - time_start) + " seconds for cube map generation for root node")
 
+time_start = time.time()
 ######do the splitting computation########
 root = cube.TreeNode(np.array([0, 0, 0]), np.array([shape[0], shape[1], shape[2]]), entropy, [0, 0, 0], np.array([[0,0,0], [0,0,0], [0,0,0]]))#np.array(d_idx.shape) / 2, np.array([0.0, 0.0, 0.0]))
 cube.SplitEntropy(root, d_idx, d_3d, cubemap_size)
@@ -65,4 +67,4 @@ np.savetxt('eig_vals.txt', eig_vals, newline=" ")
 np.savetxt('eig_vecs.txt', eig_vecs, newline=" ")
 
 time_end = time.time()
-print(str(time_end - time_start) + " seconds")
+print(str(time_end - time_start) + " seconds for recursive subdivision algorithm")
