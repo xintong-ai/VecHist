@@ -17,6 +17,7 @@ public:
 	bool showStreamlines = false;				//True if should show streamlines in program.  False if not
 	int glyphType = 0;							//0 = superquadrics, 1 = spheres
 	bool showBoundingBox = true;				//Boolean to determine if bounding box around whole scene should be shown
+	bool showFPS = true;
 };
 
 #endif //ARROW_SETTIGS_H
