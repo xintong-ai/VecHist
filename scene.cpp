@@ -1393,32 +1393,58 @@ void Scene::render3D(const QMatrix4x4 &view)
 
 	//NewColor Newlight over
 	//m_programs["distribution"]->setUniformValue("view", qModelview);
-	
-	for (int i = 0; i < m_textureCubeManager->getLeafNodes().size(); i++)	{
-		GLTextureCube* tex = m_textureCubeManager->getBlockTex()[i];
-		auto nd = m_textureCubeManager->getLeafNodes()[i];
+	if (appSettings->glyphType == 0) {
+		//Draw Superquadric
+		for (int i = 0; i < m_textureCubeManager->getLeafNodes().size(); i++)	{
+			GLTextureCube* tex = m_textureCubeManager->getBlockTex()[i];
+			auto nd = m_textureCubeManager->getLeafNodes()[i];
 
-		nd->GetDim(dim);
-		nd->GetStart(start);
-		glPushMatrix();
-		glTranslatef(
-			dim[0] / 2 + start[0],
-			dim[1] / 2 + start[1],
-			dim[2] / 2 + start[2]);
-		float min_dim = min(min(dim[0], dim[1]), dim[2]);
-		glScalef(min_dim, min_dim, min_dim);
+			nd->GetDim(dim);
+			nd->GetStart(start);
+			glPushMatrix();
+			glTranslatef(
+				dim[0] / 2 + start[0],
+				dim[1] / 2 + start[1],
+				dim[2] / 2 + start[2]);
+			float min_dim = min(min(dim[0], dim[1]), dim[2]);
+			glScalef(min_dim, min_dim, min_dim);
 
-		tex->bind();
+			tex->bind();
 
-		if (nd->GetVisible()) {
-			//TODO: Put back
-			nd->GetGlyph()->draw();
+			if (nd->GetVisible()) {
+				//TODO: Put back
+				nd->GetGlyph()->draw();
+			}
+
+			tex->unbind();
+
+			glPopMatrix();
 		}
 
-		tex->unbind();
+	}
+	else if (appSettings->glyphType == 1) {
+		//Draw Sphere
+		for (int i = 0; i < m_textureCubeManager->getLeafNodes().size(); i++)	{
+			GLTextureCube* tex = m_textureCubeManager->getBlockTex()[i];
+			auto nd = m_textureCubeManager->getLeafNodes()[i];
 
-		glPopMatrix();
+			nd->GetDim(dim);
+			nd->GetStart(start);
+			glPushMatrix();
+			glTranslatef(
+				dim[0] / 2 + start[0],
+				dim[1] / 2 + start[1],
+				dim[2] / 2 + start[2]);
+			float min_dim = min(min(dim[0], dim[1]), dim[2]);
+			glScalef(min_dim, min_dim, min_dim);
 
+			tex->bind();
+
+			if (nd->GetVisible()) {
+				m_vecWidget->draw();
+			}
+			glPopMatrix();
+		}
 	}
 		
 	m_programs["distribution"]->release();
@@ -1450,15 +1476,17 @@ void Scene::render3D(const QMatrix4x4 &view)
 
 		tex->bind();
 		
-		if (nd->GetSelected()) {
-			//selectedNode = (AbstractNode*)nd;
-			//RenderBox(view, start[0], start[1], start[2], dim[0], dim[1], dim[2]);
-			//glColor3f(1.0f, 1.0f, 0.0f);
-			///////////////RenderBox(view, dim[0], dim[1], dim[2], start[0], start[1], start[2]);
+		if (appSettings->glyphType == 0) {
+			//Superquadric picking rendering
+			if (nd->GetVisible()) {
+				nd->GetGlyph()->draw();
+			}
 		}
-		
-		if (nd->GetVisible()) {
-			nd->GetGlyph()->draw();
+		else {
+			//Sphere picking rendering
+			if (nd->GetVisible()) {
+				m_vecWidget->draw();
+			}
 		}
 		
 		tex->unbind();
@@ -1503,23 +1531,29 @@ void Scene::render3D(const QMatrix4x4 &view)
 	}
 
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	vector<vector<float4>> lines = dataManager->GetStreamlines();
-	//TODO: figure out why I have to put the following line
-	for (auto line : lines)
-	{
-		// activate and specify pointer to vertex array
-		glEnableClientState(GL_VERTEX_ARRAY);
 
-		glVertexPointer(4, GL_FLOAT, 0, &(line[0].x));
+	//Render streamlines if desired
+	if (appSettings->showStreamlines) {
+		vector<vector<float4>> lines = dataManager->GetStreamlines();
+		//TODO: figure out why I have to put the following line
+		for (auto line : lines)
+		{
+			// activate and specify pointer to vertex array
+			glEnableClientState(GL_VERTEX_ARRAY);
 
-		// draw a cube
-		glDrawArrays(GL_LINE_STRIP, 0, line.size());
+			glVertexPointer(4, GL_FLOAT, 0, &(line[0].x));
 
-		// deactivate vertex arrays after drawing
-		glDisableClientState(GL_VERTEX_ARRAY);
+			// draw a cube
+			glDrawArrays(GL_LINE_STRIP, 0, line.size());
+
+			// deactivate vertex arrays after drawing
+			glDisableClientState(GL_VERTEX_ARRAY);
+		}
 	}
 
-	renderBBox(view);
+	if (appSettings->showBoundingBox) {
+		renderBBox(view);
+	}
 }
 
 void Scene::setStates()
@@ -1864,7 +1898,8 @@ void Scene::keyPressEvent(QKeyEvent *event)
 	QGraphicsScene::keyPressEvent(event);
 	if (event->key() == Qt::Key_W || event->key() == Qt::Key_S
 		|| event->key() == Qt::Key_A || event->key() == Qt::Key_D
-		|| event->key() == Qt::Key_Q || event->key() == Qt::Key_E)
+		|| event->key() == Qt::Key_Q || event->key() == Qt::Key_E
+		|| event->key() == Qt::Key_Space || event->key() == Qt::Key_B)
 	{
 		//int change = 50;
 		int qx, qy, qz;
@@ -1905,6 +1940,14 @@ void Scene::keyPressEvent(QKeyEvent *event)
 				return;
 			qz -= qnz;
 			break;
+		case Qt::Key_B:
+			appSettings->showBoundingBox = !appSettings->showBoundingBox;
+			break;
+		case Qt::Key_Space:
+			appSettings->glyphType = (appSettings->glyphType + 1) % 2;
+			m_textureCubeManager->UpdateTexture(application);
+			break;
+		
 
 
 		}

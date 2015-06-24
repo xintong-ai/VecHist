@@ -291,6 +291,7 @@ def SolidAngles(nbin):
 
 def GenCubemap(d, size):
     [hist, bin_edges] = np.histogram(d, np.arange(0, size * size * 6 + 1))
+    hist = hist.astype(np.float32)
     #TODO: this is for the empty entries in DTI dataset
     hist[0] = 0
 #    hist = np.arange(0, size * size * 6)       
@@ -523,10 +524,13 @@ def Split(ret, _d_idx, cubemap_size, _start_pos, tree_depth):
     Split(ret.left, side1, cubemap_size, start_pos, tree_depth - 1)
     Split(ret.right, side2, cubemap_size, start_pos_2, tree_depth - 1)
 
+#This function finds the Principal Components Analysis for the data (using both the original data and a second copy scaled by -1)
+#This is used to find the principal directions and their magnitudes
 def PCA(d):
-    d2 = np.zeros((d.shape[0] * 2, 3));
-    d2[: d.shape[0], :] = copy.deepcopy(d)
-    d2[d.shape[0]:, :] = copy.deepcopy(d*(-1))
+    scaledCopy = copy.deepcopy(d*(-1))
+    #Here we use a concatenation of the original array and a scaled version - it acts as a view to each array in Python
+    #We do not do a deep copy of the original data, since this would waste memory
+    d2 = np.concatenate((d, scaledCopy))
     cov_mat = np.cov([d2[:, 0], d2[:, 1], d2[:, 2]])
     eig_val, eig_vec = np.linalg.eig(cov_mat)
     eig_pairs = [(np.abs(eig_val[i]), eig_vec[:, i]) for i in range(len(eig_val))]
@@ -705,7 +709,7 @@ def SplitEntropy(ret, _d_idx, d_3d, cubemap_size):
     entropy_1 = get_histogram_entropy(cube_hist_1.ravel())
     entropy_2 = get_histogram_entropy(cube_hist_2.ravel())
 
-    threshold = 8
+    threshold = 8.6
     ####################print("entropy_1: " + str(entropy_1))
     ####################print("entropy_2: " + str(entropy_2))
     ret.left = TreeNode(ret.start, side1.shape, entropy_1, eig_val_1, eig_vec_1)

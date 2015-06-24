@@ -14,6 +14,9 @@ public:
 	bool useTreeLeavesForColorMap = true;		//True if color map is made based on values stored in leaves and false if not
 	bool useEntropyForTreeMapColor = true;		//True if entropy should be used to determine tree map widget color; false if not
 	bool useEntropyForTreeMapArea = true;		//True if entropy should be used to determione tree map widget square areas; false if not
+	bool showStreamlines = false;				//True if should show streamlines in program.  False if not
+	int glyphType = 0;							//0 = superquadrics, 1 = spheres
+	bool showBoundingBox = true;				//Boolean to determine if bounding box around whole scene should be shown
 };
 
 #endif //ARROW_SETTIGS_H

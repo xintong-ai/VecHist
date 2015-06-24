@@ -16,7 +16,7 @@ string useTreeMapLabels 0
 string useTreeLeavesForColorMap 1
 string useEntropyForTreeMapColor 1
 string useEntropyForTreeMapArea 0
-string minEntropyThreshold = 8
+string minEntropyThreshold = 8.6
 string maxEntropyThreshold = 10
 string entropyThresholdIncrement = 0.1
 
