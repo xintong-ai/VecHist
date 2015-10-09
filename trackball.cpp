@@ -1,165 +1,232 @@
-/****************************************************************************
-**
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
-** Contact: http://www.qt-project.org/legal
-**
-** This file is part of the demonstration applications of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
-** use the contact form at http://qt.digia.com/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
-** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
-#include "trackball.h"
-#include "scene.h"
-
-//============================================================================//
-//                                  TrackBall                                 //
-//============================================================================//
-
-TrackBall::TrackBall(TrackMode mode)
-    : m_angularVelocity(0)
-    , m_paused(false)
-    , m_pressed(false)
-    , m_mode(mode)
-{
-    m_axis = QVector3D(0, 1, 0);
-    m_rotation = QQuaternion();
-    m_lastTime = QTime::currentTime();
-}
-
-TrackBall::TrackBall(float angularVelocity, const QVector3D& axis, TrackMode mode)
-    : m_axis(axis)
-    , m_angularVelocity(angularVelocity)
-    , m_paused(false)
-    , m_pressed(false)
-    , m_mode(mode)
-{
-    m_rotation = QQuaternion();
-    m_lastTime = QTime::currentTime();
-}
-
-void TrackBall::push(const QPointF& p, const QQuaternion &)
-{
-    m_rotation = rotation();
-    m_pressed = true;
-    m_lastTime = QTime::currentTime();
-    m_lastPos = p;
-    m_angularVelocity = 0.0f;
-}
-
-//void TrackBall::translate(const QPointF& p, const QQuaternion &transformation)
-//{
 //
-//}
+//     _____                   __  
+//    / ___/__________  __  __/ /_ 
+//    \__ \/ ____/ __ \/ / /   __/
+//   ___/   /___/ /_/ / /_/ / /__ 
+//  /____/\____/\____/\____/\___/
+//
+//       Visualization Team 
+//     Advanced Computing Lab 
+//  Los Alamos National Laboratory
+// --------------------------------
+// 
+// $Id: Trackball.cpp,v 1.4 2005/09/02 09:49:30 groth Exp $
+// $Date: 2005/09/02 09:49:30 $
+// $Revision: 1.4 $
+// Authors: A. McPherson, P. McCormick, J. Kniss, G. Roth
+//
+// *** Notes *** 
+// 
+//  Initially part of the ACL Visualization Library moved into 
+//  scout to clean things up some and remove external 
+//  dependencies. 
+// 
+//  Hacked into C++ from SGI's trackball.h---see copyright
+//  at end.
+// ============================================================
+//
 
-void TrackBall::move(const QPointF& p, const QQuaternion &transformation)
+#include <string.h>
+#include <limits.h>
+#include <cmath>
+
+#include "Trackball.h" // Class definition
+#include "Rotation.h"  // For member operations
+
+
+//===========================================================================
+//===========================================================================
+// Static Initialization
+//===========================================================================
+//===========================================================================
+
+//  This size should really be based on the distance from the center of
+//  rotation to the point on the object underneath the mouse.  That
+//  point would then track the mouse as closely as possible.  This is a
+//  simple example, though, so that is left as an Exercise for the
+//  Programmer.
+float  Trackball::m_trackball_size = 0.9;
+//float  Trackball::m_trackball_size = 1;
+
+//===========================================================================
+//===========================================================================
+// Constructors/Destructor
+//===========================================================================
+//===========================================================================
+
+Trackball::Trackball()
 {
-    if (!m_pressed)
-        return;
+  //  Empty.
 
-    QTime currentTime = QTime::currentTime();
-    int msecs = m_lastTime.msecsTo(currentTime);
-    if (msecs <= 20)
-        return;
+} // Trackball()
 
-    switch (m_mode) {
-    case Plane:
-        {
-            QLineF delta(m_lastPos, p);
-            m_angularVelocity = 180*delta.length() / (PI*msecs);
-            m_axis = QVector3D(-delta.dy(), delta.dx(), 0.0f).normalized();
-            m_axis = transformation.rotatedVector(m_axis);
-            m_rotation = QQuaternion::fromAxisAndAngle(m_axis, 180 / PI * delta.length()) * m_rotation;
-        }
-        break;
-    case Sphere:
-        {
-            QVector3D lastPos3D = QVector3D(m_lastPos.x(), m_lastPos.y(), 0.0f);
-            float sqrZ = 1 - QVector3D::dotProduct(lastPos3D, lastPos3D);
-            if (sqrZ > 0)
-                lastPos3D.setZ(sqrt(sqrZ));
-            else
-                lastPos3D.normalize();
 
-            QVector3D currentPos3D = QVector3D(p.x(), p.y(), 0.0f);
-            sqrZ = 1 - QVector3D::dotProduct(currentPos3D, currentPos3D);
-            if (sqrZ > 0)
-                currentPos3D.setZ(sqrt(sqrZ));
-            else
-                currentPos3D.normalize();
+Trackball::~Trackball()
+{
+  //  Empty.
 
-            m_axis = QVector3D::crossProduct(lastPos3D, currentPos3D);
-            float angle = 180 / PI * asin(sqrt(QVector3D::dotProduct(m_axis, m_axis)));
+} // ~Trackball()
 
-            m_angularVelocity = angle / msecs;
-            m_axis.normalize();
-            m_axis = transformation.rotatedVector(m_axis);
-            m_rotation = QQuaternion::fromAxisAndAngle(m_axis, angle) * m_rotation;
-        }
-        break;
+// ----------------------------------------------------------------------------
+//!
+//!  Ok, simulate a track-ball.  Project the points onto the virtual
+//!  trackball, then figure out the axis of rotation, which is the cross
+//!  product of P1 P2 and O P1 (O is the center of the ball, 0,0,0)
+//!  Note:  This is a deformed trackball-- is a trackball in the center,
+//!  but is deformed into a hyperbolic sheet of rotation away from the
+//!  center.  This particular function was chosen after trying out
+//!  several variations.
+//!
+//!  It is assumed that the arguments to this routine are in the range
+//!  (-1.0 ... 1.0)
+//!
+const Rotation &Trackball::rotate(float fromX, float fromY, float toX, float toY)
+{
+  QuatVector axis;           //!< Axis of rotation
+  QuatVector fromVec, toVec; //!< Destination and origin vectors
+
+  //!  If no rotation, quit early
+  if (fromX == toX && fromY == toY)
+    {
+      //! Zero rotation
+      m_result.clear();
+      return m_result;
     }
 
+  //! First, figure out z-coordinates for projection of P1 and P2 to
+  //! deformed sphere
+  fromVec.set(fromX, fromY, project_to_sphere(m_trackball_size, fromX, fromY));
+  toVec.set  (toX,   toY,   project_to_sphere(m_trackball_size, toX,   toY));
 
-    m_lastPos = p;
-    m_lastTime = currentTime;
-}
+  //fromVec.set(0.0, fromY, project_to_sphere(m_trackball_size, fromX, fromY));
+  //toVec.set(0.0, toY, project_to_sphere(m_trackball_size, toX, toY));
 
-void TrackBall::release(const QPointF& p, const QQuaternion &transformation)
+  return rotate_vectors(fromVec, toVec);
+
+} // rotate()
+
+// Differs from rotate() only in that the vector about which rotation occurs
+// Is restricted to being coincident with the z-axis. Thus the 2D image can
+// be rotated parallel to the screen.
+// Much of the work could likely be simplified. Particularly the projection
+// to a sphere, which could now be projected to a circle.
+const Rotation &Trackball::spin(float fromX, float fromY, float toX, float toY)
 {
-    // Calling move() caused the rotation to stop if the framerate was too low.
-    move(p, transformation);
-    m_pressed = false;
-}
+  QuatVector axis;           //!< Axis of rotation
+  QuatVector fromVec, toVec; //!< Destination and origin vectors
 
-void TrackBall::start()
+  //! Vectors are flat against plane parallel to screen
+  fromVec.set(fromX, fromY, 0.0);
+  toVec.set  (toX,   toY,   0.0);
+
+  //! In degenerate case resulting from coincident vectors, quit early
+  if(fromVec.coincident(toVec))
+    {
+      m_result.clear();
+      return m_result;
+    }
+
+  return rotate_vectors(fromVec, toVec);
+
+} // spin()
+
+//============================================================================
+// Protected Member Functions
+//============================================================================
+
+//-===========================================================================
+// Private Member Functions
+//============================================================================
+
+
+#include <iostream>
+
+//! Assumes error checking is done
+const Rotation &Trackball::rotate_vectors(QuatVector &fromVec, QuatVector &toVec)
 {
-    m_lastTime = QTime::currentTime();
-    m_paused = false;
-}
+  QuatVector axis;   //!< Axis of rotation
+  float angle;       //!< how much to rotate about axis
+  QuatVector diffVec;//!< Difference vector
+  float t;           //!< Position along vector
 
-void TrackBall::stop()
+  //! Axis is the cross product of toVec and fromVec
+  axis.cross(fromVec, toVec);
+
+  //! Figure out how much to rotate around that axis.
+  diffVec.sub(toVec, fromVec);
+  t = diffVec.length() / (2.0 * m_trackball_size);
+
+  //! Clamp out-of-control values...
+  if (t > 1.0) t = 1.0;
+  if (t < -1.0) t = -1.0;
+  angle = 2.0 * asin(t);
+
+  m_result.set(angle, axis);
+
+  return m_result;
+
+} // rotate_vectors()
+
+// ---------------------------------------------------------------------------
+//
+//  Project an x,y pair onto a sphere of radius r OR a hyperbolic sheet
+//  if we are away from the center of the sphere.
+//
+float Trackball::project_to_sphere(float r, float x, float y)
 {
-    m_rotation = rotation();
-    m_paused = true;
-}
+  float d, t, z;
 
-QQuaternion TrackBall::rotation() const
-{
-    if (m_paused || m_pressed)
-        return m_rotation;
+  d = sqrt(x*x + y*y);
+  if (d < r * 0.70710678118654752440) //! Inside  perspective sphere
+    //if (d < r * r) //! Inside orthogonal sphere
+    z = sqrt(r*r - d*d);
+  else //! On hyperbola
+    {
+      t = r / 1.41421356237309504880;
+      //t = r / (2.0*r);
+      z = t*t / d;
+    }
 
-    QTime currentTime = QTime::currentTime();
-    float angle = m_angularVelocity * m_lastTime.msecsTo(currentTime);
-    return QQuaternion::fromAxisAndAngle(m_axis, angle) * m_rotation;
-}
+  return z;
 
+} // project_to_sphere
+
+
+
+
+/*
+ * (c) Copyright 1993, 1994, Silicon Graphics, Inc.
+ * ALL RIGHTS RESERVED
+ * Permission to use, copy, modify, and distribute this software for
+ * any purpose and without fee is hereby granted, provided that the above
+ * copyright notice appear in all copies and that both the copyright notice
+ * and this permission notice appear in supporting documentation, and that
+ * the name of Silicon Graphics, Inc. not be used in advertising
+ * or publicity pertaining to distribution of the software without specific,
+ * written prior permission.
+ *
+ * THE MATERIAL EMBODIED ON THIS SOFTWARE IS PROVIDED TO YOU "AS-IS"
+ * AND WITHOUT WARRANTY OF ANY KIND, EXPRESS, IMPLIED OR OTHERWISE,
+ * INCLUDING WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY OR
+ * FITNESS FOR A PARTICULAR PURPOSE.  IN NO EVENT SHALL SILICON
+ * GRAPHICS, INC.  BE LIABLE TO YOU OR ANYONE ELSE FOR ANY DIRECT,
+ * SPECIAL, INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY
+ * KIND, OR ANY DAMAGES WHATSOEVER, INCLUDING WITHOUT LIMITATION,
+ * LOSS OF PROFIT, LOSS OF USE, SAVINGS OR REVENUE, OR THE CLAIMS OF
+ * THIRD PARTIES, WHETHER OR NOT SILICON GRAPHICS, INC.  HAS BEEN
+ * ADVISED OF THE POSSIBILITY OF SUCH LOSS, HOWEVER CAUSED AND ON
+ * ANY THEORY OF LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE
+ * POSSESSION, USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ * US Government Users Restricted Rights
+ * Use, duplication, or disclosure by the Government is subject to
+ * restrictions set forth in FAR 52.227.19(c)(2) or subparagraph
+ * (c)(1)(ii) of the Rights in Technical Data and Computer Software
+ * clause at DFARS 252.227-7013 and/or in similar or successor
+ * clauses in the FAR or the DOD or NASA FAR Supplement.
+ * Unpublished-- rights reserved under the copyright laws of the
+ * United States.  Contractor/manufacturer is Silicon Graphics,
+ * Inc., 2011 N.  Shoreline Blvd., Mountain View, CA 94039-7311.
+ *
+ * OpenGL(TM) is a trademark of Silicon Graphics, Inc.
+ */

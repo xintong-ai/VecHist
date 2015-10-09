@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{390a092e-e39d-4682-87e7-e67e14f4976b}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>solid_angle.py</StartupFile>
+    <StartupFile>subsample.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -35,7 +35,9 @@
     <Compile Include="solid_angle.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="subsample.py" />
     <Compile Include="vechist.py" />
+    <Compile Include="write_vec.py" />
   </ItemGroup>
   <Import Project="$(PtvsTargetsFile)" Condition="Exists($(PtvsTargetsFile))" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="!Exists($(PtvsTargetsFile))" />

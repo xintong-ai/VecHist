@@ -8,16 +8,19 @@ find_package(OpenGL REQUIRED)
 find_package(OSUFlow REQUIRED)
 find_package(Qt5Widgets)
 find_package(VTK REQUIRED)
+find_package(CUDA REQUIRED)
+
 
 include(${VTK_USE_FILE})
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
-include_directories( ${CMAKE_CURRENT_SOURCE_DIR} ${OSUFLOW_INCLUDE_DIR} ${VTK_INCLUDE_DIRS} required)
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR} ${OSUFLOW_INCLUDE_DIR} ${VTK_INCLUDE_DIRS} 
+	${CUDA_TOOLKIT_INCLUDE} ${CUDA_SDK_ROOT_DIR}/common/inc required)
 
 set(SHARED_LIBRARIES
 		${OPENGL_LIBRARIES}
-		${OSUFLOW_LIBRARY}
+		${OSUFLOW_LIBRARY_DEBUG}
 		${VTK_LIBRARIES}
 )
 
@@ -27,17 +30,20 @@ message("${OSUFLOW_LIBRARY_DEBUG}")
 message("VTK LIBRARY DIRS:")
 message("${VTK_LIBRARY_DIRS}")
 
-source_group("widgets_h" FILES edge.h node.h graphwidget.h qjson.h qjsonview.h GraphVizWidget.h EntropySlider.h TreeMapPlot.h TreeMapWindow.h ArrowButton.h ArrowWidget.h EntropyQueryContainer.h)
+#source_group("widgets_h" FILES edge.h node.h graphwidget.h qjson.h qjsonview.h GraphVizWidget.h EntropySlider.h TreeMapPlot.h TreeMapWindow.h ArrowButton.h ArrowWidget.h EntropyQueryContainer.h)
 
-source_group("widgets_cpp" FILES edge.cpp node.cpp graphwidget.cpp qjson.cpp qjsonview.cpp GraphVizWidget.cpp EntropySlider.cpp  TreeMapPlot.cpp TreeMapWindow.cpp ArrowButton.cpp ArrowWidget.cpp EntropyQueryContainer.cpp)
+#source_group("widgets_cpp" FILES edge.cpp node.cpp graphwidget.cpp qjson.cpp qjsonview.cpp GraphVizWidget.cpp EntropySlider.cpp  TreeMapPlot.cpp TreeMapWindow.cpp ArrowButton.cpp ArrowWidget.cpp EntropyQueryContainer.cpp)
 
-set( Srcs main.cpp DataManager.cpp glsphere.cpp glSuperquadric.cpp
-	scene.cpp glbuffers.cpp glextensions.cpp trackball.cpp edge.cpp graphwidget.cpp node.cpp qjson.cpp qjsonview.cpp
-	DataMgrCosm.cpp DataMgrVect.cpp EntropySlider.cpp TreeMapPlot.cpp TreeMapWindow.cpp TextureCubeManager.cpp ArrowButton.cpp ArrowWidget.cpp AppSettings.cpp EntropyQueryContainer.cpp windowsCpuTimer.cpp
+set( Srcs main.cpp glsphere.cpp glSuperquadric.cpp
+	glbuffers.cpp glextensions.cpp  
+	window.cpp glwidget.cpp Tracer.cpp Trackball.cpp Rotation.cpp QuatVector.cpp
+	DataMgr.cpp
 	)
-set( Hdrs DataManager.h glsphere.h glSuperquadric.h gltrianglemesh.h
-	scene.h glbuffers.h glextensions.h trackball.h edge.h graphwidget.h node.h
-	DataMgrCosm.h DataMgrVect.h qjson.h qjsonview.h EntropySlider.h TreeMapPlot.h TreeMapWindow.h TextureCubeManager.h ArrowButton.h ArrowWidget.h AppSettings.h EntropyQueryContainer.h windowsCpuTimer.h
+set( Hdrs 
+glsphere.h glSuperquadric.h gltrianglemesh.h
+	glbuffers.h glextensions.h 
+	window.h glwidget.h Tracer.h Trackball.h Rotation.h QuatVector.h
+	DataMgr.h defines.h
     )
 set( Rcs resources/vechist.qrc)
 

@@ -390,6 +390,8 @@ private:
 	GLuint m_pickingTexture;
 	GLuint m_depthTexture;
 	////////////////////////////////////////
+	//int ii = 0;
+
 };
 
 #endif

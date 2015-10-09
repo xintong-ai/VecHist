@@ -1396,6 +1396,9 @@ void Scene::render3D(const QMatrix4x4 &view)
 	if (appSettings->glyphType == 0) {
 		//Draw Superquadric
 		for (int i = 0; i < m_textureCubeManager->getLeafNodes().size(); i++)	{
+			if (191 != i)
+				continue;
+
 			GLTextureCube* tex = m_textureCubeManager->getBlockTex()[i];
 			auto nd = m_textureCubeManager->getLeafNodes()[i];
 
@@ -1424,7 +1427,11 @@ void Scene::render3D(const QMatrix4x4 &view)
 	}
 	else if (appSettings->glyphType == 1) {
 		//Draw Sphere
+
+
 		for (int i = 0; i < m_textureCubeManager->getLeafNodes().size(); i++)	{
+			if (191 != i)
+				continue;
 			GLTextureCube* tex = m_textureCubeManager->getBlockTex()[i];
 			auto nd = m_textureCubeManager->getLeafNodes()[i];
 
@@ -1459,6 +1466,8 @@ void Scene::render3D(const QMatrix4x4 &view)
 
 	AbstractNode* selectedNode = nullptr;
 	for (int i = 0; i < m_textureCubeManager->getLeafNodes().size(); i++)	{
+		if (191 != i)
+			continue;
 		GLTextureCube* tex = m_textureCubeManager->getBlockTex()[i];
 		auto nd = m_textureCubeManager->getLeafNodes()[i];
 
@@ -1633,7 +1642,7 @@ void Scene::drawBackground(QPainter *painter, const QRectF &)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glMatrixMode(GL_PROJECTION);
-    qgluPerspective(60.0, width / height, 0.01, 15.0);
+    qgluPerspective(90.0, width / height, 0.01, 15.0);
 
     glMatrixMode(GL_MODELVIEW);
 
@@ -1751,7 +1760,7 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 	//	event->accept();
 	//}
 	//new translation
-	else if (event->buttons() & Qt::MiddleButton){
+	else if (event->buttons() & (Qt::RightButton | Qt::LeftButton)){
 		curMouseX = event->scenePos().x();
 		curMouseY = event->scenePos().y();
 
@@ -1844,7 +1853,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 			}
 	}
 	//Middle Mouse Button - Translation
-	else if (event->button() == Qt::MiddleButton) {
+	else if (event->button() == (Qt::RightButton | Qt::LeftButton)) {
 		preMouseX = event->scenePos().x();
 		preMouseY = event->scenePos().y();
 		curMouseX = preMouseX;
@@ -1885,10 +1894,10 @@ void Scene::wheelEvent(QGraphicsSceneWheelEvent * event)
     QGraphicsScene::wheelEvent(event);
     if (!event->isAccepted()) {
         m_distExp += event->delta();
-        if (m_distExp < -8 * 120)
-            m_distExp = -8 * 120;
-        if (m_distExp > 10 * 120)
-            m_distExp = 10 * 120;
+        //if (m_distExp < -8 * 120)
+        //    m_distExp = -8 * 120;
+        //if (m_distExp > 10 * 120)
+        //    m_distExp = 10 * 120;
         event->accept();
     }
 }
@@ -1947,6 +1956,9 @@ void Scene::keyPressEvent(QKeyEvent *event)
 			appSettings->glyphType = (appSettings->glyphType + 1) % 2;
 			m_textureCubeManager->UpdateTexture(application);
 			break;
+		//case Qt::Key_M:
+		//	ii += 1;
+		//	break;
 		
 
 
