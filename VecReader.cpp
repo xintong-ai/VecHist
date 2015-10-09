@@ -1,4 +1,4 @@
-#include "DataMgrVect.h"
+#include "VecReader.h"
 
 
 //#include "DataManager.h"
@@ -11,7 +11,7 @@
 
 #define _USE_MATH_DEFINES
 #include <math.h>
-#include <cuda/vector_functions.h>
+#include <vector_functions.h>
 #include <fstream>
 
 

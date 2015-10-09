@@ -52,7 +52,7 @@
 #include <QtGui/qvector3d.h>
 #include <QtGui/qvector2d.h>
 #include "glbuffers.h"
-#include "cuda/vector_types.h"
+#include "vector_types.h"
 
 
 
