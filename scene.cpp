@@ -58,6 +58,7 @@
 
 //#include <qopenglext.h>
 
+
 /*
 extern "C" void inputMask(void *h_volume, cudaExtent volumeSize);
 
@@ -872,11 +873,18 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
     m_time.start();
 
+	//FPS Initialization
+	//fpsTimer.start();
+	//startTime = lastPrintTime = fpsTimer.elapsed();
+	frameCount = 0;
+
 	
 }
 
 bool Scene::initiateEntropyQuery(double threshold)
 {
+	cout << "Entropy query initiated for threshold of: " << threshold << endl;
+
 	bool queryChanged = false;
 	//This function makes no sense for Dark Sky data now.
 	if (application != 1) {
@@ -894,6 +902,11 @@ bool Scene::initiateEntropyQuery(double threshold)
 
 	m_graphWidget->rebuildGraphFromTree((NodeBi*)dataManager->getRootNode());
 	treeMapWindow->refreshPlot((NodeBi*)dataManager->getRootNode());
+
+	//Reset the FPS calculations for the new entropy threshold value
+	summedTime = 0;
+	frameCount = 0;
+	
 
 	return queryChanged;
 
@@ -1560,9 +1573,11 @@ void Scene::render3D(const QMatrix4x4 &view)
 		}
 	}
 
+	//Render the bounding box that surrounds the scene
 	if (appSettings->showBoundingBox) {
 		renderBBox(view);
 	}
+
 }
 
 void Scene::setStates()
@@ -1633,6 +1648,9 @@ void Scene::defaultStates()
 
 void Scene::drawBackground(QPainter *painter, const QRectF &)
 {
+	//FPS Initialization
+	fpsTimer.start();
+
 	float width = float(painter->device()->width());
 	float height = float(painter->device()->height());
 
@@ -1675,6 +1693,17 @@ void Scene::drawBackground(QPainter *painter, const QRectF &)
 	m_frame++;
 	defaultStates();
 	painter->endNativePainting();
+
+	//FPS Logic
+	frameCount++;
+	summedTime += fpsTimer.elapsed();
+
+	if (frameCount == FRAME_COUNT_LIMIT) {
+		double fps = frameCount / (summedTime / double(1000));
+		cout << "Average FPS for " << FRAME_COUNT_LIMIT << " frames with " << m_textureCubeManager->getLeafNodes().size() << " superquadrics: " << fps << endl;
+		frameCount = 0;
+		summedTime = 0;
+	}
 }
 
 QPointF Scene::pixelPosToViewPos(const QPointF& p)

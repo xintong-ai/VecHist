@@ -79,6 +79,8 @@
 //#include <helper_functions.h>
 //#include <helper_timer.h>
 #include <QLinearGradient>
+#include <QTimer>
+#include <qelapsedtimer.h>
 
 #define PI 3.14159265358979
 
@@ -390,8 +392,14 @@ private:
 	GLuint m_pickingTexture;
 	GLuint m_depthTexture;
 	////////////////////////////////////////
-	//int ii = 0;
 
+	//FPS Variables
+	QElapsedTimer fpsTimer;		//The timer to use for the FPS calculations
+	long summedTime = 0;
+	//long startTime = 0;			//Start time
+	//long lastPrintTime = 0;		//Time at which FPS was last reported
+	long frameCount = 0;		//Total accrued frames
+	const int FRAME_COUNT_LIMIT = 1000;
 };
 
 #endif

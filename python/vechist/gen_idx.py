@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import time
 
 print ('Starting the gen ids script\n')
-time_start = time.time()
+
 
 #Chris Jacobsen -
 #This loads the dark sky tree data.
@@ -29,6 +29,8 @@ d = read_vec.read("D:/data/nek/nek.d_4.vec")
 
 
 np.save("d_vec", d)
+
+time_start = time.time()
 #dim = d.shape
 #d = np.reshape(d, (dim[2], dim[1], dim[0], 3))
 step = 1
