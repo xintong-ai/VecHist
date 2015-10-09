@@ -37,13 +37,13 @@ message("${VTK_LIBRARY_DIRS}")
 set( Srcs main.cpp glsphere.cpp glSuperquadric.cpp
 	glbuffers.cpp glextensions.cpp  
 	window.cpp glwidget.cpp Renderable.cpp Trackball.cpp Rotation.cpp QuatVector.cpp
-	DataMgr.cpp Reader.cpp VecReader.cpp Cubemap.cpp
+	DataMgr.cpp Reader.cpp VecReader.cpp Cubemap.cpp Streamline.cpp
 	)
 set( Hdrs 
 glsphere.h glSuperquadric.h gltrianglemesh.h
 	glbuffers.h glextensions.h 
 	window.h glwidget.h Renderable.h Trackball.h Rotation.h QuatVector.h
-	DataMgr.h defines.h Reader.h VecReader.h Cubemap.h
+	DataMgr.h defines.h Reader.h VecReader.h Cubemap.h Streamline.h
     )
 set( Rcs resources/vechist.qrc)
 
