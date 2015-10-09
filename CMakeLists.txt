@@ -36,13 +36,13 @@ message("${VTK_LIBRARY_DIRS}")
 
 set( Srcs main.cpp glsphere.cpp glSuperquadric.cpp
 	glbuffers.cpp glextensions.cpp  
-	window.cpp glwidget.cpp Tracer.cpp Trackball.cpp Rotation.cpp QuatVector.cpp
+	window.cpp glwidget.cpp Renderable.cpp Trackball.cpp Rotation.cpp QuatVector.cpp
 	DataMgr.cpp
 	)
 set( Hdrs 
 glsphere.h glSuperquadric.h gltrianglemesh.h
 	glbuffers.h glextensions.h 
-	window.h glwidget.h Tracer.h Trackball.h Rotation.h QuatVector.h
+	window.h glwidget.h Renderable.h Trackball.h Rotation.h QuatVector.h
 	DataMgr.h defines.h
     )
 set( Rcs resources/vechist.qrc)

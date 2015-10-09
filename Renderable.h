@@ -1,5 +1,5 @@
-#ifndef TRACER_H
-#define TRACER_H
+#ifndef RENDERABLE_H
+#define RENDERABLE_H
 #include "QMatrix4x4"
 #include <iostream>
 
@@ -31,11 +31,11 @@ inline void GetNormalMatrix(float modelview[16], float NormalMatrix[9])
     q_modelview.normalMatrix().copyDataTo(NormalMatrix);
 }
 
-class Tracer: public QObject
+class Renderable: public QObject
 {
 public:
-    Tracer(){}
-    ~Tracer();
+    Renderable(){}
+    ~Renderable();
 
     virtual void init() = 0;
 
@@ -74,7 +74,7 @@ public:
 
     virtual void MouseWheel(int delta) {cameraChanged = true;}
 
-	void SetAllRenderable(std::map<std::string, Tracer*>* _allrenderer) {
+	void SetAllRenderable(std::map<std::string, Renderable*>* _allrenderer) {
 		allrenderer = _allrenderer;
 	}
 
@@ -96,7 +96,7 @@ protected:
 
     bool cameraChanged = false;
 
-	std::map<std::string, Tracer*>* allrenderer;
+	std::map<std::string, Renderable*>* allrenderer;
 
 	GLWidget* actor;
 
@@ -105,4 +105,4 @@ protected:
 private:
     void AllocOutImage();
 };
-#endif //TRACER_H
+#endif //RENDERABLE_H

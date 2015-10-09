@@ -8,8 +8,8 @@ class GLWidget;
 class MarchingCubes;
 class QPushButton;
 class QSlider;
-class Tracer;
-class TexPlaneTracer;
+class Renderable;
+class TexPlaneRenderable;
 class QCheckBox;
 class QLabel;
 
@@ -32,19 +32,19 @@ private:
 	//QSlider* lensWidSlider;
 	//QLabel* statusLabel;
 
-	//Tracer* SlicePlaneRenderable0;
-	//Tracer* SlicePlaneRenderable1;
-	//Tracer* SlicePlaneRenderable2;
-	//Tracer* lensRenderable;
-	//Tracer* lineRenderable;
+	//Renderable* SlicePlaneRenderable0;
+	//Renderable* SlicePlaneRenderable1;
+	//Renderable* SlicePlaneRenderable2;
+	//Renderable* lensRenderable;
+	//Renderable* lineRenderable;
 
-	//std::map < std::string, Tracer* > meshTracers;
+	//std::map < std::string, Renderable* > meshRenderables;
 	//std::map < std::string, QCheckBox* > meshCheckBoxes;
 
 	//static const int btnSize[2];// = { 60, 40 };
 
 	//QPushButton* CreateRegularButton(const char* name);
-	//QSlider* CreateSliceSlider(TexPlaneTracer* renderable);
+	//QSlider* CreateSliceSlider(TexPlaneRenderable* renderable);
 
 private slots:
 	//void XSliderChanged(int i);

@@ -11,7 +11,7 @@ class Trackball;
 class Rotation;
 class StopWatchInterface;
 class DataMgr;
-class Tracer;
+class Renderable;
 class LineReader;
 
 class GLWidget : public QOpenGLWidget, public QOpenGLFunctions
@@ -26,7 +26,7 @@ public:
 
 	void AddRenderable(const char* name, void* r);
 
-	Tracer* GetRenderable(const char* name);
+	Renderable* GetRenderable(const char* name);
 
     void GetWindowSize(int &w, int &h) {w = width; h = height;}
 
@@ -97,7 +97,7 @@ private:
     int g_Index = 0;
     unsigned int frameCount = 0;
 
-    std::map<std::string,Tracer*> renderers;
+    std::map<std::string,Renderable*> renderers;
 
     //pbo
     //GLuint pbo = 0;     // OpenGL pixel buffer object

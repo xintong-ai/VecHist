@@ -14,16 +14,16 @@
 #include <iostream>
 #include <fstream>
 #include <helper_timer.h>
-#include <Tracer.h>
+#include <Renderable.h>
 
 //#include <GL/glu.h>
 #include <Trackball.h>
 #include <Rotation.h>
 
 //#include <DataMgr.h>
-//#include <GLLensTracer.h>
-//#include <GLLineTracer.h>
-//#include <TexPlaneTracer.h>
+//#include <GLLensRenderable.h>
+//#include <GLLineRenderable.h>
+//#include <TexPlaneRenderable.h>
 //#include <ShaderProgram.h>
 //#include <cuda_math.h>
 //#include "QtCore/qloggingcategory.h"
@@ -87,9 +87,9 @@ GLWidget::GLWidget(QWidget *parent)
 
     transRot.setToIdentity();
 
-    QTimer *aTimer = new QTimer;
-    connect(aTimer,SIGNAL(timeout()),SLOT(animate()));
-    aTimer->start(17);
+    //QTimer *aTimer = new QTimer;
+    //connect(aTimer,SIGNAL(timeout()),SLOT(animate()));
+    //aTimer->start(17);
 
 	//QList<Qt::GestureType> gestures;
 	//if (!commandLineParser.isSet(disablePanOption))
@@ -108,16 +108,16 @@ GLWidget::GLWidget(QWidget *parent)
 //{
 //	//if (!doAnimating)
 //	//	return;
-////	((GLLineTracer*)GetRenderable("tract"))->animate();
+////	((GLLineRenderable*)GetRenderable("tract"))->animate();
 //    update();
 //}
 
 void GLWidget::AddRenderable(const char* name, void* r)
 {
-	renderers[name] = (Tracer*)r;
-	((Tracer*)r)->SetAllRenderable(&renderers);
-	((Tracer*)r)->SetActor(this);
-	((Tracer*)r)->SetWindowSize(width, height);
+	renderers[name] = (Renderable*)r;
+	((Renderable*)r)->SetAllRenderable(&renderers);
+	((Renderable*)r)->SetActor(this);
+	((Renderable*)r)->SetWindowSize(width, height);
 
 }
 
@@ -204,8 +204,8 @@ void GLWidget::paintGL() {
 	//for (auto renderer : renderers)
 	//	renderer->GetDataDim(dataDim[0], dataDim[1], dataDim[2]);
  //   int maxDim = std::max(std::max(dataDim[0], dataDim[1]), dataDim[2]);
-	//float3 dataMin = ((TexPlaneTracer*)renderers["slice0"])->GetDataMin();
-	//float3 dataMax = ((TexPlaneTracer*)renderers["slice0"])->GetDataMax();
+	//float3 dataMin = ((TexPlaneRenderable*)renderers["slice0"])->GetDataMin();
+	//float3 dataMax = ((TexPlaneRenderable*)renderers["slice0"])->GetDataMax();
 	float3 dataMin = make_float3(0, 0, 0);
 	float3 dataMax = make_float3(10, 10, 10);
 	//float3 dataCenter = (dataMin + dataMax) * 0.5;
@@ -469,13 +469,13 @@ void GLWidget::pinchTriggered(QPinchGesture *gesture)
 	if (!pinching) {
 		pinching = true;
 		pinched = true;
-//		((GLLensTracer*)GetRenderable("lens"))->RemoveAllLenses();
+//		((GLLensRenderable*)GetRenderable("lens"))->RemoveAllLenses();
 	}
 	QPinchGesture::ChangeFlags changeFlags = gesture->changeFlags();
 	if (changeFlags & QPinchGesture::ScaleFactorChanged) {
 		// transform only when there is no lens
 		//if (INTERACT_MODE::TRANSFORMATION == _interactMode){
-		//if (0 == ((GLLensTracer*)GetRenderable("lens"))->GetNumCurtains()){
+		//if (0 == ((GLLensRenderable*)GetRenderable("lens"))->GetNumCurtains()){
 			currentTransScale = gesture->totalScaleFactor();// exp(/*event->delta()*/gesture->totalScaleFactor() * 0.01);
 			update();
 		}
@@ -487,7 +487,7 @@ void GLWidget::pinchTriggered(QPinchGesture *gesture)
 	if (changeFlags & QPinchGesture::CenterPointChanged) {
 		// transform only when there is no lens
 		//if (INTERACT_MODE::TRANSFORMATION == _interactMode){
-			//if (0 == ((GLLensTracer*)GetRenderable("lens"))->GetNumCurtains()){
+			//if (0 == ((GLLensRenderable*)GetRenderable("lens"))->GetNumCurtains()){
 			QPointF diff = pixelPosToViewPos(gesture->centerPoint())
 				- pixelPosToViewPos(gesture->lastCenterPoint());
 			transVec[0] += diff.x();
@@ -519,18 +519,18 @@ QPoint GLWidget::pixelPosToGLPos(const QPoint& p)
 //void GLWidget::AddLens()
 //{
 //	_interactMode = INTERACT_MODE::ADD_NODE;
-//	((GLLensTracer*)GetRenderable("lens"))->AddLens();
+//	((GLLensRenderable*)GetRenderable("lens"))->AddLens();
 //}
 
 //void GLWidget::AddLensNode()
 //{
-//	if (((GLLensTracer*)GetRenderable("lens"))->GetNumCurtains() <= 0)
+//	if (((GLLensRenderable*)GetRenderable("lens"))->GetNumCurtains() <= 0)
 //		return;
 //
 //	_interactMode = INTERACT_MODE::ADD_NODE;
 //}
 
-Tracer* GLWidget::GetRenderable(const char* name)
+Renderable* GLWidget::GetRenderable(const char* name)
 {
 	if (renderers.find(name) == renderers.end()) {
 		std::cout << "No renderer named : " << name << std::endl;
@@ -542,6 +542,6 @@ Tracer* GLWidget::GetRenderable(const char* name)
 //void GLWidget::SetInteractModeToTransform()
 //{ 
 //	_interactMode = INTERACT_MODE::TRANSFORMATION; 
-//	//((GLLensTracer*)GetRenderable("lens"))->RemoveAllLenses();
+//	//((GLLensRenderable*)GetRenderable("lens"))->RemoveAllLenses();
 //}
 
