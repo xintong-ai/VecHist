@@ -268,10 +268,6 @@
 //}
 //
 
-int3 VecReader::GetVolumeDim()
-{
-	return make_int3(dim[0], dim[1], dim[2]);
-}
 
 bool VecReader::CubeInsideVolume(int x, int y, int z, int nx, int ny, int nz)
 {
@@ -391,8 +387,10 @@ int VecReader::GetNumOfCells()
 
 
 
-VecReader::VecReader()//(AppSettings * appSettings) : DataManager(appSettings)
+VecReader::VecReader(const char* filename)//(AppSettings * appSettings) : DataManager(appSettings)
 {
+	LoadVec(filename);// "");// GetStringVal("vectorfield").c_str());
+
 	//numBlocks = 0;
 	//entropyThreshold = 9;
 }

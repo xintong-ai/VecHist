@@ -5,6 +5,7 @@
 #include <vtkLookupTable.h>
 #include <Reader.h>
 #include <vector_types.h>
+#include <vector_functions.h>
 //#include "DataManager.h"
 //#include <OSUFlow.h>
 //class NodeBi:public AbstractNode
@@ -142,7 +143,7 @@ class VecReader:public Reader// VecReader:public DataManager
 	//bool queryEntropyTreeByThreshold(double theshold, NodeBi * currentEntropyNode, NodeBi * currentMasterNode, int level);
 
 public:
-	VecReader();// AppSettings * appSettings);
+	VecReader(const char* filename);// AppSettings * appSettings);
 	~VecReader();
 
 	void LoadVec(const char* filename);
@@ -153,7 +154,7 @@ public:
 	//std::vector<float> GetVertexValue();
 	//void IndexVolume(int size);
 	//void ComputeFlux();	//compute flux for three directions of each face
-	int3 GetVolumeDim();
+	int3 GetVolumeDim()	{return make_int3(dim[0], dim[1], dim[2]);}
 
 	bool CubeInsideVolume(int x, int y, int z, int nx, int ny, int nz);
 

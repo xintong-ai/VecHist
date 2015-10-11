@@ -37,13 +37,13 @@ public:
     Renderable(){}
     ~Renderable();
 
-    virtual void init() = 0;
+	virtual void init(){}
 
     virtual void resize(int width, int height);
 
     virtual void draw(float modelview[16], float projection[16]);
 
-    virtual void cleanup() = 0;
+	virtual void cleanup(){}
 
 	virtual void mousePress(int x, int y, int modifier) {}
 	virtual void mouseRelease(int x, int y, int modifier) {}

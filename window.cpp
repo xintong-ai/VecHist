@@ -1,5 +1,7 @@
 #include "window.h"
 #include "glwidget.h"
+#include "VecReader.h"
+#include "BoxRenderable.h"
 //#include "DataMgr.h"
 //#include "GLPolyRenderable.h"
 //#include "GLTexPlaneRenderable.h"
@@ -39,6 +41,12 @@ Window::Window()
     format.setVersion(2, 0);
     format.setProfile(QSurfaceFormat::CoreProfile);
     openGL->setFormat(format); // must be called before the widget or its parent window gets shown
+
+	//VecReader* vecReader = new VecReader("D:/data/plume/15plume3d421-504x504x2048.vec");
+	VecReader* vecReader = new VecReader("D:/data/plume/15plume3d421.vec");
+	BoxRenderable* bbox = new BoxRenderable(vecReader);
+	openGL->SetVol(vecReader->GetVolumeDim());
+	openGL->AddRenderable("bbox", bbox);
 	
 	///********cursor******/
 	//MeshReader *sphere = new MeshReader();

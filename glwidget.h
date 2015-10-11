@@ -5,6 +5,8 @@
 #include <QVector3D>
 #include <QMatrix4x4>
 #include <QOpenGLWidget>
+#include <vector_types.h>
+#include <vector_functions.h>
 //#include <defines.h>
 
 class Trackball;
@@ -12,7 +14,7 @@ class Rotation;
 class StopWatchInterface;
 class DataMgr;
 class Renderable;
-class LineReader;
+//class VecReader;
 
 class GLWidget : public QOpenGLWidget, public QOpenGLFunctions
 {
@@ -29,6 +31,8 @@ public:
 	Renderable* GetRenderable(const char* name);
 
     void GetWindowSize(int &w, int &h) {w = width; h = height;}
+
+	void SetVol(int3 dim);// { dataMin = make_float3(0, 0, 0); }
 
 	//void SetDataMgr(DataMgr* v) { dataMgr = v; }
 
@@ -109,6 +113,9 @@ private:
 	//mark whether there is any pinching gesture in this sequence of gestures.
 	// in order to prevent rotation if pinching is finished while one finger is still on the touch screen.
 	bool pinched = false;	
+
+	float3 dataMin = make_float3(0, 0, 0);
+	float3 dataMax = make_float3(10, 10, 10);
 
 	//DataMgr* dataMgr;
 

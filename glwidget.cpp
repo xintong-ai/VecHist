@@ -206,8 +206,7 @@ void GLWidget::paintGL() {
  //   int maxDim = std::max(std::max(dataDim[0], dataDim[1]), dataDim[2]);
 	//float3 dataMin = ((TexPlaneRenderable*)renderers["slice0"])->GetDataMin();
 	//float3 dataMax = ((TexPlaneRenderable*)renderers["slice0"])->GetDataMax();
-	float3 dataMin = make_float3(0, 0, 0);
-	float3 dataMax = make_float3(10, 10, 10);
+
 	//float3 dataCenter = (dataMin + dataMax) * 0.5;
 	//for the brain data, the center is always (0,0,0)
 	float3 dataCenter = make_float3(0,0,0);
@@ -545,3 +544,8 @@ Renderable* GLWidget::GetRenderable(const char* name)
 //	//((GLLensRenderable*)GetRenderable("lens"))->RemoveAllLenses();
 //}
 
+void GLWidget::SetVol(int3 dim)
+{ 
+	dataMin = make_float3(0, 0, 0);
+	dataMax = make_float3(dim.x - 1, dim.y - 1, dim.z - 1);
+}
