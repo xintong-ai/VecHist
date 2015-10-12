@@ -389,6 +389,7 @@ int VecReader::GetNumOfCells()
 
 VecReader::VecReader(const char* filename)//(AppSettings * appSettings) : DataManager(appSettings)
 {
+	vecFileName = std::string(filename);
 	LoadVec(filename);// "");// GetStringVal("vectorfield").c_str());
 
 	//numBlocks = 0;

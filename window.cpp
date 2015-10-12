@@ -2,6 +2,8 @@
 #include "glwidget.h"
 #include "VecReader.h"
 #include "BoxRenderable.h"
+#include "Streamline.h"
+#include "LineRenderable.h"
 //#include "DataMgr.h"
 //#include "GLPolyRenderable.h"
 //#include "GLTexPlaneRenderable.h"
@@ -47,6 +49,12 @@ Window::Window()
 	BoxRenderable* bbox = new BoxRenderable(vecReader);
 	openGL->SetVol(vecReader->GetVolumeDim());
 	openGL->AddRenderable("bbox", bbox);
+
+	Streamline* streamline = new Streamline(vecReader->GetFileName().c_str());
+	LineRenderable* lineRenderable = new LineRenderable(streamline);
+	openGL->AddRenderable("streamlines", lineRenderable);
+
+
 	
 	///********cursor******/
 	//MeshReader *sphere = new MeshReader();

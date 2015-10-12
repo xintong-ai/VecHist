@@ -110,6 +110,7 @@ class VecReader:public Reader// VecReader:public DataManager
 	float3* data_x_first;
 	int start[3];
 	int dim[3];
+	std::string vecFileName;
 	//	int nCells;
 	//double minEntropy = 0;  //Minimum entropy found in the entropy tree
 	//double maxEntropy = 0;  //Maximum entropy found in the entropy tree
@@ -159,6 +160,8 @@ public:
 	bool CubeInsideVolume(int x, int y, int z, int nx, int ny, int nz);
 
 	int GetNumOfCells();
+
+	std::string GetFileName(){ return vecFileName; }
 	//void Segmentation();
 	//void LoadSegmentation();
 	//void BuildEntropyColorMap();
@@ -189,7 +192,7 @@ public:
 	//void copyToMasterTree();
 	//bool queryEntropyTreeByThreshold(double threshold);
 	//void splitSuperQuadric(NodeBi * node);
-
+	
 };
 
 #endif //VEC_READER_H

@@ -139,10 +139,7 @@ QSize GLWidget::sizeHint() const
 void GLWidget::initializeGL()
 {
     initializeOpenGLFunctions();
-
-
     sdkCreateTimer(&timer);
-
 }
 
 void GLWidget::cleanup()
@@ -209,7 +206,7 @@ void GLWidget::paintGL() {
 
 	//float3 dataCenter = (dataMin + dataMax) * 0.5;
 	//for the brain data, the center is always (0,0,0)
-	float3 dataCenter = make_float3(0,0,0);
+	float3 dataCenter = (dataMin + dataMax) * 0.5;
 	float3 dataWidth = dataMax - dataMin;
     float dataMaxWidth = std::max(std::max(dataWidth.x, dataWidth.y), dataWidth.z);
 
