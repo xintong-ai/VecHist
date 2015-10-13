@@ -1,4 +1,5 @@
 #include "Cubemap.h"
+#include "VecReader.h"
 #include <vector>
 #include <vector_types.h>
 #include <vector_functions.h>
@@ -170,15 +171,17 @@ inline float CubemapEntropy(float *cubemap, int size)
 	return entropy(hist.get(), nBin);
 }
 
-Cubemap::Cubemap()
+Cubemap::Cubemap(VecReader* r)
 {
-	qCubePos[0] = 0;
-	qCubePos[1] = 0;
-	qCubePos[2] = 0;
+	vecReader = r;
 
-	qCubeSize[0] = dim[0];
-	qCubeSize[1] = dim[1];
-	qCubeSize[2] = dim[2];
+	//qCubePos[0] = 0;
+	//qCubePos[1] = 0;
+	//qCubePos[2] = 0;
+
+	//qCubeSize[0] = dim[0];
+	//qCubeSize[1] = dim[1];
+	//qCubeSize[2] = dim[2];
 
 	cubemap_size = 16;
 	IndexVolume(cubemap_size);
@@ -210,7 +213,7 @@ void Cubemap::ResizeCube(int x, int y, int z)
 
 void Cubemap::IndexVolume(int size)
 {
-	float3* idata = static_cast<float3*>((void *)data);
+	float3* idata = (float3*)vecReader->GetVecDataXFirst();// static_cast<float3*>((void *)data);
 	int nCells = dim[0] * dim[1] * dim[2];// GetNumOfCells();
 	dataIdx = new int3[nCells];
 	//for (int i = 0; i < GetNumOfCells(); i++)
@@ -262,20 +265,26 @@ bool Cubemap::CubeInsideVolumeZ(int x, int nx)
 	return x >= 0 && (x + nx) <= dim[2];
 }
 
-void Cubemap::GenCubeMap(int x, int y, int z, int nx, int ny, int nz, float* &cubemap)
+void Cubemap::GenCubeMap(int x, int y, int z, int nx, int ny, int nz)//, float* &cubemap)
 {
-	qCubePos[0] = x;
-	qCubePos[1] = y;
-	qCubePos[2] = z;
-	qCubeSize[0] = nx;
-	qCubeSize[1] = ny;
-	qCubeSize[2] = nz;
-	cubemap = new float[cubemap_size * cubemap_size * 6];
+	Cube *c = new Cube(x, y, z, nx, ny, nz, cubemap_size);
+	//qCubePos[0] = x;
+	//qCubePos[1] = y;
+	//qCubePos[2] = z;
+	//qCubeSize[0] = nx;
+	//qCubeSize[1] = ny;
+	//qCubeSize[2] = nz;
 	//	std::vector<float3> datablock = GetBlock(x, y, z, nx, ny, nz);
 	//	ComputeCubeMap(dataIdx, GetNumOfCells(), cubemap, size);
-	UpdateCubeMap(cubemap);
-	cubemap_data = cubemap;
+	//UpdateCubeMap(cubemap);
+	int cubeSizeTotal = c->GetTotalSize();// qCubeSize[0] * qCubeSize[1] * qCubeSize[2];
+	std::unique_ptr<int3[]> datablock(new int3[cubeSizeTotal]);
+
+	GetBlock(datablock.get(), c->pos.x, c->pos.y, c->pos.z, c->size.x, c->size.y, c->size.z);
+	ComputeCubeMap(datablock.get(), cubeSizeTotal, c->data, cubemap_size);
+	//cubemap_data = cubemap;
 	//	cubemap_size = size;
+	cubes.push_back(c);
 
 }
 

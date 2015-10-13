@@ -357,7 +357,7 @@ void VecReader::LoadVec(const char* filename)
 			}
 		}
 	}
-	initBlockSize = min(min(dim[0], dim[1]), dim[2]) / 3;
+	//initBlockSize = min(min(dim[0], dim[1]), dim[2]) / 3;
 
 
 
@@ -400,7 +400,7 @@ VecReader::~VecReader()
 {
 	delete[] data;
 	delete[] data_x_first;
-	delete[] dataIdx;
+	//delete[] dataIdx;
 	//delete[] curlIdx;
 	//delete[] topNode;
 

@@ -17,8 +17,6 @@ public:
 
 private:
 
-	bool startNewLens = false;
-
 	VecReader* vecReader;
 };
 #endif //BOX_RENDERABLE_H

@@ -103,10 +103,10 @@
 class VecReader:public Reader// VecReader:public DataManager
 {
 	float* data;
-	int3* dataIdx;	//indexing the data with the cubemap
-	int3* curlIdx;	//indexing the curl with the cubemap
-	int initBlockSize;
-	int blockDim[3];
+	//int3* dataIdx;	//indexing the data with the cubemap
+	//int3* curlIdx;	//indexing the curl with the cubemap
+	//int initBlockSize;
+	//int blockDim[3];
 	float3* data_x_first;
 	int start[3];
 	int dim[3];
