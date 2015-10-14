@@ -36,7 +36,6 @@ class Cubemap{
 	bool CubeInsideVolumeX(int x, int nx);
 	bool CubeInsideVolumeY(int x, int nx);
 	bool CubeInsideVolumeZ(int x, int nx);
-	void GenCubeMap(int x, int y, int z, int nx, int ny, int nz);//, float* &cubemap);
 	void UpdateCubeMap(float* cubemap);
 	void GetBlock(int3* datablock, int x, int y, int z, int nx, int ny, int nz);
 	void ComputeCurl();
@@ -50,6 +49,7 @@ public:
 	void IndexVolume(int size);
 	int GetCubemapSize() { return cubemap_size; }
 	std::vector <Cube*> GetCubes() { return cubes; }
+	void GenCubeMap(int x, int y, int z, int nx, int ny, int nz);//, float* &cubemap);
 
 };
 

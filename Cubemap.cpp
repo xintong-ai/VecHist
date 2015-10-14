@@ -182,6 +182,10 @@ Cubemap::Cubemap(VecReader* r)
 	//qCubeSize[0] = dim[0];
 	//qCubeSize[1] = dim[1];
 	//qCubeSize[2] = dim[2];
+	int3 d = vecReader->GetVolumeDim();
+	dim[0] = d.x;
+	dim[1] = d.y;
+	dim[2] = d.z;
 
 	cubemap_size = 16;
 	IndexVolume(cubemap_size);

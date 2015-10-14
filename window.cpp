@@ -4,6 +4,8 @@
 #include "BoxRenderable.h"
 #include "Streamline.h"
 #include "LineRenderable.h"
+#include "GlyphRenderable.h"
+#include "Cubemap.h"
 //#include "DataMgr.h"
 //#include "GLPolyRenderable.h"
 //#include "GLTexPlaneRenderable.h"
@@ -54,7 +56,11 @@ Window::Window()
 	LineRenderable* lineRenderable = new LineRenderable(streamline);
 	openGL->AddRenderable("streamlines", lineRenderable);
 
-
+	Cubemap* cubemap = new Cubemap(vecReader);
+	cubemap->GenCubeMap(50, 50, 50, 30, 30, 30);
+	GlyphRenderable* glyphRenderable = new GlyphRenderable(cubemap);
+	openGL->AddRenderable("glyphs", glyphRenderable);
+	
 	
 	///********cursor******/
 	//MeshReader *sphere = new MeshReader();
