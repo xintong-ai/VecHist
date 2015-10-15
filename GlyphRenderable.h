@@ -8,6 +8,7 @@ class Cubemap;
 class ShaderProgram;
 class QOpenGLVertexArrayObject;
 class MeshReader;
+class GLTextureCube;
 class GlyphRenderable :public Renderable
 {
 public:
@@ -21,7 +22,7 @@ public:
 	void SetCubemap(Cubemap* r) { cubemap = r; }
 
 private:
-	//std::vector<GLTextureCube*> textures;
+	std::vector<GLTextureCube*> textures;
 	void GenVertexBuffer(int nv, float* vertex, float* normal);
 	void LoadShaders();
 	unsigned int vbo_norm;
@@ -35,5 +36,6 @@ private:
 
 
 	Cubemap* cubemap;
+	bool updated = false;
 };
 #endif //GLYPH_RENDERABLE_H

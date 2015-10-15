@@ -35,17 +35,19 @@ message("${VTK_LIBRARY_DIRS}")
 #source_group("widgets_cpp" FILES edge.cpp node.cpp graphwidget.cpp qjson.cpp qjsonview.cpp GraphVizWidget.cpp EntropySlider.cpp  TreeMapPlot.cpp TreeMapWindow.cpp ArrowButton.cpp ArrowWidget.cpp EntropyQueryContainer.cpp)
 
 set( Srcs main.cpp glsphere.cpp glSuperquadric.cpp
-	glbuffers.cpp glextensions.cpp  
+	glextensions.cpp  
 	window.cpp glwidget.cpp Renderable.cpp Trackball.cpp Rotation.cpp QuatVector.cpp
 	DataMgr.cpp Reader.cpp VecReader.cpp Cubemap.cpp Streamline.cpp
 	BoxRenderable.cpp LineRenderable.cpp GlyphRenderable.cpp MeshReader.cpp
+	GLTextureCube.cpp
 	)
 set( Hdrs 
 glsphere.h glSuperquadric.h gltrianglemesh.h
-	glbuffers.h glextensions.h 
+	glextensions.h 
 	window.h glwidget.h Renderable.h Trackball.h Rotation.h QuatVector.h
 	DataMgr.h defines.h Reader.h VecReader.h Cubemap.h Streamline.h
 	BoxRenderable.h LineRenderable.h ShaderProgram.h GlyphRenderable.h MeshReader.h
+	GLTextureCube.h
     )
 set( Rcs resources/vechist.qrc)
 
