@@ -28,7 +28,7 @@ private:
 	unsigned int vbo_norm;
 	unsigned int vbo_vert;
 	int numElements = 0;
-	MeshReader* m;
+	MeshReader* glyphMesh;
 
 	ShaderProgram *glProg;
 
