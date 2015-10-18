@@ -4,9 +4,11 @@
 class ShaderProgram;
 class QOpenGLVertexArrayObject;
 class Streamline;
+#include <QObject>
 
-class LineRenderable: public Renderable
+class LineRenderable : public Renderable, public QObject
 {
+	Q_OBJECT
 public:
 	LineRenderable(Streamline* r);
 
@@ -25,6 +27,7 @@ public:
 	virtual void mouseMove(int x, int y, int modifier) override;
 
 	void SetLineGenerator(Streamline* v) { lineGenerator = v; }
+	void GenGlyphAlongLine(int i);
 
 private:
 
@@ -47,5 +50,8 @@ protected:
     ShaderProgram *glProg;
 	Streamline* lineGenerator;
 
+signals:
+	void SigGenCubeAlongLine(float4* line, int nv);
+	void SigTest();
 };
 #endif //GL_Line_TRACER_H

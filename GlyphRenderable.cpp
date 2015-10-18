@@ -2,6 +2,7 @@
 #include "GlyphRenderable.h"
 #include "Cubemap.h"
 #include "GLTextureCube.h"
+#include "glwidget.h"
 
 //removing the following lines will cause runtime error
 #ifdef WIN32
@@ -13,6 +14,7 @@
 #define qgl	QOpenGLContext::currentContext()->functions()
 #include "ShaderProgram.h"
 #include "MeshReader.h"
+#include "helper_math.h"
 void GlyphRenderable::LoadShaders()
 {
 
@@ -247,4 +249,45 @@ void GlyphRenderable::GenVertexBuffer(int nv, float* vertex, float* normal)
 	qgl->glEnableVertexAttribArray(glProg->attribute("VertexNormal"));
 
 	m_vao->release();
+}
+
+void GlyphRenderable::SlotGenCubeAlongLine(float4* line, int nv)
+{
+	int step = 30;
+	int nGlyph = nv / step - 1;
+	for (int i = 0; i < nGlyph; i++) {
+		//float4 center = make_float4(0, 0, 0, 1);
+		float3 coordMax = make_float3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+		float3 coordMin = make_float3(FLT_MAX, FLT_MAX, FLT_MAX);
+		for (int j = 0; j < step; j++) {
+			float4 v = line[i * step + j];
+			//center += v;
+			if (v.x > coordMax.x)
+				coordMax.x = v.x;
+			if (v.y > coordMax.y)
+				coordMax.y = v.y;
+			if (v.z > coordMax.z)
+				coordMax.z = v.z;
+			if (v.x < coordMin.x)
+				coordMin.x = v.x;
+			if (v.y < coordMin.y)
+				coordMin.y = v.y;
+			if (v.z < coordMin.z)
+				coordMin.z = v.z;
+		}
+		//center /= step;
+		float3 blockSize = coordMax - coordMin;
+		float blockSizeMax = std::max(std::max(blockSize.x, blockSize.y), blockSize.z);
+		blockSize = make_float3(blockSizeMax * 0.5, blockSizeMax * 0.5, blockSizeMax * 0.5);
+		float3 blockCenter = (coordMax + coordMin) * 0.5;
+		Cube* c = new Cube(
+			blockCenter.x - blockSize.x * 0.5, 
+			blockCenter.y - blockSize.y * 0.5, 
+			blockCenter.z - blockSize.z * 0.5, 
+			blockSize.x, blockSize.y, blockSize.z);
+		cubemap->GenCubeMap(c->pos.x, c->pos.y, c->pos.z, c->size.x, c->size.y, c->size.z, c->data, c->cubemap_size);
+		cubes.push_back(c);
+	}
+	UpdateData();
+	actor->UpdateGL();
 }

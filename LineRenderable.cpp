@@ -314,3 +314,9 @@ void LineRenderable::mouseRelease(int x, int y, int modifier)
 void LineRenderable::mouseMove(int x, int y, int modifier)
 {
 }
+
+void LineRenderable::GenGlyphAlongLine(int i)
+{
+	emit SigGenCubeAlongLine(&lines[i][0], lines[i].size());
+}
+

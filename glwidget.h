@@ -34,6 +34,7 @@ public:
 
 	void SetVol(int3 dim);// { dataMin = make_float3(0, 0, 0); }
 
+	void UpdateGL();
 	//void SetDataMgr(DataMgr* v) { dataMgr = v; }
 
 	//DEFORM_MODE GetDeformMode(){ return _deformMode; }

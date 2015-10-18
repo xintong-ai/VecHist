@@ -2,6 +2,7 @@
 #define GLYPH_RENDERABLE_H
 
 #include "Renderable.h"
+#include <QObject>
 
 class Cubemap;
 //class GLTextureCube;
@@ -10,8 +11,9 @@ class QOpenGLVertexArrayObject;
 class MeshReader;
 class GLTextureCube;
 class Cube;
-class GlyphRenderable :public Renderable
+class GlyphRenderable :public Renderable, public QObject
 {
+	Q_OBJECT
 public:
 	GlyphRenderable(Cubemap* r);
 
@@ -39,5 +41,10 @@ private:
 
 	Cubemap* cubemap;
 	bool updated = false;
+
+public slots:
+	void SlotGenCubeAlongLine(float4* line, int nv);
+	void SlotTest(){}
+
 };
 #endif //GLYPH_RENDERABLE_H

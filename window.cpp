@@ -61,6 +61,12 @@ Window::Window()
 	GlyphRenderable* glyphRenderable = new GlyphRenderable(cubemap);
 	openGL->AddRenderable("glyphs", glyphRenderable);
 	
+	QObject::connect(lineRenderable, SIGNAL(SigGenCubeAlongLine(float4*, int)),
+		glyphRenderable, SLOT(SlotGenCubeAlongLine(float4*, int)));
+
+	QObject::connect(lineRenderable, SIGNAL(SigTest()),
+		glyphRenderable, SLOT(SlotTest()));
+	//lineRenderable->GenGlyphAlongLine(0);
 	
 	///********cursor******/
 	//MeshReader *sphere = new MeshReader();

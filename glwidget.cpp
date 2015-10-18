@@ -15,6 +15,7 @@
 #include <fstream>
 #include <helper_timer.h>
 #include <Renderable.h>
+#include <LineRenderable.h>
 
 //#include <GL/glu.h>
 #include <Trackball.h>
@@ -437,6 +438,8 @@ void GLWidget::wheelEvent(QWheelEvent * event)
 
 void GLWidget::keyPressEvent(QKeyEvent * event)
 {
+	//event->key;
+	((LineRenderable*)renderers["streamlines"])->GenGlyphAlongLine(0);
 }
 
 bool GLWidget::event(QEvent *event)
@@ -545,4 +548,9 @@ void GLWidget::SetVol(int3 dim)
 { 
 	dataMin = make_float3(0, 0, 0);
 	dataMax = make_float3(dim.x - 1, dim.y - 1, dim.z - 1);
+}
+
+void GLWidget::UpdateGL()
+{
+	update();
 }
