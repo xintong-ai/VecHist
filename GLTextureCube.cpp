@@ -48,6 +48,8 @@ void GLTextureCube::load(float* data, int size)
 	for (int i = 0; i < 6; i++) {
 		// Works on x86, so probably works on all little-endian systems.
 		// Does it work on big-endian systems?
+		//GL_LUMINANCE will be clamped to the range [0,1], 
+		//so the data has to be scaled before loading
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, 4, size, size, 0,
 			GL_LUMINANCE, GL_FLOAT, &data[size * size * i]);
 	}

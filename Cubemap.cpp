@@ -128,12 +128,12 @@ inline void ComputeCubeMap(int3* data, int nCells, float* cubemap, const int siz
 	//const float den_uniform = nCells / (4 * M_PI);
 
 	//const float scale = 0.03;	//for isabel
-	//const float scale = 0.3;	//for plume
-	float scale_factor = 1000;
+	//const float scale = 0.003;	//for plume
+	float scale_factor = 100;
 	for (int i = 0; i < size2; i++)	{
 		for (int j = 0; j < 6; j++)	{
 			int idx = j * size2 + i;
-			cubemap[idx] = (float)binCnt[idx] / (solAng[i] * scale_factor);// / den_uniform;// *scale;
+			cubemap[idx] = (float)binCnt[idx] / (solAng[i] * scale_factor);// *scale;
 		}
 	}
 	float sum = 0;

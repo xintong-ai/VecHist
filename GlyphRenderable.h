@@ -23,7 +23,7 @@ public:
 	void UpdateData() override;
 	//virtual void cleanup() override;
 	void SetCubemap(Cubemap* r) { cubemap = r; }
-	void GenCubesFromLine();
+	//void GenCubesFromLine();
 
 private:
 	std::vector<GLTextureCube*> textures;

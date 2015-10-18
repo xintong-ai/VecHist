@@ -26,6 +26,7 @@ void GlyphRenderable::LoadShaders()
 	//http://stackoverflow.com/questions/4703432/why-does-my-opengl-phong-shader-behave-like-a-flat-shader
 	const char* vertexVS =
 	GLSL(
+	#extension GL_NV_shadow_samplers_cube : enable \n
 	layout(location = 0) in vec3 VertexPosition;
 	layout(location = 1) in vec3 VertexNormal;
 	smooth out vec3 tnorm;
@@ -37,6 +38,7 @@ void GlyphRenderable::LoadShaders()
 	uniform mat4 ProjectionMatrix;
 	uniform vec3 Transform;
 	uniform float Scale;
+	uniform samplerCube env;
 	//uniform vec4 cm[33];
 	void main()
 	{
@@ -46,8 +48,9 @@ void GlyphRenderable::LoadShaders()
 
 		eyeCoords = ModelViewMatrix *
 			vec4(VertexPosition, 1.0);
+		float v = textureCube(env, norm).x * 0.6;
 
-		gl_Position = MVP * vec4(VertexPosition * Scale + Transform, 1.0);
+		gl_Position = MVP * vec4(VertexPosition * (0.2 + v) * 0.5 * Scale + Transform, 1.0);
 	}
 	);
 
@@ -106,7 +109,7 @@ void GlyphRenderable::LoadShaders()
 		if (sDotN > 0.0)
 			spec = Ks *
 			pow(max(dot(r, v), 0.0), Shininess);
-		return ambient + diffuse + spec;
+		return ambient + diffuse * 0.0001 + spec * 0.0001;
 	}
 
 	void main() {
@@ -171,8 +174,10 @@ void GlyphRenderable::UpdateData()
 	textures.clear();
 	int cubemap_size = cubemap->GetCubemapSize();
 	//std::vector<Cube*> cubes = cubemap->GetCubes();
+	std::vector<float> tmp(cubemap_size * cubemap_size * 6, 1.0f);
 	for (int i = 0; i < cubes.size(); i++) {
 		GLTextureCube* tex = new GLTextureCube(cubemap_size);
+		//tex->load(&tmp[0], cubemap_size);// cubes[i]->data, cubemap_size);
 		tex->load(cubes[i]->data, cubemap_size);
 		textures.push_back(tex);
 	}
