@@ -269,9 +269,9 @@ bool Cubemap::CubeInsideVolumeZ(int x, int nx)
 	return x >= 0 && (x + nx) <= dim[2];
 }
 
-void Cubemap::GenCubeMap(int x, int y, int z, int nx, int ny, int nz)//, float* &cubemap)
+void Cubemap::GenCubeMap(int x, int y, int z, int nx, int ny, int nz, float* &cubemap, int& _cubemap_size)
 {
-	Cube *c = new Cube(x, y, z, nx, ny, nz, cubemap_size);
+//	Cube *c = new Cube(x, y, z, nx, ny, nz, cubemap_size);
 	//qCubePos[0] = x;
 	//qCubePos[1] = y;
 	//qCubePos[2] = z;
@@ -281,14 +281,16 @@ void Cubemap::GenCubeMap(int x, int y, int z, int nx, int ny, int nz)//, float* 
 	//	std::vector<float3> datablock = GetBlock(x, y, z, nx, ny, nz);
 	//	ComputeCubeMap(dataIdx, GetNumOfCells(), cubemap, size);
 	//UpdateCubeMap(cubemap);
-	int cubeSizeTotal = c->GetTotalSize();// qCubeSize[0] * qCubeSize[1] * qCubeSize[2];
+	int cubeSizeTotal = nx * ny * nz;// c->GetTotalSize();// qCubeSize[0] * qCubeSize[1] * qCubeSize[2];
 	std::unique_ptr<int3[]> datablock(new int3[cubeSizeTotal]);
 
-	GetBlock(datablock.get(), c->pos.x, c->pos.y, c->pos.z, c->size.x, c->size.y, c->size.z);
-	ComputeCubeMap(datablock.get(), cubeSizeTotal, c->data, cubemap_size);
+	GetBlock(datablock.get(), x, y, z, nx, ny, nz);
+	cubemap = new float[cubemap_size * cubemap_size * 6];
+	ComputeCubeMap(datablock.get(), cubeSizeTotal, cubemap, cubemap_size);
+	_cubemap_size = cubemap_size;
 	//cubemap_data = cubemap;
 	//	cubemap_size = size;
-	cubes.push_back(c);
+	//cubes.push_back(c);
 
 }
 

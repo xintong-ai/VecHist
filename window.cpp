@@ -57,7 +57,7 @@ Window::Window()
 	openGL->AddRenderable("streamlines", lineRenderable);
 
 	Cubemap* cubemap = new Cubemap(vecReader);
-	cubemap->GenCubeMap(55, 55, 300, 10, 10, 10);
+	//cubemap->GenCubeMap(55, 55, 300, 10, 10, 10);
 	GlyphRenderable* glyphRenderable = new GlyphRenderable(cubemap);
 	openGL->AddRenderable("glyphs", glyphRenderable);
 	

@@ -8,10 +8,15 @@ struct Cube{
 	int3 pos;
 	int3 size;
 	float* data = nullptr;
+	int cubemap_size = 0;
 	Cube(int x, int y, int z, int nx, int ny, int nz, int cubemap_size) {
 		pos = make_int3(x, y, z);
 		size = make_int3(nx, ny, nz);
 		data = new float[cubemap_size * cubemap_size * 6];
+	}
+	Cube(int x, int y, int z, int nx, int ny, int nz){
+		pos = make_int3(x, y, z);
+		size = make_int3(nx, ny, nz);
 	}
 	~Cube(){
 		if (nullptr != data) {
@@ -32,7 +37,6 @@ class Cubemap{
 	int dim[3];
 	int cubemap_size;
 	int qCubePos[3], qCubeSize[3];	//queried cube position and sizes
-	std::vector <Cube*> cubes;
 	bool CubeInsideVolumeX(int x, int nx);
 	bool CubeInsideVolumeY(int x, int nx);
 	bool CubeInsideVolumeZ(int x, int nx);
@@ -48,8 +52,9 @@ public:
 	void ResizeCube(int x, int y, int z);
 	void IndexVolume(int size);
 	int GetCubemapSize() { return cubemap_size; }
-	std::vector <Cube*> GetCubes() { return cubes; }
-	void GenCubeMap(int x, int y, int z, int nx, int ny, int nz);//, float* &cubemap);
+//	std::vector <Cube*> GetCubes() { return cubes; }
+	void GenCubeMap(int x, int y, int z, int nx, int ny, int nz, float* &cubemap, int& _cubemap_size);
+//	void GenCubeMap(int x, int y, int z, int nx, int ny, int nz, float* &cubemap);
 
 };
 

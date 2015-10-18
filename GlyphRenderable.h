@@ -9,6 +9,7 @@ class ShaderProgram;
 class QOpenGLVertexArrayObject;
 class MeshReader;
 class GLTextureCube;
+class Cube;
 class GlyphRenderable :public Renderable
 {
 public:
@@ -20,6 +21,7 @@ public:
 	void UpdateData() override;
 	//virtual void cleanup() override;
 	void SetCubemap(Cubemap* r) { cubemap = r; }
+	void GenCubesFromLine();
 
 private:
 	std::vector<GLTextureCube*> textures;
@@ -33,7 +35,7 @@ private:
 	ShaderProgram *glProg;
 
 	QOpenGLVertexArrayObject* m_vao;
-
+	std::vector <Cube*> cubes;
 
 	Cubemap* cubemap;
 	bool updated = false;

@@ -156,13 +156,19 @@ void GlyphRenderable::init()
 GlyphRenderable::GlyphRenderable(Cubemap* r)
 {
 	SetCubemap(r);
+	//int3 pos = make_int3(55, 55, 300);
+	//int3 size = make_int3(10, 10, 10);
+	Cube* c = new Cube(55, 55, 300, 10, 10, 10);
+	cubemap->GenCubeMap(c->pos.x, c->pos.y, c->pos.z, c->size.x, c->size.y, c->size.z, c->data, c->cubemap_size);
+	cubes.push_back(c);
+	//Cube *c = new Cube(, cubemap->GetCubemapSize());
 }
 
 void GlyphRenderable::UpdateData()
 {
 	textures.clear();
 	int cubemap_size = cubemap->GetCubemapSize();
-	std::vector<Cube*> cubes = cubemap->GetCubes();
+	//std::vector<Cube*> cubes = cubemap->GetCubes();
 	for (int i = 0; i < cubes.size(); i++) {
 		GLTextureCube* tex = new GLTextureCube(cubemap_size);
 		tex->load(cubes[i]->data, cubemap_size);
@@ -179,7 +185,7 @@ void GlyphRenderable::draw(float modelview[16], float projection[16])
 	}
 	if (!visible)
 		return;
-	std::vector<Cube*> cubes = cubemap->GetCubes();
+	//std::vector<Cube*> cubes = cubemap->GetCubes();
 	glMatrixMode(GL_MODELVIEW);
 	for (int i = 0; i < cubes.size(); i++) {
 		glPushMatrix();
