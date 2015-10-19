@@ -248,7 +248,7 @@ void GlyphRenderable::GenVertexBuffer(int nv, float* vertex, float* normal)
 
 void GlyphRenderable::SlotGenCubeAlongLine(float4* line, int nv)
 {
-	int step = 13;//better to be odd number
+	int step = 23;//better to be odd number
 	int nGlyph = nv / step - 1;
 	for (int i = 0; i < nGlyph; i++) {
 		//float4 center = make_float4(0, 0, 0, 1);
@@ -284,6 +284,17 @@ void GlyphRenderable::SlotGenCubeAlongLine(float4* line, int nv)
 			int(blockSize.x + 0.5), int(blockSize.y + 0.5), int(blockSize.z + 0.5));
 		cubemap->GenCubeMap(c->pos.x, c->pos.y, c->pos.z, c->size.x, c->size.y, c->size.z, c->data, c->cubemap_size);
 		cubes.push_back(c);
+	}
+
+	int n = 8;
+	int n_step = 252 / n;
+	int z_start = 700;
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < n; j++) {
+			Cube* c = new Cube(i * n_step, j * n_step, z_start, n_step, n_step, n_step);
+			cubemap->GenCubeMap(c->pos.x, c->pos.y, c->pos.z, c->size.x, c->size.y, c->size.z, c->data, c->cubemap_size);
+			cubes.push_back(c);
+		}
 	}
 	UpdateData();
 	actor->UpdateGL();

@@ -46,7 +46,7 @@ private:
 
 public slots:
 	void SlotGenCubeAlongLine(float4* line, int nv);
-	//void SlotGenCubeAlongLine(float4* line, int nv);
+	//void SlotGenCubeOnPlane(int planeIdx,);
 	void SlotTest(){}
 
 };

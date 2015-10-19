@@ -440,6 +440,7 @@ void GLWidget::keyPressEvent(QKeyEvent * event)
 {
 	//event->key;
 	((LineRenderable*)renderers["streamlines"])->GenGlyphAlongLine(0);
+	((LineRenderable*)renderers["streamlines"])->GenGlyphAlongLine(1);
 }
 
 bool GLWidget::event(QEvent *event)

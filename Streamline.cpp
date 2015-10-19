@@ -105,7 +105,7 @@ std::vector < std::vector<float4> > Streamline::GenStreamWithSeeds(float3* seeds
 	printf("compute streamlines..\n");
 	osuflow->SetIntegrationParams(1, 1);
 	//osuflow->GenStreamLines(sl_list, BACKWARD_AND_FORWARD, 50, 0);
-	osuflow->GenStreamLines(sl_list, FORWARD_DIR, 500, 0);
+	osuflow->GenStreamLines(sl_list, FORWARD_DIR, 1000, 0);
 	printf(" done integrations\n");
 
 	int iT = 0;
