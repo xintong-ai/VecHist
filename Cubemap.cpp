@@ -129,7 +129,7 @@ inline void ComputeCubeMap(int3* data, int nCells, float* cubemap, const int siz
 
 	//const float scale = 0.03;	//for isabel
 	//const float scale = 0.003;	//for plume
-	float scale_factor = 100;
+	float scale_factor = 50;
 	for (int i = 0; i < size2; i++)	{
 		for (int j = 0; j < 6; j++)	{
 			int idx = j * size2 + i;
@@ -217,7 +217,7 @@ void Cubemap::ResizeCube(int x, int y, int z)
 
 void Cubemap::IndexVolume(int size)
 {
-	float3* idata = (float3*)vecReader->GetVecDataXFirst();// static_cast<float3*>((void *)data);
+	float3* idata = (float3*)vecReader->GetVecData();// GetVecDataXFirst();// static_cast<float3*>((void *)data);
 	int nCells = dim[0] * dim[1] * dim[2];// GetNumOfCells();
 	dataIdx = new int3[nCells];
 	//for (int i = 0; i < GetNumOfCells(); i++)

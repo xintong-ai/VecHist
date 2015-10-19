@@ -4,17 +4,34 @@
 
 BoxRenderable::BoxRenderable(VecReader* r)
 {
-	SetVecReader(r);
+//	SetVecReader(r);
+	int3 volDim = r->GetVolumeDim();
+	dim = make_float3(volDim.x, volDim.y, volDim.z);
+	pos = make_float3(0, 0, 0);
 }
+
+BoxRenderable::BoxRenderable(float x, float y, float z, float nx, float ny, float nz)
+{
+	pos = make_float3(x, y, z);
+	dim = make_float3(nx, ny, nz);
+}
+
+BoxRenderable::BoxRenderable(int3 _pos, int3 _dim)
+{
+	pos = make_float3(_pos.x, _pos.y, _pos.z);
+	dim = make_float3(_dim.x, _dim.y, _dim.z);
+}
+
 
 
 void BoxRenderable::draw(float modelview[16], float projection[16])
 {
-	int3 dim = vecReader->GetVolumeDim();
 	
 //	int nx, ny, nz;
-
-	int bx = dim.x - 1, by = dim.y - 1, bz = dim.z - 1;
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glTranslatef(pos.x, pos.y, pos.z);
+	float bx = dim.x - 1, by = dim.y - 1, bz = dim.z - 1;
 
 	glBegin(GL_LINES);
 	glVertex3f(0, 0, 0);
@@ -56,5 +73,6 @@ void BoxRenderable::draw(float modelview[16], float projection[16])
 	glVertex3f(0, 0, bz);
 
 	glEnd();
+	glPopMatrix();
 
 }

@@ -11,6 +11,7 @@ class QOpenGLVertexArrayObject;
 class MeshReader;
 class GLTextureCube;
 class Cube;
+class BoxRenderable;
 class GlyphRenderable :public Renderable, public QObject
 {
 	Q_OBJECT
@@ -38,12 +39,14 @@ private:
 
 	QOpenGLVertexArrayObject* m_vao;
 	std::vector <Cube*> cubes;
+	std::vector <BoxRenderable*> bboxes;
 
 	Cubemap* cubemap;
 	bool updated = false;
 
 public slots:
 	void SlotGenCubeAlongLine(float4* line, int nv);
+	//void SlotGenCubeAlongLine(float4* line, int nv);
 	void SlotTest(){}
 
 };

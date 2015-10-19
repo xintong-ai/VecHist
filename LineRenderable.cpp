@@ -221,7 +221,7 @@ void LineRenderable::init()
 	loadShaders();
 
 	//int3 dim = ->GetVolumeDim();
-	float3 seeds[1] = { make_float3(63, 63, 256) };// dim.x * 0.5, dim.x * 0.5, dim.x * 0.5)};
+	float3 seeds[1] = { make_float3(63, 20, 100) };// dim.x * 0.5, dim.x * 0.5, dim.x * 0.5)};
 	std::vector<std::vector<float4>> newlines = lineGenerator->GenStreamWithSeeds(seeds, 1);
 	lines.insert(lines.begin(), newlines.begin(), newlines.end());
 	UpdateData();

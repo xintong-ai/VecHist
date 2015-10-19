@@ -1,5 +1,5 @@
-
 #include "GlyphRenderable.h"
+#include "BoxRenderable.h"
 #include "Cubemap.h"
 #include "GLTextureCube.h"
 #include "glwidget.h"
@@ -148,38 +148,29 @@ void GlyphRenderable::init()
 	m_vao = new QOpenGLVertexArrayObject();
 	m_vao->create();
 
-	//glEnable(GL_DEPTH_TEST);
 	glyphMesh = new MeshReader();
 	glyphMesh->SphereMesh(1.0f, 32, 32);
 
 	GenVertexBuffer(glyphMesh->numVerts,
 		glyphMesh->Faces_Triangles,
 		glyphMesh->Normals);
-	//delete m;
 }
 
 GlyphRenderable::GlyphRenderable(Cubemap* r)
 {
 	SetCubemap(r);
-	//int3 pos = make_int3(55, 55, 300);
-	//int3 size = make_int3(10, 10, 10);
-	Cube* c = new Cube(55, 55, 300, 10, 10, 10);
-	cubemap->GenCubeMap(c->pos.x, c->pos.y, c->pos.z, c->size.x, c->size.y, c->size.z, c->data, c->cubemap_size);
-	cubes.push_back(c);
-	//Cube *c = new Cube(, cubemap->GetCubemapSize());
 }
 
 void GlyphRenderable::UpdateData()
 {
 	textures.clear();
 	int cubemap_size = cubemap->GetCubemapSize();
-	//std::vector<Cube*> cubes = cubemap->GetCubes();
-	std::vector<float> tmp(cubemap_size * cubemap_size * 6, 1.0f);
 	for (int i = 0; i < cubes.size(); i++) {
 		GLTextureCube* tex = new GLTextureCube(cubemap_size);
-		//tex->load(&tmp[0], cubemap_size);// cubes[i]->data, cubemap_size);
 		tex->load(cubes[i]->data, cubemap_size);
 		textures.push_back(tex);
+		BoxRenderable* bb = new BoxRenderable(cubes[i]->pos, cubes[i]->size);
+		bboxes.push_back(bb);
 	}
 }
 
@@ -192,22 +183,23 @@ void GlyphRenderable::draw(float modelview[16], float projection[16])
 	}
 	if (!visible)
 		return;
-	//std::vector<Cube*> cubes = cubemap->GetCubes();
 	glMatrixMode(GL_MODELVIEW);
+
+	for (auto b : bboxes) {
+		b->draw(modelview, projection);
+	}
 	for (int i = 0; i < cubes.size(); i++) {
 		glPushMatrix();
 
 		GLTextureCube* tex = textures[i];// m_textureCubeManager->getBlockTex()[i];
 		Cube* c = cubes[i];
 		float3 shift = make_float3(c->size.x * 0.5 + c->pos.x, c->size.y * 0.5 + c->pos.y, c->size.z * 0.5 + c->pos.z);
-		//glTranslatef(shift.x, shift.y, shift.z);
 		float min_dim = std::min(std::min(c->size.x, c->size.y), c->size.z);
-		//glScalef(min_dim, min_dim, min_dim);
 
 		glProg->use();
 		m_vao->bind();
 
-		float3 ka = make_float3(0.2f, 0.2f, 0.2f);
+		//float3 ka = make_float3(0.2f, 0.2f, 0.2f);
 		QMatrix4x4 q_modelview = QMatrix4x4(modelview);
 		q_modelview = q_modelview.transposed();
 		qgl->glUniform4f(glProg->uniform("LightPosition"), 0, 0, 10, 1);
@@ -228,8 +220,6 @@ void GlyphRenderable::draw(float modelview[16], float projection[16])
 		tex->unbind();
 		m_vao->release();
 		glProg->disable();
-
-
 		glPopMatrix();
 	}
 }
@@ -258,7 +248,7 @@ void GlyphRenderable::GenVertexBuffer(int nv, float* vertex, float* normal)
 
 void GlyphRenderable::SlotGenCubeAlongLine(float4* line, int nv)
 {
-	int step = 30;
+	int step = 13;//better to be odd number
 	int nGlyph = nv / step - 1;
 	for (int i = 0; i < nGlyph; i++) {
 		//float4 center = make_float4(0, 0, 0, 1);
@@ -283,13 +273,15 @@ void GlyphRenderable::SlotGenCubeAlongLine(float4* line, int nv)
 		//center /= step;
 		float3 blockSize = coordMax - coordMin;
 		float blockSizeMax = std::max(std::max(blockSize.x, blockSize.y), blockSize.z);
-		blockSize = make_float3(blockSizeMax * 0.5, blockSizeMax * 0.5, blockSizeMax * 0.5);
-		float3 blockCenter = (coordMax + coordMin) * 0.5;
+		blockSize = make_float3(blockSizeMax, blockSizeMax, blockSizeMax);
+		float4 tmp = line[int((i + 0.5) * step)];
+		//int3 blockCenter = make_int3(int(tmp.x + 0.5), int(tmp.y + 0.5), int(tmp.z + 0.5));// (coordMax + coordMin) * 0.5;
+		float3 blockCenter = make_float3(tmp);
 		Cube* c = new Cube(
-			blockCenter.x - blockSize.x * 0.5, 
-			blockCenter.y - blockSize.y * 0.5, 
-			blockCenter.z - blockSize.z * 0.5, 
-			blockSize.x, blockSize.y, blockSize.z);
+			int(blockCenter.x - blockSize.x * 0.5 + 0.5), 
+			int(blockCenter.y - blockSize.y * 0.5 + 0.5),
+			int(blockCenter.z - blockSize.z * 0.5 + 0.5),
+			int(blockSize.x + 0.5), int(blockSize.y + 0.5), int(blockSize.z + 0.5));
 		cubemap->GenCubeMap(c->pos.x, c->pos.y, c->pos.z, c->size.x, c->size.y, c->size.z, c->data, c->cubemap_size);
 		cubes.push_back(c);
 	}
