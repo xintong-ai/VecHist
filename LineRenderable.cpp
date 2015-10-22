@@ -217,7 +217,7 @@ void LineRenderable::init()
 
 	qgl->glGenBuffers(1, &vbo_vert);
 	qgl->glGenBuffers(1, &vbo_color);
-
+	 
 	loadShaders();
 
 	//int3 dim = ->GetVolumeDim();
@@ -225,7 +225,7 @@ void LineRenderable::init()
 	std::vector<std::vector<float4>> newlines = lineGenerator->GenStreamWithSeeds(seeds, 2);
 	lines.insert(lines.begin(), newlines.begin(), newlines.end());
 	UpdateData();
-
+	 
 	//struct cudaGraphicsResource *cuda_vbo_obj_resource;
 	//struct cudaGraphicsResource *cuda_vbo_color_resource;
 	//cudaGraphicsGLRegisterBuffer(&cuda_vbo_obj_resource,

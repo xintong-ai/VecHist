@@ -48,7 +48,7 @@ void GlyphRenderable::LoadShaders()
 
 		eyeCoords = ModelViewMatrix *
 			vec4(VertexPosition, 1.0);
-		float v = textureCube(env, norm).x * 0.6;
+		float v = textureCube(env, norm).x;
 
 		gl_Position = MVP * vec4(VertexPosition * (0.2 + v) * 0.5 * Scale + Transform, 1.0);
 	}
@@ -98,6 +98,12 @@ void GlyphRenderable::LoadShaders()
 		return(c);
 	}
 
+	vec3 GetColor2(vec3 norm, float v)
+	{
+//		return vec3(clamp(abs(norm.x) + 1.0f - v, 0, 1), clamp(abs(norm.y) + 1.0f - v, 0, 1), clamp(abs(norm.z) + (1.0f - v), 0, 1));
+		return vec3(abs(norm.x) * v, abs(norm.y) * v, abs(norm.z) * v);
+	}
+
 	vec3 phongModel(vec3 a, vec4 position, vec3 normal) {
 		vec3 s = normalize(vec3(LightPosition - position));
 		vec3 v = normalize(-position.xyz);
@@ -116,7 +122,8 @@ void GlyphRenderable::LoadShaders()
 		vec3 FrontColor;
 		vec3 BackColor;
 		float v = textureCube(env, norm).x;
-		vec3 unlitColor = GetColor(v, 0, 1).xyz;// vec3(v, 0, 0); //vec4((normal.x + 1) * 0.5, (normal.y + 1), (normal.z + 1) * 0.5, 1.0f);
+		vec3 unlitColor = GetColor2(norm, v);
+		//vec3 unlitColor = GetColor(v, 0, 1).xyz;// vec3(v, 0, 0); //vec4((normal.x + 1) * 0.5, (normal.y + 1), (normal.z + 1) * 0.5, 1.0f);
 		FragColor = vec4(phongModel(unlitColor, eyeCoords, tnorm), 1.0);
 	}
 	);

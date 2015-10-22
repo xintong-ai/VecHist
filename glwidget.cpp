@@ -141,6 +141,7 @@ void GLWidget::initializeGL()
 {
     initializeOpenGLFunctions();
     sdkCreateTimer(&timer);
+	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 }
 
 void GLWidget::cleanup()
