@@ -44,11 +44,24 @@ void GlyphRenderable::LoadShaders()
 	{
 		mat4 MVP = ProjectionMatrix * ModelViewMatrix;
 		norm = VertexNormal;
-		tnorm = normalize(NormalMatrix * normalize(VertexNormal));
+		//vec3 vert_sphere = VertexPosition * (0.2 + v) * 0.5;
+
+
 
 		eyeCoords = ModelViewMatrix *
 			vec4(VertexPosition, 1.0);
 		float v = textureCube(env, norm).x;
+
+		vec3 t = normalize(vec3(1, 1, (norm.x * norm.x + norm.y * norm.y + norm.z * norm.z - norm.x - norm.y) / norm.z));
+		vec3 b = normalize(cross(t, norm));
+		vec3 nt = normalize(VertexPosition + t * 0.05);
+		vec3 nb = normalize(VertexPosition + b * 0.05);
+		float vt = textureCube(env, nt).x;
+		float vb = textureCube(env, nb).x;
+		vec3 new_normal = normalize(cross(nb * (0.2 + vb) - norm * (0.2 + v), nt* (0.2 + vt) - norm * (0.2 + v)));
+		tnorm = normalize(NormalMatrix * new_normal);
+
+		//tnorm = normalize(NormalMatrix * VertexNormal);
 
 		gl_Position = MVP * vec4(VertexPosition * (0.2 + v) * 0.5 * Scale + Transform, 1.0);
 	}
@@ -63,7 +76,7 @@ void GlyphRenderable::LoadShaders()
 	uniform vec3 Ks; // Diffuse reflectivity
 	uniform float Shininess;
 	in vec4 eyeCoords;
-	in vec3 norm;
+	smooth in vec3 norm;
 	smooth in vec3 tnorm;
 	layout(location = 0) out vec4 FragColor;
 	uniform samplerCube env;
@@ -115,7 +128,7 @@ void GlyphRenderable::LoadShaders()
 		if (sDotN > 0.0)
 			spec = Ks *
 			pow(max(dot(r, v), 0.0), Shininess);
-		return ambient + diffuse * 0.0001 + spec * 0.0001;
+		return ambient + diffuse + spec;
 	}
 
 	void main() {
@@ -209,7 +222,7 @@ void GlyphRenderable::draw(float modelview[16], float projection[16])
 		//float3 ka = make_float3(0.2f, 0.2f, 0.2f);
 		QMatrix4x4 q_modelview = QMatrix4x4(modelview);
 		q_modelview = q_modelview.transposed();
-		qgl->glUniform4f(glProg->uniform("LightPosition"), 0, 0, 10, 1);
+		qgl->glUniform4f(glProg->uniform("LightPosition"), 0, 0, 100, 1);
 		//qgl->glUniform3f(glProg->uniform("Ka"), ka.x, ka.y, ka.z);
 		qgl->glUniform3f(glProg->uniform("Kd"), 0.6f, 0.6f, 0.6f);
 		qgl->glUniform3f(glProg->uniform("Ks"), 0.2f, 0.2f, 0.2f);
