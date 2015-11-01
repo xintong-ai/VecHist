@@ -26,21 +26,19 @@ GLSphere::GLSphere(float r, int n)
 			float3 v3 = normalize(make_float3(0.5, (i + 1) * n_rev - 0.5, (j + 1) * n_rev - 0.5));
 			grid.push_back(v0);
 			grid.push_back(v1);
-			grid.push_back(v2);
-			grid.push_back(v2);
-			grid.push_back(v1);
 			grid.push_back(v3);
+			grid.push_back(v2);
 		}
 	}
 	//mirror by the plane
-	for (int i = 0; i < 6 * n * n; i++) {
+	for (int i = 0; i < 4 * n * n; i++) {
 		grid.push_back(make_float3(-grid[i].x, grid[i].y, grid[i].z));
 	}
 	//rotate x, y, z
-	for (int i = 0; i < 12 * n * n; i++) {
+	for (int i = 0; i < 8 * n * n; i++) {
 		grid.push_back(make_float3(grid[i].z, grid[i].x, grid[i].y));
 	}
-	for (int i = 0; i < 12 * n * n; i++) {
+	for (int i = 0; i < 8 * n * n; i++) {
 		grid.push_back(make_float3(grid[i].y, grid[i].z, grid[i].x));
 	}
 	//for (int i = 0; i <= nSub; i++)	{

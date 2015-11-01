@@ -16,6 +16,10 @@
 //#include "MeshReader.h"
 #include "GLSphere.h"
 #include "helper_math.h"
+
+//#define EPS 1e-6
+//#include <float.h>
+
 void GlyphRenderable::LoadShaders()
 {
 
@@ -54,7 +58,13 @@ void GlyphRenderable::LoadShaders()
 			vec4(VertexPosition, 1.0);
 		float v = textureCube(env, norm).x;
 
-		vec3 t = normalize(vec3(1, 1, (norm.x * norm.x + norm.y * norm.y + norm.z * norm.z - norm.x - norm.y) / norm.z));
+		vec3 t;
+		if (abs(norm.z) > 0.0001)
+			t = normalize(vec3(1, 1,  - (norm.x + norm.y) / norm.z));
+		else if (abs(norm.x) > 0.0001)
+			t = normalize(vec3(-(norm.y + norm.z) / norm.x, 1, 1));
+		else
+			t = normalize(vec3(1, -(norm.z + norm.x) / norm.y, 1));
 		vec3 b = normalize(cross(t, norm));
 		vec3 nt = normalize(VertexPosition + t * 0.05);
 		vec3 nb = normalize(VertexPosition + b * 0.05);
@@ -248,7 +258,7 @@ void GlyphRenderable::draw(float modelview[16], float projection[16])
 		q_modelview = q_modelview.transposed();
 		qgl->glUniform4f(glProg->uniform("LightPosition"), 0, 0, 100, 1);
 		//qgl->glUniform3f(glProg->uniform("Ka"), ka.x, ka.y, ka.z);
-		qgl->glUniform3f(glProg->uniform("Kd"), 0.6f, 0.6f, 0.6f);
+		qgl->glUniform3f(glProg->uniform("Kd"), 0.4f, 0.4f, 0.4f);
 		qgl->glUniform3f(glProg->uniform("Ks"), 0.2f, 0.2f, 0.2f);
 		qgl->glUniform1f(glProg->uniform("Shininess"), 1);
 		qgl->glUniform3fv(glProg->uniform("Transform"), 1, &shift.x);
@@ -259,7 +269,7 @@ void GlyphRenderable::draw(float modelview[16], float projection[16])
 		qgl->glUniformMatrix3fv(glProg->uniform("NormalMatrix"), 1, GL_FALSE, q_modelview.normalMatrix().data());
 
 		tex->bind();
-		glDrawArrays(GL_TRIANGLES, 0, glyphMesh->GetNumVerts());
+		glDrawArrays(GL_QUADS, 0, glyphMesh->GetNumVerts());
 		//glDrawElements(GL_TRIANGLES, glyphMesh->numElements, GL_UNSIGNED_INT, glyphMesh->indices);
 		tex->unbind();
 		m_vao->release();
