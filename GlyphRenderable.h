@@ -8,7 +8,7 @@ class Cubemap;
 //class GLTextureCube;
 class ShaderProgram;
 class QOpenGLVertexArrayObject;
-class MeshReader;
+class GLSphere;
 class GLTextureCube;
 class Cube;
 class BoxRenderable;
@@ -28,14 +28,15 @@ public:
 
 private:
 	std::vector<GLTextureCube*> textures;
-	void GenVertexBuffer(int nv, float* vertex, float* normal);
+	void GenVertexBuffer(int nv, float* vertex);
 	void LoadShaders();
 	unsigned int vbo_norm;
 	unsigned int vbo_vert;
 	int numElements = 0;
 	int sliceStart = 0;
 	int numGlyphPerDim = 1;
-	MeshReader* glyphMesh;
+	//MeshReader* glyphMesh;
+	GLSphere* glyphMesh;
 
 	ShaderProgram *glProg;
 

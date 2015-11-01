@@ -41,17 +41,18 @@
 
 #ifndef GLSPHERE_H
 #define GLSPHERE_H
-
+#include "vector_types.h"
+#include <vector>
 //#include <GL/glew.h>
-#include "glextensions.h"
+//#include "glextensions.h"
 
-#include <QtWidgets>
-#include <QtOpenGL>
+//#include <QtWidgets>
+//#include <QtOpenGL>
 
-#include "gltrianglemesh.h"
-#include <QtGui/qvector3d.h>
-#include <QtGui/qvector2d.h>
-#include "glbuffers.h"
+//#include "gltrianglemesh.h"
+//#include <QtGui/qvector3d.h>
+//#include <QtGui/qvector2d.h>
+//#include "glbuffers.h"
 
 //
 //struct P3T2N3Vertex
@@ -62,12 +63,21 @@
 //	static VertexDescription description[];
 //};
 
-class GLSphere : public GLTriangleMesh<P3T2N3Vertex, unsigned short>
+class GLSphere //: public GLTriangleMesh<P3T2N3Vertex, unsigned short>
 {
+	std::vector<float3> grid;
 	//Q_OBJECT
 public:
     // 0 < r < 0.5, 0 <= n <= 125
-	explicit GLSphere(float r = 0.5f, float scale = 1.0f, int n = 10);
+	explicit GLSphere(float r = 1.0f, int n = 16);
+	int GetNumVerts(){ return grid.size(); }
+	float* GetVerts(){
+		float* ret = nullptr;
+		if (grid.size() > 0)
+			ret = (float*)&grid[0];
+		return ret;
+	}
+	//explicit GLSphere(float r = 0.5f, float scale = 1.0f, int n = 10);
 };
 
 #endif

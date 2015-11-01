@@ -13,7 +13,8 @@
 #include <QOpenGLVertexArrayObject>
 #define qgl	QOpenGLContext::currentContext()->functions()
 #include "ShaderProgram.h"
-#include "MeshReader.h"
+//#include "MeshReader.h"
+#include "GLSphere.h"
 #include "helper_math.h"
 void GlyphRenderable::LoadShaders()
 {
@@ -28,7 +29,7 @@ void GlyphRenderable::LoadShaders()
 	GLSL(
 	#extension GL_NV_shadow_samplers_cube : enable \n
 	layout(location = 0) in vec3 VertexPosition;
-	layout(location = 1) in vec3 VertexNormal;
+	//layout(location = 1) in vec3 VertexNormal;
 	smooth out vec3 tnorm;
 	out vec3 norm;
 	out vec4 eyeCoords;
@@ -42,6 +43,7 @@ void GlyphRenderable::LoadShaders()
 	//uniform vec4 cm[33];
 	void main()
 	{
+		vec3 VertexNormal = VertexPosition;
 		mat4 MVP = ProjectionMatrix * ModelViewMatrix;
 		norm = VertexNormal;
 		//vec3 vert_sphere = VertexPosition * (0.2 + v) * 0.5;
@@ -149,7 +151,7 @@ void GlyphRenderable::LoadShaders()
 	glProg->initFromStrings(vertexVS, vertexFS);
 
 	glProg->addAttribute("VertexPosition");
-	glProg->addAttribute("VertexNormal");
+	//glProg->addAttribute("VertexNormal");
 
 	glProg->addUniform("LightPosition");
 	//glProg->addUniform("Ka");
@@ -172,12 +174,14 @@ void GlyphRenderable::init()
 	m_vao = new QOpenGLVertexArrayObject();
 	m_vao->create();
 
-	glyphMesh = new MeshReader();
-	glyphMesh->SphereMesh(1.0f, 32, 32);
+	glyphMesh = new GLSphere(1, cubemap->GetCubemapSize());
+	//glyphMesh->SphereMesh(1.0f, 32, 32);
 
-	GenVertexBuffer(glyphMesh->numVerts,
-		glyphMesh->Faces_Triangles,
-		glyphMesh->Normals);
+
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	GenVertexBuffer(glyphMesh->GetNumVerts(),
+		glyphMesh->GetVerts());
 }
 
 GlyphRenderable::GlyphRenderable(Cubemap* r)
@@ -191,7 +195,7 @@ void GlyphRenderable::UpdateData()
 	//the .clear() does not trigger the destructor, 
 	//so we need to delete the pointer first
 	for (auto v : cubes) delete v;
-	cubes.clear();//TODO:make sure the data are freed
+	cubes.clear();
 	for (int i = 0; i < numGlyphPerDim; i++) {
 		for (int j = 0; j < numGlyphPerDim; j++) {
 			Cube* c = new Cube(i * n_step, j * n_step, sliceStart, n_step, n_step, n_step);
@@ -255,8 +259,8 @@ void GlyphRenderable::draw(float modelview[16], float projection[16])
 		qgl->glUniformMatrix3fv(glProg->uniform("NormalMatrix"), 1, GL_FALSE, q_modelview.normalMatrix().data());
 
 		tex->bind();
-		//glDrawArrays(GL_TRIANGLES, 0, m->TotalConnectedTriangles * 3);
-		glDrawElements(GL_TRIANGLES, glyphMesh->numElements, GL_UNSIGNED_INT, glyphMesh->indices);
+		glDrawArrays(GL_TRIANGLES, 0, glyphMesh->GetNumVerts());
+		//glDrawElements(GL_TRIANGLES, glyphMesh->numElements, GL_UNSIGNED_INT, glyphMesh->indices);
 		tex->unbind();
 		m_vao->release();
 		glProg->disable();
@@ -265,7 +269,7 @@ void GlyphRenderable::draw(float modelview[16], float projection[16])
 }
 
 
-void GlyphRenderable::GenVertexBuffer(int nv, float* vertex, float* normal)
+void GlyphRenderable::GenVertexBuffer(int nv, float* vertex)
 {
 	m_vao->bind();
 
@@ -276,12 +280,12 @@ void GlyphRenderable::GenVertexBuffer(int nv, float* vertex, float* normal)
 	qgl->glBindBuffer(GL_ARRAY_BUFFER, 0);
 	qgl->glEnableVertexAttribArray(glProg->attribute("VertexPosition"));
 
-	qgl->glGenBuffers(1, &vbo_norm);
-	qgl->glBindBuffer(GL_ARRAY_BUFFER, vbo_norm);
-	qgl->glVertexAttribPointer(glProg->attribute("VertexNormal"), 3, GL_FLOAT, GL_FALSE, 0, NULL);
-	qgl->glBufferData(GL_ARRAY_BUFFER, nv * sizeof(float) * 3, normal, GL_STATIC_DRAW);
-	qgl->glBindBuffer(GL_ARRAY_BUFFER, 0);
-	qgl->glEnableVertexAttribArray(glProg->attribute("VertexNormal"));
+	//qgl->glGenBuffers(1, &vbo_norm);
+	//qgl->glBindBuffer(GL_ARRAY_BUFFER, vbo_norm);
+	//qgl->glVertexAttribPointer(glProg->attribute("VertexNormal"), 3, GL_FLOAT, GL_FALSE, 0, NULL);
+	//qgl->glBufferData(GL_ARRAY_BUFFER, nv * sizeof(float) * 3, normal, GL_STATIC_DRAW);
+	//qgl->glBindBuffer(GL_ARRAY_BUFFER, 0);
+	//qgl->glEnableVertexAttribArray(glProg->attribute("VertexNormal"));
 
 	m_vao->release();
 }

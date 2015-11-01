@@ -36,7 +36,7 @@ set(SHARED_LIBRARIES
 
 #source_group("widgets_cpp" FILES edge.cpp node.cpp graphwidget.cpp qjson.cpp qjsonview.cpp GraphVizWidget.cpp EntropySlider.cpp  TreeMapPlot.cpp TreeMapWindow.cpp ArrowButton.cpp ArrowWidget.cpp EntropyQueryContainer.cpp)
 
-set( Srcs main.cpp glsphere.cpp glSuperquadric.cpp
+set( Srcs main.cpp GLSphere.cpp glSuperquadric.cpp
 	glextensions.cpp  
 	window.cpp glwidget.cpp Renderable.cpp Trackball.cpp Rotation.cpp QuatVector.cpp
 	DataMgr.cpp Reader.cpp VecReader.cpp Cubemap.cpp 
@@ -45,7 +45,7 @@ set( Srcs main.cpp glsphere.cpp glSuperquadric.cpp
 	GLTextureCube.cpp
 	)
 set( Hdrs 
-glsphere.h glSuperquadric.h gltrianglemesh.h
+GLSphere.h glSuperquadric.h gltrianglemesh.h
 	glextensions.h 
 	window.h glwidget.h Renderable.h Trackball.h Rotation.h QuatVector.h
 	DataMgr.h defines.h Reader.h VecReader.h Cubemap.h 
