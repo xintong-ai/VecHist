@@ -2,7 +2,7 @@
 #define VEC_READER_H
 #include <fstream>
 
-#include <vtkLookupTable.h>
+//#include <vtkLookupTable.h>
 #include <Reader.h>
 #include <vector_types.h>
 #include <vector_functions.h>

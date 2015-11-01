@@ -129,3 +129,8 @@ void GLTextureCube::unbind()
 	qgl->glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 	qgl->glDisable(GL_TEXTURE_CUBE_MAP);
 }
+
+GLTextureCube::~GLTextureCube()
+{
+	glDeleteTextures(1, &m_texture);
+}

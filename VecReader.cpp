@@ -13,11 +13,11 @@
 #include <math.h>
 #include <vector_functions.h>
 #include <fstream>
-
+//#include <iostream>
 #include <vector>
 
 
-
+using namespace std;
 //inline void TruncateVolume(int3* in, int3* out,
 //	int dim0, int dim1, int dim2,
 //	int x, int y, int z,

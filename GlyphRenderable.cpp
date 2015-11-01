@@ -58,12 +58,13 @@ void GlyphRenderable::LoadShaders()
 		vec3 nb = normalize(VertexPosition + b * 0.05);
 		float vt = textureCube(env, nt).x;
 		float vb = textureCube(env, nb).x;
-		vec3 new_normal = normalize(cross(nb * (0.2 + vb) - norm * (0.2 + v), nt* (0.2 + vt) - norm * (0.2 + v)));
+		const float ext = 0.1;
+		vec3 new_normal = normalize(cross(nb * (ext + vb) - norm * (ext + v), nt* (ext + vt) - norm * (ext + v)));
 		tnorm = normalize(NormalMatrix * new_normal);
 
 		//tnorm = normalize(NormalMatrix * VertexNormal);
 
-		gl_Position = MVP * vec4(VertexPosition * (0.2 + v) * 0.5 * Scale + Transform, 1.0);
+		gl_Position = MVP * vec4(VertexPosition * (ext + v) * 0.5 * Scale + Transform, 1.0);
 	}
 	);
 
@@ -113,8 +114,11 @@ void GlyphRenderable::LoadShaders()
 
 	vec3 GetColor2(vec3 norm, float v)
 	{
+		vec3 ret = vec3(0, 0, 0);
 //		return vec3(clamp(abs(norm.x) + 1.0f - v, 0, 1), clamp(abs(norm.y) + 1.0f - v, 0, 1), clamp(abs(norm.z) + (1.0f - v), 0, 1));
-		return vec3(abs(norm.x) * v, abs(norm.y) * v, abs(norm.z) * v);
+		//if (v > 0.0001)
+		ret = vec3(abs(norm.x), abs(norm.y), abs(norm.z));
+		return ret;
 	}
 
 	vec3 phongModel(vec3 a, vec4 position, vec3 normal) {
@@ -183,7 +187,23 @@ GlyphRenderable::GlyphRenderable(Cubemap* r)
 
 void GlyphRenderable::UpdateData()
 {
+	int n_step = 252 / numGlyphPerDim;
+	//the .clear() does not trigger the destructor, 
+	//so we need to delete the pointer first
+	for (auto v : cubes) delete v;
+	cubes.clear();//TODO:make sure the data are freed
+	for (int i = 0; i < numGlyphPerDim; i++) {
+		for (int j = 0; j < numGlyphPerDim; j++) {
+			Cube* c = new Cube(i * n_step, j * n_step, sliceStart, n_step, n_step, n_step);
+			cubemap->GenCubeMap(c->pos.x, c->pos.y, c->pos.z, c->size.x, c->size.y, c->size.z, c->data, c->cubemap_size);
+			cubes.push_back(c);
+		}
+	}
+
+	for (auto v : textures) delete v;
 	textures.clear();
+	for (auto v : bboxes) delete v;
+	bboxes.clear();
 	int cubemap_size = cubemap->GetCubemapSize();
 	for (int i = 0; i < cubes.size(); i++) {
 		GLTextureCube* tex = new GLTextureCube(cubemap_size);
@@ -266,6 +286,21 @@ void GlyphRenderable::GenVertexBuffer(int nv, float* vertex, float* normal)
 	m_vao->release();
 }
 
+void GlyphRenderable::SlotSliceNumChanged(int i)
+{
+	sliceStart = i;
+	UpdateData();
+	actor->UpdateGL();
+}
+
+void GlyphRenderable::SlotNumPartChanged(int i)
+{
+	numGlyphPerDim = i;
+	UpdateData();
+	actor->UpdateGL();
+}
+
+
 void GlyphRenderable::SlotGenCubeAlongLine(float4* line, int nv)
 {
 	int step = 23;//better to be odd number
@@ -306,16 +341,7 @@ void GlyphRenderable::SlotGenCubeAlongLine(float4* line, int nv)
 		cubes.push_back(c);
 	}
 
-	int n = 8;
-	int n_step = 252 / n;
-	int z_start = 700;
-	for (int i = 0; i < n; i++) {
-		for (int j = 0; j < n; j++) {
-			Cube* c = new Cube(i * n_step, j * n_step, z_start, n_step, n_step, n_step);
-			cubemap->GenCubeMap(c->pos.x, c->pos.y, c->pos.z, c->size.x, c->size.y, c->size.z, c->data, c->cubemap_size);
-			cubes.push_back(c);
-		}
-	}
+
 	UpdateData();
 	actor->UpdateGL();
 }

@@ -5,31 +5,32 @@ cmake_minimum_required(VERSION 2.6)
 Set(CMAKE_PREFIX_PATH "C:/Program Files (x86)/Windows Kits/8.0/Lib/win8/um/x64")
 
 find_package(OpenGL REQUIRED)
-find_package(OSUFlow REQUIRED)
+#find_package(OSUFlow REQUIRED)
 find_package(Qt5Widgets)
-find_package(VTK REQUIRED)
+#find_package(VTK REQUIRED)
 find_package(CUDA REQUIRED)
 
 
-include(${VTK_USE_FILE})
+#include(${VTK_USE_FILE})
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
-include_directories( ${CMAKE_CURRENT_SOURCE_DIR} ${OSUFLOW_INCLUDE_DIR} ${VTK_INCLUDE_DIRS} 
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR} 
+#${OSUFLOW_INCLUDE_DIR} ${VTK_INCLUDE_DIRS} 
 	${CUDA_TOOLKIT_INCLUDE} ${CUDA_SDK_ROOT_DIR}/common/inc required)
 
 set(SHARED_LIBRARIES
 		${OPENGL_LIBRARIES}
-		${VTK_LIBRARIES}
-		debug ${OSUFLOW_LIBRARY_DEBUG}
-		optimized ${OSUFLOW_LIBRARY}
+#		${VTK_LIBRARIES}
+#		debug ${OSUFLOW_LIBRARY_DEBUG}
+#		optimized ${OSUFLOW_LIBRARY}
 )
 
-message("OSUFLOW_LIBRARY_DEBUG")
-message("${OSUFLOW_LIBRARY_DEBUG}")
+#message("OSUFLOW_LIBRARY_DEBUG")
+#message("${OSUFLOW_LIBRARY_DEBUG}")
 
-message("VTK LIBRARY DIRS:")
-message("${VTK_LIBRARY_DIRS}")
+#message("VTK LIBRARY DIRS:")
+#message("${VTK_LIBRARY_DIRS}")
 
 #source_group("widgets_h" FILES edge.h node.h graphwidget.h qjson.h qjsonview.h GraphVizWidget.h EntropySlider.h TreeMapPlot.h TreeMapWindow.h ArrowButton.h ArrowWidget.h EntropyQueryContainer.h)
 
@@ -38,16 +39,18 @@ message("${VTK_LIBRARY_DIRS}")
 set( Srcs main.cpp glsphere.cpp glSuperquadric.cpp
 	glextensions.cpp  
 	window.cpp glwidget.cpp Renderable.cpp Trackball.cpp Rotation.cpp QuatVector.cpp
-	DataMgr.cpp Reader.cpp VecReader.cpp Cubemap.cpp Streamline.cpp
-	BoxRenderable.cpp LineRenderable.cpp GlyphRenderable.cpp MeshReader.cpp
+	DataMgr.cpp Reader.cpp VecReader.cpp Cubemap.cpp 
+	#Streamline.cpp LineRenderable.cpp 
+	BoxRenderable.cpp GlyphRenderable.cpp MeshReader.cpp
 	GLTextureCube.cpp
 	)
 set( Hdrs 
 glsphere.h glSuperquadric.h gltrianglemesh.h
 	glextensions.h 
 	window.h glwidget.h Renderable.h Trackball.h Rotation.h QuatVector.h
-	DataMgr.h defines.h Reader.h VecReader.h Cubemap.h Streamline.h
-	BoxRenderable.h LineRenderable.h ShaderProgram.h GlyphRenderable.h MeshReader.h
+	DataMgr.h defines.h Reader.h VecReader.h Cubemap.h 
+	#Streamline.h LineRenderable.h 
+	BoxRenderable.h ShaderProgram.h GlyphRenderable.h MeshReader.h
 	GLTextureCube.h
     )
 set( Rcs resources/vechist.qrc)

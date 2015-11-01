@@ -33,6 +33,8 @@ private:
 	unsigned int vbo_norm;
 	unsigned int vbo_vert;
 	int numElements = 0;
+	int sliceStart = 0;
+	int numGlyphPerDim = 1;
 	MeshReader* glyphMesh;
 
 	ShaderProgram *glProg;
@@ -46,6 +48,9 @@ private:
 
 public slots:
 	void SlotGenCubeAlongLine(float4* line, int nv);
+	void SlotSliceNumChanged(int i);
+	void SlotNumPartChanged(int i);
+	
 	//void SlotGenCubeOnPlane(int planeIdx,);
 	void SlotTest(){}
 

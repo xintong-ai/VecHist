@@ -6,6 +6,7 @@ class GLTextureCube //: public GLTexture
 	GLuint m_texture;
 public:
 	GLTextureCube(int size);
+	~GLTextureCube();
 //	explicit GLTextureCube(const QStringList& fileNames, int size = 0);
 	explicit GLTextureCube(int size, int datatype);
 	//void load(int size, int face, QRgb *data);

@@ -2,8 +2,8 @@
 #include "glwidget.h"
 #include "VecReader.h"
 #include "BoxRenderable.h"
-#include "Streamline.h"
-#include "LineRenderable.h"
+//#include "Streamline.h"
+//#include "LineRenderable.h"
 #include "GlyphRenderable.h"
 #include "Cubemap.h"
 //#include "DataMgr.h"
@@ -47,25 +47,25 @@ Window::Window()
     openGL->setFormat(format); // must be called before the widget or its parent window gets shown
 
 	//VecReader* vecReader = new VecReader("D:/data/plume/15plume3d421-504x504x2048.vec");
-	VecReader* vecReader = new VecReader("D:/data/plume/15plume3d421.vec");
+	VecReader* vecReader = new VecReader("D:/OneDrive/data/plume/15plume3d421.vec");
 	BoxRenderable* bbox = new BoxRenderable(vecReader);
 	openGL->SetVol(vecReader->GetVolumeDim());
 	openGL->AddRenderable("bbox", bbox);
 
-	Streamline* streamline = new Streamline(vecReader->GetFileName().c_str());
-	LineRenderable* lineRenderable = new LineRenderable(streamline);
-	openGL->AddRenderable("streamlines", lineRenderable);
+	//Streamline* streamline = new Streamline(vecReader->GetFileName().c_str());
+	//LineRenderable* lineRenderable = new LineRenderable(streamline);
+	//openGL->AddRenderable("streamlines", lineRenderable);
 
 	Cubemap* cubemap = new Cubemap(vecReader);
 	//cubemap->GenCubeMap(55, 55, 300, 10, 10, 10);
 	GlyphRenderable* glyphRenderable = new GlyphRenderable(cubemap);
 	openGL->AddRenderable("glyphs", glyphRenderable);
 	
-	QObject::connect(lineRenderable, SIGNAL(SigGenCubeAlongLine(float4*, int)),
-		glyphRenderable, SLOT(SlotGenCubeAlongLine(float4*, int)));
+	//QObject::connect(lineRenderable, SIGNAL(SigGenCubeAlongLine(float4*, int)),
+	//	glyphRenderable, SLOT(SlotGenCubeAlongLine(float4*, int)));
 
-	QObject::connect(lineRenderable, SIGNAL(SigTest()),
-		glyphRenderable, SLOT(SlotTest()));
+	//QObject::connect(lineRenderable, SIGNAL(SigTest()),
+	//	glyphRenderable, SLOT(SlotTest()));
 	//lineRenderable->GenGlyphAlongLine(0);
 	
 	///********cursor******/
@@ -109,8 +109,8 @@ Window::Window()
 	//slice2DLayout->addWidget(zSlice2DWidget);
 
 	///********controls******/
-	//QVBoxLayout *controlLayout = new QVBoxLayout;
-	////controlLayout->setStretch()
+	QVBoxLayout *controlLayout = new QVBoxLayout;
+	//controlLayout->setStretch()
 
 	//addLensBtn = CreateRegularButton("Add Lens");
 	//addNodeBtn = CreateRegularButton("Add Node");
@@ -151,9 +151,20 @@ Window::Window()
 	//connect(redoBtn, SIGNAL(clicked()), this, SLOT(RedoDeform()));
 
 	//statusLabel = new QLabel("status: Navigation");
+	QSlider* sliceSlider = new QSlider(Qt::Horizontal);
+	sliceSlider->setFixedSize(120, 30);
+	sliceSlider->setRange(0, vecReader->GetVolumeDim().z - 1);
+	sliceSlider->setValue(0);
 
-	//QVBoxLayout *interactLayout = new QVBoxLayout;
-	//QGroupBox *interactGrpBox = new QGroupBox(tr("Interactions"));
+	QSlider* numPartSlider = new QSlider(Qt::Horizontal);
+	numPartSlider->setFixedSize(120, 30);
+	numPartSlider->setRange(1, 32);
+	numPartSlider->setValue(1);
+
+	QVBoxLayout *interactLayout = new QVBoxLayout;
+	QGroupBox *interactGrpBox = new QGroupBox(tr("Interactions"));
+	interactLayout->addWidget(sliceSlider);
+	interactLayout->addWidget(numPartSlider);
 	//interactGrpBox->setSizePolicy(fixedPolicy);
 	//interactLayout->addLayout(addThingsLayout);
 	//interactLayout->addLayout(delThingsLayout);
@@ -162,8 +173,10 @@ Window::Window()
 	//interactLayout->addLayout(lenWidLayout);
 	//interactLayout->addLayout(transSizeLayout);
 	//interactLayout->addWidget(statusLabel);
-	//interactGrpBox->setLayout(interactLayout);
-	//controlLayout->addWidget(interactGrpBox);
+	interactGrpBox->setLayout(interactLayout);
+	controlLayout->addWidget(interactGrpBox);
+	connect(sliceSlider, SIGNAL(valueChanged(int)), glyphRenderable, SLOT(SlotSliceNumChanged(int)));
+	connect(numPartSlider, SIGNAL(valueChanged(int)), glyphRenderable, SLOT(SlotNumPartChanged(int)));
 
 	//connect(addLensBtn, SIGNAL(clicked()), this, SLOT(AddLens()));
 	//connect(addNodeBtn, SIGNAL(clicked()), this, SLOT(AddLensNode()));
@@ -249,7 +262,7 @@ Window::Window()
 	//
 	//mainLayout->addLayout(slice2DLayout, 1);
 	mainLayout->addWidget(openGL, 3);
-	//mainLayout->addLayout(controlLayout);
+	mainLayout->addLayout(controlLayout);
 	setLayout(mainLayout);
 }
 //
