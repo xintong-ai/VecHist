@@ -201,14 +201,27 @@ GlyphRenderable::GlyphRenderable(Cubemap* r)
 
 void GlyphRenderable::UpdateData()
 {
-	int n_step = 252 / numGlyphPerDim;
+	int dim1 = dataDim[(sliceDimIdx + 1) % 3];
+	int dim2 = dataDim[(sliceDimIdx + 2) % 3];
+	int n_step = 0;
+	if (dim1 < dim2)
+		n_step = dim1 / numGlyphPerDim;
+	else
+		n_step = dim2 / numGlyphPerDim;
+	int numGlyphSide1 = dim1 / n_step;
+	int numGlyphSide2 = dim2 / n_step;
 	//the .clear() does not trigger the destructor, 
 	//so we need to delete the pointer first
 	for (auto v : cubes) delete v;
 	cubes.clear();
-	for (int i = 0; i < numGlyphPerDim; i++) {
-		for (int j = 0; j < numGlyphPerDim; j++) {
-			Cube* c = new Cube(i * n_step, j * n_step, sliceStart, n_step, n_step, n_step);
+	for (int i = 0; i < numGlyphSide1; i++) {
+		for (int j = 0; j < numGlyphSide2; j++) {
+			int startCoords [] = { 0, 0, 0 };
+			startCoords[sliceDimIdx] = sliceStart;
+			startCoords[(sliceDimIdx + 1) % 3] = i * n_step;
+			startCoords[(sliceDimIdx + 2) % 3] = j * n_step;
+
+			Cube* c = new Cube(startCoords[0], startCoords[1], startCoords[2], n_step, n_step, n_step);
 			cubemap->GenCubeMap(c->pos.x, c->pos.y, c->pos.z, c->size.x, c->size.y, c->size.z, c->data, c->cubemap_size);
 			cubes.push_back(c);
 		}
@@ -239,8 +252,10 @@ void GlyphRenderable::draw(float modelview[16], float projection[16])
 		return;
 	glMatrixMode(GL_MODELVIEW);
 
-	for (auto b : bboxes) {
+	if (cubesVisible) {
+		for (auto b : bboxes) {
 		b->draw(modelview, projection);
+		}
 	}
 	for (int i = 0; i < cubes.size(); i++) {
 		glPushMatrix();

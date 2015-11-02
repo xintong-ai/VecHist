@@ -24,6 +24,7 @@ public:
 	void UpdateData() override;
 	//virtual void cleanup() override;
 	void SetCubemap(Cubemap* r) { cubemap = r; }
+	void SetVolumeDim(int x, int y, int z){ dataDim[0] = x; dataDim[1] = y; dataDim[2] = z; }
 	//void GenCubesFromLine();
 
 private:
@@ -35,6 +36,7 @@ private:
 	int numElements = 0;
 	int sliceStart = 0;
 	int numGlyphPerDim = 1;
+	int sliceDimIdx = 0;// 0 is x, 1 is y, 2 is z
 	//MeshReader* glyphMesh;
 	GLSphere* glyphMesh;
 
@@ -46,6 +48,8 @@ private:
 
 	Cubemap* cubemap;
 	bool updated = false;
+	int dataDim[3];
+	bool cubesVisible = false;
 
 public slots:
 	void SlotGenCubeAlongLine(float4* line, int nv);

@@ -59,6 +59,8 @@ Window::Window()
 	Cubemap* cubemap = new Cubemap(vecReader);
 	//cubemap->GenCubeMap(55, 55, 300, 10, 10, 10);
 	GlyphRenderable* glyphRenderable = new GlyphRenderable(cubemap);
+	int3 dim = vecReader->GetVolumeDim();
+	glyphRenderable->SetVolumeDim(dim.x, dim.y, dim.z);
 	openGL->AddRenderable("glyphs", glyphRenderable);
 	
 	//QObject::connect(lineRenderable, SIGNAL(SigGenCubeAlongLine(float4*, int)),
