@@ -30,32 +30,19 @@ struct Cube{
 
 class VecReader;
 class Cubemap{
-	VecReader* vecReader;
-	//float* data;
-	int3* dataIdx;	//indexing the data with the cubemap
-	float* cubemap_data;// (new float[size * size * 6]);
-	int dim[3];
-	int cubemap_size;
-	int qCubePos[3], qCubeSize[3];	//queried cube position and sizes
-	bool CubeInsideVolumeX(int x, int nx);
-	bool CubeInsideVolumeY(int x, int nx);
-	bool CubeInsideVolumeZ(int x, int nx);
-	void UpdateCubeMap(float* cubemap);
+	VecReader* vecReader = nullptr;
+	int3* dataIdx = nullptr;	//indexing the data with the cubemap
+	int dim [3];
+	int cubemap_size = 0;
 	void GetBlock(int3* datablock, int x, int y, int z, int nx, int ny, int nz);
-	void ComputeCurl();
 	void QueryByBin(int f, int x, int y, unsigned char* result);
 
 public:
 	Cubemap(VecReader* r);
 	~Cubemap();
-	float3 GetQCubeCenter();
-	void ResizeCube(int x, int y, int z);
 	void IndexVolume(int size);
 	int GetCubemapSize() { return cubemap_size; }
-//	std::vector <Cube*> GetCubes() { return cubes; }
 	void GenCubeMap(int x, int y, int z, int nx, int ny, int nz, float* &cubemap, int& _cubemap_size);
-//	void GenCubeMap(int x, int y, int z, int nx, int ny, int nz, float* &cubemap);
-
 };
 
 #endif //CUBEMAP_H

@@ -4,7 +4,8 @@
 #include <vector_types.h>
 #include <vector_functions.h>
 #include <memory>
-
+#include <iostream>
+#include <omp.h>
 
 double Log2(double n)
 {
@@ -174,14 +175,6 @@ inline float CubemapEntropy(float *cubemap, int size)
 Cubemap::Cubemap(VecReader* r)
 {
 	vecReader = r;
-
-	//qCubePos[0] = 0;
-	//qCubePos[1] = 0;
-	//qCubePos[2] = 0;
-
-	//qCubeSize[0] = dim[0];
-	//qCubeSize[1] = dim[1];
-	//qCubeSize[2] = dim[2];
 	int3 d = vecReader->GetVolumeDim();
 	dim[0] = d.x;
 	dim[1] = d.y;
@@ -192,95 +185,22 @@ Cubemap::Cubemap(VecReader* r)
 
 }
 
-
-float3 Cubemap::GetQCubeCenter()
-{
-	return make_float3(
-		qCubePos[0] + qCubeSize[0] * 0.5,
-		qCubePos[1] + qCubeSize[1] * 0.5,
-		qCubePos[2] + qCubeSize[2] * 0.5);
-}
-
-void Cubemap::ResizeCube(int x, int y, int z)
-{
-	if (!CubeInsideVolumeX(qCubePos[0], qCubeSize[0] + x) || (qCubeSize[0] + x < 0))
-		x = 0;
-	if (!CubeInsideVolumeY(qCubePos[1], qCubeSize[1] + y) || (qCubeSize[1] + y < 0))
-		y = 0;
-	if (!CubeInsideVolumeZ(qCubePos[2], qCubeSize[2] + z) || (qCubeSize[2] + z < 0))
-		z = 0;
-	qCubeSize[0] += x;
-	qCubeSize[1] += y;
-	qCubeSize[2] += z;
-}
-
-
 void Cubemap::IndexVolume(int size)
 {
+	std::cout << "indexing the vectors ..." << std::endl;
 	float3* idata = (float3*)vecReader->GetVecData();// GetVecDataXFirst();// static_cast<float3*>((void *)data);
 	int nCells = dim[0] * dim[1] * dim[2];// GetNumOfCells();
 	dataIdx = new int3[nCells];
-	//for (int i = 0; i < GetNumOfCells(); i++)
-	//{
-	//	dataIdx[i] = make_int3(2,2,2);
-	//}
-	//int cnt = 0;
-	//for (int i = 0; i < dim[0]; i++)	{
-	//	for (int j = 0; j < dim[1]; j++)	{
-	//		for (int k = 0; k < dim[2]; k++)	{
-	//			int idx = i * dim[1] * dim[2] + j * dim[2] + k;
-	//			float3 d = idata[idx];
-	//			dataIdx[idx] = XYZ2Idx(d, size);
-	//			//int3 tmp = dataIdx[i * dim[1] * dim[2] + j * dim[2] + k];
-	//			//if (tmp.x == 0 && tmp.y == 0 && tmp.z == 0)
-	//			//{
-	//			//	//std::cout << "d = (" << d.x << "," << d.y << "," << d.z << ")" << std::endl;
-	//			//	cnt++;
-	//			//}
-	//		}
-	//	}
-	//}
-	for (int i = 0; i < nCells; i++)
+	#pragma omp parallel for
+	for (int i = 0; i < nCells; i++){
+		//std::cout << i << " ";
 		dataIdx[i] = XYZ2Idx(idata[i], cubemap_size);
-
-	//int cnt3 = 0;
-	//for (int i = 0; i < GetNumOfCells(); i++)
-	//{
-	//	int3 d = dataIdx[i];
-	//	if (d.x == 0 && d.y == 0 && d.z == 0)
-	//		cnt3++;
-	//}
-	//std::cout << "cnt:" << cnt << std::endl;
-	//std::cout << "cnt3:" << cnt3 << std::endl;
-}
-
-bool Cubemap::CubeInsideVolumeX(int x, int nx)
-{
-	return x >= 0 && (x + nx) <= dim[0];
-}
-
-bool Cubemap::CubeInsideVolumeY(int x, int nx)
-{
-	return x >= 0 && (x + nx) <= dim[1];
-}
-
-bool Cubemap::CubeInsideVolumeZ(int x, int nx)
-{
-	return x >= 0 && (x + nx) <= dim[2];
+	}
+	std::cout << "indexing the vectors done." << std::endl;
 }
 
 void Cubemap::GenCubeMap(int x, int y, int z, int nx, int ny, int nz, float* &cubemap, int& _cubemap_size)
 {
-//	Cube *c = new Cube(x, y, z, nx, ny, nz, cubemap_size);
-	//qCubePos[0] = x;
-	//qCubePos[1] = y;
-	//qCubePos[2] = z;
-	//qCubeSize[0] = nx;
-	//qCubeSize[1] = ny;
-	//qCubeSize[2] = nz;
-	//	std::vector<float3> datablock = GetBlock(x, y, z, nx, ny, nz);
-	//	ComputeCubeMap(dataIdx, GetNumOfCells(), cubemap, size);
-	//UpdateCubeMap(cubemap);
 	int cubeSizeTotal = nx * ny * nz;// c->GetTotalSize();// qCubeSize[0] * qCubeSize[1] * qCubeSize[2];
 	std::unique_ptr<int3[]> datablock(new int3[cubeSizeTotal]);
 
@@ -288,39 +208,29 @@ void Cubemap::GenCubeMap(int x, int y, int z, int nx, int ny, int nz, float* &cu
 	cubemap = new float[cubemap_size * cubemap_size * 6];
 	ComputeCubeMap(datablock.get(), cubeSizeTotal, cubemap, cubemap_size);
 	_cubemap_size = cubemap_size;
-	//cubemap_data = cubemap;
-	//	cubemap_size = size;
-	//cubes.push_back(c);
-
 }
 
-void Cubemap::UpdateCubeMap(float* cubemap)
-{
-	//qCubePos[0] = x;
-	//qCubePos[1] = y;
-	//qCubePos[2] = z;
-	//qCubeSize[0] = nx;
-	//qCubeSize[1] = ny;
-	//qCubeSize[2] = nz;
-	int cubeSizeTotal = qCubeSize[0] * qCubeSize[1] * qCubeSize[2];
-	std::unique_ptr<int3[]> datablock(new int3[cubeSizeTotal]);
-
-	GetBlock(datablock.get(), qCubePos[0], qCubePos[1], qCubePos[2], qCubeSize[0], qCubeSize[1], qCubeSize[2]);
-	//int cnt = 0;
-	//for (int i = 0; i < datablock.size(); i++)
-	//{
-	//	int3 tmp = datablock[i];
-	//	if (tmp.x == 0 && tmp.y == 0 && tmp.z == 0)
-	//		cnt++;
-	//}
-	//std::cout << "cnt 2 ::" << cnt << std::endl;
-	//if (datablock.size() != (qCubeSize[0] * qCubeSize[1] * qCubeSize[2]))
-	//{
-	//	std::cout << "error" << std::endl;
-	//	exit(1);
-	//}
-	ComputeCubeMap(datablock.get(), cubeSizeTotal, cubemap, cubemap_size);
-}
+//void Cubemap::UpdateCubeMap(float* cubemap)
+//{
+//	int cubeSizeTotal = qCubeSize[0] * qCubeSize[1] * qCubeSize[2];
+//	std::unique_ptr<int3[]> datablock(new int3[cubeSizeTotal]);
+//
+//	GetBlock(datablock.get(), qCubePos[0], qCubePos[1], qCubePos[2], qCubeSize[0], qCubeSize[1], qCubeSize[2]);
+//	//int cnt = 0;
+//	//for (int i = 0; i < datablock.size(); i++)
+//	//{
+//	//	int3 tmp = datablock[i];
+//	//	if (tmp.x == 0 && tmp.y == 0 && tmp.z == 0)
+//	//		cnt++;
+//	//}
+//	//std::cout << "cnt 2 ::" << cnt << std::endl;
+//	//if (datablock.size() != (qCubeSize[0] * qCubeSize[1] * qCubeSize[2]))
+//	//{
+//	//	std::cout << "error" << std::endl;
+//	//	exit(1);
+//	//}
+//	ComputeCubeMap(datablock.get(), cubeSizeTotal, cubemap, cubemap_size);
+//}
 
 
 void Cubemap::GetBlock(int3* datablock, int x, int y, int z, int nx, int ny, int nz)
@@ -330,21 +240,14 @@ void Cubemap::GetBlock(int3* datablock, int x, int y, int z, int nx, int ny, int
 	std::vector<int3> ret;
 	//int cnt4 = 0;
 	//int3* idata = static_cast<int3*>((void *)data);
-	for (int i = 0; i < nx; i++)	{
-		int ix = i + x;
+	for (int k = 0; k < nz; k++)	{
+		int iz = k + z;
 		for (int j = 0; j < ny; j++)	{
 			int iy = j + y;
-			for (int k = 0; k < nz; k++)	{
-				int iz = k + z;
-				int idx = ix * dim[1] * dim[2] + iy * dim[2] + iz;
-				int3 d = dataIdx[idx];
-				//if (d.x == 0 && d.y == 0 && d.z == 0)
-				//{
-				//	cnt4++;
-				//	//std::cout<<"iii:" << ix << "," << iy << "," << iz << "," << idx <<std::endl;
-				//}
-				//ret.push_back();
-				datablock[i * ny * nz + j * nz + k] = dataIdx[ix * dim[1] * dim[2] + iy * dim[2] + iz];
+			for (int i = 0; i < nx; i++)	{
+				int ix = i + x;
+				int idx = ix + iy * dim[0] + iz * dim[0] * dim[1];
+				datablock[k * nx * ny + j * nx + i] = dataIdx[idx];
 			}
 		}
 	}
@@ -427,6 +330,4 @@ void Cubemap::QueryByBin(int f, int x, int y, unsigned char* result)
 
 Cubemap::~Cubemap()
 {
-	delete[] cubemap_data;
-
 }

@@ -107,7 +107,7 @@ class VecReader:public Reader// VecReader:public DataManager
 	//int3* curlIdx;	//indexing the curl with the cubemap
 	//int initBlockSize;
 	//int blockDim[3];
-	float3* data_x_first;
+	//float3* data_x_first;
 	int start[3];
 	int dim[3];
 	std::string vecFileName;
@@ -174,7 +174,7 @@ public:
 	//void BuildOctree(Node *nd);
 
 	float* GetVecData(){return data;}
-	float* GetVecDataXFirst(){ return (float*)data_x_first; }
+	//float* GetVecDataXFirst(){ return (float*)data_x_first; }
 
 	//virtual vector<AbstractNode*> GetAllNode();
 	//virtual NodeBi* getRootNode();
