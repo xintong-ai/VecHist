@@ -6,6 +6,7 @@
 
 class ShaderProgram;
 class GLTextureCube;
+struct Cube;
 class GL2DProjWidget :public QOpenGLWidget, public QOpenGLFunctions
 {
 	Q_OBJECT
@@ -45,10 +46,11 @@ protected:
 	virtual void keyPressEvent(QKeyEvent * event) Q_DECL_OVERRIDE;
 	QSize minimumSizeHint() const Q_DECL_OVERRIDE;
 	QSize sizeHint() const Q_DECL_OVERRIDE;
+	int heightForWidth(int w) const;
 
 	ShaderProgram *glProg;
 
 public slots:
-	void SlotSetCubeTexture(GLTextureCube* v);// { tex = v; }
+	void SlotSetCubeTexture(GLTextureCube* v, Cube* c);// { tex = v; }
 };
 #endif //GL_2D_PROJ_WIDGET_H

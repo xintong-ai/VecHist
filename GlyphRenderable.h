@@ -10,13 +10,14 @@ class ShaderProgram;
 class QOpenGLVertexArrayObject;
 class GLSphere;
 class GLTextureCube;
-class Cube;
+struct Cube;
 class BoxRenderable;
 class GlyphRenderable :public Renderable, public QObject
 {
 	Q_OBJECT
 public:
 	std::vector<GLTextureCube*> textures;
+	std::vector <Cube*> cubes;
 
 	GlyphRenderable(Cubemap* r);
 
@@ -51,7 +52,6 @@ private:
 	ShaderProgram *glPickingProg;
 
 	QOpenGLVertexArrayObject* m_vao;
-	std::vector <Cube*> cubes;
 	std::vector <BoxRenderable*> bboxes;
 
 	Cubemap* cubemap;
@@ -71,6 +71,6 @@ public slots:
 	void SlotTest(){}
 
 signals:
-	void SigChangeTex(GLTextureCube* v);
+	void SigChangeTex(GLTextureCube* v, Cube* c);
 };
 #endif //GLYPH_RENDERABLE_H

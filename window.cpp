@@ -34,7 +34,7 @@ Window::Window()
 	QHBoxLayout *mainLayout = new QHBoxLayout;
 
 	//DataMgr dataMgr;
-	QSizePolicy fixedPolicy(QSizePolicy::Policy::Fixed, QSizePolicy::Policy::Fixed);
+	//QSizePolicy fixedPolicy(QSizePolicy::Policy::Fixed, QSizePolicy::Policy::Fixed);
 
 	//this->move(100, 100);
 
@@ -113,7 +113,6 @@ Window::Window()
 
 	///********controls******/
 	QVBoxLayout *controlLayout = new QVBoxLayout;
-	//controlLayout->setStretch()
 
 	//addLensBtn = CreateRegularButton("Add Lens");
 	//addNodeBtn = CreateRegularButton("Add Node");
@@ -155,12 +154,12 @@ Window::Window()
 
 	//statusLabel = new QLabel("status: Navigation");
 	QSlider* sliceSlider = new QSlider(Qt::Horizontal);
-	sliceSlider->setFixedSize(120, 30);
+	//sliceSlider->setFixedSize(120, 30);
 	sliceSlider->setRange(0, vecReader->GetVolumeDim().z - 1);
 	sliceSlider->setValue(0);
 
 	QSlider* numPartSlider = new QSlider(Qt::Horizontal);
-	numPartSlider->setFixedSize(120, 30);
+	//numPartSlider->setFixedSize(120, 30);
 	numPartSlider->setRange(1, 32);
 	numPartSlider->setValue(1);
 
@@ -184,8 +183,8 @@ Window::Window()
 	GL2DProjWidget* gl2DProjWidget = new GL2DProjWidget(this);
 	controlLayout->addWidget(gl2DProjWidget);
 	//gl2DProjWidget->SetCubeTexture(glyphRenderable->GetCubeTexture(0));
-	connect(glyphRenderable, SIGNAL(SigChangeTex(GLTextureCube*)), 
-		gl2DProjWidget, SLOT(SlotSetCubeTexture(GLTextureCube*)));
+	connect(glyphRenderable, SIGNAL(SigChangeTex(GLTextureCube*, Cube*)), 
+		gl2DProjWidget, SLOT(SlotSetCubeTexture(GLTextureCube*, Cube*)));
 
 
 	//connect(addLensBtn, SIGNAL(clicked()), this, SLOT(AddLens()));
@@ -260,7 +259,7 @@ Window::Window()
 	//slicerLayout->addLayout(zSliceLayout);
 	//slicerGrpBox->setLayout(slicerLayout);
 	//controlLayout->addWidget(slicerGrpBox);
-	//controlLayout->addStretch();
+	controlLayout->addStretch();
 
 	//connect(xSlider, SIGNAL(valueChanged(int)), this, SLOT(XSliderChanged(int)));
 	//connect(ySlider, SIGNAL(valueChanged(int)), this, SLOT(YSliderChanged(int)));
@@ -271,8 +270,8 @@ Window::Window()
 	//connect(zSliceCheck, SIGNAL(clicked(bool)), this, SLOT(zSliceToggled(bool)));
 	//
 	//mainLayout->addLayout(slice2DLayout, 1);
-	mainLayout->addWidget(openGL, 3);
-	mainLayout->addLayout(controlLayout);
+	mainLayout->addWidget(openGL,3);
+	mainLayout->addLayout(controlLayout,1);
 	setLayout(mainLayout);
 }
 //

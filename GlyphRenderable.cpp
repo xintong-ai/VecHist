@@ -510,5 +510,6 @@ void GlyphRenderable::mousePress(int x, int y, int modifier)
 	std::cout << "idx:" << idx << std::endl;
 	glReadBuffer(GL_FRONT);
 #endif
-	emit SigChangeTex(textures[0]);
+	int idx = textures.size() * 0.5;
+	emit SigChangeTex(textures[idx], cubes[idx]);
 }

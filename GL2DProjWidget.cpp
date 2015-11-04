@@ -2,10 +2,11 @@
 #include <vector_types.h>
 #include <vector_functions.h>
 #include <GLTextureCube.h>
+#include "Cubemap.h"
 
 #define qgl	QOpenGLContext::currentContext()->functions()
 #include "ShaderProgram.h"
-
+#include <memory>
 //2D projection of cube map:
 //http://paulbourke.net/geometry/transformationprojection/
 
@@ -14,6 +15,10 @@ GL2DProjWidget::GL2DProjWidget(QWidget *parent)
 {
 	//texPlaneTracer = r;
 	//r->SetSlice2DWidget(this);
+	QSizePolicy p(sizePolicy());
+	p.setHeightForWidth(true);
+	setSizePolicy(p);
+
 }
 
 GL2DProjWidget::~GL2DProjWidget()
@@ -27,7 +32,7 @@ QSize GL2DProjWidget::minimumSizeHint() const
 
 QSize GL2DProjWidget::sizeHint() const
 {
-	return QSize(256, 256);
+	return QSize(256, heightForWidth(256));
 }
 
 void GL2DProjWidget::loadShaders()
@@ -36,27 +41,11 @@ void GL2DProjWidget::loadShaders()
 	const char* slice2DVS =
 		GLSL(
 	layout(location = 0) in vec3 vertexPosition;
-	//layout(location = 1) in vec2 vertexUV;
-
 	smooth out vec2 UV;
-
-	//uniform vec2 texSizes;
-	uniform vec2 winSizes;
-
-
 	void main(){
-
-		//float texSizeMax;
-		//texSizeMax = texSizes.x > texSizes.y? texSizes.x:texSizes.y;
-		//vec2 texSizeRatio = vec2(texSizes.x / texSizeMax * 0.0001 + 1, texSizes.y / texSizeMax * 0.0001 + 1);
-
-		float winSizeMax = winSizes.x > winSizes.y ? winSizes.x : winSizes.y;
-		vec2 winSizeRatio = vec2(winSizes.y / winSizeMax, winSizes.x / winSizeMax);
-
-		gl_Position = vec4(vertexPosition.x  * winSizeRatio.x, vertexPosition.y * winSizeRatio.y, vertexPosition.z, 1);
+		gl_Position = vec4(vertexPosition.x, vertexPosition.y, vertexPosition.z, 1);
 		UV = vertexPosition.xy;
 	}
-
 	);
 
 	//the texture only returns vec4, so we should change the texture input format
@@ -64,26 +53,39 @@ void GL2DProjWidget::loadShaders()
 		GLSL(
 	#extension GL_NV_shadow_samplers_cube : enable \n
 	#define PI 3.141592653589793238462643383279 \n
-	// Interpolated values from the vertex shaders
 	smooth in vec2 UV;
-
-	// Ouput data
 	out vec3 color;
-
-	// Values that stay constant for the whole mesh.
-	//uniform sampler2D myTextureSampler;
 	uniform samplerCube env;
-
 	void main(){
-		//color = texture(myTextureSampler, UV).rgb;// *0.000001 + vec3(UV.x, UV.y, 0);
 		float theta = UV.x * PI;
 		float phi = UV.y * PI * 0.5;
-
 		vec3 norm = vec3(cos(phi) * cos(theta), sin(phi), cos(phi) * sin(theta));
-
 		float v = textureCube(env, norm).x;
-		//vec3 unlitColor = GetColor2(norm, v);
-		//vec3 unlitColor = GetColor(v, 0, 1).xyz;// vec3(v, 0, 0); //vec4((normal.x + 1) * 0.5, (normal.y + 1), (normal.z + 1) * 0.5, 1.0f);
+		color = vec3(v, v, v);
+	}
+	);
+
+	const char* slice2D6FacesVS =
+		GLSL(
+	layout(location = 0) in vec3 vertexPosition;
+	smooth out vec2 UV;
+	void main(){
+		gl_Position = vec4(vertexPosition.x, vertexPosition.y, vertexPosition.z, 1);
+		if ()
+		UV = vertexPosition.xy;
+	}
+	);
+
+	const char* slice2D6FacesFS =
+		GLSL(
+	#extension GL_NV_shadow_samplers_cube : enable \n
+	smooth in vec2 UV;
+	out vec3 color;
+	uniform samplerCube env;
+	void main(){
+
+		//vec3 norm = vec3(cos(phi) * cos(theta), sin(phi), cos(phi) * sin(theta));
+		float v = textureCube(env, norm).x;
 		color = vec3(v, v, v);
 	}
 	);
@@ -96,7 +98,6 @@ void GL2DProjWidget::loadShaders()
 	//glProg->addAttribute("vertexUV");
 
 	//glProg->addUniform("texSizes");
-	glProg->addUniform("winSizes");
 	glProg->addUniform("env");
 	
 }
@@ -104,6 +105,7 @@ void GL2DProjWidget::loadShaders()
 void GL2DProjWidget::initializeGL()
 {
 	initializeOpenGLFunctions();
+
 
 	float3 corners[] = { 
 		make_float3(-1, -1, 0),
@@ -129,12 +131,6 @@ void GL2DProjWidget::initializeGL()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glEnableVertexAttribArray(glProg->attribute("vertexPosition"));
 
-	//glBindBuffer(GL_ARRAY_BUFFER, vbo_uv);
-	//glVertexAttribPointer(glProg->attribute("vertexUV"), 2, GL_FLOAT, GL_FALSE, 0, NULL);
-	//glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(float) * 2, texCoords, GL_STATIC_DRAW);
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
-	//glEnableVertexAttribArray(glProg->attribute("vertexUV"));
-
 	m_vao->release();
 }
 
@@ -147,13 +143,22 @@ void GL2DProjWidget::paintGL() {
 	glProg->use();
 	m_vao->bind();
 
+
+
 	//glUniform2f(glProg->uniform("texSizes"), texSz1, texSz2);
-	glUniform2f(glProg->uniform("winSizes"), winWidth, winHeight);
 	glUniform1i(glProg->uniform("env"), GLint(0));
 
 	//glBindTexture(GL_TEXTURE_2D, textureID);
 	tex->bind();
+
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
 	tex->unbind();
 	m_vao->release();
 	glProg->disable();
@@ -186,8 +191,26 @@ void GL2DProjWidget::keyPressEvent(QKeyEvent * event)
 {
 }
 
-void GL2DProjWidget::SlotSetCubeTexture(GLTextureCube* v)
+void GL2DProjWidget::SlotSetCubeTexture(GLTextureCube* v, Cube* c)
 { 
 	tex = v; 
+	//std::unique_ptr<float[]> hist(new float[c->cubemap_size * c->cubemap_size * 12], );
+	int sz = c->cubemap_size;
+	std::vector<float> img(sz * sz * 12, 0.0f);
+
+	for (int i = 0; i < sz; i++) {
+		for (int j = 0; j < sz; j++) {
+			img[sz * 4 * sz + i + j * 4 * sz] = c->data[j * sz + i];
+			img[sz * 4 * sz + sz + i + j * 4 * sz] = c->data[4 * sz * sz + j * sz + i];
+			img[sz * 4 * sz + sz * 2 + i + j * 4 * sz] = c->data[sz * sz + j * sz + i];
+			img[sz * 4 * sz + sz * 3 + i + j * 4 * sz] = c->data[5 * sz * sz + j * sz + i];
+			img[sz * 8 * sz + sz + i + j * 4 * sz] = c->data[2 * sz * sz + j * sz + i];
+			img[sz + i + j * 4 * sz] = c->data[3 * sz * sz + j * sz + i];
+		}
+	}
 	update();
+}
+
+int GL2DProjWidget::heightForWidth(int w) const { 
+	return w * 0.5; 
 }
