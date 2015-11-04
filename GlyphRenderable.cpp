@@ -17,8 +17,65 @@
 #include "GLSphere.h"
 #include "helper_math.h"
 
+//#include <GL/glu.h>
+//#include <math.h>
 //#define EPS 1e-6
 //#include <float.h>
+//copied from:
+//http://stackoverflow.com/questions/19332668/drawing-the-axis-with-its-arrow-using-opengl-in-visual-studio-2010-and-c
+//#define RADPERDEG 0.0174533
+//void Arrow(GLdouble x1, GLdouble y1, GLdouble z1, GLdouble x2, GLdouble y2, GLdouble z2, GLdouble D)
+//{
+//	double x = x2 - x1;
+//	double y = y2 - y1;
+//	double z = z2 - z1;
+//	double L = sqrt(x*x + y*y + z*z);
+//
+//	GLUquadricObj *quadObj;
+//
+//	glPushMatrix();
+//
+//	glTranslated(x1, y1, z1);
+//
+//	if ((x != 0.) || (y != 0.)) {
+//		glRotated(atan2(y, x) / RADPERDEG, 0., 0., 1.);
+//		glRotated(atan2(sqrt(x*x + y*y), z) / RADPERDEG, 0., 1., 0.);
+//	}
+//	else if (z<0){
+//		glRotated(180, 1., 0., 0.);
+//	}
+//
+//	glTranslatef(0, 0, L - 4 * D);
+//
+//	quadObj = gluNewQuadric();
+//	gluQuadricDrawStyle(quadObj, GLU_FILL);
+//	gluQuadricNormals(quadObj, GLU_SMOOTH);
+//	gluCylinder(quadObj, 2 * D, 0.0, 4 * D, 32, 1);
+//	gluDeleteQuadric(quadObj);
+//
+//	quadObj = gluNewQuadric();
+//	gluQuadricDrawStyle(quadObj, GLU_FILL);
+//	gluQuadricNormals(quadObj, GLU_SMOOTH);
+//	gluDisk(quadObj, 0.0, 2 * D, 32, 1);
+//	gluDeleteQuadric(quadObj);
+//
+//	glTranslatef(0, 0, -L + 4 * D);
+//
+//	quadObj = gluNewQuadric();
+//	gluQuadricDrawStyle(quadObj, GLU_FILL);
+//	gluQuadricNormals(quadObj, GLU_SMOOTH);
+//	gluCylinder(quadObj, D, D, L - 4 * D, 32, 1);
+//	gluDeleteQuadric(quadObj);
+//
+//	quadObj = gluNewQuadric();
+//	gluQuadricDrawStyle(quadObj, GLU_FILL);
+//	gluQuadricNormals(quadObj, GLU_SMOOTH);
+//	gluDisk(quadObj, 0.0, D, 32, 1);
+//	gluDeleteQuadric(quadObj);
+//
+//	glPopMatrix();
+//
+//}
 
 void GlyphRenderable::LoadShaders()
 {
@@ -176,6 +233,49 @@ void GlyphRenderable::LoadShaders()
 	glProg->addUniform("Transform");
 	glProg->addUniform("Scale");
 	glProg->addUniform("env");
+
+	//////////////////Picking shader/////////////////////
+	const char* pickingVS =
+		GLSL(
+	#extension GL_NV_shadow_samplers_cube : enable \n
+	layout(location = 0) in vec3 VertexPosition;
+	uniform mat4 ModelViewMatrix;
+	uniform mat4 ProjectionMatrix;
+	uniform vec3 Transform;
+	uniform float Scale;
+	uniform samplerCube env;
+	void main()
+	{
+		vec3 VertexNormal = VertexPosition;
+		mat4 MVP = ProjectionMatrix * ModelViewMatrix;
+		float v = textureCube(env, VertexNormal).x;
+		const float ext = 0.1;
+		gl_Position = MVP * vec4(VertexPosition * (ext + v) * 0.5 * Scale + Transform, 1.0);
+	}
+	);
+
+	const char* pickingFS =
+		GLSL(
+	layout(location = 0) out vec4 FragColor;
+	uniform int idx;
+	void main() {
+		FragColor = vec4((idx % 255) / 255.0f, (idx / 255) / 255.0f, 0.0f, 1.0f);
+	}
+	);
+
+	glPickingProg = new ShaderProgram();
+	glPickingProg->initFromStrings(pickingVS, pickingFS);
+
+	glPickingProg->addAttribute("VertexPosition");
+	glPickingProg->addUniform("ModelViewMatrix");
+	glPickingProg->addUniform("ProjectionMatrix");
+
+	glPickingProg->addUniform("Transform");
+	glPickingProg->addUniform("Scale");
+	glPickingProg->addUniform("env");
+	glPickingProg->addUniform("idx");
+
+
 }
 
 void GlyphRenderable::init()
@@ -250,11 +350,13 @@ void GlyphRenderable::draw(float modelview[16], float projection[16])
 	}
 	if (!visible)
 		return;
+
+	Renderable::draw(modelview, projection);
 	glMatrixMode(GL_MODELVIEW);
 
 	if (cubesVisible) {
 		for (auto b : bboxes) {
-		b->draw(modelview, projection);
+			b->draw(modelview, projection);
 		}
 	}
 	for (int i = 0; i < cubes.size(); i++) {
@@ -304,13 +406,6 @@ void GlyphRenderable::GenVertexBuffer(int nv, float* vertex)
 	qgl->glBufferData(GL_ARRAY_BUFFER, nv * sizeof(float) * 3, vertex, GL_STATIC_DRAW);
 	qgl->glBindBuffer(GL_ARRAY_BUFFER, 0);
 	qgl->glEnableVertexAttribArray(glProg->attribute("VertexPosition"));
-
-	//qgl->glGenBuffers(1, &vbo_norm);
-	//qgl->glBindBuffer(GL_ARRAY_BUFFER, vbo_norm);
-	//qgl->glVertexAttribPointer(glProg->attribute("VertexNormal"), 3, GL_FLOAT, GL_FALSE, 0, NULL);
-	//qgl->glBufferData(GL_ARRAY_BUFFER, nv * sizeof(float) * 3, normal, GL_STATIC_DRAW);
-	//qgl->glBindBuffer(GL_ARRAY_BUFFER, 0);
-	//qgl->glEnableVertexAttribArray(glProg->attribute("VertexNormal"));
 
 	m_vao->release();
 }
@@ -373,4 +468,44 @@ void GlyphRenderable::SlotGenCubeAlongLine(float4* line, int nv)
 
 	UpdateData();
 	actor->UpdateGL();
+}
+
+void GlyphRenderable::mousePress(int x, int y, int modifier)
+{
+	glMatrixMode(GL_MODELVIEW);
+	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+	for (int i = 0; i < cubes.size(); i++) {
+		glPushMatrix();
+
+		GLTextureCube* tex = textures[i];// m_textureCubeManager->getBlockTex()[i];
+		Cube* c = cubes[i];
+		float3 shift = make_float3(c->size.x * 0.5 + c->pos.x, c->size.y * 0.5 + c->pos.y, c->size.z * 0.5 + c->pos.z);
+		float min_dim = std::min(std::min(c->size.x, c->size.y), c->size.z);
+
+		glPickingProg->use();
+		m_vao->bind();
+
+		qgl->glUniform3fv(glPickingProg->uniform("Transform"), 1, &shift.x);
+		qgl->glUniform1f(glPickingProg->uniform("Scale"), min_dim);
+		qgl->glUniform1i(glPickingProg->uniform("env"), GLint(0));
+		qgl->glUniform1i(glPickingProg->uniform("idx"), GLint(i));
+		qgl->glUniformMatrix4fv(glPickingProg->uniform("ModelViewMatrix"), 1, GL_FALSE, &matrix_mv.v[0].x);
+		qgl->glUniformMatrix4fv(glPickingProg->uniform("ProjectionMatrix"), 1, GL_FALSE, &matrix_pj.v[0].x);
+
+		tex->bind();
+		glDrawArrays(GL_QUADS, 0, glyphMesh->GetNumVerts());
+		tex->unbind();
+		m_vao->release();
+		glPickingProg->disable();
+		glPopMatrix();
+	}
+	glFlush();
+	glReadBuffer(GL_BACK);
+	GLfloat dataRecord[3];
+	glReadPixels(x, y, 1, 1, GL_RGB, GL_FLOAT, dataRecord);
+	std::cout << "Click was registered.  X: " << x << " Y: " << y << " Index received: " 
+		<< dataRecord[0] << ", " << dataRecord[1] << ", " << dataRecord[2] << ", " << std::endl;
+	int idx = dataRecord[0] * 255 + dataRecord[0] * 255 * 255;
+	std::cout << "idx:" << idx << std::endl;
+	glReadBuffer(GL_FRONT);
 }

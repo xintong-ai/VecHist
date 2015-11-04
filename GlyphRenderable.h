@@ -41,6 +41,7 @@ private:
 	GLSphere* glyphMesh;
 
 	ShaderProgram *glProg;
+	ShaderProgram *glPickingProg;
 
 	QOpenGLVertexArrayObject* m_vao;
 	std::vector <Cube*> cubes;
@@ -50,6 +51,9 @@ private:
 	bool updated = false;
 	int dataDim[3];
 	bool cubesVisible = false;
+
+protected:
+	void mousePress(int x, int y, int modifier) override;
 
 public slots:
 	void SlotGenCubeAlongLine(float4* line, int nv);
