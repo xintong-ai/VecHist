@@ -6,6 +6,7 @@
 //#include "LineRenderable.h"
 #include "GlyphRenderable.h"
 #include "Cubemap.h"
+#include "GL2DProjWidget.h"
 //#include "DataMgr.h"
 //#include "GLPolyRenderable.h"
 //#include "GLTexPlaneRenderable.h"
@@ -16,7 +17,7 @@
 //#include "MeshReader.h"
 //#include "LineReader.h"
 //#include "DTIVolumeReader.h"
-//#include "GLSlice2DWidget.h"
+//#include "GL2DProjWidget.h"
 
 //const int Window::btnSize[2] = { 60, 40 };
 
@@ -26,7 +27,7 @@
 //	btn->setMinimumSize(btnSize[0], btnSize[1]);
 //	return btn;
 //}
-
+class GLTextureCube;
 Window::Window()
 {
     setWindowTitle(tr("Glyph-based Flow Visualization"));
@@ -103,9 +104,9 @@ Window::Window()
 
 	///********slices 2D******/
 	//QVBoxLayout *slice2DLayout = new QVBoxLayout;
-	//GLSlice2DWidget* xSlice2DWidget = new GLSlice2DWidget((GLTexPlaneRenderable*)SlicePlaneRenderable0);
-	//GLSlice2DWidget* ySlice2DWidget = new GLSlice2DWidget((GLTexPlaneRenderable*)SlicePlaneRenderable1);
-	//GLSlice2DWidget* zSlice2DWidget = new GLSlice2DWidget((GLTexPlaneRenderable*)SlicePlaneRenderable2);
+	//GL2DProjWidget* xSlice2DWidget = new GL2DProjWidget((GLTexPlaneRenderable*)SlicePlaneRenderable0);
+	//GL2DProjWidget* ySlice2DWidget = new GL2DProjWidget((GLTexPlaneRenderable*)SlicePlaneRenderable1);
+	//GL2DProjWidget* zSlice2DWidget = new GL2DProjWidget((GLTexPlaneRenderable*)SlicePlaneRenderable2);
 	//slice2DLayout->addWidget(xSlice2DWidget);
 	//slice2DLayout->addWidget(ySlice2DWidget);
 	//slice2DLayout->addWidget(zSlice2DWidget);
@@ -179,6 +180,13 @@ Window::Window()
 	controlLayout->addWidget(interactGrpBox);
 	connect(sliceSlider, SIGNAL(valueChanged(int)), glyphRenderable, SLOT(SlotSliceNumChanged(int)));
 	connect(numPartSlider, SIGNAL(valueChanged(int)), glyphRenderable, SLOT(SlotNumPartChanged(int)));
+
+	GL2DProjWidget* gl2DProjWidget = new GL2DProjWidget(this);
+	controlLayout->addWidget(gl2DProjWidget);
+	//gl2DProjWidget->SetCubeTexture(glyphRenderable->GetCubeTexture(0));
+	connect(glyphRenderable, SIGNAL(SigChangeTex(GLTextureCube*)), 
+		gl2DProjWidget, SLOT(SlotSetCubeTexture(GLTextureCube*)));
+
 
 	//connect(addLensBtn, SIGNAL(clicked()), this, SLOT(AddLens()));
 	//connect(addNodeBtn, SIGNAL(clicked()), this, SLOT(AddLensNode()));

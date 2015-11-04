@@ -16,6 +16,8 @@ class GlyphRenderable :public Renderable, public QObject
 {
 	Q_OBJECT
 public:
+	std::vector<GLTextureCube*> textures;
+
 	GlyphRenderable(Cubemap* r);
 
 	void init() override;
@@ -25,10 +27,15 @@ public:
 	//virtual void cleanup() override;
 	void SetCubemap(Cubemap* r) { cubemap = r; }
 	void SetVolumeDim(int x, int y, int z){ dataDim[0] = x; dataDim[1] = y; dataDim[2] = z; }
+	GLTextureCube* GetCubeTexture(int i) { 
+		if (textures.size() > i)
+			return textures[i];
+		else
+			return nullptr;
+	}// m_textureCubeManager->getBlockTex()[i];
 	//void GenCubesFromLine();
 
 private:
-	std::vector<GLTextureCube*> textures;
 	void GenVertexBuffer(int nv, float* vertex);
 	void LoadShaders();
 	unsigned int vbo_norm;
@@ -63,5 +70,7 @@ public slots:
 	//void SlotGenCubeOnPlane(int planeIdx,);
 	void SlotTest(){}
 
+signals:
+	void SigChangeTex(GLTextureCube* v);
 };
 #endif //GLYPH_RENDERABLE_H

@@ -47,7 +47,7 @@ set( Srcs main.cpp GLSphere.cpp glSuperquadric.cpp
 	DataMgr.cpp Reader.cpp VecReader.cpp Cubemap.cpp 
 	#Streamline.cpp LineRenderable.cpp 
 	BoxRenderable.cpp GlyphRenderable.cpp MeshReader.cpp
-	GLTextureCube.cpp
+	GLTextureCube.cpp GL2DProjWidget.cpp
 	)
 set( Hdrs 
 GLSphere.h glSuperquadric.h gltrianglemesh.h
@@ -56,7 +56,7 @@ GLSphere.h glSuperquadric.h gltrianglemesh.h
 	DataMgr.h defines.h Reader.h VecReader.h Cubemap.h 
 	#Streamline.h LineRenderable.h 
 	BoxRenderable.h ShaderProgram.h GlyphRenderable.h MeshReader.h
-	GLTextureCube.h
+	GLTextureCube.h GL2DProjWidget.h
     )
 set( Rcs resources/vechist.qrc)
 

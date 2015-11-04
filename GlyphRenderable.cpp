@@ -472,6 +472,7 @@ void GlyphRenderable::SlotGenCubeAlongLine(float4* line, int nv)
 
 void GlyphRenderable::mousePress(int x, int y, int modifier)
 {
+#if 0
 	glMatrixMode(GL_MODELVIEW);
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 	for (int i = 0; i < cubes.size(); i++) {
@@ -508,4 +509,6 @@ void GlyphRenderable::mousePress(int x, int y, int modifier)
 	int idx = dataRecord[0] * 255 + dataRecord[0] * 255 * 255;
 	std::cout << "idx:" << idx << std::endl;
 	glReadBuffer(GL_FRONT);
+#endif
+	emit SigChangeTex(textures[0]);
 }
