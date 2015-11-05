@@ -180,12 +180,12 @@ Cubemap::Cubemap(VecReader* r)
 	dim[1] = d.y;
 	dim[2] = d.z;
 
-	cubemap_size = 16;
-	IndexVolume(cubemap_size);
+	cubemap_size = 8;
+	IndexVolume();
 
 }
 
-void Cubemap::IndexVolume(int size)
+void Cubemap::IndexVolume()
 {
 	std::cout << "indexing the vectors ..." << std::endl;
 	float3* idata = (float3*)vecReader->GetVecData();// GetVecDataXFirst();// static_cast<float3*>((void *)data);
@@ -198,6 +198,43 @@ void Cubemap::IndexVolume(int size)
 	}
 	std::cout << "indexing the vectors done." << std::endl;
 }
+
+void Cubemap::CountIndex(unsigned short* out, float3* in, int n)
+{
+	const int size2 = cubemap_size * cubemap_size;
+	for (int i = 0; i < n; i++) {
+		int3 d = XYZ2Idx(in[i], cubemap_size);
+		int idx = d.x* size2 + d.z * cubemap_size + d.y;
+		out[idx]++;
+	}
+}
+
+void Cubemap::IndexVolumeByHist()
+{
+	for (int i = 0; i < 3; i++) {
+		innerDim[i] = ceil((float)dim[i] / step);
+	}
+	innerData = new unsigned short[cubemap_size * cubemap_size * 6 * innerDim[0] * innerDim[1] * innerDim[2]];
+	for (int k = 0; k < innerDim[2]; k++) {
+		for (int j = 0; j < innerDim[1]; j++) {
+			for (int i = 0; i < innerDim[0]; i++) {
+				int sz[3];
+				sz[0] = ((i + 1) * step) <= dim[0] ? step : (dim[0] - i * step);
+				sz[1] = ((j + 1) * step) <= dim[1] ? step : (dim[1] - j * step);
+				sz[2] = ((k + 1) * step) <= dim[2] ? step : (dim[2] - k * step);
+				int totalSz = sz[0] * sz[1] * sz[2];
+				std::unique_ptr<float3[]> datablock(new float3[totalSz]);
+				GetBlockXYZ(datablock.get(), (float3*)vecReader->GetVecData(), 
+					i * innerDim[0], j * innerDim[1], k * innerDim[2],
+					sz[0], sz[1], sz[2]);
+				CountIndex(&innerData[k * innerDim[0] * innerDim[1] + j * innerDim[0] + i],
+					datablock.get(), totalSz);
+			}
+		}
+	}
+}
+
+
 
 void Cubemap::GenCubeMap(int x, int y, int z, int nx, int ny, int nz, float* &cubemap, int& _cubemap_size)
 {
@@ -231,6 +268,21 @@ void Cubemap::GenCubeMap(int x, int y, int z, int nx, int ny, int nz, float* &cu
 //	//}
 //	ComputeCubeMap(datablock.get(), cubeSizeTotal, cubemap, cubemap_size);
 //}
+
+void Cubemap::GetBlockXYZ(float3* datablock, float3* data, int x, int y, int z, int nx, int ny, int nz)
+{
+	for (int k = 0; k < nz; k++)	{
+		int iz = k + z;
+		for (int j = 0; j < ny; j++)	{
+			int iy = j + y;
+			for (int i = 0; i < nx; i++)	{
+				int ix = i + x;
+				int idx = ix + iy * dim[0] + iz * dim[0] * dim[1];
+				datablock[k * nx * ny + j * nx + i] = data[idx];
+			}
+		}
+	}
+}
 
 
 void Cubemap::GetBlock(int3* datablock, int x, int y, int z, int nx, int ny, int nz)
@@ -330,4 +382,6 @@ void Cubemap::QueryByBin(int f, int x, int y, unsigned char* result)
 
 Cubemap::~Cubemap()
 {
+	if (nullptr != innerData)
+		delete [] innerData;
 }

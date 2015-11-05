@@ -137,7 +137,7 @@ void GlyphRenderable::LoadShaders()
 
 		//tnorm = normalize(NormalMatrix * VertexNormal);
 
-		gl_Position = MVP * vec4(VertexPosition * (ext + v) * 0.5 * Scale + Transform, 1.0);
+		gl_Position = MVP * vec4(VertexPosition * (ext + v) * 0.8 * Scale + Transform, 1.0);
 	}
 	);
 
@@ -315,6 +315,7 @@ void GlyphRenderable::UpdateData()
 		n_step = dim1 / numGlyphPerDim;
 	else
 		n_step = dim2 / numGlyphPerDim;
+	std::cout << "n_step: " << n_step << std::endl;
 	int numGlyphSide1 = dim1 / n_step;
 	int numGlyphSide2 = dim2 / n_step;
 	//the .clear() does not trigger the destructor, 
@@ -438,6 +439,7 @@ void GlyphRenderable::GenVertexBuffer(int nv, float* vertex)
 void GlyphRenderable::SlotSliceNumChanged(int i)
 {
 	sliceStart = i;
+	std::cout << "sliceStart: " << sliceStart<<std::endl;
 	UpdateData();
 	actor->UpdateGL();
 }

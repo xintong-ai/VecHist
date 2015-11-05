@@ -142,7 +142,8 @@ void GLWidget::initializeGL()
     initializeOpenGLFunctions();
     sdkCreateTimer(&timer);
 	//glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-	glClearColor(0.4f, 0.4f, 0.4f, 1.0f);
+	//glClearColor(0.4f, 0.4f, 0.4f, 1.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 }
 
 void GLWidget::cleanup()
@@ -355,7 +356,7 @@ void GLWidget::resizeGL(int w, int h)
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-	Perspective(45, (float)width / height, (float)0.1, (float)10e4);
+	Perspective(30, (float)width / height, (float)0.1, (float)10e4);
 //    glOrtho(-1.5,1.5,-1.5,1.5,-1.5,1.5);
 
     glMatrixMode(GL_MODELVIEW);

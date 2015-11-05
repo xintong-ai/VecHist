@@ -36,11 +36,16 @@ class Cubemap{
 	int cubemap_size = 0;
 	void GetBlock(int3* datablock, int x, int y, int z, int nx, int ny, int nz);
 	void QueryByBin(int f, int x, int y, unsigned char* result);
-
+	int step = 2;	//every step x step x step cube becomes internal unit.
+	int innerDim[3];
+	unsigned short* innerData = nullptr;// cubemap for each inner block
+	void GetBlockXYZ(float3* datablock, float3* data, int x, int y, int z, int nx, int ny, int nz);
+	void CountIndex(unsigned short* out, float3* in, int n);
 public:
 	Cubemap(VecReader* r);
 	~Cubemap();
-	void IndexVolume(int size);
+	void IndexVolume();
+	void IndexVolumeByHist();
 	int GetCubemapSize() { return cubemap_size; }
 	void GenCubeMap(int x, int y, int z, int nx, int ny, int nz, float* &cubemap, int& _cubemap_size);
 };
