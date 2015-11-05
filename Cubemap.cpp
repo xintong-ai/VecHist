@@ -180,7 +180,7 @@ Cubemap::Cubemap(VecReader* r)
 	dim[1] = d.y;
 	dim[2] = d.z;
 
-	cubemap_size = 4;
+	cubemap_size = 16;
 	IndexVolume(cubemap_size);
 
 }

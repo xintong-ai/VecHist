@@ -12,6 +12,9 @@ class GLSphere;
 class GLTextureCube;
 struct Cube;
 class BoxRenderable;
+
+///* how big to make the pick buffer: */
+//#define PICK_BUFFER_SIZE 256 
 class GlyphRenderable :public Renderable, public QObject
 {
 	Q_OBJECT
@@ -58,6 +61,10 @@ private:
 	bool updated = false;
 	int dataDim[3];
 	bool cubesVisible = false;
+
+	//unsigned int PickBuffer[PICK_BUFFER_SIZE]; /* picking buffer */
+	//int RenderMode;
+	//int Xmouse, Ymouse;
 
 protected:
 	void mousePress(int x, int y, int modifier) override;

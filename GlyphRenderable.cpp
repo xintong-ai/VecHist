@@ -16,7 +16,11 @@
 //#include "MeshReader.h"
 #include "GLSphere.h"
 #include "helper_math.h"
+//#include <GL/glu.h>
 
+///* picking tolerance in pixels: */
+//#define PICK_TOL 10.
+
 //#include <GL/glu.h>
 //#include <math.h>
 //#define EPS 1e-6
@@ -292,6 +296,9 @@ void GlyphRenderable::init()
 
 	GenVertexBuffer(glyphMesh->GetNumVerts(),
 		glyphMesh->GetVerts());
+
+	//glSelectBuffer(PICK_BUFFER_SIZE, PickBuffer);
+	//RenderMode = GL_RENDER;
 }
 
 GlyphRenderable::GlyphRenderable(Cubemap* r)
@@ -353,6 +360,23 @@ void GlyphRenderable::draw(float modelview[16], float projection[16])
 
 	Renderable::draw(modelview, projection);
 	glMatrixMode(GL_MODELVIEW);
+	
+	//int viewport[4]; /* place to retrieve the viewport numbers */
+	//if (RenderMode == GL_SELECT)
+	//{
+	//	viewport[0] = 0;
+	//	viewport[1] = 0;
+	//	viewport[2] = winWidth;
+	//	viewport[3] = winHeight;
+	//	gluPickMatrix((double)Xmouse, (double)(winHeight - 1 - Ymouse),
+	//		PICK_TOL, PICK_TOL, viewport);
+	//}
+
+	//if (RenderMode == GL_SELECT)
+	//{
+	//	glInitNames();
+	//	glPushName(0xffffffff); /* a strange value */
+	//}
 
 	if (cubesVisible) {
 		for (auto b : bboxes) {
@@ -360,6 +384,7 @@ void GlyphRenderable::draw(float modelview[16], float projection[16])
 		}
 	}
 	for (int i = 0; i < cubes.size(); i++) {
+		glLoadName(i);
 		glPushMatrix();
 
 		GLTextureCube* tex = textures[i];// m_textureCubeManager->getBlockTex()[i];
@@ -472,6 +497,46 @@ void GlyphRenderable::SlotGenCubeAlongLine(float4* line, int nv)
 
 void GlyphRenderable::mousePress(int x, int y, int modifier)
 {
+//	Xmouse = x;
+//	Ymouse = y;
+//	RenderMode = GL_SELECT;
+//	glRenderMode( GL_SELECT );
+//	draw(&matrix_mv.v[0].x, &matrix_pj.v[0].x);
+//	RenderMode = GL_RENDER;
+//	GLint Nhits = glRenderMode( GL_RENDER );
+//#ifdef BUG_KLUDGE
+//	if( Nhits == 0 )
+//	{
+//		RenderMode = GL_SELECT;
+//		glRenderMode( GL_SELECT );
+//		Display();
+//		RenderMode = GL_RENDER;
+//		Nhits = glRenderMode( GL_RENDER );
+//	}
+//#endif
+//	std::cout << "Nhits: " << Nhits << std::endl;
+//	for (int i = 0, index = 0; i < Nhits; i++)
+//	{
+//		GLuint nitems = PickBuffer[index++];
+//		GLuint zmin = PickBuffer[index++];
+//		GLuint zmax = PickBuffer[index++];
+//		//if( Debug )
+//		//{
+//		//	fprintf( stderr,
+//		//		"Hit # %2d: found %2d items on the name stack\n",
+//		//		i, nitems );
+//		//	fprintf( stderr, "\tZmin = 0x%0x, Zmax = 0x%0x\n",
+//		//		zmin, zmax );
+//		//}
+//		for (int j = 0; j < nitems; j++)
+//		{
+//			GLuint  item = PickBuffer[index++];
+//			std::cout << "item: " << item << std::endl;
+//		}
+//	}
+//
+//				//if( Debug )
+//				//	fprintf(stderr, "\t%2d: %6d\n", j, item);
 #if 0
 	glMatrixMode(GL_MODELVIEW);
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);

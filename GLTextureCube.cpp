@@ -1,9 +1,53 @@
 #include "GLTextureCube.h"
 #define qgl	QOpenGLContext::currentContext()->functions()
 
-GLTextureCube::GLTextureCube(int size)
+GLTexture::GLTexture()
 {
 	glGenTextures(1, &m_texture);
+}
+
+GLTexture::~GLTexture()
+{
+	glDeleteTextures(1, &m_texture);
+}
+
+GLTexture2D::GLTexture2D(int width, int height)
+{
+	glBindTexture(GL_TEXTURE_2D, m_texture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0,
+		GL_LUMINANCE, GL_FLOAT, 0);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void GLTexture2D::load(int width, int height, float *data)
+{
+	glBindTexture(GL_TEXTURE_2D, m_texture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0,
+		GL_LUMINANCE, GL_FLOAT, data);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void GLTexture2D::bind()
+{
+	glBindTexture(GL_TEXTURE_2D, m_texture);
+	glEnable(GL_TEXTURE_2D);
+}
+
+void GLTexture2D::unbind()
+{
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glDisable(GL_TEXTURE_2D);
+}
+
+
+
+GLTextureCube::GLTextureCube(int size)
+{
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_texture);
 
     for (int i = 0; i < 6; ++i)
@@ -56,67 +100,6 @@ void GLTextureCube::load(float* data, int size)
 
 	qgl->glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 }
-////by Tong
-//GLTextureCube::GLTextureCube(float *data, int size)
-//{
-//
-//}
-
-//GLTextureCube::GLTextureCube(const QStringList& fileNames, int size)
-//{
-//    // TODO: Add error handling.
-//
-//    glBindTexture(GL_TEXTURE_CUBE_MAP, m_texture);
-//
-//    int index = 0;
-//    foreach (QString file, fileNames) {
-//        QImage image(file);
-//        if (image.isNull()) {
-//            m_failed = true;
-//            break;
-//        }
-//
-//        image = image.convertToFormat(QImage::Format_ARGB32);
-//
-//        //qDebug() << "Image size:" << image.width() << "x" << image.height();
-//        if (size <= 0)
-//            size = image.width();
-//        if (size != image.width() || size != image.height())
-//            image = image.scaled(size, size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-//
-//        // Works on x86, so probably works on all little-endian systems.
-//        // Does it work on big-endian systems?
-//        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + index, 0, 4, image.width(), image.height(), 0,
-//            GL_BGRA, GL_UNSIGNED_BYTE, image.bits());
-//
-//        if (++index == 6)
-//            break;
-//    }
-//
-//    // Clear remaining faces.
-//    while (index < 6) {
-//        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + index, 0, 4, size, size, 0,
-//            GL_BGRA, GL_UNSIGNED_BYTE, 0);
-//        ++index;
-//    }
-//
-//    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-//    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-//    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-//    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//    //glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-//    //glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_GENERATE_MIPMAP, GL_TRUE);
-//    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-//}
-
-//void GLTextureCube::load(int size, int face, QRgb *data)
-//{
-//    glBindTexture(GL_TEXTURE_CUBE_MAP, m_texture);
-//        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, 4, size, size, 0,
-//            GL_BGRA, GL_UNSIGNED_BYTE, data);
-//    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-//}
 
 void GLTextureCube::bind()
 {
@@ -132,5 +115,4 @@ void GLTextureCube::unbind()
 
 GLTextureCube::~GLTextureCube()
 {
-	glDeleteTextures(1, &m_texture);
 }

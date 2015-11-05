@@ -71,34 +71,30 @@ void GL2DProjWidget::loadShaders()
 	smooth out vec2 UV;
 	void main(){
 		gl_Position = vec4(vertexPosition.x, vertexPosition.y, vertexPosition.z, 1);
-		if ()
-		UV = vertexPosition.xy;
+		UV = (vertexPosition.xy + 1) * 0.5;
 	}
 	);
 
 	const char* slice2D6FacesFS =
 		GLSL(
-	#extension GL_NV_shadow_samplers_cube : enable \n
 	smooth in vec2 UV;
 	out vec3 color;
-	uniform samplerCube env;
+	uniform sampler2D tex;
 	void main(){
-
-		//vec3 norm = vec3(cos(phi) * cos(theta), sin(phi), cos(phi) * sin(theta));
-		float v = textureCube(env, norm).x;
-		color = vec3(v, v, v);
+		color = texture(tex, UV).rgb;// *0.000001 + vec3(UV.x, UV.y, 0);
 	}
 	);
 
 
 	glProg = new ShaderProgram();
 	glProg->initFromStrings(slice2DVS, slice2DFS);
-
 	glProg->addAttribute("vertexPosition");
-	//glProg->addAttribute("vertexUV");
-
-	//glProg->addUniform("texSizes");
 	glProg->addUniform("env");
+	
+	glProg6Faces = new ShaderProgram();
+	glProg6Faces->initFromStrings(slice2D6FacesVS, slice2D6FacesFS);
+	glProg6Faces->addAttribute("vertexPosition");
+	glProg6Faces->addUniform("tex");
 	
 }
 
@@ -137,31 +133,42 @@ void GL2DProjWidget::initializeGL()
 void GL2DProjWidget::paintGL() {
 	//if (textureID > 100)
 	//	return;
-	if (nullptr == tex)
-		return;
 
-	glProg->use();
+
 	m_vao->bind();
 
+	if (0 == type) {
+		if (nullptr == tex2d)
+			return;
+		glProg6Faces->use();
+		glUniform1i(glProg6Faces->uniform("tex"), GLint(0));
+		tex2d->bind();
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+		tex2d->unbind();
+		glProg6Faces->disable();
+	}
+	else {
+		if (nullptr == tex)
+			return;
+		glProg->use();
+		//glUniform2f(glProg->uniform("texSizes"), texSz1, texSz2);
+		glUniform1i(glProg->uniform("env"), GLint(0));
 
+		//glBindTexture(GL_TEXTURE_2D, textureID);
+		tex->bind();
 
-	//glUniform2f(glProg->uniform("texSizes"), texSz1, texSz2);
-	glUniform1i(glProg->uniform("env"), GLint(0));
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-	//glBindTexture(GL_TEXTURE_2D, textureID);
-	tex->bind();
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	tex->unbind();
+		tex->unbind();
+		glProg->disable();
+	}
 	m_vao->release();
-	glProg->disable();
 }
 
 
@@ -177,6 +184,11 @@ void GL2DProjWidget::mouseMoveEvent(QMouseEvent *event)
 
 void GL2DProjWidget::mousePressEvent(QMouseEvent *event)
 {
+	if (0 == type)
+		type = 1;
+	else
+		type = 0;
+	update();
 }
 
 void GL2DProjWidget::mouseReleaseEvent(QMouseEvent *event)
@@ -189,6 +201,7 @@ void GL2DProjWidget::wheelEvent(QWheelEvent * event)
 
 void GL2DProjWidget::keyPressEvent(QKeyEvent * event)
 {
+
 }
 
 void GL2DProjWidget::SlotSetCubeTexture(GLTextureCube* v, Cube* c)
@@ -197,17 +210,25 @@ void GL2DProjWidget::SlotSetCubeTexture(GLTextureCube* v, Cube* c)
 	//std::unique_ptr<float[]> hist(new float[c->cubemap_size * c->cubemap_size * 12], );
 	int sz = c->cubemap_size;
 	std::vector<float> img(sz * sz * 12, 0.0f);
+	/*for (int i = 0; i < sz * sz * 12; i++) {
+		img[] = i / (sz * sz * 12);
+	}*/
 
-	for (int i = 0; i < sz; i++) {
-		for (int j = 0; j < sz; j++) {
-			img[sz * 4 * sz + i + j * 4 * sz] = c->data[j * sz + i];
-			img[sz * 4 * sz + sz + i + j * 4 * sz] = c->data[4 * sz * sz + j * sz + i];
-			img[sz * 4 * sz + sz * 2 + i + j * 4 * sz] = c->data[sz * sz + j * sz + i];
-			img[sz * 4 * sz + sz * 3 + i + j * 4 * sz] = c->data[5 * sz * sz + j * sz + i];
+	for (int j = 0; j < sz; j++) {
+		for (int i = 0; i < sz; i++) {
+			img[sz * 4 * sz + i + j * 4 * sz] = c->data[sz * sz + j * sz + i];
+			img[sz * 4 * sz + sz + i + j * 4 * sz] = c->data[5 * sz * sz + j * sz + i]; 
+			img[sz * 4 * sz + sz * 2 + i + j * 4 * sz] = c->data[j * sz + i]; 
+			img[sz * 4 * sz + sz * 3 + i + j * 4 * sz] = c->data[4 * sz * sz + j * sz + i];
+
 			img[sz * 8 * sz + sz + i + j * 4 * sz] = c->data[2 * sz * sz + j * sz + i];
 			img[sz + i + j * 4 * sz] = c->data[3 * sz * sz + j * sz + i];
 		}
 	}
+	if (nullptr == tex2d) {
+		tex2d = new GLTexture2D(sz * 4, sz * 3);
+	}
+	tex2d->load(sz * 4, sz * 3, &img[0]);
 	update();
 }
 

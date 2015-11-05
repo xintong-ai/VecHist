@@ -6,6 +6,7 @@
 
 class ShaderProgram;
 class GLTextureCube;
+class GLTexture2D;
 struct Cube;
 class GL2DProjWidget :public QOpenGLWidget, public QOpenGLFunctions
 {
@@ -33,6 +34,9 @@ private:
 	int winWidth = 0, winHeight = 0;
 
 	GLTextureCube* tex = nullptr;
+	GLTexture2D* tex2d = nullptr;
+
+	int type = 1;
 
 protected:
 
@@ -49,6 +53,7 @@ protected:
 	int heightForWidth(int w) const;
 
 	ShaderProgram *glProg;
+	ShaderProgram *glProg6Faces;
 
 public slots:
 	void SlotSetCubeTexture(GLTextureCube* v, Cube* c);// { tex = v; }
