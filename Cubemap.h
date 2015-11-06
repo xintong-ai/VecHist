@@ -39,7 +39,7 @@ class Cubemap{
 	int step = 2;	//every step x step x step cube becomes internal unit.
 	int innerDim[3];
 	unsigned short* innerData = nullptr;// cubemap for each inner block
-	void GetBlockXYZ(float3* datablock, float3* data, int x, int y, int z, int nx, int ny, int nz);
+	void GetBlockXYZ(float3* out, float3* in, int x, int y, int z, int nx, int ny, int nz);
 	void CountIndex(unsigned short* out, float3* in, int n);
 public:
 	Cubemap(VecReader* r);
@@ -48,6 +48,8 @@ public:
 	void IndexVolumeByHist();
 	int GetCubemapSize() { return cubemap_size; }
 	void GenCubeMap(int x, int y, int z, int nx, int ny, int nz, float* &cubemap, int& _cubemap_size);
+	void GenCubeMapOptimized(int x, int y, int z, int nx, int ny, int nz, float* &cubemap, int& _cubemap_size);
+	int3 GetInnerDim(){ return make_int3(innerDim[0], innerDim[1], innerDim[2]); }
 };
 
 #endif //CUBEMAP_H

@@ -7,6 +7,7 @@ class VecReader;
 class BoxRenderable:public Renderable
 {
 public:
+	BoxRenderable(int3 d);
 	BoxRenderable(VecReader* r);
 	BoxRenderable(float x, float y, float z, float nx, float ny, float nz);
 	BoxRenderable(int3 _pos, int3 _dim);

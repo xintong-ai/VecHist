@@ -6,6 +6,7 @@
 #include <memory>
 #include <iostream>
 #include <omp.h>
+#include <algorithm>
 
 double Log2(double n)
 {
@@ -181,7 +182,8 @@ Cubemap::Cubemap(VecReader* r)
 	dim[2] = d.z;
 
 	cubemap_size = 8;
-	IndexVolume();
+	//IndexVolume();
+	IndexVolumeByHist();
 
 }
 
@@ -202,19 +204,26 @@ void Cubemap::IndexVolume()
 void Cubemap::CountIndex(unsigned short* out, float3* in, int n)
 {
 	const int size2 = cubemap_size * cubemap_size;
+	const int size3 = cubemap_size * cubemap_size * 6;
+	for (int i = 0; i < size3; i++) {
+		out[i] = 0;
+	}
 	for (int i = 0; i < n; i++) {
 		int3 d = XYZ2Idx(in[i], cubemap_size);
 		int idx = d.x* size2 + d.z * cubemap_size + d.y;
-		out[idx]++;
+		if (idx >= 0 && idx < size3)
+			out[idx]++;
 	}
 }
-
 void Cubemap::IndexVolumeByHist()
 {
+	step = std::max(dim[0], std::max(dim[1], dim[2])) / 100;
 	for (int i = 0; i < 3; i++) {
 		innerDim[i] = ceil((float)dim[i] / step);
 	}
-	innerData = new unsigned short[cubemap_size * cubemap_size * 6 * innerDim[0] * innerDim[1] * innerDim[2]];
+	int innerDataSize = cubemap_size * cubemap_size * 6 * innerDim[0] * innerDim[1] * innerDim[2];
+	innerData = new unsigned short[innerDataSize];
+	const int size3 = cubemap_size * cubemap_size * 6;
 	for (int k = 0; k < innerDim[2]; k++) {
 		for (int j = 0; j < innerDim[1]; j++) {
 			for (int i = 0; i < innerDim[0]; i++) {
@@ -225,9 +234,9 @@ void Cubemap::IndexVolumeByHist()
 				int totalSz = sz[0] * sz[1] * sz[2];
 				std::unique_ptr<float3[]> datablock(new float3[totalSz]);
 				GetBlockXYZ(datablock.get(), (float3*)vecReader->GetVecData(), 
-					i * innerDim[0], j * innerDim[1], k * innerDim[2],
+					i * step, j * step, k * step,
 					sz[0], sz[1], sz[2]);
-				CountIndex(&innerData[k * innerDim[0] * innerDim[1] + j * innerDim[0] + i],
+				CountIndex(&innerData[(k * innerDim[0] * innerDim[1] + j * innerDim[0] + i) * size3],
 					datablock.get(), totalSz);
 			}
 		}
@@ -245,6 +254,42 @@ void Cubemap::GenCubeMap(int x, int y, int z, int nx, int ny, int nz, float* &cu
 	cubemap = new float[cubemap_size * cubemap_size * 6];
 	ComputeCubeMap(datablock.get(), cubeSizeTotal, cubemap, cubemap_size);
 	_cubemap_size = cubemap_size;
+}
+
+void Cubemap::GenCubeMapOptimized(int x, int y, int z, int nx, int ny, int nz, float* &cubemap, int& _cubemap_size)
+{
+	int cubeSizeTotal = nx * ny * nz;// c->GetTotalSize();// qCubeSize[0] * qCubeSize[1] * qCubeSize[2];
+//	std::unique_ptr<int3[]> datablock(new int3[cubeSizeTotal]);
+
+//	GetBlock(datablock.get(), x, y, z, nx, ny, nz);
+	const int size3 = cubemap_size * cubemap_size * 6;
+	cubemap = new float[size3];
+	for (int i = 0; i < size3; i++)
+		cubemap[i] = 0;
+	//ComputeCubeMap(datablock.get(), cubeSizeTotal, cubemap, cubemap_size);
+	_cubemap_size = cubemap_size;
+
+	for (int k = 0; k < nz; k++)	{
+		int iz = k + z;
+		for (int j = 0; j < ny; j++)	{
+			int iy = j + y;
+			for (int i = 0; i < nx; i++)	{
+				int ix = i + x;
+				int idx = ix + iy * innerDim[0] + iz * innerDim[0] * innerDim[1];
+				//datablock[k * nx * ny + j * nx + i] = dataIdx[idx];
+				for (int l = 0; l < size3; l++)	{
+					cubemap[l] += innerData[idx * size3 + l];
+				}
+			}
+		}
+	}
+	//normalize the histogram
+	int sum = 0;
+	for (int i = 0; i < size3; i++)
+		sum += cubemap[i];
+
+	for (int i = 0; i < size3; i++)
+		cubemap[i] /= (float)sum ;
 }
 
 //void Cubemap::UpdateCubeMap(float* cubemap)
@@ -269,7 +314,7 @@ void Cubemap::GenCubeMap(int x, int y, int z, int nx, int ny, int nz, float* &cu
 //	ComputeCubeMap(datablock.get(), cubeSizeTotal, cubemap, cubemap_size);
 //}
 
-void Cubemap::GetBlockXYZ(float3* datablock, float3* data, int x, int y, int z, int nx, int ny, int nz)
+void Cubemap::GetBlockXYZ(float3* out, float3* in, int x, int y, int z, int nx, int ny, int nz)
 {
 	for (int k = 0; k < nz; k++)	{
 		int iz = k + z;
@@ -278,7 +323,7 @@ void Cubemap::GetBlockXYZ(float3* datablock, float3* data, int x, int y, int z, 
 			for (int i = 0; i < nx; i++)	{
 				int ix = i + x;
 				int idx = ix + iy * dim[0] + iz * dim[0] * dim[1];
-				datablock[k * nx * ny + j * nx + i] = data[idx];
+				out[k * nx * ny + j * nx + i] = in[idx];
 			}
 		}
 	}

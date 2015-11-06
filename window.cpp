@@ -48,12 +48,9 @@ Window::Window()
     openGL->setFormat(format); // must be called before the widget or its parent window gets shown
 
 	//VecReader* vecReader = new VecReader("D:/data/plume/15plume3d421-504x504x2048.vec");
-	//VecReader* vecReader = new VecReader("D:/OneDrive/data/plume/15plume3d421.vec");
-	VecReader* vecReader = new VecReader("D:/OneDrive/data/tornado/1.vec");
+	VecReader* vecReader = new VecReader("D:/OneDrive/data/plume/15plume3d421.vec");
+	//VecReader* vecReader = new VecReader("D:/OneDrive/data/tornado/1.vec");
 
-	BoxRenderable* bbox = new BoxRenderable(vecReader);
-	openGL->SetVol(vecReader->GetVolumeDim());
-	openGL->AddRenderable("bbox", bbox);
 
 	//Streamline* streamline = new Streamline(vecReader->GetFileName().c_str());
 	//LineRenderable* lineRenderable = new LineRenderable(streamline);
@@ -62,10 +59,14 @@ Window::Window()
 	Cubemap* cubemap = new Cubemap(vecReader);
 	//cubemap->GenCubeMap(55, 55, 300, 10, 10, 10);
 	GlyphRenderable* glyphRenderable = new GlyphRenderable(cubemap);
-	int3 dim = vecReader->GetVolumeDim();
-	glyphRenderable->SetVolumeDim(dim.x, dim.y, dim.z);
+	int3 innerDim = cubemap->GetInnerDim();
+	glyphRenderable->SetVolumeDim(innerDim.x, innerDim.y, innerDim.z);
 	openGL->AddRenderable("glyphs", glyphRenderable);
-	
+
+	BoxRenderable* bbox = new BoxRenderable(cubemap->GetInnerDim());
+	openGL->SetVol(cubemap->GetInnerDim());
+	openGL->AddRenderable("bbox", bbox);
+
 	//QObject::connect(lineRenderable, SIGNAL(SigGenCubeAlongLine(float4*, int)),
 	//	glyphRenderable, SLOT(SlotGenCubeAlongLine(float4*, int)));
 

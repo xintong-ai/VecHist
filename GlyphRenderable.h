@@ -47,7 +47,7 @@ private:
 	int numElements = 0;
 	int sliceStart = 0;
 	int numGlyphPerDim = 1;
-	int sliceDimIdx = 2;// 0 is x, 1 is y, 2 is z
+	int sliceDimIdx = 0;// 0 is x, 1 is y, 2 is z
 	//MeshReader* glyphMesh;
 	GLSphere* glyphMesh;
 

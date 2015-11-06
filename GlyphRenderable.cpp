@@ -136,8 +136,8 @@ void GlyphRenderable::LoadShaders()
 		tnorm = normalize(NormalMatrix * new_normal);
 
 		//tnorm = normalize(NormalMatrix * VertexNormal);
-
-		gl_Position = MVP * vec4(VertexPosition * (ext + v) * 0.8 * Scale + Transform, 1.0);
+		float heightScale = 4;
+		gl_Position = MVP * vec4(VertexPosition * (ext + v * heightScale) * Scale + Transform, 1.0);
 	}
 	);
 
@@ -330,7 +330,7 @@ void GlyphRenderable::UpdateData()
 			startCoords[(sliceDimIdx + 2) % 3] = j * n_step;
 
 			Cube* c = new Cube(startCoords[0], startCoords[1], startCoords[2], n_step, n_step, n_step);
-			cubemap->GenCubeMap(c->pos.x, c->pos.y, c->pos.z, c->size.x, c->size.y, c->size.z, c->data, c->cubemap_size);
+			cubemap->GenCubeMapOptimized(c->pos.x, c->pos.y, c->pos.z, c->size.x, c->size.y, c->size.z, c->data, c->cubemap_size);
 			cubes.push_back(c);
 		}
 	}

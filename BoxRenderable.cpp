@@ -2,6 +2,16 @@
 #include "VecReader.h"
 #include <QOpenGLWidget>
 
+BoxRenderable::BoxRenderable(int3 d)
+{
+	//	SetVecReader(r);
+	dim.x = d.x;
+	dim.y = d.y;
+	dim.z = d.z;
+	pos = make_float3(0, 0, 0);
+}
+
+
 BoxRenderable::BoxRenderable(VecReader* r)
 {
 //	SetVecReader(r);
