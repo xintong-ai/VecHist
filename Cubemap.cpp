@@ -10,7 +10,6 @@
 
 double Log2(double n)
 {
-	// log(n)/log(2) is log2.  
 	return log(n) / log(2);
 }
 
@@ -44,7 +43,6 @@ std::vector<float> ComputePatchSolidAngle(int size)
 		}
 	}
 	return solAng;
-
 }
 
 inline int3 XYZ2Idx(float3 d, int size)
@@ -93,14 +91,7 @@ inline int3 XYZ2Idx(float3 d, int size)
 	//	std::cout << "(" << d.x << "," << d.y << "," << d.z << std::endl;
 	////	continue;
 	//}
-	//if (x < 0 || y < 0 || f < 0 || x > 1 || y > 1 || f >= 6)
-	//{
-	//	std::cout << "a (" << d.x << "," << d.y << "," << d.z << std::endl;
-	//	std::cout << "f (" << f << "," << x << "," << y << std::endl;
-	//}
-
 	return make_int3(f, x * size, y * size);
-
 }
 
 inline void ComputeCubeMap(int3* data, int nCells, float* cubemap, const int size)
@@ -182,14 +173,14 @@ Cubemap::Cubemap(VecReader* r)
 	dim[2] = d.z;
 
 	cubemap_size = 8;
+	std::cout << "indexing the vectors ..." << std::endl;
 	//IndexVolume();
 	IndexVolumeByHist();
-
+	std::cout << "indexing the vectors done." << std::endl;
 }
 
 void Cubemap::IndexVolume()
 {
-	std::cout << "indexing the vectors ..." << std::endl;
 	float3* idata = (float3*)vecReader->GetVecData();// GetVecDataXFirst();// static_cast<float3*>((void *)data);
 	int nCells = dim[0] * dim[1] * dim[2];// GetNumOfCells();
 	dataIdx = new int3[nCells];
@@ -198,7 +189,6 @@ void Cubemap::IndexVolume()
 		//std::cout << i << " ";
 		dataIdx[i] = XYZ2Idx(idata[i], cubemap_size);
 	}
-	std::cout << "indexing the vectors done." << std::endl;
 }
 
 void Cubemap::CountIndex(unsigned short* out, float3* in, int n)
@@ -218,31 +208,35 @@ void Cubemap::CountIndex(unsigned short* out, float3* in, int n)
 
 void Cubemap::IndexVolumeByHist()
 {
-	step = std::max(dim[0], std::max(dim[1], dim[2])) / 200;
-	if (step < 1)
-		step = 1;
+	mergeStep = std::max(dim[0], std::max(dim[1], dim[2])) / 200;
+	if (mergeStep < 1)
+		mergeStep = 1;
 	for (int i = 0; i < 3; i++) {
-		innerDim[i] = ceil((float)dim[i] / step);
+		innerDim[i] = ceil((float)dim[i] / mergeStep);
 	}
 	int innerDataSize = cubemap_size * cubemap_size * 6 * innerDim[0] * innerDim[1] * innerDim[2];
+	if (nullptr != innerData)
+		delete [] innerData;
 	innerData = new unsigned short[innerDataSize];
 	const int size3 = cubemap_size * cubemap_size * 6;
+	#pragma omp parallel for
 	for (int k = 0; k < innerDim[2]; k++) {
 		for (int j = 0; j < innerDim[1]; j++) {
 			for (int i = 0; i < innerDim[0]; i++) {
 				int sz[3];
-				sz[0] = ((i + 1) * step) <= dim[0] ? step : (dim[0] - i * step);
-				sz[1] = ((j + 1) * step) <= dim[1] ? step : (dim[1] - j * step);
-				sz[2] = ((k + 1) * step) <= dim[2] ? step : (dim[2] - k * step);
+				sz[0] = ((i + 1) * mergeStep) <= dim[0] ? mergeStep : (dim[0] - i * mergeStep);
+				sz[1] = ((j + 1) * mergeStep) <= dim[1] ? mergeStep : (dim[1] - j * mergeStep);
+				sz[2] = ((k + 1) * mergeStep) <= dim[2] ? mergeStep : (dim[2] - k * mergeStep);
 				int totalSz = sz[0] * sz[1] * sz[2];
 				std::unique_ptr<float3[]> datablock(new float3[totalSz]);
 				GetBlockXYZ(datablock.get(), (float3*)vecReader->GetVecData(), 
-					i * step, j * step, k * step,
+					i * mergeStep, j * mergeStep, k * mergeStep,
 					sz[0], sz[1], sz[2]);
 				CountIndex(&innerData[(k * innerDim[0] * innerDim[1] + j * innerDim[0] + i) * size3],
 					datablock.get(), totalSz);
 			}
 		}
+		//std::cout << k << " ";
 	}
 }
 
@@ -280,8 +274,10 @@ void Cubemap::GenCubeMapOptimized(int x, int y, int z, int nx, int ny, int nz, f
 				int ix = i + x;
 				int idx = ix + iy * innerDim[0] + iz * innerDim[0] * innerDim[1];
 				//datablock[k * nx * ny + j * nx + i] = dataIdx[idx];
+				#pragma omp parallel for
 				for (int l = 0; l < size3; l++)	{
 					cubemap[l] += innerData[idx * size3 + l];
+					//std::cout << l << " ";
 				}
 			}
 		}

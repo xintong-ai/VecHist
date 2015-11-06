@@ -8,12 +8,12 @@ struct Cube{
 	int3 pos;
 	int3 size;
 	float* data = nullptr;
-	int cubemap_size = 0;
-	Cube(int x, int y, int z, int nx, int ny, int nz, int cubemap_size) {
-		pos = make_int3(x, y, z);
-		size = make_int3(nx, ny, nz);
-		data = new float[cubemap_size * cubemap_size * 6];
-	}
+	int cubemap_size;
+	//Cube(int x, int y, int z, int nx, int ny, int nz, int cubemap_size) {
+	//	pos = make_int3(x, y, z);
+	//	size = make_int3(nx, ny, nz);
+	//	data = new float[cubemap_size * cubemap_size * 6];
+	//}
 	Cube(int x, int y, int z, int nx, int ny, int nz){
 		pos = make_int3(x, y, z);
 		size = make_int3(nx, ny, nz);
@@ -36,7 +36,7 @@ class Cubemap{
 	int cubemap_size = 0;
 	void GetBlock(int3* datablock, int x, int y, int z, int nx, int ny, int nz);
 	void QueryByBin(int f, int x, int y, unsigned char* result);
-	int step = 2;	//every step x step x step cube becomes internal unit.
+	int mergeStep = 2;	//every step x step x step cube becomes internal unit.
 	int innerDim[3];
 	unsigned short* innerData = nullptr;// cubemap for each inner block
 	void GetBlockXYZ(float3* out, float3* in, int x, int y, int z, int nx, int ny, int nz);

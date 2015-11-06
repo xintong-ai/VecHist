@@ -12,13 +12,13 @@ BoxRenderable::BoxRenderable(int3 d)
 }
 
 
-BoxRenderable::BoxRenderable(VecReader* r)
-{
-//	SetVecReader(r);
-	int3 volDim = r->GetVolumeDim();
-	dim = make_float3(volDim.x, volDim.y, volDim.z);
-	pos = make_float3(0, 0, 0);
-}
+//BoxRenderable::BoxRenderable(VecReader* r)
+//{
+////	SetVecReader(r);
+//	int3 volDim = r->GetVolumeDim();
+//	dim = make_float3(volDim.x, volDim.y, volDim.z);
+//	pos = make_float3(0, 0, 0);
+//}
 
 BoxRenderable::BoxRenderable(float x, float y, float z, float nx, float ny, float nz)
 {
@@ -32,57 +32,53 @@ BoxRenderable::BoxRenderable(int3 _pos, int3 _dim)
 	dim = make_float3(_dim.x, _dim.y, _dim.z);
 }
 
-
-
 void BoxRenderable::draw(float modelview[16], float projection[16])
 {
-	
-//	int nx, ny, nz;
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glTranslatef(pos.x, pos.y, pos.z);
-	float bx = dim.x - 1, by = dim.y - 1, bz = dim.z - 1;
+	float sx = -0.5, sy = -0.5, sz = -0.5;
+	float bx = dim.x - 1 + 0.5, by = dim.y - 1 + 0.5, bz = dim.z - 1 + 0.5;
 
 	glBegin(GL_LINES);
-	glVertex3f(0, 0, 0);
-	glVertex3f(bx, 0, 0);
+	glVertex3f(sx, sy, sz);
+	glVertex3f(bx, sy, sz);
 
-	glVertex3f(bx, 0, 0);
-	glVertex3f(bx, by, 0);
+	glVertex3f(bx, sy, sz);
+	glVertex3f(bx, by, sz);
 
-	glVertex3f(bx, by, 0);
-	glVertex3f(0, by, 0);
+	glVertex3f(bx, by, sz);
+	glVertex3f(sx, by, sz);
 
-	glVertex3f(0, by, 0);
-	glVertex3f(0, 0, 0);
-
-	//////
-	glVertex3f(0, 0, 0);
-	glVertex3f(0, 0, bz);
-
-	glVertex3f(bx, 0, 0);
-	glVertex3f(bx, 0, bz);
-
-	glVertex3f(bx, by, 0);
-	glVertex3f(bx, by, bz);
-
-	glVertex3f(0, by, 0);
-	glVertex3f(0, by, bz);
+	glVertex3f(sx, by, sz);
+	glVertex3f(sx, sy, sz);
 
 	//////
-	glVertex3f(0, 0, bz);
-	glVertex3f(bx, 0, bz);
+	glVertex3f(sx, sy, sz);
+	glVertex3f(sx, sy, bz);
 
-	glVertex3f(bx, 0, bz);
+	glVertex3f(bx, sy, sz);
+	glVertex3f(bx, sy, bz);
+
+	glVertex3f(bx, by, sz);
+	glVertex3f(bx, by, bz);
+
+	glVertex3f(sx, by, sz);
+	glVertex3f(sx, by, bz);
+
+	//////
+	glVertex3f(sx, sy, bz);
+	glVertex3f(bx, sy, bz);
+
+	glVertex3f(bx, sy, bz);
 	glVertex3f(bx, by, bz);
 
 	glVertex3f(bx, by, bz);
-	glVertex3f(0, by, bz);
+	glVertex3f(sx, by, bz);
 
-	glVertex3f(0, by, bz);
-	glVertex3f(0, 0, bz);
+	glVertex3f(sx, by, bz);
+	glVertex3f(sx, sy, bz);
 
 	glEnd();
 	glPopMatrix();
-
 }

@@ -20,66 +20,6 @@
 
 ///* picking tolerance in pixels: */
 //#define PICK_TOL 10.
-
-//#include <GL/glu.h>
-//#include <math.h>
-//#define EPS 1e-6
-//#include <float.h>
-//copied from:
-//http://stackoverflow.com/questions/19332668/drawing-the-axis-with-its-arrow-using-opengl-in-visual-studio-2010-and-c
-//#define RADPERDEG 0.0174533
-//void Arrow(GLdouble x1, GLdouble y1, GLdouble z1, GLdouble x2, GLdouble y2, GLdouble z2, GLdouble D)
-//{
-//	double x = x2 - x1;
-//	double y = y2 - y1;
-//	double z = z2 - z1;
-//	double L = sqrt(x*x + y*y + z*z);
-//
-//	GLUquadricObj *quadObj;
-//
-//	glPushMatrix();
-//
-//	glTranslated(x1, y1, z1);
-//
-//	if ((x != 0.) || (y != 0.)) {
-//		glRotated(atan2(y, x) / RADPERDEG, 0., 0., 1.);
-//		glRotated(atan2(sqrt(x*x + y*y), z) / RADPERDEG, 0., 1., 0.);
-//	}
-//	else if (z<0){
-//		glRotated(180, 1., 0., 0.);
-//	}
-//
-//	glTranslatef(0, 0, L - 4 * D);
-//
-//	quadObj = gluNewQuadric();
-//	gluQuadricDrawStyle(quadObj, GLU_FILL);
-//	gluQuadricNormals(quadObj, GLU_SMOOTH);
-//	gluCylinder(quadObj, 2 * D, 0.0, 4 * D, 32, 1);
-//	gluDeleteQuadric(quadObj);
-//
-//	quadObj = gluNewQuadric();
-//	gluQuadricDrawStyle(quadObj, GLU_FILL);
-//	gluQuadricNormals(quadObj, GLU_SMOOTH);
-//	gluDisk(quadObj, 0.0, 2 * D, 32, 1);
-//	gluDeleteQuadric(quadObj);
-//
-//	glTranslatef(0, 0, -L + 4 * D);
-//
-//	quadObj = gluNewQuadric();
-//	gluQuadricDrawStyle(quadObj, GLU_FILL);
-//	gluQuadricNormals(quadObj, GLU_SMOOTH);
-//	gluCylinder(quadObj, D, D, L - 4 * D, 32, 1);
-//	gluDeleteQuadric(quadObj);
-//
-//	quadObj = gluNewQuadric();
-//	gluQuadricDrawStyle(quadObj, GLU_FILL);
-//	gluQuadricNormals(quadObj, GLU_SMOOTH);
-//	gluDisk(quadObj, 0.0, D, 32, 1);
-//	gluDeleteQuadric(quadObj);
-//
-//	glPopMatrix();
-//
-//}
 
 void GlyphRenderable::LoadShaders()
 {
@@ -138,7 +78,7 @@ void GlyphRenderable::LoadShaders()
 
 		//tnorm = normalize(NormalMatrix * VertexNormal);
 		//we use sqrt(), because the projected area is proportional to the square of the radius.
-		gl_Position = MVP * vec4(VertexPosition * (ext + sqrt(v) * heightScale * 0.2) * Scale + Transform, 1.0);
+		gl_Position = MVP * vec4(VertexPosition * (ext + sqrt(v) * heightScale * 0.1) * Scale + Transform, 1.0);
 	}
 	);
 
@@ -461,6 +401,25 @@ void GlyphRenderable::SlotHeightScaleChanged(int i)
 	heightScale = i;
 	actor->UpdateGL();
 }
+
+void GlyphRenderable::SlotSetSliceOrie(int i)
+{
+	if (i != sliceDimIdx && i >= 0 && i < 3) {
+		sliceDimIdx = i;
+		//sliceStart = 0;
+		UpdateData();
+		actor->UpdateGL();
+	}
+}
+
+void GlyphRenderable::SlotSetCubesVisible(bool visible)
+{
+	if (cubesVisible != visible) {
+		cubesVisible = visible;
+		actor->UpdateGL();
+	}
+}
+
 
 
 void GlyphRenderable::SlotGenCubeAlongLine(float4* line, int nv)

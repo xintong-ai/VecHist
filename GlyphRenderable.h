@@ -32,6 +32,7 @@ public:
 	void SetCubemap(Cubemap* r) { cubemap = r; }
 	void SetVolumeDim(int x, int y, int z){ dataDim[0] = x; dataDim[1] = y; dataDim[2] = z; }
 	int GetSliceDimIdx(){ return sliceDimIdx; }
+	void SetHeightScale(int i) { heightScale = i; }
 	GLTextureCube* GetCubeTexture(int i) { 
 		if (textures.size() > i)
 			return textures[i];
@@ -49,7 +50,7 @@ private:
 	int sliceStart = 0;
 	int numGlyphPerDim = 1;
 	int sliceDimIdx = 0;// 0 is x, 1 is y, 2 is z
-	int heightScale = 5;
+	int heightScale = 10;
 	//MeshReader* glyphMesh;
 	GLSphere* glyphMesh;
 
@@ -76,6 +77,8 @@ public slots:
 	void SlotSliceNumChanged(int i);
 	void SlotNumPartChanged(int i);
 	void SlotHeightScaleChanged(int i);
+	void SlotSetSliceOrie(int i);
+	void SlotSetCubesVisible(bool visible);
 	
 	//void SlotGenCubeOnPlane(int planeIdx,);
 	void SlotTest(){}

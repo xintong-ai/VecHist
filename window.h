@@ -12,7 +12,10 @@ class Renderable;
 class TexPlaneRenderable;
 class QCheckBox;
 class QLabel;
-
+class Cubemap;
+class GlyphRenderable;
+class QRadioButton;
+class QTimer;
 class Window : public QWidget
 {
 	Q_OBJECT	//without this line, the slot does not work
@@ -22,7 +25,15 @@ public:
 
 private:
     GLWidget *openGL;
-
+	QSlider* sliceSlider;
+	QSlider* heightScaleSlider;
+	Cubemap* cubemap;
+	GlyphRenderable* glyphRenderable;
+	QRadioButton *radioX;
+	QRadioButton *radioY;
+	QRadioButton *radioZ;
+	QTimer *aTimer;
+	const int nHeightScale = 20;
 	//QPushButton* addLensBtn;
 	//QPushButton* addNodeBtn;
 	//QPushButton* viewBtn;
@@ -47,6 +58,10 @@ private:
 	//QSlider* CreateSliceSlider(TexPlaneRenderable* renderable);
 
 private slots:
+	void SlotSliceOrieChanged(bool clicked);
+	void animate();
+	void SlotSetAnimation(bool doAnimation);
+	
 	//void XSliderChanged(int i);
 	//void YSliderChanged(int i);
 	//void ZSliderChanged(int i);

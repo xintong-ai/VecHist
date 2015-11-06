@@ -27,6 +27,8 @@
 //	btn->setMinimumSize(btnSize[0], btnSize[1]);
 //	return btn;
 //}
+
+
 class GLTextureCube;
 Window::Window()
 {
@@ -48,7 +50,8 @@ Window::Window()
     openGL->setFormat(format); // must be called before the widget or its parent window gets shown
 
 	//VecReader* vecReader = new VecReader("D:/data/plume/15plume3d421-504x504x2048.vec");
-	VecReader* vecReader = new VecReader("D:/OneDrive/data/plume/15plume3d421.vec");
+	//VecReader* vecReader = new VecReader("D:/OneDrive/data/plume/15plume3d421.vec");
+	VecReader* vecReader = new VecReader("D:/OneDrive/data/plume/15plume3d421-126x126x512.vec");
 	//VecReader* vecReader = new VecReader("D:/OneDrive/data/tornado/1.vec");
 
 
@@ -56,9 +59,9 @@ Window::Window()
 	//LineRenderable* lineRenderable = new LineRenderable(streamline);
 	//openGL->AddRenderable("streamlines", lineRenderable);
 
-	Cubemap* cubemap = new Cubemap(vecReader);
+	cubemap = new Cubemap(vecReader);
 	//cubemap->GenCubeMap(55, 55, 300, 10, 10, 10);
-	GlyphRenderable* glyphRenderable = new GlyphRenderable(cubemap);
+	glyphRenderable = new GlyphRenderable(cubemap);
 	int3 innerDim = cubemap->GetInnerDim();
 	glyphRenderable->SetVolumeDim(innerDim.x, innerDim.y, innerDim.z);
 	openGL->AddRenderable("glyphs", glyphRenderable);
@@ -155,8 +158,29 @@ Window::Window()
 	//QPushButton* redoBtn = CreateRegularButton("Redo Deformation");
 	//connect(redoBtn, SIGNAL(clicked()), this, SLOT(RedoDeform()));
 
+	QGroupBox *groupBox = new QGroupBox(tr("Slice Orientation"));
+
+	radioX = new QRadioButton(tr("&X"));
+	radioY = new QRadioButton(tr("&Y"));
+	radioZ = new QRadioButton(tr("&Z"));
+	radioX->setChecked(true);
+	QHBoxLayout *sliceOrieLayout = new QHBoxLayout;
+	sliceOrieLayout->addWidget(radioX);
+	sliceOrieLayout->addWidget(radioY);
+	sliceOrieLayout->addWidget(radioZ);
+	sliceOrieLayout->addStretch();
+	groupBox->setLayout(sliceOrieLayout);
+	controlLayout->addWidget(groupBox);
+
+	connect(radioX, SIGNAL(clicked(bool)), this, SLOT(SlotSliceOrieChanged(bool)));
+	connect(radioY, SIGNAL(clicked(bool)), this, SLOT(SlotSliceOrieChanged(bool)));
+	connect(radioZ, SIGNAL(clicked(bool)), this, SLOT(SlotSliceOrieChanged(bool)));
+
+	QCheckBox* blockBBoxCheck = new QCheckBox("Block bounding box", this);
+	connect(blockBBoxCheck, SIGNAL(clicked(bool)), glyphRenderable, SLOT(SlotSetCubesVisible(bool)));
+
 	//statusLabel = new QLabel("status: Navigation");
-	QSlider* sliceSlider = new QSlider(Qt::Horizontal);
+	sliceSlider = new QSlider(Qt::Horizontal);
 	//sliceSlider->setFixedSize(120, 30);
 	sliceSlider->setRange(0, cubemap->GetInnerDim( glyphRenderable->GetSliceDimIdx())/*vecReader->GetVolumeDim().z*/ - 1);
 	sliceSlider->setValue(0);
@@ -166,13 +190,15 @@ Window::Window()
 	numPartSlider->setRange(1, 32);
 	numPartSlider->setValue(1);
 
-	QSlider* heightScaleSlider = new QSlider(Qt::Horizontal);
+	heightScaleSlider = new QSlider(Qt::Horizontal);
 	//numPartSlider->setFixedSize(120, 30);
-	heightScaleSlider->setRange(1, 10);
-	heightScaleSlider->setValue(5);
+	heightScaleSlider->setRange(0, nHeightScale);
+	heightScaleSlider->setValue(nHeightScale * 0.8);
+	glyphRenderable->SetHeightScale(nHeightScale * 0.8);
 
 	QVBoxLayout *interactLayout = new QVBoxLayout;
 	QGroupBox *interactGrpBox = new QGroupBox(tr("Interactions"));
+	interactLayout->addWidget(blockBBoxCheck);
 	interactLayout->addWidget(sliceSlider);
 	interactLayout->addWidget(numPartSlider);
 	interactLayout->addWidget(heightScaleSlider);
@@ -196,7 +222,15 @@ Window::Window()
 	connect(glyphRenderable, SIGNAL(SigChangeTex(GLTextureCube*, Cube*)), 
 		gl2DProjWidget, SLOT(SlotSetCubeTexture(GLTextureCube*, Cube*)));
 
+	aTimer = new QTimer;
+	connect(aTimer,SIGNAL(timeout()),SLOT(animate()));
+	aTimer->start(50);
+	aTimer->stop();
+	
 
+	QCheckBox* animationCheck = new QCheckBox("Animation", this);
+	connect(animationCheck, SIGNAL(clicked(bool)), this, SLOT(SlotSetAnimation(bool)));
+	interactLayout->addWidget(animationCheck);
 	//connect(addLensBtn, SIGNAL(clicked()), this, SLOT(AddLens()));
 	//connect(addNodeBtn, SIGNAL(clicked()), this, SLOT(AddLensNode()));
 	//connect(viewBtn, SIGNAL(clicked()), this, SLOT(SetToNavigation()));
@@ -284,6 +318,38 @@ Window::Window()
 	mainLayout->addLayout(controlLayout,1);
 	setLayout(mainLayout);
 }
+
+void Window::SlotSliceOrieChanged(bool clicked)
+{
+	if (radioX->isChecked()){
+		sliceSlider->setRange(0, cubemap->GetInnerDim(0)/*vecReader->GetVolumeDim().z*/ - 1);
+		glyphRenderable->SlotSetSliceOrie(0);
+	}	else if (radioY->isChecked()){
+		sliceSlider->setRange(0, cubemap->GetInnerDim(1)/*vecReader->GetVolumeDim().z*/ - 1);
+		glyphRenderable->SlotSetSliceOrie(1);
+	}	else if (radioZ->isChecked()){
+		sliceSlider->setRange(0, cubemap->GetInnerDim(2)/*vecReader->GetVolumeDim().z*/ - 1);
+		glyphRenderable->SlotSetSliceOrie(2);
+	}
+	sliceSlider->setValue(0);
+}
+
+void Window::animate()
+{
+	int v = heightScaleSlider->value();
+	v = (v + 1) % nHeightScale;
+	heightScaleSlider->setValue(v);
+}
+
+void Window::SlotSetAnimation(bool doAnimation)
+{
+	if (doAnimation)
+		aTimer->start();
+	else
+		aTimer->stop();
+}
+
+
 //
 //void Window::XSliderChanged(int i)
 //{
