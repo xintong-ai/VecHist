@@ -50,6 +50,7 @@ public:
 	void GenCubeMap(int x, int y, int z, int nx, int ny, int nz, float* &cubemap, int& _cubemap_size);
 	void GenCubeMapOptimized(int x, int y, int z, int nx, int ny, int nz, float* &cubemap, int& _cubemap_size);
 	int3 GetInnerDim(){ return make_int3(innerDim[0], innerDim[1], innerDim[2]); }
+	int GetInnerDim(int i){ return innerDim[i]; }
 };
 
 #endif //CUBEMAP_H

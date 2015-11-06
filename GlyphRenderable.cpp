@@ -105,6 +105,7 @@ void GlyphRenderable::LoadShaders()
 	uniform vec3 Transform;
 	uniform float Scale;
 	uniform samplerCube env;
+	uniform int heightScale;
 	//uniform vec4 cm[33];
 	void main()
 	{
@@ -131,13 +132,13 @@ void GlyphRenderable::LoadShaders()
 		vec3 nb = normalize(VertexPosition + b * 0.05);
 		float vt = textureCube(env, nt).x;
 		float vb = textureCube(env, nb).x;
-		const float ext = 0.1;
+		const float ext = 0.04;
 		vec3 new_normal = normalize(cross(nb * (ext + vb) - norm * (ext + v), nt* (ext + vt) - norm * (ext + v)));
 		tnorm = normalize(NormalMatrix * new_normal);
 
 		//tnorm = normalize(NormalMatrix * VertexNormal);
-		float heightScale = 4;
-		gl_Position = MVP * vec4(VertexPosition * (ext + v * heightScale) * Scale + Transform, 1.0);
+		//we use sqrt(), because the projected area is proportional to the square of the radius.
+		gl_Position = MVP * vec4(VertexPosition * (ext + sqrt(v) * heightScale * 0.2) * Scale + Transform, 1.0);
 	}
 	);
 
@@ -237,47 +238,50 @@ void GlyphRenderable::LoadShaders()
 	glProg->addUniform("Transform");
 	glProg->addUniform("Scale");
 	glProg->addUniform("env");
+	glProg->addUniform("heightScale");
 
 	//////////////////Picking shader/////////////////////
-	const char* pickingVS =
-		GLSL(
-	#extension GL_NV_shadow_samplers_cube : enable \n
-	layout(location = 0) in vec3 VertexPosition;
-	uniform mat4 ModelViewMatrix;
-	uniform mat4 ProjectionMatrix;
-	uniform vec3 Transform;
-	uniform float Scale;
-	uniform samplerCube env;
-	void main()
-	{
-		vec3 VertexNormal = VertexPosition;
-		mat4 MVP = ProjectionMatrix * ModelViewMatrix;
-		float v = textureCube(env, VertexNormal).x;
-		const float ext = 0.1;
-		gl_Position = MVP * vec4(VertexPosition * (ext + v) * 0.5 * Scale + Transform, 1.0);
-	}
-	);
+	//const char* pickingVS =
+	//	GLSL(
+	//#extension GL_NV_shadow_samplers_cube : enable \n
+	//layout(location = 0) in vec3 VertexPosition;
+	//uniform mat4 ModelViewMatrix;
+	//uniform mat4 ProjectionMatrix;
+	//uniform vec3 Transform;
+	//uniform float Scale;
+	//uniform samplerCube env;
+	//uniform int heightScale;
+	//void main()
+	//{
+	//	vec3 VertexNormal = VertexPosition;
+	//	mat4 MVP = ProjectionMatrix * ModelViewMatrix;
+	//	float v = textureCube(env, VertexNormal).x;
+	//	const float ext = 0.1;
+	//	gl_Position = MVP * vec4(VertexPosition * (ext + v * heightScale) * 0.5 * Scale + Transform, 1.0);
+	//}
+	//);
 
-	const char* pickingFS =
-		GLSL(
-	layout(location = 0) out vec4 FragColor;
-	uniform int idx;
-	void main() {
-		FragColor = vec4((idx % 255) / 255.0f, (idx / 255) / 255.0f, 0.0f, 1.0f);
-	}
-	);
+	//const char* pickingFS =
+	//	GLSL(
+	//layout(location = 0) out vec4 FragColor;
+	//uniform int idx;
+	//void main() {
+	//	FragColor = vec4((idx % 255) / 255.0f, (idx / 255) / 255.0f, 0.0f, 1.0f);
+	//}
+	//);
 
-	glPickingProg = new ShaderProgram();
-	glPickingProg->initFromStrings(pickingVS, pickingFS);
+	//glPickingProg = new ShaderProgram();
+	//glPickingProg->initFromStrings(pickingVS, pickingFS);
 
-	glPickingProg->addAttribute("VertexPosition");
-	glPickingProg->addUniform("ModelViewMatrix");
-	glPickingProg->addUniform("ProjectionMatrix");
+	//glPickingProg->addAttribute("VertexPosition");
+	//glPickingProg->addUniform("ModelViewMatrix");
+	//glPickingProg->addUniform("ProjectionMatrix");
 
-	glPickingProg->addUniform("Transform");
-	glPickingProg->addUniform("Scale");
-	glPickingProg->addUniform("env");
-	glPickingProg->addUniform("idx");
+	//glPickingProg->addUniform("Transform");
+	//glPickingProg->addUniform("Scale");
+	//glPickingProg->addUniform("env");
+	//glPickingProg->addUniform("idx");
+	//glPickingProg->addUniform("heightScale");
 
 
 }
@@ -406,6 +410,7 @@ void GlyphRenderable::draw(float modelview[16], float projection[16])
 		qgl->glUniform1f(glProg->uniform("Shininess"), 1);
 		qgl->glUniform3fv(glProg->uniform("Transform"), 1, &shift.x);
 		qgl->glUniform1f(glProg->uniform("Scale"), min_dim);
+		qgl->glUniform1i(glProg->uniform("heightScale"), heightScale);
 		qgl->glUniform1i(glProg->uniform("env"), GLint(0));
 		qgl->glUniformMatrix4fv(glProg->uniform("ModelViewMatrix"), 1, GL_FALSE, modelview);
 		qgl->glUniformMatrix4fv(glProg->uniform("ProjectionMatrix"), 1, GL_FALSE, projection);
@@ -448,6 +453,12 @@ void GlyphRenderable::SlotNumPartChanged(int i)
 {
 	numGlyphPerDim = i;
 	UpdateData();
+	actor->UpdateGL();
+}
+
+void GlyphRenderable::SlotHeightScaleChanged(int i)
+{
+	heightScale = i;
 	actor->UpdateGL();
 }
 

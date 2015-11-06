@@ -158,7 +158,7 @@ Window::Window()
 	//statusLabel = new QLabel("status: Navigation");
 	QSlider* sliceSlider = new QSlider(Qt::Horizontal);
 	//sliceSlider->setFixedSize(120, 30);
-	sliceSlider->setRange(0, vecReader->GetVolumeDim().z - 1);
+	sliceSlider->setRange(0, cubemap->GetInnerDim( glyphRenderable->GetSliceDimIdx())/*vecReader->GetVolumeDim().z*/ - 1);
 	sliceSlider->setValue(0);
 
 	QSlider* numPartSlider = new QSlider(Qt::Horizontal);
@@ -166,10 +166,16 @@ Window::Window()
 	numPartSlider->setRange(1, 32);
 	numPartSlider->setValue(1);
 
+	QSlider* heightScaleSlider = new QSlider(Qt::Horizontal);
+	//numPartSlider->setFixedSize(120, 30);
+	heightScaleSlider->setRange(1, 10);
+	heightScaleSlider->setValue(5);
+
 	QVBoxLayout *interactLayout = new QVBoxLayout;
 	QGroupBox *interactGrpBox = new QGroupBox(tr("Interactions"));
 	interactLayout->addWidget(sliceSlider);
 	interactLayout->addWidget(numPartSlider);
+	interactLayout->addWidget(heightScaleSlider);
 	//interactGrpBox->setSizePolicy(fixedPolicy);
 	//interactLayout->addLayout(addThingsLayout);
 	//interactLayout->addLayout(delThingsLayout);
@@ -182,6 +188,7 @@ Window::Window()
 	controlLayout->addWidget(interactGrpBox);
 	connect(sliceSlider, SIGNAL(valueChanged(int)), glyphRenderable, SLOT(SlotSliceNumChanged(int)));
 	connect(numPartSlider, SIGNAL(valueChanged(int)), glyphRenderable, SLOT(SlotNumPartChanged(int)));
+	connect(heightScaleSlider, SIGNAL(valueChanged(int)), glyphRenderable, SLOT(SlotHeightScaleChanged(int)));
 
 	GL2DProjWidget* gl2DProjWidget = new GL2DProjWidget(this);
 	controlLayout->addWidget(gl2DProjWidget);

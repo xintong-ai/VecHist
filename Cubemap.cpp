@@ -215,9 +215,12 @@ void Cubemap::CountIndex(unsigned short* out, float3* in, int n)
 			out[idx]++;
 	}
 }
+
 void Cubemap::IndexVolumeByHist()
 {
-	step = std::max(dim[0], std::max(dim[1], dim[2])) / 100;
+	step = std::max(dim[0], std::max(dim[1], dim[2])) / 200;
+	if (step < 1)
+		step = 1;
 	for (int i = 0; i < 3; i++) {
 		innerDim[i] = ceil((float)dim[i] / step);
 	}
