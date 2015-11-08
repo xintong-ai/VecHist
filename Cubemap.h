@@ -41,6 +41,7 @@ class Cubemap{
 	unsigned short* innerData = nullptr;// cubemap for each inner block
 	void GetBlockXYZ(float3* out, float3* in, int x, int y, int z, int nx, int ny, int nz);
 	void CountIndex(unsigned short* out, float3* in, int n);
+	std::vector<float> solAng;//
 public:
 	Cubemap(VecReader* r);
 	~Cubemap();

@@ -172,7 +172,10 @@ Cubemap::Cubemap(VecReader* r)
 	dim[1] = d.y;
 	dim[2] = d.z;
 
+
+
 	cubemap_size = 8;
+	solAng = ComputePatchSolidAngle(cubemap_size);
 	std::cout << "indexing the vectors ..." << std::endl;
 	//IndexVolume();
 	IndexVolumeByHist();
@@ -259,6 +262,7 @@ void Cubemap::GenCubeMapOptimized(int x, int y, int z, int nx, int ny, int nz, f
 //	std::unique_ptr<int3[]> datablock(new int3[cubeSizeTotal]);
 
 //	GetBlock(datablock.get(), x, y, z, nx, ny, nz);
+	const int size2 = cubemap_size * cubemap_size;
 	const int size3 = cubemap_size * cubemap_size * 6;
 	cubemap = new float[size3];
 	for (int i = 0; i < size3; i++)
@@ -280,6 +284,13 @@ void Cubemap::GenCubeMapOptimized(int x, int y, int z, int nx, int ny, int nz, f
 					//std::cout << l << " ";
 				}
 			}
+		}
+	}
+
+	for (int j = 0; j < 6; j++)	{
+		for (int i = 0; i < size2; i++)	{
+			int idx = j * size2 + i;
+			cubemap[idx] = cubemap[idx] / solAng[i];// *scale;
 		}
 	}
 	//normalize the histogram
