@@ -25,15 +25,50 @@ void GlyphRenderable::LoadShaders()
 
 	const char* vertexVS =
 	GLSL(
-	#extension GL_NV_shadow_samplers_cube : enable \n
 	layout(location = 0) in vec3 VertexPosition;
-	smooth out vec3 tnorm;
-	out vec3 norm;
+
+
+	void main()
+	{
+	//	v_norm = VertexPosition;
+
+
+		//compute normals
+		//vec3 t;
+		//if (abs(v_norm.z) > 0.0001)
+		//	t = normalize(vec3(1, 1, -(v_norm.x + v_norm.y) / v_norm.z));
+		//else if (abs(v_norm.x) > 0.0001)
+		//	t = normalize(vec3(-(v_norm.y + v_norm.z) / v_norm.x, 1, 1));
+		//else
+		//	t = normalize(vec3(1, -(v_norm.z + v_norm.x) / v_norm.y, 1));
+		//vec3 b = normalize(cross(t, v_norm));
+		//vec3 nt = normalize(VertexPosition + t * 0.01);
+		//vec3 nb = normalize(VertexPosition + b * 0.01);
+		//float vt = textureCube(env, nt).x;
+		//float vb = textureCube(env, nb).x;
+		//vec3 normalDeformed = normalize(cross(GetDeformed(nb, vb) - posDeformed, GetDeformed(nt, vt) - posDeformed));
+		gl_Position = vec4(VertexPosition, 1.0f);// ProjectionMatrix * ModelViewMatrix * vec4(posDeformed * Scale + Transform, 1.0);
+	}
+	);
+
+	//https://www.opengl.org/wiki/Geometry_Shader
+	const char* vertexGS = 
+		GLSL(
+	//uniform mat4 ModelViewMatrix;
+	#extension GL_NV_shadow_samplers_cube : enable \n
+	layout(lines_adjacency) in;
+	layout(triangle_strip, max_vertices = 4) out;
+	//in vec3 v_norm;
+	flat out vec3 f_norm;
+	flat out vec3 tnorm;
 	out vec4 eyeCoords;
+	//out vec3 v_norm;
+	//flat out vec3 tnorm;
+	//flat out vec3 norm;
 
 	uniform mat4 ModelViewMatrix;
-	uniform mat3 NormalMatrix;
 	uniform mat4 ProjectionMatrix;
+	uniform mat3 NormalMatrix;
 	uniform vec3 Transform;
 	uniform float Scale;
 	uniform samplerCube env;
@@ -44,29 +79,34 @@ void GlyphRenderable::LoadShaders()
 		return dir * (0.04 + sqrt(v) * heightScale * 0.1);
 	}
 
-	void main()
+	vec4 GetNDCPos(vec3 v)
 	{
-		norm = VertexPosition;
-		eyeCoords = ModelViewMatrix *
-			vec4(VertexPosition, 1.0);
+		return ProjectionMatrix * ModelViewMatrix * vec4(GetDeformed(v, textureCube(env, v).x) * Scale + Transform, 1.0);
+	}
 
-		//compute normals
-		vec3 t;
-		if (abs(norm.z) > 0.0001)
-			t = normalize(vec3(1, 1,  - (norm.x + norm.y) / norm.z));
-		else if (abs(norm.x) > 0.0001)
-			t = normalize(vec3(-(norm.y + norm.z) / norm.x, 1, 1));
-		else
-			t = normalize(vec3(1, -(norm.z + norm.x) / norm.y, 1));
-		vec3 b = normalize(cross(t, norm));
-		vec3 nt = normalize(VertexPosition + t * 0.05);
-		vec3 nb = normalize(VertexPosition + b * 0.05);
-		float v = textureCube(env, norm).x;
-		float vt = textureCube(env, nt).x;
-		float vb = textureCube(env, nb).x;
-		vec3 new_normal = normalize(cross(GetDeformed(nb, vb) - GetDeformed(norm, v), GetDeformed(nt, vt) - GetDeformed(norm, v)));
-		tnorm = normalize(NormalMatrix * new_normal);
-		gl_Position = ProjectionMatrix * ModelViewMatrix * vec4(GetDeformed(VertexPosition, v) * Scale + Transform, 1.0);
+	void main(void)
+	{
+		vec3 A = gl_in[0].gl_Position.xyz;
+		vec3 B = gl_in[1].gl_Position.xyz;
+		vec3 C = gl_in[2].gl_Position.xyz;
+		f_norm = normalize(cross(B - A, C - A));
+		if (dot(f_norm, A) < 0)	//in case the normal points to inside the sphere
+			f_norm = -f_norm;
+		tnorm = normalize(NormalMatrix * f_norm);
+		eyeCoords = ModelViewMatrix * vec4(f_norm, 1.0);
+		//for (int i = 0; i < gl_in.length(); i++)
+		//{
+		//float v = ;
+		gl_Position = GetNDCPos(gl_in[0].gl_Position.xyz);
+		EmitVertex();
+		gl_Position = GetNDCPos(gl_in[1].gl_Position.xyz);
+		EmitVertex();
+		gl_Position = GetNDCPos(gl_in[3].gl_Position.xyz);
+		EmitVertex();
+		gl_Position = GetNDCPos(gl_in[2].gl_Position.xyz);
+		EmitVertex();
+		//}
+		EndPrimitive();
 	}
 	);
 
@@ -74,13 +114,13 @@ void GlyphRenderable::LoadShaders()
 		GLSL(
 	#extension GL_NV_shadow_samplers_cube : enable \n
 	uniform vec4 LightPosition; // Light position in eye coords.
-	//uniform vec3 Ka; // Diffuse reflectivity
+	uniform vec3 Ka; // Diffuse reflectivity
 	uniform vec3 Kd; // Diffuse reflectivity
 	uniform vec3 Ks; // Diffuse reflectivity
 	uniform float Shininess;
 	in vec4 eyeCoords;
-	smooth in vec3 norm;
-	smooth in vec3 tnorm;
+	flat in vec3 f_norm;
+	flat in vec3 tnorm;
 	layout(location = 0) out vec4 FragColor;
 	uniform samplerCube env;
 
@@ -114,11 +154,9 @@ void GlyphRenderable::LoadShaders()
 		return(c);
 	}
 
-	vec3 GetColor2(vec3 norm, float v)
+	vec3 GetColor2(vec3 norm)
 	{
 		vec3 ret = vec3(0, 0, 0);
-//		return vec3(clamp(abs(norm.x) + 1.0f - v, 0, 1), clamp(abs(norm.y) + 1.0f - v, 0, 1), clamp(abs(norm.z) + (1.0f - v), 0, 1));
-		//if (v > 0.0001)
 		ret = vec3(abs(norm.x), abs(norm.y), abs(norm.z));
 		return ret;
 	}
@@ -127,7 +165,7 @@ void GlyphRenderable::LoadShaders()
 		vec3 s = normalize(vec3(LightPosition - position));
 		vec3 v = normalize(-position.xyz);
 		vec3 r = reflect(-s, normal);
-		vec3 ambient = a;// Ka;
+		vec3 ambient = a * Ka;
 		float sDotN = max(dot(s, normal), 0.0);
 		vec3 diffuse = Kd * sDotN;
 		vec3 spec = vec3(0.0);
@@ -138,23 +176,21 @@ void GlyphRenderable::LoadShaders()
 	}
 
 	void main() {
-		vec3 FrontColor;
-		vec3 BackColor;
-		float v = textureCube(env, norm).x;
-		vec3 unlitColor = GetColor2(norm, v);
+		float v = textureCube(env, f_norm).x;
+		vec3 unlitColor = GetColor2(f_norm);
 		//vec3 unlitColor = GetColor(v, 0, 1).xyz;// vec3(v, 0, 0); //vec4((normal.x + 1) * 0.5, (normal.y + 1), (normal.z + 1) * 0.5, 1.0f);
 		FragColor = vec4(phongModel(unlitColor, eyeCoords, tnorm), 1.0);
 	}
 	);
 
 	glProg = new ShaderProgram();
-	glProg->initFromStrings(vertexVS, vertexFS);
+	glProg->initFromStrings(vertexVS, vertexFS, vertexGS);
 
 	glProg->addAttribute("VertexPosition");
 	//glProg->addAttribute("VertexNormal");
 
 	glProg->addUniform("LightPosition");
-	//glProg->addUniform("Ka");
+	glProg->addUniform("Ka");
 	glProg->addUniform("Kd");
 	glProg->addUniform("Ks");
 	glProg->addUniform("Shininess");
@@ -331,11 +367,11 @@ void GlyphRenderable::draw(float modelview[16], float projection[16])
 		//float3 ka = make_float3(0.2f, 0.2f, 0.2f);
 		QMatrix4x4 q_modelview = QMatrix4x4(modelview);
 		q_modelview = q_modelview.transposed();
-		qgl->glUniform4f(glProg->uniform("LightPosition"), 0, 0, 100, 1);
-		//qgl->glUniform3f(glProg->uniform("Ka"), ka.x, ka.y, ka.z);
-		qgl->glUniform3f(glProg->uniform("Kd"), 0.4f, 0.4f, 0.4f);
+		qgl->glUniform4f(glProg->uniform("LightPosition"), 0, 0, std::max(std::max(dataDim[0], dataDim[1]), dataDim[2]) * 2, 1);
+		qgl->glUniform3f(glProg->uniform("Ka"), 0.8f, 0.8f, 0.8f);
+		qgl->glUniform3f(glProg->uniform("Kd"), 0.1f, 0.1f, 0.1f);
 		qgl->glUniform3f(glProg->uniform("Ks"), 0.2f, 0.2f, 0.2f);
-		qgl->glUniform1f(glProg->uniform("Shininess"), 1);
+		qgl->glUniform1f(glProg->uniform("Shininess"), 5);
 		qgl->glUniform3fv(glProg->uniform("Transform"), 1, &shift.x);
 		qgl->glUniform1f(glProg->uniform("Scale"), min_dim);
 		qgl->glUniform1i(glProg->uniform("heightScale"), heightScale);
@@ -345,7 +381,7 @@ void GlyphRenderable::draw(float modelview[16], float projection[16])
 		qgl->glUniformMatrix3fv(glProg->uniform("NormalMatrix"), 1, GL_FALSE, q_modelview.normalMatrix().data());
 
 		tex->bind();
-		glDrawArrays(GL_QUADS, 0, glyphMesh->GetNumVerts());
+		glDrawArrays(GL_LINES_ADJACENCY, 0, glyphMesh->GetNumVerts());
 		//glDrawElements(GL_TRIANGLES, glyphMesh->numElements, GL_UNSIGNED_INT, glyphMesh->indices);
 		tex->unbind();
 		m_vao->release();

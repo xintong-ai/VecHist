@@ -172,9 +172,7 @@ Cubemap::Cubemap(VecReader* r)
 	dim[1] = d.y;
 	dim[2] = d.z;
 
-
-
-	cubemap_size = 8;
+	cubemap_size = 9;
 	solAng = ComputePatchSolidAngle(cubemap_size);
 	std::cout << "indexing the vectors ..." << std::endl;
 	//IndexVolume();

@@ -48,7 +48,8 @@ private:
     // Shader program and individual shader Ids
     GLuint programId;
     GLuint vertexShaderId;
-    GLuint fragmentShaderId;
+	GLuint fragmentShaderId;
+	GLuint geometryShaderId;
 
     // How many shaders are attached to the shader program
     GLuint shaderCount;
@@ -109,7 +110,8 @@ private:
                 shaderTypeString = "GL_FRAGMENT_SHADER";
                 break;
             case GL_GEOMETRY_SHADER:
-                throw std:: runtime_error("Geometry shaders are unsupported at this time.");
+				shaderTypeString = "GL_GEOMETRY_SHADER";
+                //throw std:: runtime_error("Geometry shaders are unsupported at this time.");
                 break;
             default:
                 throw std::runtime_error("Bad shader type enum in compileShader.");
@@ -162,15 +164,19 @@ private:
     // Private method to compile/attach/link/verify the shaders.
     // Note: Rather than returning a boolean as a success/fail status we'll just consider
     // a failure here to be an unrecoverable error and throw a runtime_error.
-    void initialise(std::string vertexShaderSource, std::string fragmentShaderSource)
+    void initialise(std::string vertexShaderSource, std::string fragmentShaderSource, std::string geometryShaderSource = "")
     {
         // Compile the shaders and return their id values
         vertexShaderId   = compileShader(vertexShaderSource,   GL_VERTEX_SHADER);
-        fragmentShaderId = compileShader(fragmentShaderSource, GL_FRAGMENT_SHADER);
+		fragmentShaderId = compileShader(fragmentShaderSource, GL_FRAGMENT_SHADER);
+		if ("" != geometryShaderSource)
+			geometryShaderId = compileShader(geometryShaderSource, GL_GEOMETRY_SHADER);
 
         // Attach the compiled shaders to the shader program
 		qgl->glAttachShader(programId, vertexShaderId);
 		qgl->glAttachShader(programId, fragmentShaderId);
+		if ("" != geometryShaderSource)
+			qgl->glAttachShader(programId, geometryShaderId);
 
         // Link the shader program - details are placed in the program info log
 		qgl->glLinkProgram(programId);
@@ -179,6 +185,8 @@ private:
         // If the linking failed, then we're going to abort anyway so we still detach the shaders.
 		qgl->glDetachShader(programId, vertexShaderId);
 		qgl->glDetachShader(programId, fragmentShaderId);
+		if ("" != geometryShaderSource)
+			qgl->glDetachShader(programId, geometryShaderId);
 
         // Check the program link status and throw a runtime_error if program linkage failed.
         GLint programLinkSuccess = GL_FALSE;
@@ -281,9 +289,9 @@ public:
     }
 
     // Method to initialise a shader program from shaders provided as strings
-    void initFromStrings(std::string vertexShaderSource, std::string fragmentShaderSource)
+	void initFromStrings(std::string vertexShaderSource, std::string fragmentShaderSource, std::string geometryShaderSource = "")
     {
-        initialise(vertexShaderSource, fragmentShaderSource);
+		initialise(vertexShaderSource, fragmentShaderSource, geometryShaderSource);
     }
 
     // Method to enable the shader program - we'll suggest this for inlining
