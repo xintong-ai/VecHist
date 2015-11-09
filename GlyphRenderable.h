@@ -5,7 +5,6 @@
 #include <QObject>
 
 class Cubemap;
-//class GLTextureCube;
 class ShaderProgram;
 class QOpenGLVertexArrayObject;
 class GLSphere;
@@ -13,22 +12,15 @@ class GLTextureCube;
 struct Cube;
 class BoxRenderable;
 
-///* how big to make the pick buffer: */
-//#define PICK_BUFFER_SIZE 256 
 class GlyphRenderable :public Renderable, public QObject
 {
 	Q_OBJECT
 public:
-	std::vector<GLTextureCube*> textures;
-	std::vector <Cube*> cubes;
-
-	GlyphRenderable(Cubemap* r);
-
 	void init() override;
-	//void resize(int width, int height) override;
-	virtual void draw(float modelview[16], float projection[16]) override;
+	void draw(float modelview[16], float projection[16]) override;
 	void UpdateData() override;
-	//virtual void cleanup() override;
+	
+	GlyphRenderable(Cubemap* r);
 	void SetCubemap(Cubemap* r) { cubemap = r; }
 	void SetVolumeDim(int x, int y, int z){ dataDim[0] = x; dataDim[1] = y; dataDim[2] = z; }
 	int GetSliceDimIdx(){ return sliceDimIdx; }
@@ -38,22 +30,18 @@ public:
 			return textures[i];
 		else
 			return nullptr;
-	}// m_textureCubeManager->getBlockTex()[i];
-	//void GenCubesFromLine();
-
+	}
 private:
+	std::vector<GLTextureCube*> textures;
+	std::vector <Cube*> cubes;
 	void GenVertexBuffer(int nv, float* vertex);
 	void LoadShaders();
-	unsigned int vbo_norm;
 	unsigned int vbo_vert;
-	int numElements = 0;
 	int sliceStart = 0;
 	int numGlyphPerDim = 1;
 	int sliceDimIdx = 0;// 0 is x, 1 is y, 2 is z
 	int heightScale = 10;
-	//MeshReader* glyphMesh;
 	GLSphere* glyphMesh;
-
 	ShaderProgram *glProg;
 	ShaderProgram *glPickingProg;
 
@@ -64,11 +52,6 @@ private:
 	bool updated = false;
 	int dataDim[3];
 	bool cubesVisible = false;
-
-	//unsigned int PickBuffer[PICK_BUFFER_SIZE]; /* picking buffer */
-	//int RenderMode;
-	//int Xmouse, Ymouse;
-
 protected:
 	void mousePress(int x, int y, int modifier) override;
 
@@ -79,9 +62,6 @@ public slots:
 	void SlotHeightScaleChanged(int i);
 	void SlotSetSliceOrie(int i);
 	void SlotSetCubesVisible(bool visible);
-	
-	//void SlotGenCubeOnPlane(int planeIdx,);
-	void SlotTest(){}
 
 signals:
 	void SigChangeTex(GLTextureCube* v, Cube* c);

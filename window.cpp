@@ -180,16 +180,19 @@ Window::Window()
 	connect(blockBBoxCheck, SIGNAL(clicked(bool)), glyphRenderable, SLOT(SlotSetCubesVisible(bool)));
 
 	//statusLabel = new QLabel("status: Navigation");
+	QLabel* sliceLabel = new QLabel("Slice number:", this);
 	sliceSlider = new QSlider(Qt::Horizontal);
 	//sliceSlider->setFixedSize(120, 30);
 	sliceSlider->setRange(0, cubemap->GetInnerDim( glyphRenderable->GetSliceDimIdx())/*vecReader->GetVolumeDim().z*/ - 1);
 	sliceSlider->setValue(0);
 
+	QLabel* sliceThicknessLabel = new QLabel("Slice Thickness:", this);
 	QSlider* numPartSlider = new QSlider(Qt::Horizontal);
 	//numPartSlider->setFixedSize(120, 30);
 	numPartSlider->setRange(1, 32);
 	numPartSlider->setValue(1);
 
+	QLabel* heightScaleLabel = new QLabel("Glyph Height Scale:", this);
 	heightScaleSlider = new QSlider(Qt::Horizontal);
 	//numPartSlider->setFixedSize(120, 30);
 	heightScaleSlider->setRange(0, nHeightScale);
@@ -199,8 +202,11 @@ Window::Window()
 	QVBoxLayout *interactLayout = new QVBoxLayout;
 	QGroupBox *interactGrpBox = new QGroupBox(tr("Interactions"));
 	interactLayout->addWidget(blockBBoxCheck);
+	interactLayout->addWidget(sliceLabel);
 	interactLayout->addWidget(sliceSlider);
+	interactLayout->addWidget(sliceThicknessLabel);
 	interactLayout->addWidget(numPartSlider);
+	interactLayout->addWidget(heightScaleLabel);
 	interactLayout->addWidget(heightScaleSlider);
 	//interactGrpBox->setSizePolicy(fixedPolicy);
 	//interactLayout->addLayout(addThingsLayout);

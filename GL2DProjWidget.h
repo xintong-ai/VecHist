@@ -14,22 +14,12 @@ class GL2DProjWidget :public QOpenGLWidget, public QOpenGLFunctions
 public:
 	explicit GL2DProjWidget(QWidget *parent = 0);
 	~GL2DProjWidget();
-
-	//void SetTextureID(GLuint id) { textureID = id; }
-
-	void SetTextureSize(int size) { texSz = size; }
-
 private:
 
 	void loadShaders();
-
-	//GLuint textureID = 999;
 	QOpenGLVertexArrayObject* m_vao;
 
 	unsigned int vbo_vert;
-	unsigned int vbo_uv;
-
-	int texSz = 0;
 
 	int winWidth = 0, winHeight = 0;
 

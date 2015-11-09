@@ -13,12 +13,9 @@
 GL2DProjWidget::GL2DProjWidget(QWidget *parent)
 	: QOpenGLWidget(parent)
 {
-	//texPlaneTracer = r;
-	//r->SetSlice2DWidget(this);
 	QSizePolicy p(sizePolicy());
 	p.setHeightForWidth(true);
 	setSizePolicy(p);
-
 }
 
 GL2DProjWidget::~GL2DProjWidget()
@@ -60,7 +57,7 @@ void GL2DProjWidget::loadShaders()
 		float theta = UV.x * PI;
 		float phi = UV.y * PI * 0.5;
 		vec3 norm = vec3(cos(phi) * cos(theta), sin(phi), cos(phi) * sin(theta));
-		float v = textureCube(env, norm).x;
+		float v = textureCube(env, norm).x * 10;
 		color = vec3(v, v, v);
 	}
 	);
@@ -81,7 +78,7 @@ void GL2DProjWidget::loadShaders()
 	out vec3 color;
 	uniform sampler2D tex;
 	void main(){
-		color = texture(tex, UV).rgb;// *0.000001 + vec3(UV.x, UV.y, 0);
+		color = texture(tex, UV).rgb * 10;// *0.000001 + vec3(UV.x, UV.y, 0);
 	}
 	);
 
@@ -101,40 +98,27 @@ void GL2DProjWidget::loadShaders()
 void GL2DProjWidget::initializeGL()
 {
 	initializeOpenGLFunctions();
-
-
-	float3 corners[] = { 
+	loadShaders();
+	float3 corners[] = {
 		make_float3(-1, -1, 0),
 		make_float3(1, -1, 0),
 		make_float3(1, 1, 0),
 		make_float3(-1, 1, 0)
 	};
 
-	//float texCoords[] = { 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f };
-
 	m_vao = new QOpenGLVertexArrayObject();
 	m_vao->create();
 	glGenBuffers(1, &vbo_vert);
-	//glGenBuffers(1, &vbo_uv);
-
-	loadShaders();
-	
 	m_vao->bind();
-
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_vert);
 	glVertexAttribPointer(glProg->attribute("vertexPosition"), 3, GL_FLOAT, GL_FALSE, 0, NULL);
 	glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(float) * 3, &corners[0].x, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glEnableVertexAttribArray(glProg->attribute("vertexPosition"));
-
 	m_vao->release();
 }
 
 void GL2DProjWidget::paintGL() {
-	//if (textureID > 100)
-	//	return;
-
-
 	m_vao->bind();
 
 	if (0 == type) {
@@ -151,17 +135,12 @@ void GL2DProjWidget::paintGL() {
 		if (nullptr == tex)
 			return;
 		glProg->use();
-		//glUniform2f(glProg->uniform("texSizes"), texSz1, texSz2);
 		glUniform1i(glProg->uniform("env"), GLint(0));
-
-		//glBindTexture(GL_TEXTURE_2D, textureID);
 		tex->bind();
 
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
 		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -207,12 +186,8 @@ void GL2DProjWidget::keyPressEvent(QKeyEvent * event)
 void GL2DProjWidget::SlotSetCubeTexture(GLTextureCube* v, Cube* c)
 { 
 	tex = v; 
-	//std::unique_ptr<float[]> hist(new float[c->cubemap_size * c->cubemap_size * 12], );
 	int sz = c->cubemap_size;
 	std::vector<float> img(sz * sz * 12, 0.0f);
-	/*for (int i = 0; i < sz * sz * 12; i++) {
-		img[] = i / (sz * sz * 12);
-	}*/
 
 	for (int j = 0; j < sz; j++) {
 		for (int i = 0; i < sz; i++) {
@@ -220,7 +195,6 @@ void GL2DProjWidget::SlotSetCubeTexture(GLTextureCube* v, Cube* c)
 			img[sz * 4 * sz + sz + i + j * 4 * sz] = c->data[5 * sz * sz + j * sz + i]; 
 			img[sz * 4 * sz + sz * 2 + i + j * 4 * sz] = c->data[j * sz + i]; 
 			img[sz * 4 * sz + sz * 3 + i + j * 4 * sz] = c->data[4 * sz * sz + j * sz + i];
-
 			img[sz * 8 * sz + sz + i + j * 4 * sz] = c->data[2 * sz * sz + j * sz + i];
 			img[sz + i + j * 4 * sz] = c->data[3 * sz * sz + j * sz + i];
 		}

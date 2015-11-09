@@ -1,51 +1,7 @@
 #ifndef MODES_H
 #define MODES_H
 
-#include "stdlib.h"
 #include "vector_types.h"
-
-enum DEFORM_MODE{
-	MODE_ELLIPSE,
-	MODE_LINE,
-	MODE_HULL,
-	MODE_DIRECT_TRANSLATE,
-	MODE_AUTO,
-};
-
-enum SOURCE_MODE{
-	//MODE_BUNDLE,
-	MODE_LENS,
-	MODE_LOCATION,
-};
-
-enum INTERACT_MODE{
-//	DRAG_LENS_EDGE,
-//	DRAG_LENS_TWO_ENDS,
-//	MOVE_LENS,
-	TRANSFORMATION,
-	//CUT_LINE,
-	ADD_NODE,
-	MODIFY_LENS,
-//	CUT_POLYLINE,
-	//DRAW_ELLIPSE,
-};
-
-enum DIRECTION
-{
-	DIR_LEFT,
-	DIR_RIGHT,
-	DIR_UP,
-	DIR_DOWN,
-	DIR_IN,
-	DIR_OUT,
-};
-
-enum VISUAL_MODE
-{
-	DEFORM,
-	TRANSP,
-};
-
 struct matrix4x4
 {
 	float4 v[4];

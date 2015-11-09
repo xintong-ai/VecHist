@@ -14,7 +14,7 @@ public:
 
 	std::string GetConfig(const char* name){ return config[name]; }
 
-	std::map<std::string, std::string> GetMeshFiles();
+	//std::map<std::string, std::string> GetMeshFiles();
 
 private:
 	void LoadConfig(const char* filename);

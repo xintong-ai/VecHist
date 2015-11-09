@@ -19,17 +19,17 @@ DataMgr::DataMgr()
 	LoadConfig("config.txt");
 }
 
-std::map<std::string, std::string> DataMgr::GetMeshFiles()
-{
-	std::map<std::string, std::string> ret;
-	for (auto m : config) {
-		std::string a = m.first.substr(0, 5);
-		if (a == "mesh_") {
-			ret[m.first] = m.second;
-		}
-	}
-	return ret;
-}
+//std::map<std::string, std::string> DataMgr::GetMeshFiles()
+//{
+//	std::map<std::string, std::string> ret;
+//	for (auto m : config) {
+//		std::string a = m.first.substr(0, 5);
+//		if (a == "mesh_") {
+//			ret[m.first] = m.second;
+//		}
+//	}
+//	return ret;
+//}
 
 
 void DataMgr::LoadConfig(const char* filename)

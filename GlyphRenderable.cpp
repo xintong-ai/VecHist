@@ -8,18 +8,13 @@
 #ifdef WIN32
 #include "windows.h"
 #endif
+#define qgl	QOpenGLContext::currentContext()->functions()
 
 #include <QOpenGLFunctions>
 #include <QOpenGLVertexArrayObject>
-#define qgl	QOpenGLContext::currentContext()->functions()
 #include "ShaderProgram.h"
-//#include "MeshReader.h"
 #include "GLSphere.h"
 #include "helper_math.h"
-//#include <GL/glu.h>
-
-///* picking tolerance in pixels: */
-//#define PICK_TOL 10.
 
 void GlyphRenderable::LoadShaders()
 {
@@ -28,13 +23,10 @@ void GlyphRenderable::LoadShaders()
 	//shader is from https://www.packtpub.com/books/content/basics-glsl-40-shaders
 	//using two sides shading
 
-	//the reason for flat shading is that the normal is not computed right
-	//http://stackoverflow.com/questions/4703432/why-does-my-opengl-phong-shader-behave-like-a-flat-shader
 	const char* vertexVS =
 	GLSL(
 	#extension GL_NV_shadow_samplers_cube : enable \n
 	layout(location = 0) in vec3 VertexPosition;
-	//layout(location = 1) in vec3 VertexNormal;
 	smooth out vec3 tnorm;
 	out vec3 norm;
 	out vec4 eyeCoords;
@@ -46,20 +38,19 @@ void GlyphRenderable::LoadShaders()
 	uniform float Scale;
 	uniform samplerCube env;
 	uniform int heightScale;
-	//uniform vec4 cm[33];
+
+	vec3 GetDeformed(vec3 dir, float v){
+		//we use sqrt(), because the projected area is proportional to the square of the radius.
+		return dir * (0.04 + sqrt(v) * heightScale * 0.1);
+	}
+
 	void main()
 	{
-		vec3 VertexNormal = VertexPosition;
-		mat4 MVP = ProjectionMatrix * ModelViewMatrix;
-		norm = VertexNormal;
-		//vec3 vert_sphere = VertexPosition * (0.2 + v) * 0.5;
-
-
-
+		norm = VertexPosition;
 		eyeCoords = ModelViewMatrix *
 			vec4(VertexPosition, 1.0);
-		float v = textureCube(env, norm).x;
 
+		//compute normals
 		vec3 t;
 		if (abs(norm.z) > 0.0001)
 			t = normalize(vec3(1, 1,  - (norm.x + norm.y) / norm.z));
@@ -70,15 +61,12 @@ void GlyphRenderable::LoadShaders()
 		vec3 b = normalize(cross(t, norm));
 		vec3 nt = normalize(VertexPosition + t * 0.05);
 		vec3 nb = normalize(VertexPosition + b * 0.05);
+		float v = textureCube(env, norm).x;
 		float vt = textureCube(env, nt).x;
 		float vb = textureCube(env, nb).x;
-		const float ext = 0.04;
-		vec3 new_normal = normalize(cross(nb * (ext + vb) - norm * (ext + v), nt* (ext + vt) - norm * (ext + v)));
+		vec3 new_normal = normalize(cross(GetDeformed(nb, vb) - GetDeformed(norm, v), GetDeformed(nt, vt) - GetDeformed(norm, v)));
 		tnorm = normalize(NormalMatrix * new_normal);
-
-		//tnorm = normalize(NormalMatrix * VertexNormal);
-		//we use sqrt(), because the projected area is proportional to the square of the radius.
-		gl_Position = MVP * vec4(VertexPosition * (ext + sqrt(v) * heightScale * 0.1) * Scale + Transform, 1.0);
+		gl_Position = ProjectionMatrix * ModelViewMatrix * vec4(GetDeformed(VertexPosition, v) * Scale + Transform, 1.0);
 	}
 	);
 

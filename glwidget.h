@@ -7,14 +7,11 @@
 #include <QOpenGLWidget>
 #include <vector_types.h>
 #include <vector_functions.h>
-//#include <defines.h>
 
 class Trackball;
 class Rotation;
 class StopWatchInterface;
-class DataMgr;
 class Renderable;
-//class VecReader;
 
 class GLWidget : public QOpenGLWidget, public QOpenGLFunctions
 {
@@ -32,22 +29,9 @@ public:
 
     void GetWindowSize(int &w, int &h) {w = width; h = height;}
 
-	void SetVol(int3 dim);// { dataMin = make_float3(0, 0, 0); }
+	void SetVol(int3 dim);
 
 	void UpdateGL();
-	//void SetDataMgr(DataMgr* v) { dataMgr = v; }
-
-	//DEFORM_MODE GetDeformMode(){ return _deformMode; }
-	//INTERACT_MODE GetInteractMode(){ return _interactMode; }
-	//SOURCE_MODE GetSourceMode(){ return _sourceMode; }
-
-	//void AddLens();
-	//void AddLensNode();
-
-	//void SetInteractModeToTransform();// { _interactMode = INTERACT_MODE::TRANSFORMATION; }
-	//void SetInteractModeToModifyLens(){ _interactMode = INTERACT_MODE::MODIFY_LENS; }
-
-	//void SetLineReader(LineReader* r) { lineReader = r; }
 
 protected:
     virtual void initializeGL() Q_DECL_OVERRIDE;
@@ -62,12 +46,8 @@ protected:
 
 	uint width = 512, height = 512;
 
-    //uint *d_output = NULL;
-
 private:
     void computeFPS();
-
-    void printModelView();
 
     void cleanup();
 
@@ -104,11 +84,6 @@ private:
 
     std::map<std::string,Renderable*> renderers;
 
-    //pbo
-    //GLuint pbo = 0;     // OpenGL pixel buffer object
-    //GLuint tex = 0;     // OpenGL texture object
-    //struct cudaGraphicsResource *cuda_pbo_resource; // CUDA Graphics Resource (to transfer PBO)
-
     bool initialized = false;
 	bool pinching = false;
 	//mark whether there is any pinching gesture in this sequence of gestures.
@@ -117,22 +92,6 @@ private:
 
 	float3 dataMin = make_float3(0, 0, 0);
 	float3 dataMax = make_float3(10, 10, 10);
-
-	//DataMgr* dataMgr;
-
-	//DEFORM_MODE _deformMode = DEFORM_MODE::MODE_LINE;
-	//SOURCE_MODE _sourceMode = SOURCE_MODE::MODE_LENS;
-	//INTERACT_MODE _interactMode = INTERACT_MODE::TRANSFORMATION;
-	//VISUAL_MODE _visualMode;
-
-	//LineReader* lineReader;
-
-	//QElapsedTimer oneFingerTimer;
-	
-
-	//bool doAnimating = true;
-private slots:
-     //void animate();
 };
 
 #endif //GL_WIDGET_H
