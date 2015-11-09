@@ -22,7 +22,6 @@ void GlyphRenderable::LoadShaders()
 #define GLSL(shader) "#version 440\n" #shader
 	//shader is from https://www.packtpub.com/books/content/basics-glsl-40-shaders
 	//using two sides shading
-
 	const char* vertexVS =
 	GLSL(
 	layout(location = 0) in vec3 VertexPosition;
@@ -30,23 +29,6 @@ void GlyphRenderable::LoadShaders()
 
 	void main()
 	{
-	//	v_norm = VertexPosition;
-
-
-		//compute normals
-		//vec3 t;
-		//if (abs(v_norm.z) > 0.0001)
-		//	t = normalize(vec3(1, 1, -(v_norm.x + v_norm.y) / v_norm.z));
-		//else if (abs(v_norm.x) > 0.0001)
-		//	t = normalize(vec3(-(v_norm.y + v_norm.z) / v_norm.x, 1, 1));
-		//else
-		//	t = normalize(vec3(1, -(v_norm.z + v_norm.x) / v_norm.y, 1));
-		//vec3 b = normalize(cross(t, v_norm));
-		//vec3 nt = normalize(VertexPosition + t * 0.01);
-		//vec3 nb = normalize(VertexPosition + b * 0.01);
-		//float vt = textureCube(env, nt).x;
-		//float vb = textureCube(env, nb).x;
-		//vec3 normalDeformed = normalize(cross(GetDeformed(nb, vb) - posDeformed, GetDeformed(nt, vt) - posDeformed));
 		gl_Position = vec4(VertexPosition, 1.0f);// ProjectionMatrix * ModelViewMatrix * vec4(posDeformed * Scale + Transform, 1.0);
 	}
 	);
@@ -54,18 +36,12 @@ void GlyphRenderable::LoadShaders()
 	//https://www.opengl.org/wiki/Geometry_Shader
 	const char* vertexGS = 
 		GLSL(
-	//uniform mat4 ModelViewMatrix;
 	#extension GL_NV_shadow_samplers_cube : enable \n
 	layout(lines_adjacency) in;
 	layout(triangle_strip, max_vertices = 4) out;
-	//in vec3 v_norm;
 	flat out vec3 f_norm;
 	flat out vec3 tnorm;
 	out vec4 eyeCoords;
-	//out vec3 v_norm;
-	//flat out vec3 tnorm;
-	//flat out vec3 norm;
-
 	uniform mat4 ModelViewMatrix;
 	uniform mat4 ProjectionMatrix;
 	uniform mat3 NormalMatrix;
@@ -79,8 +55,7 @@ void GlyphRenderable::LoadShaders()
 		return dir * (0.04 + sqrt(v) * heightScale * 0.1);
 	}
 
-	vec4 GetNDCPos(vec3 v)
-	{
+	vec4 GetNDCPos(vec3 v) {
 		return ProjectionMatrix * ModelViewMatrix * vec4(GetDeformed(v, textureCube(env, v).x) * Scale + Transform, 1.0);
 	}
 
@@ -89,14 +64,12 @@ void GlyphRenderable::LoadShaders()
 		vec3 A = gl_in[0].gl_Position.xyz;
 		vec3 B = gl_in[1].gl_Position.xyz;
 		vec3 C = gl_in[2].gl_Position.xyz;
-		f_norm = normalize(cross(B - A, C - A));
+		vec3 D = gl_in[3].gl_Position.xyz;
+		f_norm = normalize(cross(C - A, D - B));
 		if (dot(f_norm, A) < 0)	//in case the normal points to inside the sphere
 			f_norm = -f_norm;
 		tnorm = normalize(NormalMatrix * f_norm);
 		eyeCoords = ModelViewMatrix * vec4(f_norm, 1.0);
-		//for (int i = 0; i < gl_in.length(); i++)
-		//{
-		//float v = ;
 		gl_Position = GetNDCPos(gl_in[0].gl_Position.xyz);
 		EmitVertex();
 		gl_Position = GetNDCPos(gl_in[1].gl_Position.xyz);
@@ -105,7 +78,6 @@ void GlyphRenderable::LoadShaders()
 		EmitVertex();
 		gl_Position = GetNDCPos(gl_in[2].gl_Position.xyz);
 		EmitVertex();
-		//}
 		EndPrimitive();
 	}
 	);
@@ -118,47 +90,15 @@ void GlyphRenderable::LoadShaders()
 	uniform vec3 Kd; // Diffuse reflectivity
 	uniform vec3 Ks; // Diffuse reflectivity
 	uniform float Shininess;
-	in vec4 eyeCoords;
-	flat in vec3 f_norm;
-	flat in vec3 tnorm;
-	layout(location = 0) out vec4 FragColor;
 	uniform samplerCube env;
 
-	vec4 GetColor(float v, float vmin, float vmax)
-	{
-		vec4 c = vec4(0.0, 0.0, 0.0, 1.0);
-		float dv;
-		dv = vmax - vmin;
-		vec4 cm[3];
-		cm[0] = vec4(0, 0, 1, 1);
-		cm[1] = vec4(1, 1, 1, 1);
-		cm[2] = vec4(1, 0, 0, 1);
+	in vec4 eyeCoords;
+	in vec3 f_norm;
+	in vec3 tnorm;
+	layout(location = 0) out vec4 FragColor;
 
-		float pdv = 0.5 * dv;
-
-		int i = 0;
-		for (i = 0; i < 2; i++) {
-			if (v >= (vmin + i*pdv) && v < (vmin + (i + 1)*pdv)) {
-				c.r = cm[i].r + (v - vmin - i*pdv) / pdv * (cm[i + 1].r - cm[i].r);
-				c.g = cm[i].g + (v - vmin - i*pdv) / pdv * (cm[i + 1].g - cm[i].g);
-				c.b = cm[i].b + (v - vmin - i*pdv) / pdv * (cm[i + 1].b - cm[i].b);
-
-				break;
-			}
-		}
-		if (v == vmax) {
-			c.r = cm[2].r;
-			c.g = cm[2].g;
-			c.b = cm[2].b;
-		}
-		return(c);
-	}
-
-	vec3 GetColor2(vec3 norm)
-	{
-		vec3 ret = vec3(0, 0, 0);
-		ret = vec3(abs(norm.x), abs(norm.y), abs(norm.z));
-		return ret;
+	vec3 GetColor2(vec3 norm) {
+		return vec3(abs(norm.x), abs(norm.y), abs(norm.z));
 	}
 
 	vec3 phongModel(vec3 a, vec4 position, vec3 normal) {
@@ -176,9 +116,7 @@ void GlyphRenderable::LoadShaders()
 	}
 
 	void main() {
-		float v = textureCube(env, f_norm).x;
 		vec3 unlitColor = GetColor2(f_norm);
-		//vec3 unlitColor = GetColor(v, 0, 1).xyz;// vec3(v, 0, 0); //vec4((normal.x + 1) * 0.5, (normal.y + 1), (normal.z + 1) * 0.5, 1.0f);
 		FragColor = vec4(phongModel(unlitColor, eyeCoords, tnorm), 1.0);
 	}
 	);
@@ -187,8 +125,6 @@ void GlyphRenderable::LoadShaders()
 	glProg->initFromStrings(vertexVS, vertexFS, vertexGS);
 
 	glProg->addAttribute("VertexPosition");
-	//glProg->addAttribute("VertexNormal");
-
 	glProg->addUniform("LightPosition");
 	glProg->addUniform("Ka");
 	glProg->addUniform("Kd");
@@ -204,50 +140,6 @@ void GlyphRenderable::LoadShaders()
 	glProg->addUniform("env");
 	glProg->addUniform("heightScale");
 
-	//////////////////Picking shader/////////////////////
-	//const char* pickingVS =
-	//	GLSL(
-	//#extension GL_NV_shadow_samplers_cube : enable \n
-	//layout(location = 0) in vec3 VertexPosition;
-	//uniform mat4 ModelViewMatrix;
-	//uniform mat4 ProjectionMatrix;
-	//uniform vec3 Transform;
-	//uniform float Scale;
-	//uniform samplerCube env;
-	//uniform int heightScale;
-	//void main()
-	//{
-	//	vec3 VertexNormal = VertexPosition;
-	//	mat4 MVP = ProjectionMatrix * ModelViewMatrix;
-	//	float v = textureCube(env, VertexNormal).x;
-	//	const float ext = 0.1;
-	//	gl_Position = MVP * vec4(VertexPosition * (ext + v * heightScale) * 0.5 * Scale + Transform, 1.0);
-	//}
-	//);
-
-	//const char* pickingFS =
-	//	GLSL(
-	//layout(location = 0) out vec4 FragColor;
-	//uniform int idx;
-	//void main() {
-	//	FragColor = vec4((idx % 255) / 255.0f, (idx / 255) / 255.0f, 0.0f, 1.0f);
-	//}
-	//);
-
-	//glPickingProg = new ShaderProgram();
-	//glPickingProg->initFromStrings(pickingVS, pickingFS);
-
-	//glPickingProg->addAttribute("VertexPosition");
-	//glPickingProg->addUniform("ModelViewMatrix");
-	//glPickingProg->addUniform("ProjectionMatrix");
-
-	//glPickingProg->addUniform("Transform");
-	//glPickingProg->addUniform("Scale");
-	//glPickingProg->addUniform("env");
-	//glPickingProg->addUniform("idx");
-	//glPickingProg->addUniform("heightScale");
-
-
 }
 
 void GlyphRenderable::init()
@@ -257,16 +149,10 @@ void GlyphRenderable::init()
 	m_vao->create();
 
 	glyphMesh = new GLSphere(1, cubemap->GetCubemapSize());
-	//glyphMesh->SphereMesh(1.0f, 32, 32);
-
-
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	GenVertexBuffer(glyphMesh->GetNumVerts(),
 		glyphMesh->GetVerts());
-
-	//glSelectBuffer(PICK_BUFFER_SIZE, PickBuffer);
-	//RenderMode = GL_RENDER;
 }
 
 GlyphRenderable::GlyphRenderable(Cubemap* r)
@@ -329,23 +215,6 @@ void GlyphRenderable::draw(float modelview[16], float projection[16])
 
 	Renderable::draw(modelview, projection);
 	glMatrixMode(GL_MODELVIEW);
-	
-	//int viewport[4]; /* place to retrieve the viewport numbers */
-	//if (RenderMode == GL_SELECT)
-	//{
-	//	viewport[0] = 0;
-	//	viewport[1] = 0;
-	//	viewport[2] = winWidth;
-	//	viewport[3] = winHeight;
-	//	gluPickMatrix((double)Xmouse, (double)(winHeight - 1 - Ymouse),
-	//		PICK_TOL, PICK_TOL, viewport);
-	//}
-
-	//if (RenderMode == GL_SELECT)
-	//{
-	//	glInitNames();
-	//	glPushName(0xffffffff); /* a strange value */
-	//}
 
 	if (cubesVisible) {
 		for (auto b : bboxes) {
@@ -364,7 +233,6 @@ void GlyphRenderable::draw(float modelview[16], float projection[16])
 		glProg->use();
 		m_vao->bind();
 
-		//float3 ka = make_float3(0.2f, 0.2f, 0.2f);
 		QMatrix4x4 q_modelview = QMatrix4x4(modelview);
 		q_modelview = q_modelview.transposed();
 		qgl->glUniform4f(glProg->uniform("LightPosition"), 0, 0, std::max(std::max(dataDim[0], dataDim[1]), dataDim[2]) * 2, 1);
@@ -493,84 +361,7 @@ void GlyphRenderable::SlotGenCubeAlongLine(float4* line, int nv)
 
 void GlyphRenderable::mousePress(int x, int y, int modifier)
 {
-//	Xmouse = x;
-//	Ymouse = y;
-//	RenderMode = GL_SELECT;
-//	glRenderMode( GL_SELECT );
-//	draw(&matrix_mv.v[0].x, &matrix_pj.v[0].x);
-//	RenderMode = GL_RENDER;
-//	GLint Nhits = glRenderMode( GL_RENDER );
-//#ifdef BUG_KLUDGE
-//	if( Nhits == 0 )
-//	{
-//		RenderMode = GL_SELECT;
-//		glRenderMode( GL_SELECT );
-//		Display();
-//		RenderMode = GL_RENDER;
-//		Nhits = glRenderMode( GL_RENDER );
-//	}
-//#endif
-//	std::cout << "Nhits: " << Nhits << std::endl;
-//	for (int i = 0, index = 0; i < Nhits; i++)
-//	{
-//		GLuint nitems = PickBuffer[index++];
-//		GLuint zmin = PickBuffer[index++];
-//		GLuint zmax = PickBuffer[index++];
-//		//if( Debug )
-//		//{
-//		//	fprintf( stderr,
-//		//		"Hit # %2d: found %2d items on the name stack\n",
-//		//		i, nitems );
-//		//	fprintf( stderr, "\tZmin = 0x%0x, Zmax = 0x%0x\n",
-//		//		zmin, zmax );
-//		//}
-//		for (int j = 0; j < nitems; j++)
-//		{
-//			GLuint  item = PickBuffer[index++];
-//			std::cout << "item: " << item << std::endl;
-//		}
-//	}
-//
-//				//if( Debug )
-//				//	fprintf(stderr, "\t%2d: %6d\n", j, item);
-#if 0
-	glMatrixMode(GL_MODELVIEW);
-	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-	for (int i = 0; i < cubes.size(); i++) {
-		glPushMatrix();
-
-		GLTextureCube* tex = textures[i];// m_textureCubeManager->getBlockTex()[i];
-		Cube* c = cubes[i];
-		float3 shift = make_float3(c->size.x * 0.5 + c->pos.x, c->size.y * 0.5 + c->pos.y, c->size.z * 0.5 + c->pos.z);
-		float min_dim = std::min(std::min(c->size.x, c->size.y), c->size.z);
-
-		glPickingProg->use();
-		m_vao->bind();
-
-		qgl->glUniform3fv(glPickingProg->uniform("Transform"), 1, &shift.x);
-		qgl->glUniform1f(glPickingProg->uniform("Scale"), min_dim);
-		qgl->glUniform1i(glPickingProg->uniform("env"), GLint(0));
-		qgl->glUniform1i(glPickingProg->uniform("idx"), GLint(i));
-		qgl->glUniformMatrix4fv(glPickingProg->uniform("ModelViewMatrix"), 1, GL_FALSE, &matrix_mv.v[0].x);
-		qgl->glUniformMatrix4fv(glPickingProg->uniform("ProjectionMatrix"), 1, GL_FALSE, &matrix_pj.v[0].x);
-
-		tex->bind();
-		glDrawArrays(GL_QUADS, 0, glyphMesh->GetNumVerts());
-		tex->unbind();
-		m_vao->release();
-		glPickingProg->disable();
-		glPopMatrix();
-	}
-	glFlush();
-	glReadBuffer(GL_BACK);
-	GLfloat dataRecord[3];
-	glReadPixels(x, y, 1, 1, GL_RGB, GL_FLOAT, dataRecord);
-	std::cout << "Click was registered.  X: " << x << " Y: " << y << " Index received: " 
-		<< dataRecord[0] << ", " << dataRecord[1] << ", " << dataRecord[2] << ", " << std::endl;
-	int idx = dataRecord[0] * 255 + dataRecord[0] * 255 * 255;
-	std::cout << "idx:" << idx << std::endl;
-	glReadBuffer(GL_FRONT);
-#endif
+	//TODO: add picking functions here to replace the line below
 	int idx = textures.size() * 0.5;
 	emit SigChangeTex(textures[idx], cubes[idx]);
 }
