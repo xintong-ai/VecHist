@@ -48,16 +48,21 @@ void GlyphRenderable::LoadShaders()
 	uniform vec3 Transform;
 	uniform float Scale;
 	uniform samplerCube env;
-	uniform int heightScale;
+	smooth out float height;
 
 	vec3 GetDeformed(vec3 dir, float v){
 		//we use sqrt(), because the projected area is proportional to the square of the radius.
-		return dir * (0.04 + sqrt(v) * heightScale * 0.1);
+		//return dir * (0.04 + sqrt(v) * heightScale * 0.1);
+		return dir * (0.04 + v * 1.5);
 	}
 
-	vec4 GetNDCPos(vec3 v) {
-		return ProjectionMatrix * ModelViewMatrix * vec4(GetDeformed(v, textureCube(env, v).x) * Scale + Transform, 1.0);
+	vec4 GetNDCPos(vec3 v, float h) {
+		return ProjectionMatrix * ModelViewMatrix * vec4(GetDeformed(v, h) * Scale + Transform, 1.0);
 	}
+
+	//vec4 GetNDCPos(vec3 v) {
+	//	return ProjectionMatrix * ModelViewMatrix * vec4(GetDeformed(v, textureCube(env, v).x) * Scale + Transform, 1.0);
+	//}
 
 	void main(void)
 	{
@@ -70,13 +75,17 @@ void GlyphRenderable::LoadShaders()
 			f_norm = -f_norm;
 		tnorm = normalize(NormalMatrix * f_norm);
 		eyeCoords = ModelViewMatrix * vec4(f_norm, 1.0);
-		gl_Position = GetNDCPos(gl_in[0].gl_Position.xyz);
+		height = sqrt(textureCube(env, gl_in[0].gl_Position.xyz).x);
+		gl_Position = GetNDCPos(gl_in[0].gl_Position.xyz, height);
 		EmitVertex();
-		gl_Position = GetNDCPos(gl_in[1].gl_Position.xyz);
+		height = sqrt(textureCube(env, gl_in[1].gl_Position.xyz).x);
+		gl_Position = GetNDCPos(gl_in[1].gl_Position.xyz, height);
 		EmitVertex();
-		gl_Position = GetNDCPos(gl_in[3].gl_Position.xyz);
+		height = sqrt(textureCube(env, gl_in[3].gl_Position.xyz).x);
+		gl_Position = GetNDCPos(gl_in[3].gl_Position.xyz, height);
 		EmitVertex();
-		gl_Position = GetNDCPos(gl_in[2].gl_Position.xyz);
+		height = sqrt(textureCube(env, gl_in[2].gl_Position.xyz).x);
+		gl_Position = GetNDCPos(gl_in[2].gl_Position.xyz, height);
 		EmitVertex();
 		EndPrimitive();
 	}
@@ -91,10 +100,12 @@ void GlyphRenderable::LoadShaders()
 	uniform vec3 Ks; // Diffuse reflectivity
 	uniform float Shininess;
 	uniform samplerCube env;
+	uniform int heightScale;
 
 	in vec4 eyeCoords;
 	in vec3 f_norm;
 	in vec3 tnorm;
+	smooth in float height;
 	layout(location = 0) out vec4 FragColor;
 
 	vec3 GetColor2(vec3 norm) {
@@ -118,6 +129,8 @@ void GlyphRenderable::LoadShaders()
 	void main() {
 		vec3 unlitColor = GetColor2(f_norm);
 		FragColor = vec4(phongModel(unlitColor, eyeCoords, tnorm), 1.0);
+		if (height < 0.03 * heightScale || height > 0.04 * heightScale)
+			FragColor = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 	}
 	);
 
@@ -162,13 +175,19 @@ GlyphRenderable::GlyphRenderable(Cubemap* r)
 
 void GlyphRenderable::UpdateData()
 {
+	int dim0 = dataDim[sliceDimIdx];
 	int dim1 = dataDim[(sliceDimIdx + 1) % 3];
 	int dim2 = dataDim[(sliceDimIdx + 2) % 3];
 	int n_step = 0;
-	if (dim1 < dim2)
+	//use the smallest dimension
+	if (dim1 < dim2 )//&& dim1 < dim0)
 		n_step = dim1 / numGlyphPerDim;
-	else
+	else// if (dim2 < dim0 && dim2 < dim1)
 		n_step = dim2 / numGlyphPerDim;
+	if (n_step > dim0)
+		return;
+		//else
+	//	n_step = dim0 / numGlyphPerDim;
 	std::cout << "n_step: " << n_step << std::endl;
 	int numGlyphSide1 = dim1 / n_step;
 	int numGlyphSide2 = dim2 / n_step;
@@ -184,6 +203,7 @@ void GlyphRenderable::UpdateData()
 			startCoords[(sliceDimIdx + 2) % 3] = j * n_step;
 
 			Cube* c = new Cube(startCoords[0], startCoords[1], startCoords[2], n_step, n_step, n_step);
+			c->phase = rand() % 20;
 			cubemap->GenCubeMapOptimized(c->pos.x, c->pos.y, c->pos.z, c->size.x, c->size.y, c->size.z, c->data, c->cubemap_size);
 			cubes.push_back(c);
 		}
@@ -242,7 +262,8 @@ void GlyphRenderable::draw(float modelview[16], float projection[16])
 		qgl->glUniform1f(glProg->uniform("Shininess"), 5);
 		qgl->glUniform3fv(glProg->uniform("Transform"), 1, &shift.x);
 		qgl->glUniform1f(glProg->uniform("Scale"), min_dim);
-		qgl->glUniform1i(glProg->uniform("heightScale"), heightScale);
+		qgl->glUniform1i(glProg->uniform("heightScale"), (heightScale + c->phase) % 20);
+		//qgl->glUniform1i(glProg->uniform("heightScale"), heightScale);
 		qgl->glUniform1i(glProg->uniform("env"), GLint(0));
 		qgl->glUniformMatrix4fv(glProg->uniform("ModelViewMatrix"), 1, GL_FALSE, modelview);
 		qgl->glUniformMatrix4fv(glProg->uniform("ProjectionMatrix"), 1, GL_FALSE, projection);

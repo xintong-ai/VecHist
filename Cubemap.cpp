@@ -276,7 +276,7 @@ void Cubemap::GenCubeMapOptimized(int x, int y, int z, int nx, int ny, int nz, f
 				int ix = i + x;
 				int idx = ix + iy * innerDim[0] + iz * innerDim[0] * innerDim[1];
 				//datablock[k * nx * ny + j * nx + i] = dataIdx[idx];
-				#pragma omp parallel for
+				//#pragma omp parallel for
 				for (int l = 0; l < size3; l++)	{
 					cubemap[l] += innerData[idx * size3 + l];
 					//std::cout << l << " ";

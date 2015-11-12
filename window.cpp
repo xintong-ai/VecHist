@@ -50,8 +50,9 @@ Window::Window()
     openGL->setFormat(format); // must be called before the widget or its parent window gets shown
 
 	//VecReader* vecReader = new VecReader("D:/data/plume/15plume3d421-504x504x2048.vec");
-	//VecReader* vecReader = new VecReader("D:/OneDrive/data/plume/15plume3d421.vec");
-	VecReader* vecReader = new VecReader("D:/OneDrive/data/plume/15plume3d421-126x126x512.vec");
+	VecReader* vecReader = new VecReader("D:/OneDrive/data/plume/15plume3d421.vec");
+	//VecReader* vecReader = new VecReader("D:/OneDrive/data/plume/15plume3d421-504x504x2048.vec");
+	//VecReader* vecReader = new VecReader("D:/OneDrive/data/isabel/UVWf01.vec");
 	//VecReader* vecReader = new VecReader("D:/OneDrive/data/tornado/1.vec");
 
 
@@ -186,7 +187,7 @@ Window::Window()
 	sliceSlider->setRange(0, cubemap->GetInnerDim( glyphRenderable->GetSliceDimIdx())/*vecReader->GetVolumeDim().z*/ - 1);
 	sliceSlider->setValue(0);
 
-	QLabel* sliceThicknessLabel = new QLabel("Slice Thickness:", this);
+	QLabel* sliceThicknessLabel = new QLabel("Number of layers:", this);
 	QSlider* numPartSlider = new QSlider(Qt::Horizontal);
 	//numPartSlider->setFixedSize(120, 30);
 	numPartSlider->setRange(1, 32);
@@ -230,7 +231,7 @@ Window::Window()
 
 	aTimer = new QTimer;
 	connect(aTimer,SIGNAL(timeout()),SLOT(animate()));
-	aTimer->start(50);
+	aTimer->start(20);
 	aTimer->stop();
 	
 
