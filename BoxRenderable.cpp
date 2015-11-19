@@ -34,6 +34,8 @@ BoxRenderable::BoxRenderable(int3 _pos, int3 _dim)
 
 void BoxRenderable::draw(float modelview[16], float projection[16])
 {
+	if (!visible)
+		return;
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glTranslatef(pos.x, pos.y, pos.z);

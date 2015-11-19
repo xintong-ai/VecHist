@@ -53,7 +53,7 @@ void GlyphRenderable::LoadShaders()
 	vec3 GetDeformed(vec3 dir, float v){
 		//we use sqrt(), because the projected area is proportional to the square of the radius.
 		//return dir * (0.04 + sqrt(v) * heightScale * 0.1);
-		return dir * (0.04 + v * 1.5);
+		return dir * (0.05 + v * 1.8);
 	}
 
 	vec4 GetNDCPos(vec3 v, float h) {
@@ -75,16 +75,16 @@ void GlyphRenderable::LoadShaders()
 			f_norm = -f_norm;
 		tnorm = normalize(NormalMatrix * f_norm);
 		eyeCoords = ModelViewMatrix * vec4(f_norm, 1.0);
-		height = sqrt(textureCube(env, gl_in[0].gl_Position.xyz).x);
+		height = pow(textureCube(env, gl_in[0].gl_Position.xyz).x, 0.5);// 0.333);
 		gl_Position = GetNDCPos(gl_in[0].gl_Position.xyz, height);
 		EmitVertex();
-		height = sqrt(textureCube(env, gl_in[1].gl_Position.xyz).x);
+		height = pow(textureCube(env, gl_in[1].gl_Position.xyz).x, 0.5);//0.333);
 		gl_Position = GetNDCPos(gl_in[1].gl_Position.xyz, height);
 		EmitVertex();
-		height = sqrt(textureCube(env, gl_in[3].gl_Position.xyz).x);
+		height = pow(textureCube(env, gl_in[3].gl_Position.xyz).x, 0.5);//0.333);
 		gl_Position = GetNDCPos(gl_in[3].gl_Position.xyz, height);
 		EmitVertex();
-		height = sqrt(textureCube(env, gl_in[2].gl_Position.xyz).x);
+		height = pow(textureCube(env, gl_in[2].gl_Position.xyz).x, 0.5);//0.333);
 		gl_Position = GetNDCPos(gl_in[2].gl_Position.xyz, height);
 		EmitVertex();
 		EndPrimitive();
@@ -128,9 +128,12 @@ void GlyphRenderable::LoadShaders()
 
 	void main() {
 		vec3 unlitColor = GetColor2(f_norm);
-		FragColor = vec4(phongModel(unlitColor, eyeCoords, tnorm), 1.0);
-		if (height < 0.03 * heightScale || height > 0.04 * heightScale)
-			FragColor = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+		FragColor = vec4(phongModel(unlitColor, eyeCoords, tnorm) * 0.5, 1.0);
+		//FragColor = vec4(phongModel(unlitColor, eyeCoords, tnorm), 1.0);
+		if (height > 0.03 * heightScale && height < 0.04 * heightScale)
+		//if (height > 0.05 * heightScale && height < 0.04 * heightScale)
+			//if (height < 0.0001 || height < 0.03 * heightScale || height > 0.04 * heightScale)
+			FragColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	}
 	);
 

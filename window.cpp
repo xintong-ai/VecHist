@@ -68,6 +68,7 @@ Window::Window()
 	openGL->AddRenderable("glyphs", glyphRenderable);
 
 	BoxRenderable* bbox = new BoxRenderable(cubemap->GetInnerDim());
+	bbox->SetVisibility(true);
 	openGL->SetVol(cubemap->GetInnerDim());
 	openGL->AddRenderable("bbox", bbox);
 
