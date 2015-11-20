@@ -19,6 +19,9 @@ public:
 	void init() override;
 	void draw(float modelview[16], float projection[16]) override;
 	void UpdateData() override;
+
+	//CHANGE_Huijie
+	void drawPicking(float modelview[16], float projection[16]) override;
 	
 	GlyphRenderable(Cubemap* r);
 	void SetCubemap(Cubemap* r) { cubemap = r; }
@@ -52,6 +55,11 @@ private:
 	bool updated = false;
 	int dataDim[3];
 	bool cubesVisible = false;
+
+	//CHANGE_Huijie
+	//bool picking = false;
+	unsigned int framebufID = 0;
+
 protected:
 	void mousePress(int x, int y, int modifier) override;
 

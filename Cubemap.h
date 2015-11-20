@@ -10,6 +10,11 @@ struct Cube{
 	float* data = nullptr;
 	int cubemap_size;
 	int phase;
+
+	//CHANGE_Huijie: define the global cubemaps max&min value of the slice
+	static float cubeMaxValue;
+	static float cubeMinValue;
+
 	//Cube(int x, int y, int z, int nx, int ny, int nz, int cubemap_size) {
 	//	pos = make_int3(x, y, z);
 	//	size = make_int3(nx, ny, nz);

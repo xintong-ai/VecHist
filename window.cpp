@@ -50,7 +50,7 @@ Window::Window()
     openGL->setFormat(format); // must be called before the widget or its parent window gets shown
 
 	//VecReader* vecReader = new VecReader("D:/data/plume/15plume3d421-504x504x2048.vec");
-	VecReader* vecReader = new VecReader("D:/OneDrive/data/plume/15plume3d421.vec");
+	VecReader* vecReader = new VecReader("E:/OSU-files/HaloWorkNew/vechist_data/15plume3d421.vec");
 	//VecReader* vecReader = new VecReader("D:/OneDrive/data/plume/15plume3d421-504x504x2048.vec");
 	//VecReader* vecReader = new VecReader("D:/OneDrive/data/isabel/UVWf01.vec");
 	//VecReader* vecReader = new VecReader("D:/OneDrive/data/tornado/1.vec");

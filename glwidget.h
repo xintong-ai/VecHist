@@ -74,6 +74,12 @@ private:
     QPointF prevPos;//previous mouse position
     Rotation *rot;
 
+	//CHANGE_Huijie
+	GLuint framebuffer, renderbuffer[2];
+	bool picking = false;
+	int xMouse, yMouse;
+	int pickID;
+
     /****timing****/
     StopWatchInterface *timer = 0;
     int m_frame;
