@@ -3,6 +3,7 @@
 #include <vector>
 #include <vector_types.h>
 #include <vector_functions.h>
+#include <helper_math.h>
 #include <memory>
 #include <iostream>
 #include <omp.h>
@@ -207,6 +208,17 @@ void Cubemap::CountIndex(unsigned short* out, float3* in, int n)
 	}
 }
 
+//GetAvgMag(&avgMag[idx], datablock.get(), totalSz);
+inline void GetAvgMag(float& out, float3* in, int n)
+{
+	float sum = 0;
+	for (int i = 0; i < n; i++) {
+		sum += length(in[i]);
+	}
+	out = (sum / n);
+}
+
+
 void Cubemap::IndexVolumeByHist()
 {
 	mergeStep = std::max(dim[0], std::max(dim[1], dim[2])) / 200;
@@ -219,6 +231,10 @@ void Cubemap::IndexVolumeByHist()
 	if (nullptr != innerData)
 		delete [] innerData;
 	innerData = new unsigned short[innerDataSize];
+	if (nullptr != avgMag)
+		delete[] avgMag;
+	avgMag = new float[innerDim[0] * innerDim[1] * innerDim[2]];
+
 	const int size3 = cubemap_size * cubemap_size * 6;
 	#pragma omp parallel for
 	for (int k = 0; k < innerDim[2]; k++) {
@@ -233,8 +249,10 @@ void Cubemap::IndexVolumeByHist()
 				GetBlockXYZ(datablock.get(), (float3*)vecReader->GetVecData(), 
 					i * mergeStep, j * mergeStep, k * mergeStep,
 					sz[0], sz[1], sz[2]);
-				CountIndex(&innerData[(k * innerDim[0] * innerDim[1] + j * innerDim[0] + i) * size3],
+				int idx = k * innerDim[0] * innerDim[1] + j * innerDim[0] + i;
+				CountIndex(&innerData[idx * size3],
 					datablock.get(), totalSz);
+				GetAvgMag(avgMag[idx], datablock.get(), totalSz);
 			}
 		}
 		//std::cout << k << " ";
@@ -254,7 +272,7 @@ void Cubemap::GenCubeMap(int x, int y, int z, int nx, int ny, int nz, float* &cu
 	_cubemap_size = cubemap_size;
 }
 
-void Cubemap::GenCubeMapOptimized(int x, int y, int z, int nx, int ny, int nz, float* &cubemap, int& _cubemap_size)
+void Cubemap::GenCubeMapOptimized(int x, int y, int z, int nx, int ny, int nz, float* &cubemap, int& _cubemap_size, float &mag)
 {
 	int cubeSizeTotal = nx * ny * nz;// c->GetTotalSize();// qCubeSize[0] * qCubeSize[1] * qCubeSize[2];
 //	std::unique_ptr<int3[]> datablock(new int3[cubeSizeTotal]);
@@ -268,6 +286,7 @@ void Cubemap::GenCubeMapOptimized(int x, int y, int z, int nx, int ny, int nz, f
 	//ComputeCubeMap(datablock.get(), cubeSizeTotal, cubemap, cubemap_size);
 	_cubemap_size = cubemap_size;
 
+	float magSum = 0;
 	for (int k = 0; k < nz; k++)	{
 		int iz = k + z;
 		for (int j = 0; j < ny; j++)	{
@@ -281,9 +300,11 @@ void Cubemap::GenCubeMapOptimized(int x, int y, int z, int nx, int ny, int nz, f
 					cubemap[l] += innerData[idx * size3 + l];
 					//std::cout << l << " ";
 				}
+				magSum += avgMag[idx];
 			}
 		}
 	}
+	mag = magSum / cubeSizeTotal;
 
 	for (int j = 0; j < 6; j++)	{
 		for (int i = 0; i < size2; i++)	{
@@ -437,4 +458,6 @@ Cubemap::~Cubemap()
 {
 	if (nullptr != innerData)
 		delete [] innerData;
+	if (nullptr != avgMag)
+		delete[] avgMag;
 }

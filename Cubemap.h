@@ -10,6 +10,7 @@ struct Cube{
 	float* data = nullptr;
 	int cubemap_size;
 	int phase;
+	float mag;
 	//Cube(int x, int y, int z, int nx, int ny, int nz, int cubemap_size) {
 	//	pos = make_int3(x, y, z);
 	//	size = make_int3(nx, ny, nz);
@@ -40,6 +41,7 @@ class Cubemap{
 	int mergeStep = 2;	//every step x step x step cube becomes internal unit.
 	int innerDim[3];
 	unsigned short* innerData = nullptr;// cubemap for each inner block
+	float* avgMag = nullptr;
 	void GetBlockXYZ(float3* out, float3* in, int x, int y, int z, int nx, int ny, int nz);
 	void CountIndex(unsigned short* out, float3* in, int n);
 	std::vector<float> solAng;//
@@ -50,7 +52,7 @@ public:
 	void IndexVolumeByHist();
 	int GetCubemapSize() { return cubemap_size; }
 	void GenCubeMap(int x, int y, int z, int nx, int ny, int nz, float* &cubemap, int& _cubemap_size);
-	void GenCubeMapOptimized(int x, int y, int z, int nx, int ny, int nz, float* &cubemap, int& _cubemap_size);
+	void GenCubeMapOptimized(int x, int y, int z, int nx, int ny, int nz, float* &cubemap, int& _cubemap_size, float &mag);
 	int3 GetInnerDim(){ return make_int3(innerDim[0], innerDim[1], innerDim[2]); }
 	int GetInnerDim(int i){ return innerDim[i]; }
 };
