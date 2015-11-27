@@ -71,6 +71,7 @@ void GLWidget::initializeGL()
 		GL_RENDERBUFFER, renderbuffer[0]);
 	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
 		GL_RENDERBUFFER, renderbuffer[1]);
+
 }
 
 void GLWidget::cleanup()
@@ -242,6 +243,7 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
 		renderer.second->mousePress(posGL.x(), posGL.y(), QApplication::keyboardModifiers());*/
 
     prevPos = pos;
+	//CHANGE_Huijie
 	update();
 }
 
@@ -253,7 +255,6 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
 	pinched = false;
 
 	QPoint posGL = pixelPosToGLPos(event->pos());
-
 	for (auto renderer : renderers)
 		renderer.second->mouseRelease(posGL.x(), posGL.y(), QApplication::keyboardModifiers());
 }

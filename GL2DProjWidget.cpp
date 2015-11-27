@@ -3,6 +3,8 @@
 #include <vector_functions.h>
 #include <GLTextureCube.h>
 #include "Cubemap.h"
+//CHANGE_Huijie
+#include <GL/freeglut.h>
 
 #define qgl	QOpenGLContext::currentContext()->functions()
 #include "ShaderProgram.h"
@@ -16,47 +18,6 @@ GL2DProjWidget::GL2DProjWidget(QWidget *parent)
 	QSizePolicy p(sizePolicy());
 	p.setHeightForWidth(true);
 	setSizePolicy(p);
-
-	//CHANGE_Huijie
-	ReadColormap();
-}
-
-//CHANGE_Huijie
-void GL2DProjWidget::ReadColormap()
-{
-	std::ifstream fin;
-	fin.open("ColorMap1.txt", std::ios::in);
-	if (!fin.is_open()){
-		std::cerr << "Error: unable to read the input colormap file."
-			<< std::endl;
-	}
-
-	for (int i = 0; i < 10; ++i){
-		for (int j = 0; j < 3; ++j){
-			fin >> colormapRed[i][j];
-			colormapRed[i][j] = 1.0 * colormapRed[i][j] / 255;
-			//std::cout << colormapRed[i][j] << " ";
-		}
-	}
-
-	for (int i = 0; i < 10; ++i){
-		for (int j = 0; j < 3; ++j){
-			fin >> colormapGreen[i][j];
-			colormapGreen[i][j] = 1.0 * colormapGreen[i][j] / 255;
-			//std::cout << colormapGreen[i][j] << " ";
-		}
-	}
-
-	for (int i = 0; i < 10; ++i){
-		for (int j = 0; j < 3; ++j){
-			fin >> colormapBlue[i][j];
-			colormapBlue[i][j] = 1.0 * colormapBlue[i][j] / 255;
-			//std::cout << colormapBlue[i][j] << " ";
-		}
-	}
-
-	fin.close();
-	fin.clear();
 }
 
 GL2DProjWidget::~GL2DProjWidget()
@@ -97,75 +58,60 @@ void GL2DProjWidget::loadShaders()
 	//CHANGE_Huijie
 	uniform float cmax;
 	uniform float cmin;
-	uniform vec3 cmRed[10];
-	uniform vec3 cmGreen[10];
-	uniform vec3 cmBlue[10];
+	uniform int cubesize;
 
 	void main(){
 		float theta = UV.x * PI;
 		float phi = UV.y * PI * 0.5;
 		vec3 norm = vec3(cos(phi) * cos(theta), sin(phi), cos(phi) * sin(theta));
-		//float v = textureCube(env, norm).x * 10;
-		//color = vec3(v, v, v);
+		/*float v = textureCube(env, norm).x * 10 + (cmax - cmin) * 0.0001;
+		color = vec3(v, v, v);*/
 
 		//CHANGE_Huijie
+		color = vec3(0.0, 0.0, 0.0);
 		float v = textureCube(env, norm).x;
-		float frac = 0.6;
-		float pdv = (1 - frac) * (cmax - cmin) / 8.0;
-		color = vec3(0.8, 0.8, 0.8);
-		if (v < 0.000001)
-			color = vec3(0.8f, 0.8f, 0.8f);
-		else if (abs(norm.x) >= abs(norm.y) && abs(norm.x) >= abs(norm.z)){
-			if (v >= cmax - frac*(cmax - cmin)){
-				color.r = cmRed[8].r + (v - cmin - (1 - frac)*(cmax - cmin)) / (frac*(cmax - cmin)) * (cmRed[9].r - cmRed[8].r);
-				color.g = cmRed[8].g + (v - cmin - (1 - frac)*(cmax - cmin)) / (frac*(cmax - cmin)) * (cmRed[9].g - cmRed[8].g);
-				color.b = cmRed[8].b + (v - cmin - (1 - frac)*(cmax - cmin)) / (frac*(cmax - cmin)) * (cmRed[9].b - cmRed[8].b);
-			}
-			else{
-				int i = 0;
-				for (i = 0; i < 8; i++) {
-					if (v >= (cmin + i*pdv) && v < (cmin + (i + 1)*pdv)) {
-						color.r = cmRed[i].r + (v - cmin - i*pdv) / pdv * (cmRed[i + 1].r - cmRed[i].r);
-						color.g = cmRed[i].g + (v - cmin - i*pdv) / pdv * (cmRed[i + 1].g - cmRed[i].g);
-						color.b = cmRed[i].b + (v - cmin - i*pdv) / pdv * (cmRed[i + 1].b - cmRed[i].b);
-						break;
-					}
+		float c = (v - cmin) / (cmax - cmin);
+		color = vec3(c, c, c);
+		//color = vec3(0.8, 0.8, 0.8);
+
+		if (abs(norm.x) > abs(norm.y) && abs(norm.x) > abs(norm.z)){
+			double a = norm.y / abs(norm.x);
+			double b = norm.z / abs(norm.x);
+			double d = 2.0 / (cubesize - 1);
+			for (int i = 0; i < cubesize - 1; ++i){
+				double err = 0.018;
+				if (a + 1.0 - (i + 0.5) * d < err && a + 1.0 - (i + 0.5) * d > -err ||
+					b + 1.0 - (i + 0.5) * d < err && b + 1.0 - (i + 0.5) * d > -err){
+					color = vec3(abs(norm.x), abs(norm.y), abs(norm.z));
+					break;
 				}
 			}
 		}
-		else if (abs(norm.y) >= abs(norm.x) && abs(norm.y) >= abs(norm.z)){
-			if (v >= cmax - frac*(cmax - cmin)){
-				color.r = cmGreen[8].r + (v - cmin - (1 - frac)*(cmax - cmin)) / (frac*(cmax - cmin)) * (cmGreen[9].r - cmGreen[8].r);
-				color.g = cmGreen[8].g + (v - cmin - (1 - frac)*(cmax - cmin)) / (frac*(cmax - cmin)) * (cmGreen[9].g - cmGreen[8].g);
-				color.b = cmGreen[8].b + (v - cmin - (1 - frac)*(cmax - cmin)) / (frac*(cmax - cmin)) * (cmGreen[9].b - cmGreen[8].b);
-			}
-			else{
-				int i = 0;
-				for (i = 0; i < 8; i++) {
-					if (v >= (cmin + i*pdv) && v < (cmin + (i + 1)*pdv)) {
-						color.r = cmGreen[i].r + (v - cmin - i*pdv) / pdv * (cmGreen[i + 1].r - cmGreen[i].r);
-						color.g = cmGreen[i].g + (v - cmin - i*pdv) / pdv * (cmGreen[i + 1].g - cmGreen[i].g);
-						color.b = cmGreen[i].b + (v - cmin - i*pdv) / pdv * (cmGreen[i + 1].b - cmGreen[i].b);
-						break;
-					}
+		else if (abs(norm.y) > abs(norm.x) && abs(norm.y) > abs(norm.z)){
+			double a = norm.x / abs(norm.y);
+			double b = norm.z / abs(norm.y);
+			double d = 2.0 / (cubesize - 1);
+			for (int i = 0; i < cubesize - 1; ++i){
+				double err = 0.018;
+				
+				if (a + 1.0 - (i + 0.5) * d < err && a + 1.0 - (i + 0.5) * d > -err ||
+					b + 1.0 - (i + 0.5) * d < err && b + 1.0 - (i + 0.5) * d > -err){
+					color = vec3(abs(norm.x), abs(norm.y), abs(norm.z));
+					break;
 				}
 			}
 		}
-		else if (abs(norm.z) >= abs(norm.x) && abs(norm.z) >= abs(norm.y)){
-			if (v >= cmax - frac*(cmax - cmin)){
-				color.r = cmBlue[8].r + (v - cmin - (1 - frac)*(cmax - cmin)) / (frac*(cmax - cmin)) * (cmBlue[9].r - cmBlue[8].r);
-				color.g = cmBlue[8].g + (v - cmin - (1 - frac)*(cmax - cmin)) / (frac*(cmax - cmin)) * (cmBlue[9].g - cmBlue[8].g);
-				color.b = cmBlue[8].b + (v - cmin - (1 - frac)*(cmax - cmin)) / (frac*(cmax - cmin)) * (cmBlue[9].b - cmBlue[8].b);
-			}
-			else{
-				int i = 0;
-				for (i = 0; i < 8; i++) {
-					if (v >= (cmin + i*pdv) && v < (cmin + (i + 1)*pdv)) {
-						color.r = cmBlue[i].r + (v - cmin - i*pdv) / pdv * (cmBlue[i + 1].r - cmBlue[i].r);
-						color.g = cmBlue[i].g + (v - cmin - i*pdv) / pdv * (cmBlue[i + 1].g - cmBlue[i].g);
-						color.b = cmBlue[i].b + (v - cmin - i*pdv) / pdv * (cmBlue[i + 1].b - cmBlue[i].b);
-						break;
-					}
+		else if (abs(norm.z) > abs(norm.x) && abs(norm.z) > abs(norm.y)){
+			double a = norm.x / abs(norm.z);
+			double b = norm.y / abs(norm.z);
+			double d = 2.0 / (cubesize - 1);
+			for (int i = 0; i < cubesize - 1; ++i){
+				double err = 0.018;
+				
+				if (a + 1.0 - (i + 0.5) * d < err && a + 1.0 - (i + 0.5) * d > -err ||
+					b + 1.0 - (i + 0.5) * d < err && b + 1.0 - (i + 0.5) * d > -err){
+					color = vec3(abs(norm.x), abs(norm.y), abs(norm.z));
+					break;
 				}
 			}
 		}
@@ -176,7 +122,6 @@ void GL2DProjWidget::loadShaders()
 		GLSL(
 	layout(location = 0) in vec3 vertexPosition;
 	smooth out vec2 UV;
-
 	void main(){
 		gl_Position = vec4(vertexPosition.x, vertexPosition.y, vertexPosition.z, 1);
 		UV = (vertexPosition.xy + 1) * 0.5;
@@ -191,78 +136,21 @@ void GL2DProjWidget::loadShaders()
 	//CHANGE_Huijie
 	uniform float cmax;
 	uniform float cmin;
-	uniform vec3 cmRed[10];
-	uniform vec3 cmGreen[10];
-	uniform vec3 cmBlue[10];
 
 	void main(){
 		//color = texture(tex, UV).rgb * 10;// *0.000001 + vec3(UV.x, UV.y, 0);
 
 		//CHANGE_Huijie
-		color = vec3(0.8, 0.8, 0.8);
-		int sca = 50;
-		float frac = 0.6;
+		//color = vec3(0.8, 0.8, 0.8);
+		color = vec3(0.0, 0.0, 0.0);
+		float frac = 0.4;
+		float colMiddle = 0.9;
+		float vMiddle = (cmax - cmin) * frac;
+		color = vec3(0.0, 0.0, 0.0);
 		float v = texture(tex, UV).x;
-		float pdv = (1 - frac) * (cmax - cmin) / 8.0;
-		if (v < 0.000001)
-			color = vec3(0.8f, 0.8f, 0.8f);
-		else if (((UV.x >= 0.25 && UV.x <= 0.5) && (UV.y >= 0 && UV.y <= 1.0 / 3.0)) ||
-			((UV.x >= 0.25 && UV.x <= 0.5) && (UV.y >= 2.0 / 3.0 && UV.y <= 1.0))){
-			if (v >= cmax - frac*(cmax - cmin)){
-				color.r = cmGreen[8].r + (v - cmin - (1 - frac)*(cmax - cmin)) / (frac*(cmax - cmin)) * (cmGreen[9].r - cmGreen[8].r);
-				color.g = cmGreen[8].g + (v - cmin - (1 - frac)*(cmax - cmin)) / (frac*(cmax - cmin)) * (cmGreen[9].g - cmGreen[8].g);
-				color.b = cmGreen[8].b + (v - cmin - (1 - frac)*(cmax - cmin)) / (frac*(cmax - cmin)) * (cmGreen[9].b - cmGreen[8].b);
-			}
-			else{
-				int i = 0;
-				for (i = 0; i < 8; i++) {
-					if (v >= (cmin + i*pdv) && v < (cmin + (i + 1)*pdv)) {
-						color.r = cmGreen[i].r + (v - cmin - i*pdv) / pdv * (cmGreen[i + 1].r - cmGreen[i].r);
-						color.g = cmGreen[i].g + (v - cmin - i*pdv) / pdv * (cmGreen[i + 1].g - cmGreen[i].g);
-						color.b = cmGreen[i].b + (v - cmin - i*pdv) / pdv * (cmGreen[i + 1].b - cmGreen[i].b);
-						break;
-					}
-				}
-			}
-		}
-		else if (((UV.x >= 0 && UV.x <= 0.25) && (UV.y >= 1.0 / 3.0 && UV.y <= 2.0 / 3.0)) ||
-			((UV.x >= 0.5 && UV.x <= 0.75) && (UV.y >= 1.0 / 3.0 && UV.y <= 2.0 / 3.0))){
-			if (v >= cmax - frac*(cmax - cmin)){
-				color.r = cmRed[8].r + (v - cmin - (1 - frac)*(cmax - cmin)) / (frac*(cmax - cmin)) * (cmRed[9].r - cmRed[8].r);
-				color.g = cmRed[8].g + (v - cmin - (1 - frac)*(cmax - cmin)) / (frac*(cmax - cmin)) * (cmRed[9].g - cmRed[8].g);
-				color.b = cmRed[8].b + (v - cmin - (1 - frac)*(cmax - cmin)) / (frac*(cmax - cmin)) * (cmRed[9].b - cmRed[8].b);
-			}
-			else{
-				int i = 0;
-				for (i = 0; i < 8; i++) {
-					if (v >= (cmin + i*pdv) && v < (cmin + (i + 1)*pdv)) {
-						color.r = cmRed[i].r + (v - cmin - i*pdv) / pdv * (cmRed[i + 1].r - cmRed[i].r);
-						color.g = cmRed[i].g + (v - cmin - i*pdv) / pdv * (cmRed[i + 1].g - cmRed[i].g);
-						color.b = cmRed[i].b + (v - cmin - i*pdv) / pdv * (cmRed[i + 1].b - cmRed[i].b);
-						break;
-					}
-				}
-			}
-		}
-		else if (((UV.x >= 0.25 && UV.x <= 0.5) && (UV.y >= 1.0 / 3.0 && UV.y <= 2.0 / 3.0)) ||
-			((UV.x >= 0.75 && UV.x <= 1.0) && (UV.y >= 1.0 / 3.0 && UV.y <= 2.0 / 3.0))){
-			if (v >= cmax - frac*(cmax - cmin)){
-				color.r = cmBlue[8].r + (v - cmin - (1 - frac)*(cmax - cmin)) / (frac*(cmax - cmin)) * (cmBlue[9].r - cmBlue[8].r);
-				color.g = cmBlue[8].g + (v - cmin - (1 - frac)*(cmax - cmin)) / (frac*(cmax - cmin)) * (cmBlue[9].g - cmBlue[8].g);
-				color.b = cmBlue[8].b + (v - cmin - (1 - frac)*(cmax - cmin)) / (frac*(cmax - cmin)) * (cmBlue[9].b - cmBlue[8].b);
-			}
-			else{
-				int i = 0;
-				for (i = 0; i < 8; i++) {
-					if (v >= (cmin + i*pdv) && v < (cmin + (i + 1)*pdv)) {
-						color.r = cmBlue[i].r + (v - cmin - i*pdv) / pdv * (cmBlue[i + 1].r - cmBlue[i].r);
-						color.g = cmBlue[i].g + (v - cmin - i*pdv) / pdv * (cmBlue[i + 1].g - cmBlue[i].g);
-						color.b = cmBlue[i].b + (v - cmin - i*pdv) / pdv * (cmBlue[i + 1].b - cmBlue[i].b);
-						break;
-					}
-				}
-			}
-		}
+		float c = (v - cmin) / (cmax - cmin);
+		color = vec3(c, c, c);
+		
 	}
 	);
 
@@ -273,10 +161,7 @@ void GL2DProjWidget::loadShaders()
 	glProg->addUniform("env");
 	glProg->addUniform("cmax");
 	glProg->addUniform("cmin");
-	glProg->addUniform("cmRed");
-	glProg->addUniform("cmGreen");
-	glProg->addUniform("cmBlue");
-	//glProg->addUniform("cubesize");
+	glProg->addUniform("cubesize");
 
 	glProg6Faces = new ShaderProgram();
 	glProg6Faces->initFromStrings(slice2D6FacesVS, slice2D6FacesFS);
@@ -284,10 +169,27 @@ void GL2DProjWidget::loadShaders()
 	glProg6Faces->addUniform("tex");
 	glProg6Faces->addUniform("cmax");
 	glProg6Faces->addUniform("cmin");
-	glProg6Faces->addUniform("cmRed");
-	glProg6Faces->addUniform("cmGreen");
-	glProg6Faces->addUniform("cmBlue");
 	
+	//CHANGE_Huijie
+	const char* gridVS =
+	GLSL(
+	layout(location = 0) in vec3 vertexPosition;
+	void main(){
+		gl_Position = vec4(vertexPosition.x, vertexPosition.y, vertexPosition.z, 1);
+	}
+	);
+
+	const char* gridFS =
+	GLSL(
+	out vec3 fragColor;
+	void main(){
+		fragColor = vec3(1.0f, 1.0f, 1.0f);
+	}
+	);
+
+	glProgGrid = new ShaderProgram();
+	glProgGrid->initFromStrings(gridVS, gridFS);
+	glProgGrid->addAttribute("vertexPosition");
 }
 
 void GL2DProjWidget::initializeGL()
@@ -295,10 +197,10 @@ void GL2DProjWidget::initializeGL()
 	initializeOpenGLFunctions();
 	loadShaders();
 	float3 corners[] = {
-		make_float3(-1, -1, 0),
-		make_float3(1, -1, 0),
-		make_float3(1, 1, 0),
-		make_float3(-1, 1, 0)
+		make_float3(-1, -1, -0.1),
+		make_float3(1, -1, -0.1),
+		make_float3(1, 1, -0.1),
+		make_float3(-1, 1, -0.1)
 	};
 
 	m_vao = new QOpenGLVertexArrayObject();
@@ -311,7 +213,16 @@ void GL2DProjWidget::initializeGL()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glEnableVertexAttribArray(glProg->attribute("vertexPosition"));
 	m_vao->release();
+
+	
 }
+
+//CHANGE_Huijie
+void draw_string(const char* str)
+{
+	for (unsigned i = 0; i<strlen(str); i++)
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, str[i]);
+};
 
 void GL2DProjWidget::paintGL() {
 	//CHANGE_Huijie
@@ -323,31 +234,38 @@ void GL2DProjWidget::paintGL() {
 		glProg6Faces->use();
 		glUniform1i(glProg6Faces->uniform("tex"), GLint(0));
 		glUniform1f(glProg6Faces->uniform("cmax"), cubeMax);
-		glUniform1f(glProg6Faces->uniform("cmin"), cubeMin);
-		glUniform3fv(glProg6Faces->uniform("cmRed"), 10, (const GLfloat*)&colormapRed[0]);
-		glUniform3fv(glProg6Faces->uniform("cmGreen"), 10, (const GLfloat*)&colormapGreen[0]);
-		glUniform3fv(glProg6Faces->uniform("cmBlue"), 10, (const GLfloat*)&colormapBlue[0]);
+		glUniform1f(glProg6Faces->uniform("cmin"), 0);
 		tex2d->bind();
 		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 		tex2d->unbind();
 		glProg6Faces->disable();
 		m_vao->release();
 
-		glColor3f(1.0f, 1.0f, 1.0f);
-		//glColor3f(0.0f, 0.0f, 0.0f);
+		glLineWidth(2.0f);
 		int sizeWidth = cubeSize * 4;
 		for (int i = 0; i <= sizeWidth; ++i){
 			if (i >= cubeSize && i <= 2 * cubeSize){
-				/*if (i == cubeSize || i == 2 * cubeSize)
-				glColor3f(0.0f, 0.0f, 0.0f);
-				else
-				glColor3f(1.0f, 1.0f, 1.0f);*/
+				glColor3f(0.0, 1.0, 0.0);
 				glBegin(GL_LINES);
 				glVertex3f((2.0f * i / sizeWidth) - 1.0f, -1.0f, 0.0f);
+				glVertex3f((2.0f * i / sizeWidth) - 1.0f, -0.33f, 0.0f);
+				glEnd();
+				glColor3f(0.0, 0.0, 1.0);
+				glBegin(GL_LINES);
+				glVertex3f((2.0f * i / sizeWidth) - 1.0f, -0.33f, 0.0f);
+				glVertex3f((2.0f * i / sizeWidth) - 1.0f, 0.33f, 0.0f);
+				glEnd();
+				glColor3f(0.0, 1.0, 0.0);
+				glBegin(GL_LINES);
+				glVertex3f((2.0f * i / sizeWidth) - 1.0f, 0.33f, 0.0f);
 				glVertex3f((2.0f * i / sizeWidth) - 1.0f, 1.0f, 0.0f);
 				glEnd();
 			}
 			else{
+				if ((i >= 0 && i <= cubeSize) || (i >= 2 * cubeSize && i <= 3 * cubeSize))
+					glColor3f(1.0, 0.0, 0.0);
+				else if (i >= 3 * cubeSize && i <= 4 * cubeSize)
+					glColor3f(0.0, 0.0, 1.0);
 				glBegin(GL_LINES);
 				glVertex3f((2.0f * i / sizeWidth) - 1.0f, (1.0f / 3.0f) * 2.0f - 1.0f, 0.0f);
 				glVertex3f((2.0f * i / sizeWidth) - 1.0f, (2.0f / 3.0f) * 2.0f - 1.0f, 0.0f);
@@ -358,16 +276,29 @@ void GL2DProjWidget::paintGL() {
 		int sizeHeight = cubeSize * 3;
 		for (int i = 0; i <= sizeHeight; ++i){
 			if (i >= cubeSize && i <= 2 * cubeSize){
-				/*if (i == cubeSize || i == 2 * cubeSize)
-				glColor3f(0.0f, 0.0f, 0.0f);
-				else
-				glColor3f(1.0f, 1.0f, 1.0f);*/
+				glColor3f(1.0, 0.0, 0.0);
 				glBegin(GL_LINES);
 				glVertex3f(-1.0f, (2.0f * i / sizeHeight) - 1.0f, 0.0f);
+				glVertex3f(-0.5f, (2.0f * i / sizeHeight) - 1.0f, 0.0f);
+				glEnd();
+				glColor3f(0.0, 0.0, 1.0);
+				glBegin(GL_LINES);
+				glVertex3f(-0.5f, (2.0f * i / sizeHeight) - 1.0f, 0.0f);
+				glVertex3f(0.0f, (2.0f * i / sizeHeight) - 1.0f, 0.0f);
+				glEnd();
+				glColor3f(1.0, 0.0, 0.0);
+				glBegin(GL_LINES);
+				glVertex3f(0.0f, (2.0f * i / sizeHeight) - 1.0f, 0.0f);
+				glVertex3f(0.5f, (2.0f * i / sizeHeight) - 1.0f, 0.0f);
+				glEnd();
+				glColor3f(0.0, 0.0, 1.0);
+				glBegin(GL_LINES);
+				glVertex3f(0.5f, (2.0f * i / sizeHeight) - 1.0f, 0.0f);
 				glVertex3f(1.0f, (2.0f * i / sizeHeight) - 1.0f, 0.0f);
 				glEnd();
 			}
 			else{
+				glColor3f(0.0, 1.0, 0.0);
 				glBegin(GL_LINES);
 				glVertex3f(-0.5f, (2.0f * i / sizeHeight) - 1.0f, 0.0f);
 				glVertex3f(0.0f, (2.0f * i / sizeHeight) - 1.0f, 0.0f);
@@ -375,6 +306,48 @@ void GL2DProjWidget::paintGL() {
 			}
 		}
 
+
+
+		static char tmp_str1[25];
+		static char tmp_str2[25];
+		static char tmp_str3[25];
+		static char tmp_str4[25];
+		static char tmp_str5[25];
+		static char tmp_str6[25];
+		//glDisable(GL_DEPTH_TEST);
+		glLoadIdentity();
+		//glColor3ub(255, 255, 0);
+		glColor3ub(255, 255, 0);
+
+		//renderText(-0.4, 0.0, 0.0, "Z+");
+
+		//mark the faces
+		gluOrtho2D(-1.0, 1.0, -1.0, 1.0);
+		glRasterPos2f(-0.22, 0.05);
+		sprintf(tmp_str1, "+Z");
+		draw_string(tmp_str1);
+
+		glRasterPos2f(0.7, 0.43);
+		sprintf(tmp_str2, "-Z");
+		draw_string(tmp_str2);
+
+		glRasterPos2f(0.2, 0.43);
+		sprintf(tmp_str3, "+X");
+		draw_string(tmp_str3);
+
+		glRasterPos2f(-0.8, 0.43);
+		sprintf(tmp_str4, "-X");
+		draw_string(tmp_str4);
+
+		glRasterPos2f(-0.63, -0.68);
+		sprintf(tmp_str5, "-Y");
+		draw_string(tmp_str5);
+
+		glRasterPos2f(-0.63, 0.66);
+		sprintf(tmp_str1, "+Y");
+		draw_string(tmp_str1);
+
+		//glEnable(GL_DEPTH_TEST);
 
 	}
 	else {
@@ -384,11 +357,8 @@ void GL2DProjWidget::paintGL() {
 		glProg->use();
 		glUniform1i(glProg->uniform("env"), GLint(0));
 		glUniform1f(glProg->uniform("cmax"), cubeMax);
-		glUniform1f(glProg->uniform("cmin"), cubeMin);
-		glUniform3fv(glProg->uniform("cmRed"), 10, (const GLfloat*)&colormapRed[0]);
-		glUniform3fv(glProg->uniform("cmGreen"), 10, (const GLfloat*)&colormapGreen[0]);
-		glUniform3fv(glProg->uniform("cmBlue"), 10, (const GLfloat*)&colormapBlue[0]);
-		//glUniform1i(glProg->uniform("cubesize"), cubeSize);
+		glUniform1f(glProg->uniform("cmin"), 0);
+		glUniform1i(glProg->uniform("cubesize"), cubeSize);
 		tex->bind();
 
 		if (texMode == 0){
@@ -407,6 +377,46 @@ void GL2DProjWidget::paintGL() {
 		glProg->disable();
 		m_vao->release();
 
+		//mark the faces
+		static char tmp_str1[25];
+		static char tmp_str2[25];
+		static char tmp_str3[25];
+		static char tmp_str4[25];
+		static char tmp_str5[25];
+		static char tmp_str6[25];
+		//glDisable(GL_DEPTH_TEST);
+		glLoadIdentity();
+		//glColor3ub(255, 255, 0);
+		glColor3ub(255, 255, 0);
+
+		//renderText(-0.4, 0.0, 0.0, "Z+");
+
+		gluOrtho2D(-1.0, 1.0, -1.0, 1.0);
+		glRasterPos2f(0.5, 0.1);
+		sprintf(tmp_str1, "+Z");
+		draw_string(tmp_str1);
+
+		glRasterPos2f(-0.5, 0.1);
+		sprintf(tmp_str2, "-Z");
+		draw_string(tmp_str2);
+
+		glRasterPos2f(0.0, 0.1);
+		sprintf(tmp_str3, "+X");
+		draw_string(tmp_str3);
+
+		glRasterPos2f(-0.95, 0.0);
+		sprintf(tmp_str4, "-X");
+		draw_string(tmp_str4);
+		glRasterPos2f(0.85, 0.0);
+		draw_string(tmp_str4);
+
+		glRasterPos2f(0.0, 0.8);
+		sprintf(tmp_str5, "-Y");
+		draw_string(tmp_str5);
+
+		glRasterPos2f(0.0, -0.9);
+		sprintf(tmp_str1, "+Y");
+		draw_string(tmp_str1);
 	}
 }
 
@@ -423,7 +433,6 @@ void GL2DProjWidget::mouseMoveEvent(QMouseEvent *event)
 
 void GL2DProjWidget::mousePressEvent(QMouseEvent *event)
 {
-	//CHANGE_Huijie
 	if (event->button() == Qt::LeftButton){
 		if (0 == type)
 			type = 1;
@@ -438,7 +447,7 @@ void GL2DProjWidget::mousePressEvent(QMouseEvent *event)
 			texMode = 0;
 	}
 
-	update();
+	QOpenGLWidget::update();
 }
 
 void GL2DProjWidget::mouseReleaseEvent(QMouseEvent *event)
@@ -463,18 +472,26 @@ void GL2DProjWidget::SlotSetCubeTexture(GLTextureCube* v, Cube* c)
 	/*for (int j = 0; j < sz; j++) {
 		for (int i = 0; i < sz; i++) {
 			img[sz * 4 * sz + i + j * 4 * sz] = c->data[sz * sz + j * sz + i];
-			img[sz * 4 * sz + sz + i + j * 4 * sz] = c->data[5 * sz * sz + j * sz + i];
-			img[sz * 4 * sz + sz * 2 + i + j * 4 * sz] = c->data[j * sz + i];
+			img[sz * 4 * sz + sz + i + j * 4 * sz] = c->data[5 * sz * sz + j * sz + i]; 
+			img[sz * 4 * sz + sz * 2 + i + j * 4 * sz] = c->data[j * sz + i]; 
 			img[sz * 4 * sz + sz * 3 + i + j * 4 * sz] = c->data[4 * sz * sz + j * sz + i];
 			img[sz * 8 * sz + sz + i + j * 4 * sz] = c->data[2 * sz * sz + j * sz + i];
 			img[sz + i + j * 4 * sz] = c->data[3 * sz * sz + j * sz + i];
 		}
 	}*/
 
-	//CHANGE_Huijie
 	cubeSize = c->cubemap_size;
-	cubeMax = Cube::cubeMaxValue;
-	cubeMin = Cube::cubeMinValue;
+	//global color map
+	//cubeMax = Cube::cubeMaxValue;
+	//cubeMin = Cube::cubeMinValue;
+
+	cubeMin = 10;
+	cubeMax = -10;
+	//local color map
+	for (int i = 0; i < cubeSize * cubeSize * 6; ++i){
+		if (c->data[i] > cubeMax) cubeMax = c->data[i];
+		if (c->data[i] < cubeMin) cubeMin = c->data[i];
+	}
 	for (int j = 0; j < sz; j++) {
 		for (int i = 0; i < sz; i++) {
 			img[sz * 4 * sz + i + j * 4 * sz] = c->data[sz * sz + j * sz + i];	//X- 
@@ -485,8 +502,6 @@ void GL2DProjWidget::SlotSetCubeTexture(GLTextureCube* v, Cube* c)
 			img[sz + i + j * 4 * sz] = c->data[2 * sz * sz + j * sz + i];	//Y+ 
 		}
 	}
-
-	
 	if (nullptr == tex2d) {
 		tex2d = new GLTexture2D(sz * 4, sz * 3);
 	}
@@ -496,4 +511,6 @@ void GL2DProjWidget::SlotSetCubeTexture(GLTextureCube* v, Cube* c)
 
 int GL2DProjWidget::heightForWidth(int w) const { 
 	return w * 0.5; 
+	//CHANGE_Huijie
+	//return w * 0.75;
 }

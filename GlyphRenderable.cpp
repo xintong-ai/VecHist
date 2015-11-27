@@ -128,12 +128,15 @@ void GlyphRenderable::LoadShaders()
 
 	void main() {
 		vec3 unlitColor = GetColor2(f_norm);
-		FragColor = vec4(phongModel(unlitColor, eyeCoords, tnorm) * 0.5, 1.0);
+		FragColor = vec4(phongModel(unlitColor, eyeCoords, tnorm) /** 0.5*/, 1.0);
 		//FragColor = vec4(phongModel(unlitColor, eyeCoords, tnorm), 1.0);
 		if (height > 0.03 * heightScale && height < 0.04 * heightScale)
-		//if (height > 0.05 * heightScale && height < 0.04 * heightScale)
+			//if (height > 0.05 * heightScale && height < 0.04 * heightScale)
 			//if (height < 0.0001 || height < 0.03 * heightScale || height > 0.04 * heightScale)
-			FragColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+		{
+			float r = (height - 0.03 * heightScale) / (heightScale * 0.01);
+			FragColor = (1 - r) * FragColor + r * vec4(1.0f, 1.0f, 1.0f, 1.0f);
+		}
 	}
 	);
 
@@ -230,7 +233,6 @@ void GlyphRenderable::LoadShaders()
 	glPickingProg->addUniform("env");
 	glPickingProg->addUniform("heightScale");
 	glPickingProg->addUniform("PickingColor");
-
 }
 
 void GlyphRenderable::init()
@@ -281,8 +283,8 @@ void GlyphRenderable::UpdateData()
 			startCoords[(sliceDimIdx + 2) % 3] = j * n_step;
 
 			Cube* c = new Cube(startCoords[0], startCoords[1], startCoords[2], n_step, n_step, n_step);
-			c->phase = rand() % 20;
-			cubemap->GenCubeMapOptimized(c->pos.x, c->pos.y, c->pos.z, c->size.x, c->size.y, c->size.z, c->data, c->cubemap_size);
+			c->phase = 0;// rand() % 20;
+			cubemap->GenCubeMapOptimized(c->pos.x, c->pos.y, c->pos.z, c->size.x, c->size.y, c->size.z, c->data, c->cubemap_size, c->mag);
 			cubes.push_back(c);
 		}
 	}
@@ -340,7 +342,7 @@ void GlyphRenderable::draw(float modelview[16], float projection[16])
 		qgl->glUniform1f(glProg->uniform("Shininess"), 5);
 		qgl->glUniform3fv(glProg->uniform("Transform"), 1, &shift.x);
 		qgl->glUniform1f(glProg->uniform("Scale"), min_dim);
-		qgl->glUniform1i(glProg->uniform("heightScale"), (heightScale + c->phase) % 20);
+		qgl->glUniform1i(glProg->uniform("heightScale"), int((heightScale + c->phase) /** (c->mag)*/) % 20);
 		//qgl->glUniform1i(glProg->uniform("heightScale"), heightScale);
 		qgl->glUniform1i(glProg->uniform("env"), GLint(0));
 		qgl->glUniformMatrix4fv(glProg->uniform("ModelViewMatrix"), 1, GL_FALSE, modelview);
@@ -376,6 +378,8 @@ void GlyphRenderable::SlotSliceNumChanged(int i)
 {
 	sliceStart = i;
 	std::cout << "sliceStart: " << sliceStart<<std::endl;
+	Cube::cubeMaxValue = -10;
+	Cube::cubeMinValue = 10;
 	UpdateData();
 	actor->UpdateGL();
 }
@@ -393,10 +397,6 @@ void GlyphRenderable::SlotNumPartChanged(int i)
 void GlyphRenderable::SlotHeightScaleChanged(int i)
 {
 	heightScale = i;
-	//CHANGE_Huijie
-	Cube::cubeMaxValue = -10;
-	Cube::cubeMinValue = 10;
-	UpdateData();
 	actor->UpdateGL();
 }
 
@@ -529,5 +529,4 @@ void GlyphRenderable::mousePress(int x, int y, int modifier)
 		return;
 	else
 		emit SigChangeTex(textures[pickID - 1], cubes[pickID - 1]);
-
 }

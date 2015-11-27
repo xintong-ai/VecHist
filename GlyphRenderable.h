@@ -19,10 +19,10 @@ public:
 	void init() override;
 	void draw(float modelview[16], float projection[16]) override;
 	void UpdateData() override;
-
+	
 	//CHANGE_Huijie
 	void drawPicking(float modelview[16], float projection[16]) override;
-	
+
 	GlyphRenderable(Cubemap* r);
 	void SetCubemap(Cubemap* r) { cubemap = r; }
 	void SetVolumeDim(int x, int y, int z){ dataDim[0] = x; dataDim[1] = y; dataDim[2] = z; }

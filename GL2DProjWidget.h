@@ -33,9 +33,6 @@ private:
 	float cubeMax, cubeMin;
 	int texMode = 0;
 	int lineVerNum = 0;
-	QVector3D colormapRed[10];
-	QVector3D colormapGreen[10];
-	QVector3D colormapBlue[10];
 
 protected:
 
@@ -53,9 +50,8 @@ protected:
 
 	ShaderProgram *glProg;
 	ShaderProgram *glProg6Faces;
-
 	//CHANGE_Huijie
-	void ReadColormap();
+	ShaderProgram *glProgGrid;
 
 public slots:
 	void SlotSetCubeTexture(GLTextureCube* v, Cube* c);// { tex = v; }
