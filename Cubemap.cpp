@@ -64,8 +64,12 @@ std::vector<float> ComputePatchSolidAngle(int size)
 			solAng[nbin_half * size + i] = s;
 			solAng[nbin_half * size + size - 1 - i] = s;
 		}
-		solAng[nbin_half, nbin_half] = 4 * asin(sin(atan(delta * 0.5)) * sin(atan(delta * 0.5)));
+		solAng[nbin_half * size + nbin_half] = 4 * asin(sin(atan(delta * 0.5)) * sin(atan(delta * 0.5)));
 	}
+	//float sum = 0;
+	//for (int i = 0; i < size * size; i++)
+	//	sum += solAng[i];
+
 	return solAng;
 }
 
@@ -535,7 +539,7 @@ void Cubemap::LoadHist(const char* filename)
 		x = tmp[0];
 		y = tmp[1];
 		z = tmp[2];
-		r = tmp[3];
+		r = tmp[3] * 4;
 		Cube* c = new Cube(x - r, y - r, z - r, 2 * r, 2 * r, 2 * r);
 		int size3 = cubemap_size * cubemap_size * 6;
 		c->data = new float[size3];
