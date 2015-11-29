@@ -8,6 +8,7 @@
 #include <iostream>
 #include <omp.h>
 #include <algorithm>
+#include <fstream>
 
 double Log2(double n)
 {
@@ -22,26 +23,48 @@ std::vector<float> ComputePatchSolidAngle(int size)
 	float b1, b2, sb;
 	float c1, c2, sc;
 	float d1, d2, sd;
-	for (int i = 0; i < size; i++)	{
-		for (int j = 0; j < size; j++)	{
-			a1 = 2 - 2 * i * delta;
-			a2 = 2 - 2 * j * delta;
-			sa = 4 * asin(sin(atan(a1 * 0.5)) * sin(atan(a2 * 0.5)));
+	int nbin_half = int(size * 0.5);
+	for (int i = 0; i < nbin_half; i++)	{
+		for (int j = 0; j < nbin_half; j++)	{
+			a1 = 1 - i * delta;
+			a2 = 1 - j * delta;
+			sa = 4 * asin(sin(atan(a1)) * sin(atan(a2)));
 
-			b1 = 2 - 2 * i * delta - 2 * delta;
-			b2 = 2 - 2 * j * delta;
-			sb = 4 * asin(sin(atan(b1 * 0.5)) * sin(atan(b2 * 0.5)));
+			b1 = 1 - (i + 1) * delta;
+			b2 = 1 - j * delta;
+			sb = 4 * asin(sin(atan(b1)) * sin(atan(b2)));
 
-			c1 = 2 - 2 * i * delta;
-			c2 = 2 - 2 * j * delta - 2 * delta;
-			sc = 4 * asin(sin(atan(c1 * 0.5)) * sin(atan(c2 * 0.5)));
+			c1 = 1 - i * delta;
+			c2 = 1 - (j + 1) * delta;
+			sc = 4 * asin(sin(atan(c1)) * sin(atan(c2)));
 
-			d1 = 2 - 2 * i * delta - 2 * delta;
-			d2 = 2 - 2 * j * delta - 2 * delta;
-			sd = 4 * asin(sin(atan(d1 * 0.5)) * sin(atan(d2 * 0.5)));
+			d1 = 1 - (i + 1) * delta;
+			d2 = 1 - (j + 1) * delta;
+			sd = 4 * asin(sin(atan(d1)) * sin(atan(d2)));
 
 			solAng[i * size + j] = (sa - sb - sc + sd) * 0.25;
+			solAng[(size - 1 - i) * size + j] = solAng[i * size + j];
+			solAng[i * size + size - 1 - j] = solAng[i * size + j];
+			solAng[(size - 1 - i) * size + size - 1 - j] = solAng[i * size + j];
 		}
+	}
+	if (1 == (size % 2)) {
+		for (int i = 0; i < nbin_half; i++) {
+			a1 = delta * 0.5;
+			a2 = 1 - i * delta;
+			sa = 4 * asin(sin(atan(a1)) * sin(atan(a2)));
+
+			b1 = a1;
+			b2 = a2 - delta;
+			sb = 4 * asin(sin(atan(b1)) * sin(atan(b2)));
+
+			float s = (sa - sb) * 0.5;
+			solAng[i * size + nbin_half] = s;
+			solAng[(size - 1 - i) * size + nbin_half] = s;
+			solAng[nbin_half * size + i] = s;
+			solAng[nbin_half * size + size - 1 - i] = s;
+		}
+		solAng[nbin_half, nbin_half] = 4 * asin(sin(atan(delta * 0.5)) * sin(atan(delta * 0.5)));
 	}
 	return solAng;
 }
@@ -167,6 +190,7 @@ inline float CubemapEntropy(float *cubemap, int size)
 
 Cubemap::Cubemap(VecReader* r)
 {
+	mode = 0;
 	vecReader = r;
 	int3 d = vecReader->GetVolumeDim();
 	dim[0] = d.x;
@@ -321,6 +345,23 @@ void Cubemap::GenCubeMapOptimized(int x, int y, int z, int nx, int ny, int nz, f
 		cubemap[i] /= (float)sum ;
 }
 
+inline bool inside(int3 pos, int3 vmin, int3 vmax) {
+	return pos.x > vmin.x && pos.y > vmin.y && pos.z > vmin.z
+		&& pos.x < vmax.x && pos.y < vmax.y && pos.z < vmax.z;
+}
+
+std::vector<Cube*> Cubemap::GetCubes(int x, int y, int z, int nx, int ny, int nz)
+{
+	std::vector<Cube*> ret;
+	for (auto c : cubes) {
+		if (inside(c->pos, make_int3(x, y, z), make_int3(x + nx, y + ny, z + nz))){
+			ret.push_back(c);
+		}
+	}
+	return ret;
+}
+
+
 //void Cubemap::UpdateCubeMap(float* cubemap)
 //{
 //	int cubeSizeTotal = qCubeSize[0] * qCubeSize[1] * qCubeSize[2];
@@ -460,4 +501,54 @@ Cubemap::~Cubemap()
 		delete [] innerData;
 	if (nullptr != avgMag)
 		delete[] avgMag;
+}
+
+void Cubemap::LoadHist(const char* filename)
+{
+	mode = 1;
+	//std::ifstream f(filename, std::ios::binary);
+	//f >> vmin[0]; f >> vmin[1]; f >> vmin[2];
+	//f >> vmax[0]; f >> vmax[1]; f >> vmax[2];
+
+	//f >> cubemap_size;
+
+	FILE *f;
+	f = fopen(filename, "rb");
+
+	//assert(fpPathline);
+	//float pfMin[4];
+	//float pfMax[4];
+	fread(vmin, sizeof(vmin[0]), 3, f);
+	fread(vmax, sizeof(vmax[0]), 3, f);
+	innerDim[0] = std::ceil(vmax[0]);
+	innerDim[1] = std::ceil(vmax[1]);
+	innerDim[2] = std::ceil(vmax[2]);
+	fread(&cubemap_size, sizeof(cubemap_size), 1, f);
+	int nHalos = 0;
+	fread(&nHalos, sizeof(int), 1, f);
+
+	int size4 = cubemap_size * cubemap_size * 6 + 4;
+	float* tmp = new float[size4];
+	float x, y, z, r;
+	for (int i = 0; i < nHalos; i++) {
+		fread(tmp, sizeof(x), size4, f);
+		x = tmp[0];
+		y = tmp[1];
+		z = tmp[2];
+		r = tmp[3];
+		Cube* c = new Cube(x - r, y - r, z - r, 2 * r, 2 * r, 2 * r);
+		int size3 = cubemap_size * cubemap_size * 6;
+		c->data = new float[size3];
+		c->cubemap_size = cubemap_size;
+		for (int i = 0; i < size3; i++) {
+			c->data[i] = tmp[i + 4];
+		}
+		cubes.push_back(c);
+	}
+	fclose(f);
+}
+
+Cubemap::Cubemap(const char* filename)
+{
+	LoadHist(filename);
 }

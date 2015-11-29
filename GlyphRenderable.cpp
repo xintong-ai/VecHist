@@ -201,18 +201,23 @@ void GlyphRenderable::UpdateData()
 	//so we need to delete the pointer first
 	for (auto v : cubes) delete v;
 	cubes.clear();
-	for (int i = 0; i < numGlyphSide1; i++) {
-		for (int j = 0; j < numGlyphSide2; j++) {
-			int startCoords [] = { 0, 0, 0 };
-			startCoords[sliceDimIdx] = sliceStart;
-			startCoords[(sliceDimIdx + 1) % 3] = i * n_step;
-			startCoords[(sliceDimIdx + 2) % 3] = j * n_step;
+	if (0 == cubemap->GetMode()) {
+		for (int i = 0; i < numGlyphSide1; i++) {
+			for (int j = 0; j < numGlyphSide2; j++) {
+				int startCoords[] = { 0, 0, 0 };
+				startCoords[sliceDimIdx] = sliceStart;
+				startCoords[(sliceDimIdx + 1) % 3] = i * n_step;
+				startCoords[(sliceDimIdx + 2) % 3] = j * n_step;
 
-			Cube* c = new Cube(startCoords[0], startCoords[1], startCoords[2], n_step, n_step, n_step);
-			c->phase = 0;// rand() % 20;
-			cubemap->GenCubeMapOptimized(c->pos.x, c->pos.y, c->pos.z, c->size.x, c->size.y, c->size.z, c->data, c->cubemap_size, c->mag);
-			cubes.push_back(c);
+				Cube* c = new Cube(startCoords[0], startCoords[1], startCoords[2], n_step, n_step, n_step);
+				c->phase = 0;// rand() % 20;
+				cubemap->GenCubeMapOptimized(c->pos.x, c->pos.y, c->pos.z, c->size.x, c->size.y, c->size.z, c->data, c->cubemap_size, c->mag);
+				cubes.push_back(c);
+			}
 		}
+	}
+	else {
+		cubes = cubemap->GetCubes(0,0,0, 63,63,63);
 	}
 
 	for (auto v : textures) delete v;
@@ -390,5 +395,6 @@ void GlyphRenderable::mousePress(int x, int y, int modifier)
 {
 	//TODO: add picking functions here to replace the line below
 	int idx = textures.size() * 0.5;
-	emit SigChangeTex(textures[idx], cubes[idx]);
+	if (textures.size() > idx)
+		emit SigChangeTex(textures[idx], cubes[idx]);
 }

@@ -50,7 +50,9 @@ Window::Window()
     openGL->setFormat(format); // must be called before the widget or its parent window gets shown
 
 	//VecReader* vecReader = new VecReader("D:/data/plume/15plume3d421-504x504x2048.vec");
-	VecReader* vecReader = new VecReader("D:/OneDrive/data/plume/15plume3d421.vec");
+	//VecReader* vecReader = new VecReader("D:/OneDrive/data/plume/15plume3d421.vec");
+	//VecReader* vecReader = new VecReader("D:/OneDrive/data/nek/nek.d_4.vec");
+
 	//VecReader* vecReader = new VecReader("D:/OneDrive/data/plume/15plume3d421-504x504x2048.vec");
 	//VecReader* vecReader = new VecReader("D:/OneDrive/data/isabel/UVWf01.vec");
 	//VecReader* vecReader = new VecReader("D:/OneDrive/data/tornado/1.vec");
@@ -60,7 +62,8 @@ Window::Window()
 	//LineRenderable* lineRenderable = new LineRenderable(streamline);
 	//openGL->AddRenderable("streamlines", lineRenderable);
 
-	cubemap = new Cubemap(vecReader);
+	//cubemap = new Cubemap(vecReader);
+	cubemap = new Cubemap("D:/Dropbox/hist/VecHist/python/crystal/data/universe_hist2.bin");
 	//cubemap->GenCubeMap(55, 55, 300, 10, 10, 10);
 	glyphRenderable = new GlyphRenderable(cubemap);
 	int3 innerDim = cubemap->GetInnerDim();
