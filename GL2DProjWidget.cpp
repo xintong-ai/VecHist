@@ -5,6 +5,7 @@
 #include "Cubemap.h"
 //CHANGE_Huijie
 #include <GL/freeglut.h>
+#include "helper_math.h"// to define normalize()
 
 #define qgl	QOpenGLContext::currentContext()->functions()
 #include "ShaderProgram.h"
@@ -77,11 +78,15 @@ void GL2DProjWidget::loadShaders()
 		if (abs(norm.x) > abs(norm.y) && abs(norm.x) > abs(norm.z)){
 			double a = norm.y / abs(norm.x);
 			double b = norm.z / abs(norm.x);
-			double d = 2.0 / (cubesize - 1);
+			double d = 2.0 / (cubesize-1);
 			for (int i = 0; i < cubesize - 1; ++i){
-				double err = 0.018;
-				if (a + 1.0 - (i + 0.5) * d < err && a + 1.0 - (i + 0.5) * d > -err ||
-					b + 1.0 - (i + 0.5) * d < err && b + 1.0 - (i + 0.5) * d > -err){
+				double err = 0.02;
+				double offset = d * (0.1 + abs(1.0 * (cubesize) / 2 - 1 - i)*0.03);
+				if (i == 0 || i == cubesize - 2) offset = d * 0.3;
+				err = 0.02 + abs(1.0 * (cubesize) / 2 - 1 - i) * 0.0025;
+				if (i > 1.0 * (cubesize) / 2 - 1) offset = -offset;
+				if (a + 1.0 - (i + 0.5) * d - offset < err && a + 1.0 - (i + 0.5) * d - offset > -err ||
+					b + 1.0 - (i + 0.5) * d - offset < err && b + 1.0 - (i + 0.5) * d - offset > -err){
 					color = vec3(abs(norm.x), abs(norm.y), abs(norm.z));
 					break;
 				}
@@ -90,12 +95,15 @@ void GL2DProjWidget::loadShaders()
 		else if (abs(norm.y) > abs(norm.x) && abs(norm.y) > abs(norm.z)){
 			double a = norm.x / abs(norm.y);
 			double b = norm.z / abs(norm.y);
-			double d = 2.0 / (cubesize - 1);
+			double d = 2.0 / (cubesize-1);
 			for (int i = 0; i < cubesize - 1; ++i){
-				double err = 0.018;
-				
-				if (a + 1.0 - (i + 0.5) * d < err && a + 1.0 - (i + 0.5) * d > -err ||
-					b + 1.0 - (i + 0.5) * d < err && b + 1.0 - (i + 0.5) * d > -err){
+				double err = 0.02;
+				double offset = d * (0.1 + abs(1.0 * (cubesize) / 2 - 1 - i)*0.03);
+				if (i == 0 || i == cubesize - 2) offset = d * 0.3;
+				err = 0.02 + abs(1.0 * (cubesize) / 2 - 1 - i) * 0.0025;
+				if (i > 1.0 * (cubesize) / 2 - 1) offset = -offset;
+				if (a + 1.0 - (i + 0.5) * d - offset < err && a + 1.0 - (i + 0.5) * d - offset > -err ||
+					b + 1.0 - (i + 0.5) * d - offset < err && b + 1.0 - (i + 0.5) * d - offset > -err){
 					color = vec3(abs(norm.x), abs(norm.y), abs(norm.z));
 					break;
 				}
@@ -104,12 +112,15 @@ void GL2DProjWidget::loadShaders()
 		else if (abs(norm.z) > abs(norm.x) && abs(norm.z) > abs(norm.y)){
 			double a = norm.x / abs(norm.z);
 			double b = norm.y / abs(norm.z);
-			double d = 2.0 / (cubesize - 1);
+			double d = 2.0 / (cubesize-1);
 			for (int i = 0; i < cubesize - 1; ++i){
-				double err = 0.018;
-				
-				if (a + 1.0 - (i + 0.5) * d < err && a + 1.0 - (i + 0.5) * d > -err ||
-					b + 1.0 - (i + 0.5) * d < err && b + 1.0 - (i + 0.5) * d > -err){
+				double err = 0.02;
+				double offset = d * (0.1 + abs(1.0 * (cubesize) / 2 - 1 - i)*0.03);
+				if (i == 0 || i == cubesize - 2) offset = d * 0.3;
+				err = 0.02 + abs(1.0 * (cubesize) / 2 - 1 - i) * 0.0025;
+				if (i > 1.0 * (cubesize) / 2 - 1) offset = -offset;
+				if (a + 1.0 - (i + 0.5) * d - offset < err && a + 1.0 - (i + 0.5) * d - offset > -err ||
+					b + 1.0 - (i + 0.5) * d - offset < err && b + 1.0 - (i + 0.5) * d - offset > -err){
 					color = vec3(abs(norm.x), abs(norm.y), abs(norm.z));
 					break;
 				}
@@ -171,7 +182,7 @@ void GL2DProjWidget::loadShaders()
 	glProg6Faces->addUniform("cmin");
 	
 	//CHANGE_Huijie
-	const char* gridVS =
+	/*const char* gridVS =
 	GLSL(
 	layout(location = 0) in vec3 vertexPosition;
 	void main(){
@@ -189,7 +200,7 @@ void GL2DProjWidget::loadShaders()
 
 	glProgGrid = new ShaderProgram();
 	glProgGrid->initFromStrings(gridVS, gridFS);
-	glProgGrid->addAttribute("vertexPosition");
+	glProgGrid->addAttribute("vertexPosition");*/
 }
 
 void GL2DProjWidget::initializeGL()
@@ -227,6 +238,10 @@ void draw_string(const char* str)
 void GL2DProjWidget::paintGL() {
 	//CHANGE_Huijie
 	glClear(GL_COLOR_BUFFER_BIT);
+	/*glHint(GL_TEXTURE_COMPRESSION_HINT, GL_NICEST);
+	glEnable(GL_BLEND);
+	glEnable(GL_LINE_SMOOTH);
+	glEnable(GL_POLYGON_SMOOTH);*/
 	if (0 == type) {
 		if (nullptr == tex2d)
 			return;
@@ -241,68 +256,91 @@ void GL2DProjWidget::paintGL() {
 		glProg6Faces->disable();
 		m_vao->release();
 
-		glLineWidth(2.0f);
-		int sizeWidth = cubeSize * 4;
+		glLineWidth(1.5f);
+		//glShadeModel(GL_FLAT);
+		//draw grid
+		int sizeWidth = 4 * cubeSize;
+		int sizeHeight = 3 * cubeSize;
 		for (int i = 0; i <= sizeWidth; ++i){
-			if (i >= cubeSize && i <= 2 * cubeSize){
-				glColor3f(0.0, 1.0, 0.0);
-				glBegin(GL_LINES);
-				glVertex3f((2.0f * i / sizeWidth) - 1.0f, -1.0f, 0.0f);
-				glVertex3f((2.0f * i / sizeWidth) - 1.0f, -0.33f, 0.0f);
-				glEnd();
-				glColor3f(0.0, 0.0, 1.0);
-				glBegin(GL_LINES);
-				glVertex3f((2.0f * i / sizeWidth) - 1.0f, -0.33f, 0.0f);
-				glVertex3f((2.0f * i / sizeWidth) - 1.0f, 0.33f, 0.0f);
-				glEnd();
-				glColor3f(0.0, 1.0, 0.0);
-				glBegin(GL_LINES);
-				glVertex3f((2.0f * i / sizeWidth) - 1.0f, 0.33f, 0.0f);
-				glVertex3f((2.0f * i / sizeWidth) - 1.0f, 1.0f, 0.0f);
-				glEnd();
-			}
-			else{
-				if ((i >= 0 && i <= cubeSize) || (i >= 2 * cubeSize && i <= 3 * cubeSize))
-					glColor3f(1.0, 0.0, 0.0);
-				else if (i >= 3 * cubeSize && i <= 4 * cubeSize)
-					glColor3f(0.0, 0.0, 1.0);
-				glBegin(GL_LINES);
-				glVertex3f((2.0f * i / sizeWidth) - 1.0f, (1.0f / 3.0f) * 2.0f - 1.0f, 0.0f);
-				glVertex3f((2.0f * i / sizeWidth) - 1.0f, (2.0f / 3.0f) * 2.0f - 1.0f, 0.0f);
-				glEnd();
-			}
-
-		}
-		int sizeHeight = cubeSize * 3;
-		for (int i = 0; i <= sizeHeight; ++i){
-			if (i >= cubeSize && i <= 2 * cubeSize){
-				glColor3f(1.0, 0.0, 0.0);
-				glBegin(GL_LINES);
-				glVertex3f(-1.0f, (2.0f * i / sizeHeight) - 1.0f, 0.0f);
-				glVertex3f(-0.5f, (2.0f * i / sizeHeight) - 1.0f, 0.0f);
-				glEnd();
-				glColor3f(0.0, 0.0, 1.0);
-				glBegin(GL_LINES);
-				glVertex3f(-0.5f, (2.0f * i / sizeHeight) - 1.0f, 0.0f);
-				glVertex3f(0.0f, (2.0f * i / sizeHeight) - 1.0f, 0.0f);
-				glEnd();
-				glColor3f(1.0, 0.0, 0.0);
-				glBegin(GL_LINES);
-				glVertex3f(0.0f, (2.0f * i / sizeHeight) - 1.0f, 0.0f);
-				glVertex3f(0.5f, (2.0f * i / sizeHeight) - 1.0f, 0.0f);
-				glEnd();
-				glColor3f(0.0, 0.0, 1.0);
-				glBegin(GL_LINES);
-				glVertex3f(0.5f, (2.0f * i / sizeHeight) - 1.0f, 0.0f);
-				glVertex3f(1.0f, (2.0f * i / sizeHeight) - 1.0f, 0.0f);
-				glEnd();
-			}
-			else{
-				glColor3f(0.0, 1.0, 0.0);
-				glBegin(GL_LINES);
-				glVertex3f(-0.5f, (2.0f * i / sizeHeight) - 1.0f, 0.0f);
-				glVertex3f(0.0f, (2.0f * i / sizeHeight) - 1.0f, 0.0f);
-				glEnd();
+			for (int j = 0; j <= sizeHeight; ++j){
+				if ((i >= cubeSize && i <= 2 * cubeSize) && (j <= cubeSize || j >= 2 * cubeSize)){
+					if (j != cubeSize || j != sizeHeight || j == 0){
+						glBegin(GL_LINES);
+						glColor3f(cubeColor[(cubeSize + 1)*(cubeSize + 1) + (i%cubeSize)*(cubeSize + 1) + (j%cubeSize)].x,
+							cubeColor[(cubeSize + 1)*(cubeSize + 1) + (i%cubeSize)*(cubeSize + 1) + (j%cubeSize)].y,
+							cubeColor[(cubeSize + 1)*(cubeSize + 1) + (i%cubeSize)*(cubeSize + 1) + (j%cubeSize)].z);
+						glVertex3f((2.0f * i / sizeWidth) - 1.0f, (2.0f * j / sizeHeight) - 1.0f, 0.0f);
+						glColor3f(cubeColor[(cubeSize + 1)*(cubeSize + 1) + ((i%cubeSize) + 1)*(cubeSize + 1) + (j%cubeSize)].x,
+							cubeColor[(cubeSize + 1)*(cubeSize + 1) + ((i%cubeSize) + 1)*(cubeSize + 1) + (j%cubeSize)].y,
+							cubeColor[(cubeSize + 1)*(cubeSize + 1) + ((i%cubeSize) + 1)*(cubeSize + 1) + (j%cubeSize)].z);
+						glVertex3f((2.0f * i / sizeWidth) - 1.0f, (2.0f * (j + 1) / sizeHeight) - 1.0f, 0.0f);
+						glEnd();
+					}
+					if (i != 2 * cubeSize){
+						glBegin(GL_LINES);
+						glColor3f(cubeColor[(cubeSize + 1)*(cubeSize + 1) + ((i%cubeSize))*(cubeSize + 1) + (j%cubeSize)].x,
+							cubeColor[(cubeSize + 1)*(cubeSize + 1) + ((i%cubeSize))*(cubeSize + 1) + (j%cubeSize)].y,
+							cubeColor[(cubeSize + 1)*(cubeSize + 1) + ((i%cubeSize))*(cubeSize + 1) + (j%cubeSize)].z);
+						glVertex3f((2.0f * i / sizeWidth) - 1.0f, (2.0f * j / sizeHeight) - 1.0f, 0.0f);
+						glColor3f(cubeColor[(cubeSize + 1)*(cubeSize + 1) + ((i%cubeSize))*(cubeSize + 1) + ((j%cubeSize) + 1)].x,
+							cubeColor[(cubeSize + 1)*(cubeSize + 1) + ((i%cubeSize))*(cubeSize + 1) + ((j%cubeSize) + 1)].y,
+							cubeColor[(cubeSize + 1)*(cubeSize + 1) + ((i%cubeSize))*(cubeSize + 1) + ((j%cubeSize) + 1)].z);
+						glVertex3f((2.0f * (i + 1) / sizeWidth) - 1.0f, (2.0f * j / sizeHeight) - 1.0f, 0.0f);
+						glEnd();
+					}
+				}
+				if (((i >= 0 && i <= cubeSize) || (i >= 2*cubeSize && i <= 3*cubeSize)) && (j >= cubeSize && j <= 2 * cubeSize)){
+					if (j != 2 * cubeSize){
+						glBegin(GL_LINES);
+						glColor3f(cubeColor[(i%cubeSize)*(cubeSize + 1) + (j%cubeSize)].x,
+							cubeColor[(i%cubeSize)*(cubeSize + 1) + (j%cubeSize)].y,
+							cubeColor[(i%cubeSize)*(cubeSize + 1) + (j%cubeSize)].z);
+						glVertex3f((2.0f * i / sizeWidth) - 1.0f, (2.0f * j / sizeHeight) - 1.0f, 0.0f);
+						glColor3f(cubeColor[((i%cubeSize) + 1)*(cubeSize + 1) + (j%cubeSize)].x,
+							cubeColor[((i%cubeSize) + 1)*(cubeSize + 1) + (j%cubeSize)].y,
+							cubeColor[((i%cubeSize) + 1)*(cubeSize + 1) + (j%cubeSize)].z);
+						glVertex3f((2.0f * i / sizeWidth) - 1.0f, (2.0f * (j + 1) / sizeHeight) - 1.0f, 0.0f);
+						glEnd();
+					}
+					if (i != cubeSize || i != 3*cubeSize){
+						glBegin(GL_LINES);
+						glColor3f(cubeColor[(i%cubeSize)*(cubeSize + 1) + (j%cubeSize)].x,
+							cubeColor[(i%cubeSize)*(cubeSize + 1) + (j%cubeSize)].y,
+							cubeColor[(i%cubeSize)*(cubeSize + 1) + (j%cubeSize)].z);
+						glVertex3f((2.0f * i / sizeWidth) - 1.0f, (2.0f * j / sizeHeight) - 1.0f, 0.0f);
+						glColor3f(cubeColor[(i%cubeSize)*(cubeSize + 1) + ((j%cubeSize) + 1)].x,
+							cubeColor[(i%cubeSize)*(cubeSize + 1) + ((j%cubeSize) + 1)].y,
+							cubeColor[(i%cubeSize)*(cubeSize + 1) + ((j%cubeSize) + 1)].z);
+						glVertex3f((2.0f * (i + 1) / sizeWidth) - 1.0f, (2.0f * j / sizeHeight) - 1.0f, 0.0f);
+						glEnd();
+					}
+				}
+				if (((i >= cubeSize && i <= 2 * cubeSize) || (i >= 3*cubeSize && i <= sizeWidth)) && (j >= cubeSize && j <= 2 * cubeSize)){
+					if (j != 2 * cubeSize){
+						glBegin(GL_LINES);
+						glColor3f(cubeColor[2 * (cubeSize + 1)*(cubeSize + 1) + (i%cubeSize)*(cubeSize + 1) + (j%cubeSize)].x,
+							cubeColor[2 * (cubeSize + 1)*(cubeSize + 1) + (i%cubeSize)*(cubeSize + 1) + (j%cubeSize)].y,
+							cubeColor[2 * (cubeSize + 1)*(cubeSize + 1) + (i%cubeSize)*(cubeSize + 1) + (j%cubeSize)].z);
+						glVertex3f((2.0f * i / sizeWidth) - 1.0f, (2.0f * j / sizeHeight) - 1.0f, 0.0f);
+						glColor3f(cubeColor[2 * (cubeSize + 1)*(cubeSize + 1) + ((i%cubeSize) + 1)*(cubeSize + 1) + (j%cubeSize)].x,
+							cubeColor[2 * (cubeSize + 1)*(cubeSize + 1) + ((i%cubeSize) + 1)*(cubeSize + 1) + (j%cubeSize)].y,
+							cubeColor[2 * (cubeSize + 1)*(cubeSize + 1) + ((i%cubeSize) + 1)*(cubeSize + 1) + (j%cubeSize)].z);
+						glVertex3f((2.0f * i / sizeWidth) - 1.0f, (2.0f * (j + 1) / sizeHeight) - 1.0f, 0.0f);
+						glEnd();
+					}
+					if (i != 2*cubeSize || i != 4 * sizeWidth){
+						glBegin(GL_LINES);
+						glColor3f(cubeColor[2 * (cubeSize + 1)*(cubeSize + 1) + (i%cubeSize)*(cubeSize + 1) + (j%cubeSize)].x,
+							cubeColor[2 * (cubeSize + 1)*(cubeSize + 1) + (i%cubeSize)*(cubeSize + 1) + (j%cubeSize)].y,
+							cubeColor[2 * (cubeSize + 1)*(cubeSize + 1) + (i%cubeSize)*(cubeSize + 1) + (j%cubeSize)].z);
+						glVertex3f((2.0f * i / sizeWidth) - 1.0f, (2.0f * j / sizeHeight) - 1.0f, 0.0f);
+						glColor3f(cubeColor[2 * (cubeSize + 1)*(cubeSize + 1) + (i%cubeSize)*(cubeSize + 1) + ((j%cubeSize) + 1)].x,
+							cubeColor[2 * (cubeSize + 1)*(cubeSize + 1) + (i%cubeSize)*(cubeSize + 1) + ((j%cubeSize) + 1)].y,
+							cubeColor[2 * (cubeSize + 1)*(cubeSize + 1) + (i%cubeSize)*(cubeSize + 1) + ((j%cubeSize) + 1)].z);
+						glVertex3f((2.0f * (i + 1) / sizeWidth) - 1.0f, (2.0f * j / sizeHeight) - 1.0f, 0.0f);
+						glEnd();
+					}
+				}
 			}
 		}
 
@@ -344,8 +382,8 @@ void GL2DProjWidget::paintGL() {
 		draw_string(tmp_str5);
 
 		glRasterPos2f(-0.63, 0.66);
-		sprintf(tmp_str1, "+Y");
-		draw_string(tmp_str1);
+		sprintf(tmp_str6, "+Y");
+		draw_string(tmp_str6);
 
 		//glEnable(GL_DEPTH_TEST);
 
@@ -464,21 +502,21 @@ void GL2DProjWidget::keyPressEvent(QKeyEvent * event)
 }
 
 void GL2DProjWidget::SlotSetCubeTexture(GLTextureCube* v, Cube* c)
-{ 
-	tex = v; 
+{
+	tex = v;
 	int sz = c->cubemap_size;
 	std::vector<float> img(sz * sz * 12, 0.0f);
 
 	/*for (int j = 0; j < sz; j++) {
 		for (int i = 0; i < sz; i++) {
-			img[sz * 4 * sz + i + j * 4 * sz] = c->data[sz * sz + j * sz + i];
-			img[sz * 4 * sz + sz + i + j * 4 * sz] = c->data[5 * sz * sz + j * sz + i]; 
-			img[sz * 4 * sz + sz * 2 + i + j * 4 * sz] = c->data[j * sz + i]; 
-			img[sz * 4 * sz + sz * 3 + i + j * 4 * sz] = c->data[4 * sz * sz + j * sz + i];
-			img[sz * 8 * sz + sz + i + j * 4 * sz] = c->data[2 * sz * sz + j * sz + i];
-			img[sz + i + j * 4 * sz] = c->data[3 * sz * sz + j * sz + i];
+		img[sz * 4 * sz + i + j * 4 * sz] = c->data[sz * sz + j * sz + i];
+		img[sz * 4 * sz + sz + i + j * 4 * sz] = c->data[5 * sz * sz + j * sz + i];
+		img[sz * 4 * sz + sz * 2 + i + j * 4 * sz] = c->data[j * sz + i];
+		img[sz * 4 * sz + sz * 3 + i + j * 4 * sz] = c->data[4 * sz * sz + j * sz + i];
+		img[sz * 8 * sz + sz + i + j * 4 * sz] = c->data[2 * sz * sz + j * sz + i];
+		img[sz + i + j * 4 * sz] = c->data[3 * sz * sz + j * sz + i];
 		}
-	}*/
+		}*/
 
 	cubeSize = c->cubemap_size;
 	//global color map
@@ -506,6 +544,24 @@ void GL2DProjWidget::SlotSetCubeTexture(GLTextureCube* v, Cube* c)
 		tex2d = new GLTexture2D(sz * 4, sz * 3);
 	}
 	tex2d->load(sz * 4, sz * 3, &img[0]);
+
+	//CHANGE_Huijie:compute colors of the cubemap
+	cubeColor = new float3[(cubeSize+1) * (cubeSize+1) * 3];
+	float step = 2.0 / (cubeSize);
+	for (int i = 0; i <= cubeSize; ++i){
+		for (int j = 0; j <= cubeSize; ++j){
+			float3 norm1 = normalize(make_float3(1.0, 1.0 - j*step, 1.0 - i*step));
+			cubeColor[i*(cubeSize+1) + j] = make_float3(abs(norm1.x), abs(norm1.y), abs(norm1.z));
+
+			float3 norm2 = normalize(make_float3(-1.0 + i*step, 1.0, -1.0 + j*step));
+			cubeColor[(cubeSize+1)*(cubeSize+1) + i*(cubeSize+1) + j] = make_float3(abs(norm2.x), abs(norm2.y), abs(norm2.z));
+
+			float3 norm3 = normalize(make_float3( 1.0 - i*step, -1.0 + j*step,1.0));
+			cubeColor[2*(cubeSize+1)*(cubeSize+1) + i*(cubeSize+1) + j] = make_float3(abs(norm3.x), abs(norm3.y), abs(norm3.z));
+		}
+	}
+
+
 	update();
 }
 

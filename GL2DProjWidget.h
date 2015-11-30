@@ -3,6 +3,9 @@
 
 #include <QtWidgets>
 #include <QOpenGLWidget>
+//CHANGE_Huijie
+#include "vector_types.h"
+#include "vector_functions.h"
 
 class ShaderProgram;
 class GLTextureCube;
@@ -33,6 +36,7 @@ private:
 	float cubeMax, cubeMin;
 	int texMode = 0;
 	int lineVerNum = 0;
+	float3 *cubeColor;
 
 protected:
 
