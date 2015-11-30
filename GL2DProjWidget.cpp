@@ -81,10 +81,22 @@ void GL2DProjWidget::loadShaders()
 			double d = 2.0 / (cubesize-1);
 			for (int i = 0; i < cubesize - 1; ++i){
 				double err = 0.02;
-				double offset = d * (0.1 + abs(1.0 * (cubesize) / 2 - 1 - i)*0.03);
+				double offset = 0.0;
+				if (cubesize % 2 == 1)
+					offset = d * (0.1 + abs(1.0 * (cubesize) / 2 - 1 - i)*0.03);
+				if (cubesize % 2 == 0)
+					offset = d * (0.1 + abs(1.0 * (cubesize - 1) / 2 - i)*0.03);
 				if (i == 0 || i == cubesize - 2) offset = d * 0.3;
-				err = 0.02 + abs(1.0 * (cubesize) / 2 - 1 - i) * 0.0025;
-				if (i > 1.0 * (cubesize) / 2 - 1) offset = -offset;
+				if (cubesize % 2 == 1)
+					err = 0.02 + abs(1.0 * (cubesize) / 2 - 1 - i) * 0.0025;
+				if (cubesize % 2 == 0)
+					err = 0.02 + abs(1.0 * (cubesize-1) / 2 - i) * 0.0025;
+				if (cubesize % 2 == 1 && i > 1.0 * (cubesize) / 2 - 1) offset = -offset;
+				if (cubesize % 2 == 0 && i > 1.0 * (cubesize - 1) / 2) offset = -offset;
+				if (cubesize % 2 == 0 && i == (cubesize / 2) - 1){
+					err = 0.015;
+					offset = 0;
+				}
 				if (a + 1.0 - (i + 0.5) * d - offset < err && a + 1.0 - (i + 0.5) * d - offset > -err ||
 					b + 1.0 - (i + 0.5) * d - offset < err && b + 1.0 - (i + 0.5) * d - offset > -err){
 					color = vec3(abs(norm.x), abs(norm.y), abs(norm.z));
@@ -98,10 +110,22 @@ void GL2DProjWidget::loadShaders()
 			double d = 2.0 / (cubesize-1);
 			for (int i = 0; i < cubesize - 1; ++i){
 				double err = 0.02;
-				double offset = d * (0.1 + abs(1.0 * (cubesize) / 2 - 1 - i)*0.03);
+				double offset = 0.0;
+				if (cubesize % 2 == 1)
+					offset = d * (0.1 + abs(1.0 * (cubesize) / 2 - 1 - i)*0.03);
+				if (cubesize % 2 == 0)
+					offset = d * (0.1 + abs(1.0 * (cubesize-1) / 2 - i)*0.03);
 				if (i == 0 || i == cubesize - 2) offset = d * 0.3;
-				err = 0.02 + abs(1.0 * (cubesize) / 2 - 1 - i) * 0.0025;
-				if (i > 1.0 * (cubesize) / 2 - 1) offset = -offset;
+				if (cubesize % 2 == 1)
+					err = 0.02 + abs(1.0 * (cubesize) / 2 - 1 - i) * 0.0025;
+				if (cubesize % 2 == 0)
+					err = 0.02 + abs(1.0 * (cubesize - 1) / 2 - i) * 0.0025;
+				if (cubesize % 2 == 1 && i > 1.0 * (cubesize) / 2 - 1) offset = -offset;
+				if (cubesize % 2 == 0 && i > 1.0 * (cubesize - 1) / 2) offset = -offset;
+				if (cubesize % 2 == 0 && i == (cubesize / 2) - 1){
+					err = 0.015;
+					offset = 0;
+				}
 				if (a + 1.0 - (i + 0.5) * d - offset < err && a + 1.0 - (i + 0.5) * d - offset > -err ||
 					b + 1.0 - (i + 0.5) * d - offset < err && b + 1.0 - (i + 0.5) * d - offset > -err){
 					color = vec3(abs(norm.x), abs(norm.y), abs(norm.z));
@@ -115,10 +139,22 @@ void GL2DProjWidget::loadShaders()
 			double d = 2.0 / (cubesize-1);
 			for (int i = 0; i < cubesize - 1; ++i){
 				double err = 0.02;
-				double offset = d * (0.1 + abs(1.0 * (cubesize) / 2 - 1 - i)*0.03);
+				double offset = 0.0;
+				if (cubesize % 2 == 1)
+					offset = d * (0.1 + abs(1.0 * (cubesize) / 2 - 1 - i)*0.03);
+				if (cubesize % 2 == 0)
+					offset = d * (0.1 + abs(1.0 * (cubesize - 1) / 2 - i)*0.03);
 				if (i == 0 || i == cubesize - 2) offset = d * 0.3;
-				err = 0.02 + abs(1.0 * (cubesize) / 2 - 1 - i) * 0.0025;
-				if (i > 1.0 * (cubesize) / 2 - 1) offset = -offset;
+				if (cubesize % 2 == 1)
+					err = 0.02 + abs(1.0 * (cubesize) / 2 - 1 - i) * 0.0025;
+				if (cubesize % 2 == 0)
+					err = 0.02 + abs(1.0 * (cubesize - 1) / 2 - i) * 0.0025;
+				if (cubesize % 2 == 1 && i > 1.0 * (cubesize) / 2 - 1) offset = -offset;
+				if (cubesize % 2 == 0 && i > 1.0 * (cubesize - 1) / 2) offset = -offset;
+				if (cubesize % 2 == 0 && i == (cubesize / 2) - 1){
+					err = 0.015;
+					offset = 0;
+				}
 				if (a + 1.0 - (i + 0.5) * d - offset < err && a + 1.0 - (i + 0.5) * d - offset > -err ||
 					b + 1.0 - (i + 0.5) * d - offset < err && b + 1.0 - (i + 0.5) * d - offset > -err){
 					color = vec3(abs(norm.x), abs(norm.y), abs(norm.z));
