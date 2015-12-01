@@ -225,6 +225,7 @@ void GL2DProjWidget::loadShaders()
 	gl_Position = vec4(vertexPosition.x, vertexPosition.y, vertexPosition.z, 1);
 	}
 	);
+
 	const char* gridFS =
 	GLSL(
 	out vec3 fragColor;
@@ -232,6 +233,7 @@ void GL2DProjWidget::loadShaders()
 	fragColor = vec3(1.0f, 1.0f, 1.0f);
 	}
 	);
+
 	glProgGrid = new ShaderProgram();
 	glProgGrid->initFromStrings(gridVS, gridFS);
 	glProgGrid->addAttribute("vertexPosition");*/
@@ -258,6 +260,8 @@ void GL2DProjWidget::initializeGL()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glEnableVertexAttribArray(glProg->attribute("vertexPosition"));
 	m_vao->release();
+
+
 }
 
 //CHANGE_Huijie
@@ -462,7 +466,6 @@ void GL2DProjWidget::paintGL() {
 		//renderText(-0.4, 0.0, 0.0, "Z+");
 
 		glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
-		//gluOrtho2D(-1.0, 1.0, -1.0, 1.0);
 		glRasterPos2f(0.5, 0.1);
 		sprintf(tmp_str1, "+Z");
 		draw_string(tmp_str1);

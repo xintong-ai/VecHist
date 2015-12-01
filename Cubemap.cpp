@@ -10,6 +10,11 @@
 #include <algorithm>
 #include <fstream>
 
+//CHANGE_Huijie
+float Cube::cubeMaxValue = -10;
+float Cube::cubeMinValue = 10;
+
+
 double Log2(double n)
 {
 	return log(n) / log(2);
@@ -202,6 +207,7 @@ Cubemap::Cubemap(VecReader* r)
 	dim[2] = d.z;
 
 	cubemap_size = 9;
+	//cubemap_size = 11;
 	solAng = ComputePatchSolidAngle(cubemap_size);
 	std::cout << "indexing the vectors ..." << std::endl;
 	//IndexVolume();
@@ -345,8 +351,12 @@ void Cubemap::GenCubeMapOptimized(int x, int y, int z, int nx, int ny, int nz, f
 	for (int i = 0; i < size3; i++)
 		sum += cubemap[i];
 
-	for (int i = 0; i < size3; i++)
-		cubemap[i] /= (float)sum ;
+	for (int i = 0; i < size3; i++){
+		cubemap[i] /= (float)sum;
+		//CHANGE_Huijie
+		if (cubemap[i] > Cube::cubeMaxValue) Cube::cubeMaxValue = cubemap[i];
+		if (cubemap[i] > 0 && cubemap[i] < Cube::cubeMinValue) Cube::cubeMinValue = cubemap[i];
+	}
 }
 
 inline bool inside(int3 pos, int3 vmin, int3 vmax) {
