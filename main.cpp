@@ -3,6 +3,8 @@
 #include <string>
 #include <QApplication>
 #include <window.h>
+//CHANGE_Huijie
+//#include <GL/freeglut.h>
 
 //inline bool matchString(const char *extensionString, const char *subString)
 //{

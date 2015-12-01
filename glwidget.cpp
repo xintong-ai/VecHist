@@ -55,6 +55,23 @@ void GLWidget::initializeGL()
 	//glClearColor(0.4f, 0.4f, 0.4f, 1.0f);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
+
+	//CHANGE_Huijie: initialize the FBO and the render buffer
+	glGenRenderbuffers(2, renderbuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer[0]);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA, width, height);
+
+	glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer[1]);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+
+	glGenFramebuffers(1, &framebuffer);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
+
+	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+		GL_RENDERBUFFER, renderbuffer[0]);
+	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+		GL_RENDERBUFFER, renderbuffer[1]);
+
 }
 
 void GLWidget::cleanup()
@@ -116,6 +133,28 @@ void GLWidget::paintGL() {
 	for (auto renderer : renderers)
 		renderer.second->draw(modelview, projection);
 
+	//CHANGE_Huijie: picking
+	if (picking){
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		for (auto renderer : renderers)
+			renderer.second->drawPicking(modelview, projection);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer);
+		unsigned char cursorPixel[4];
+		glReadBuffer(GL_COLOR_ATTACHMENT0);
+		glReadPixels(xMouse, yMouse, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, cursorPixel);
+		std::cout << "cursor color: " << (int)cursorPixel[0] << " " << (int)cursorPixel[1] << " "
+			<< (int)cursorPixel[2] << " " << (int)cursorPixel[3] << " " << std::endl;
+		pickID = cursorPixel[0] + cursorPixel[1] * 256 + cursorPixel[2] * 256 * 256;
+		std::cout << "pick id: " << pickID << std::endl;
+		for (auto renderer : renderers)
+			renderer.second->SetPickID(pickID);
+		for (auto renderer : renderers)
+			renderer.second->mousePress(xMouse, yMouse, QApplication::keyboardModifiers());
+		picking = false;
+		//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	}
+
     TimerEnd();
 }
 
@@ -134,6 +173,17 @@ void GLWidget::resizeGL(int w, int h)
     height = h;
 	for (auto renderer : renderers)
 		renderer.second->resize(w, h);
+
+	//CHANGE_Huijie
+	glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer[0]);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA, width, height);
+	glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer[1]);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
+	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+		GL_RENDERBUFFER, renderbuffer[0]);
+	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+		GL_RENDERBUFFER, renderbuffer[1]);
 
     if(!initialized) {
         //make init here because the window size is not updated in InitiateGL()
@@ -182,10 +232,19 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
 	QPointF pos = event->pos();
 	QPoint posGL = pixelPosToGLPos(event->pos());
 
-	for (auto renderer : renderers)
-		renderer.second->mousePress(posGL.x(), posGL.y(), QApplication::keyboardModifiers());
+	//CHANGE_Huijie
+	if (event->button() == Qt::LeftButton){
+		xMouse = posGL.x();
+		yMouse = posGL.y();
+		picking = true;
+	}
+
+	/*for (auto renderer : renderers)
+		renderer.second->mousePress(posGL.x(), posGL.y(), QApplication::keyboardModifiers());*/
 
     prevPos = pos;
+	//CHANGE_Huijie
+	update();
 }
 
 void GLWidget::mouseReleaseEvent(QMouseEvent *event)

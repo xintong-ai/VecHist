@@ -159,6 +159,80 @@ void GlyphRenderable::LoadShaders()
 	glProg->addUniform("env");
 	glProg->addUniform("heightScale");
 
+	//CHANGE_Huijie: shaders for picking color
+	const char* pickingVS =
+		GLSL(
+		layout(location = 0) in vec3 VertexPosition;
+
+	void main()
+	{
+		gl_Position = vec4(VertexPosition, 1.0f);// ProjectionMatrix * ModelViewMatrix * vec4(posDeformed * Scale + Transform, 1.0);
+	}
+	);
+
+	const char* pickingGS =
+		GLSL(
+		#extension GL_NV_shadow_samplers_cube : enable \n
+		layout(lines_adjacency) in;
+	layout(triangle_strip, max_vertices = 4) out;
+	uniform mat4 ModelViewMatrix;
+	uniform mat4 ProjectionMatrix;
+	uniform vec3 Transform;
+	uniform float Scale;
+	uniform samplerCube env;
+	uniform int heightScale;
+
+	vec3 GetDeformed(vec3 dir, float v){
+		//we use sqrt(), because the projected area is proportional to the square of the radius.
+		return dir * (0.04 + sqrt(v) * heightScale * 0.1);
+	}
+
+	vec4 GetNDCPos(vec3 v) {
+		return ProjectionMatrix * ModelViewMatrix * vec4(GetDeformed(v, textureCube(env, v).x) * Scale + Transform, 1.0);
+	}
+
+	void main(void)
+	{
+		vec3 A = gl_in[0].gl_Position.xyz;
+		vec3 B = gl_in[1].gl_Position.xyz;
+		vec3 C = gl_in[2].gl_Position.xyz;
+		vec3 D = gl_in[3].gl_Position.xyz;
+
+		gl_Position = GetNDCPos(gl_in[0].gl_Position.xyz);
+		EmitVertex();
+		gl_Position = GetNDCPos(gl_in[1].gl_Position.xyz);
+		EmitVertex();
+		gl_Position = GetNDCPos(gl_in[3].gl_Position.xyz);
+		EmitVertex();
+		gl_Position = GetNDCPos(gl_in[2].gl_Position.xyz);
+		EmitVertex();
+		EndPrimitive();
+	}
+	);
+
+	const char* pickingFS =
+		GLSL(
+		layout(location = 0) out vec4 FragColor;
+	uniform vec4 PickingColor;
+
+	void main() {
+		FragColor = PickingColor;
+	}
+	);
+
+	glPickingProg = new ShaderProgram();
+	glPickingProg->initFromStrings(pickingVS, pickingFS, pickingGS);
+
+	glPickingProg->addAttribute("VertexPosition");
+
+	glPickingProg->addUniform("ModelViewMatrix");
+	glPickingProg->addUniform("ProjectionMatrix");
+
+	glPickingProg->addUniform("Transform");
+	glPickingProg->addUniform("Scale");
+	glPickingProg->addUniform("env");
+	glPickingProg->addUniform("heightScale");
+	glPickingProg->addUniform("PickingColor");
 }
 
 void GlyphRenderable::init()
@@ -199,20 +273,37 @@ void GlyphRenderable::UpdateData()
 	int numGlyphSide2 = dim2 / n_step;
 	//the .clear() does not trigger the destructor, 
 	//so we need to delete the pointer first
-	for (auto v : cubes) delete v;
-	cubes.clear();
-	for (int i = 0; i < numGlyphSide1; i++) {
-		for (int j = 0; j < numGlyphSide2; j++) {
-			int startCoords [] = { 0, 0, 0 };
-			startCoords[sliceDimIdx] = sliceStart;
-			startCoords[(sliceDimIdx + 1) % 3] = i * n_step;
-			startCoords[(sliceDimIdx + 2) % 3] = j * n_step;
+	if (0 == cubemap->GetMode()) {
+		for (auto v : cubes) delete v;
+		cubes.clear();
+		for (int i = 0; i < numGlyphSide1; i++) {
+			for (int j = 0; j < numGlyphSide2; j++) {
+				int startCoords[] = { 0, 0, 0 };
+				startCoords[sliceDimIdx] = sliceStart;
+				startCoords[(sliceDimIdx + 1) % 3] = i * n_step;
+				startCoords[(sliceDimIdx + 2) % 3] = j * n_step;
 
-			Cube* c = new Cube(startCoords[0], startCoords[1], startCoords[2], n_step, n_step, n_step);
-			c->phase = 0;// rand() % 20;
-			cubemap->GenCubeMapOptimized(c->pos.x, c->pos.y, c->pos.z, c->size.x, c->size.y, c->size.z, c->data, c->cubemap_size, c->mag);
-			cubes.push_back(c);
+				Cube* c = new Cube(startCoords[0], startCoords[1], startCoords[2], n_step, n_step, n_step);
+				c->phase = 0;// rand() % 20;
+				cubemap->GenCubeMapOptimized(c->pos.x, c->pos.y, c->pos.z, c->size.x, c->size.y, c->size.z, c->data, c->cubemap_size, c->mag);
+				cubes.push_back(c);
+			}
 		}
+	}
+	else {
+		cubes.clear();
+		float3 block_start, block_size;
+		(&(block_start.x))[sliceDimIdx] = sliceStart;
+		(&(block_start.x))[(sliceDimIdx + 1) % 3] = 0;
+		(&(block_start.x))[(sliceDimIdx + 2) % 3] = 0;
+		(&(block_size.x))[sliceDimIdx] = 16;
+		(&(block_size.x))[(sliceDimIdx + 1) % 3] = dim1;
+		(&(block_size.x))[(sliceDimIdx + 2) % 3] = dim2;
+		if (2 == sliceStart)
+			sliceStart = 4;
+		cubemap->GetCubes(block_start.x, block_start.y, block_start.z, block_size.x, block_size.y, block_size.z, cubes);
+		//cubemap->GetCubes(0,0,0,63,63,63, cubes);
+
 	}
 
 	for (auto v : textures) delete v;
@@ -221,6 +312,8 @@ void GlyphRenderable::UpdateData()
 	bboxes.clear();
 	int cubemap_size = cubemap->GetCubemapSize();
 	for (int i = 0; i < cubes.size(); i++) {
+		if (!cubes[i]->data)
+			continue;
 		GLTextureCube* tex = new GLTextureCube(cubemap_size);
 		tex->load(cubes[i]->data, cubemap_size);
 		textures.push_back(tex);
@@ -304,6 +397,8 @@ void GlyphRenderable::SlotSliceNumChanged(int i)
 {
 	sliceStart = i;
 	std::cout << "sliceStart: " << sliceStart<<std::endl;
+	Cube::cubeMaxValue = -10;
+	Cube::cubeMinValue = 10;
 	UpdateData();
 	actor->UpdateGL();
 }
@@ -311,6 +406,9 @@ void GlyphRenderable::SlotSliceNumChanged(int i)
 void GlyphRenderable::SlotNumPartChanged(int i)
 {
 	numGlyphPerDim = i;
+	//CHANGE_Huijie
+	Cube::cubeMaxValue = -10;
+	Cube::cubeMinValue = 10;
 	UpdateData();
 	actor->UpdateGL();
 }
@@ -326,6 +424,9 @@ void GlyphRenderable::SlotSetSliceOrie(int i)
 	if (i != sliceDimIdx && i >= 0 && i < 3) {
 		sliceDimIdx = i;
 		//sliceStart = 0;
+		//CHANGE_Huijie
+		Cube::cubeMaxValue = -10;
+		Cube::cubeMinValue = 10;
 		UpdateData();
 		actor->UpdateGL();
 	}
@@ -386,9 +487,66 @@ void GlyphRenderable::SlotGenCubeAlongLine(float4* line, int nv)
 	actor->UpdateGL();
 }
 
+//CHANGE_Huijie
+void GlyphRenderable::drawPicking(float modelview[16], float projection[16])
+{
+	std::cout << "draw picking" << std::endl;
+
+	qgl->glBindBuffer(GL_ARRAY_BUFFER, vbo_vert);
+	qgl->glVertexAttribPointer(glPickingProg->attribute("VertexPosition"), 3, GL_FLOAT, GL_FALSE, 0, NULL);
+	qgl->glBindBuffer(GL_ARRAY_BUFFER, 0);
+	qgl->glEnableVertexAttribArray(glPickingProg->attribute("VertexPosition"));
+
+
+	for (int i = 0; i < cubes.size(); i++) {
+		glLoadName(i);
+		glPushMatrix();
+
+		GLTextureCube* tex = textures[i];// m_textureCubeManager->getBlockTex()[i];
+		Cube* c = cubes[i];
+		float3 shift = make_float3(c->size.x * 0.5 + c->pos.x, c->size.y * 0.5 + c->pos.y, c->size.z * 0.5 + c->pos.z);
+		float min_dim = std::min(std::min(c->size.x, c->size.y), c->size.z);
+
+		glPickingProg->use();
+		m_vao->bind();
+
+		int r = ((i + 1) & 0x000000FF) >> 0;
+		int g = ((i + 1) & 0x0000FF00) >> 8;
+		int b = ((i + 1) & 0x00FF0000) >> 16;
+
+		QMatrix4x4 q_modelview = QMatrix4x4(modelview);
+		q_modelview = q_modelview.transposed();
+		qgl->glUniform3fv(glPickingProg->uniform("Transform"), 1, &shift.x);
+		qgl->glUniform1f(glPickingProg->uniform("Scale"), min_dim);
+		qgl->glUniform1i(glPickingProg->uniform("heightScale"), heightScale);
+		qgl->glUniform1i(glPickingProg->uniform("env"), GLint(0));
+		qgl->glUniformMatrix4fv(glPickingProg->uniform("ModelViewMatrix"), 1, GL_FALSE, modelview);
+		qgl->glUniformMatrix4fv(glPickingProg->uniform("ProjectionMatrix"), 1, GL_FALSE, projection);
+		qgl->glUniform4f(glPickingProg->uniform("PickingColor"), r / 255.0f, g / 255.0f, b / 255.0f, 1.0f);
+
+		tex->bind();
+		glDrawArrays(GL_LINES_ADJACENCY, 0, glyphMesh->GetNumVerts());
+		//glDrawElements(GL_TRIANGLES, glyphMesh->numElements, GL_UNSIGNED_INT, glyphMesh->indices);
+		tex->unbind();
+		m_vao->release();
+		glPickingProg->disable();
+		glPopMatrix();
+	}
+
+	//qgl->glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer);
+	//qgl->glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+}
+
 void GlyphRenderable::mousePress(int x, int y, int modifier)
 {
 	//TODO: add picking functions here to replace the line below
-	int idx = textures.size() * 0.5;
-	emit SigChangeTex(textures[idx], cubes[idx]);
+
+	//int idx = textures.size() * 0.5;
+	//emit SigChangeTex(textures[idx], cubes[idx]);
+
+	//CHANGE_Huijie
+	if (pickID == 0)
+		return;
+	else
+		emit SigChangeTex(textures[pickID - 1], cubes[pickID - 1]);
 }
