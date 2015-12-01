@@ -273,20 +273,37 @@ void GlyphRenderable::UpdateData()
 	int numGlyphSide2 = dim2 / n_step;
 	//the .clear() does not trigger the destructor, 
 	//so we need to delete the pointer first
-	for (auto v : cubes) delete v;
-	cubes.clear();
-	for (int i = 0; i < numGlyphSide1; i++) {
-		for (int j = 0; j < numGlyphSide2; j++) {
-			int startCoords [] = { 0, 0, 0 };
-			startCoords[sliceDimIdx] = sliceStart;
-			startCoords[(sliceDimIdx + 1) % 3] = i * n_step;
-			startCoords[(sliceDimIdx + 2) % 3] = j * n_step;
+	if (0 == cubemap->GetMode()) {
+		for (auto v : cubes) delete v;
+		cubes.clear();
+		for (int i = 0; i < numGlyphSide1; i++) {
+			for (int j = 0; j < numGlyphSide2; j++) {
+				int startCoords[] = { 0, 0, 0 };
+				startCoords[sliceDimIdx] = sliceStart;
+				startCoords[(sliceDimIdx + 1) % 3] = i * n_step;
+				startCoords[(sliceDimIdx + 2) % 3] = j * n_step;
 
-			Cube* c = new Cube(startCoords[0], startCoords[1], startCoords[2], n_step, n_step, n_step);
-			c->phase = 0;// rand() % 20;
-			cubemap->GenCubeMapOptimized(c->pos.x, c->pos.y, c->pos.z, c->size.x, c->size.y, c->size.z, c->data, c->cubemap_size, c->mag);
-			cubes.push_back(c);
+				Cube* c = new Cube(startCoords[0], startCoords[1], startCoords[2], n_step, n_step, n_step);
+				c->phase = 0;// rand() % 20;
+				cubemap->GenCubeMapOptimized(c->pos.x, c->pos.y, c->pos.z, c->size.x, c->size.y, c->size.z, c->data, c->cubemap_size, c->mag);
+				cubes.push_back(c);
+			}
 		}
+	}
+	else {
+		cubes.clear();
+		float3 block_start, block_size;
+		(&(block_start.x))[sliceDimIdx] = sliceStart;
+		(&(block_start.x))[(sliceDimIdx + 1) % 3] = 0;
+		(&(block_start.x))[(sliceDimIdx + 2) % 3] = 0;
+		(&(block_size.x))[sliceDimIdx] = 16;
+		(&(block_size.x))[(sliceDimIdx + 1) % 3] = dim1;
+		(&(block_size.x))[(sliceDimIdx + 2) % 3] = dim2;
+		if (2 == sliceStart)
+			sliceStart = 4;
+		cubemap->GetCubes(block_start.x, block_start.y, block_start.z, block_size.x, block_size.y, block_size.z, cubes);
+		//cubemap->GetCubes(0,0,0,63,63,63, cubes);
+
 	}
 
 	for (auto v : textures) delete v;
@@ -295,6 +312,8 @@ void GlyphRenderable::UpdateData()
 	bboxes.clear();
 	int cubemap_size = cubemap->GetCubemapSize();
 	for (int i = 0; i < cubes.size(); i++) {
+		if (!cubes[i]->data)
+			continue;
 		GLTextureCube* tex = new GLTextureCube(cubemap_size);
 		tex->load(cubes[i]->data, cubemap_size);
 		textures.push_back(tex);
@@ -521,6 +540,7 @@ void GlyphRenderable::drawPicking(float modelview[16], float projection[16])
 void GlyphRenderable::mousePress(int x, int y, int modifier)
 {
 	//TODO: add picking functions here to replace the line below
+
 	//int idx = textures.size() * 0.5;
 	//emit SigChangeTex(textures[idx], cubes[idx]);
 

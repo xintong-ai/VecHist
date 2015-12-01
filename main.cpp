@@ -4,7 +4,7 @@
 #include <QApplication>
 #include <window.h>
 //CHANGE_Huijie
-#include <GL/freeglut.h>
+//#include <GL/freeglut.h>
 
 //inline bool matchString(const char *extensionString, const char *subString)
 //{
@@ -43,8 +43,6 @@
 
 int main(int argc, char **argv)
 {
-	//CHANGE_Huijie
-	glutInit(&argc, argv);
 	QApplication app(argc, argv);
 
 	Window win;
