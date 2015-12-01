@@ -261,7 +261,7 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
 
 void GLWidget::wheelEvent(QWheelEvent * event)
 {
-	transScale *= exp(event->delta() * -0.003);
+	transScale *= exp(event->delta() * -0.001);
 	for (auto renderer : renderers)
 		renderer.second->MouseWheel(event->delta());
 	update();
@@ -345,5 +345,12 @@ void GLWidget::SetVol(int3 dim)
 
 void GLWidget::UpdateGL()
 {
+	update();
+}
+
+void GLWidget::animate()
+{
+	for (auto renderer : renderers)
+		renderer.second->animate();
 	update();
 }

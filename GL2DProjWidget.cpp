@@ -4,6 +4,10 @@
 #include <GLTextureCube.h>
 #include "Cubemap.h"
 //CHANGE_Huijie
+<<<<<<< HEAD
+=======
+//#include <GL/freeglut.h>
+>>>>>>> origin/master
 #include "helper_math.h"// to define normalize()
 
 #define qgl	QOpenGLContext::currentContext()->functions()
@@ -219,6 +223,29 @@ void GL2DProjWidget::loadShaders()
 	glProg6Faces->addUniform("cmax");
 	glProg6Faces->addUniform("cmin");
 
+<<<<<<< HEAD
+=======
+	//CHANGE_Huijie
+	/*const char* gridVS =
+	GLSL(
+	layout(location = 0) in vec3 vertexPosition;
+	void main(){
+	gl_Position = vec4(vertexPosition.x, vertexPosition.y, vertexPosition.z, 1);
+	}
+	);
+
+	const char* gridFS =
+	GLSL(
+	out vec3 fragColor;
+	void main(){
+	fragColor = vec3(1.0f, 1.0f, 1.0f);
+	}
+	);
+
+	glProgGrid = new ShaderProgram();
+	glProgGrid->initFromStrings(gridVS, gridFS);
+	glProgGrid->addAttribute("vertexPosition");*/
+>>>>>>> origin/master
 }
 
 void GL2DProjWidget::initializeGL()
@@ -243,6 +270,7 @@ void GL2DProjWidget::initializeGL()
 	glEnableVertexAttribArray(glProg->attribute("vertexPosition"));
 	m_vao->release();
 
+<<<<<<< HEAD
 	//CHANGE_Huijie
 	float3 corners2[] = {
 		make_float3(-0.75, -1.0, 0),
@@ -444,6 +472,18 @@ void GL2DProjWidget::initializeGL()
 
 }
 
+=======
+
+}
+
+//CHANGE_Huijie
+void draw_string(const char* str)
+{
+	//for (unsigned i = 0; i<strlen(str); i++)
+	//	glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, str[i]);
+};
+
+>>>>>>> origin/master
 void GL2DProjWidget::paintGL() {
 	//CHANGE_Huijie
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -454,8 +494,12 @@ void GL2DProjWidget::paintGL() {
 	if (0 == type) {
 		if (nullptr == tex2d)
 			return;
+<<<<<<< HEAD
 
 		m_vao2->bind();
+=======
+		m_vao->bind();
+>>>>>>> origin/master
 		glProg6Faces->use();
 		glUniform1i(glProg6Faces->uniform("tex"), GLint(0));
 		glUniform1f(glProg6Faces->uniform("cmax"), cubeMax);
@@ -464,7 +508,11 @@ void GL2DProjWidget::paintGL() {
 		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 		tex2d->unbind();
 		glProg6Faces->disable();
+<<<<<<< HEAD
 		m_vao2->release();
+=======
+		m_vao->release();
+>>>>>>> origin/master
 
 		glLineWidth(1.5f);
 		//glShadeModel(GL_FLAT);
@@ -479,11 +527,19 @@ void GL2DProjWidget::paintGL() {
 						glColor3f(cubeColor[(cubeSize + 1)*(cubeSize + 1) + (i%cubeSize)*(cubeSize + 1) + (j%cubeSize)].x,
 							cubeColor[(cubeSize + 1)*(cubeSize + 1) + (i%cubeSize)*(cubeSize + 1) + (j%cubeSize)].y,
 							cubeColor[(cubeSize + 1)*(cubeSize + 1) + (i%cubeSize)*(cubeSize + 1) + (j%cubeSize)].z);
+<<<<<<< HEAD
 						glVertex3f((1.5f * i / sizeWidth) - 0.75f, (2.0f * j / sizeHeight) - 1.0f, 0.0f);
 						glColor3f(cubeColor[(cubeSize + 1)*(cubeSize + 1) + ((i%cubeSize) + 1)*(cubeSize + 1) + (j%cubeSize)].x,
 							cubeColor[(cubeSize + 1)*(cubeSize + 1) + ((i%cubeSize) + 1)*(cubeSize + 1) + (j%cubeSize)].y,
 							cubeColor[(cubeSize + 1)*(cubeSize + 1) + ((i%cubeSize) + 1)*(cubeSize + 1) + (j%cubeSize)].z);
 						glVertex3f((1.5f * i / sizeWidth) - 0.75f, (2.0f * (j + 1) / sizeHeight) - 1.0f, 0.0f);
+=======
+						glVertex3f((2.0f * i / sizeWidth) - 1.0f, (2.0f * j / sizeHeight) - 1.0f, 0.0f);
+						glColor3f(cubeColor[(cubeSize + 1)*(cubeSize + 1) + ((i%cubeSize) + 1)*(cubeSize + 1) + (j%cubeSize)].x,
+							cubeColor[(cubeSize + 1)*(cubeSize + 1) + ((i%cubeSize) + 1)*(cubeSize + 1) + (j%cubeSize)].y,
+							cubeColor[(cubeSize + 1)*(cubeSize + 1) + ((i%cubeSize) + 1)*(cubeSize + 1) + (j%cubeSize)].z);
+						glVertex3f((2.0f * i / sizeWidth) - 1.0f, (2.0f * (j + 1) / sizeHeight) - 1.0f, 0.0f);
+>>>>>>> origin/master
 						glEnd();
 					}
 					if (i != 2 * cubeSize){
@@ -491,11 +547,19 @@ void GL2DProjWidget::paintGL() {
 						glColor3f(cubeColor[(cubeSize + 1)*(cubeSize + 1) + ((i%cubeSize))*(cubeSize + 1) + (j%cubeSize)].x,
 							cubeColor[(cubeSize + 1)*(cubeSize + 1) + ((i%cubeSize))*(cubeSize + 1) + (j%cubeSize)].y,
 							cubeColor[(cubeSize + 1)*(cubeSize + 1) + ((i%cubeSize))*(cubeSize + 1) + (j%cubeSize)].z);
+<<<<<<< HEAD
 						glVertex3f((1.5f * i / sizeWidth) - 0.75f, (2.0f * j / sizeHeight) - 1.0f, 0.0f);
 						glColor3f(cubeColor[(cubeSize + 1)*(cubeSize + 1) + ((i%cubeSize))*(cubeSize + 1) + ((j%cubeSize) + 1)].x,
 							cubeColor[(cubeSize + 1)*(cubeSize + 1) + ((i%cubeSize))*(cubeSize + 1) + ((j%cubeSize) + 1)].y,
 							cubeColor[(cubeSize + 1)*(cubeSize + 1) + ((i%cubeSize))*(cubeSize + 1) + ((j%cubeSize) + 1)].z);
 						glVertex3f((1.5f * (i + 1) / sizeWidth) - 0.75f, (2.0f * j / sizeHeight) - 1.0f, 0.0f);
+=======
+						glVertex3f((2.0f * i / sizeWidth) - 1.0f, (2.0f * j / sizeHeight) - 1.0f, 0.0f);
+						glColor3f(cubeColor[(cubeSize + 1)*(cubeSize + 1) + ((i%cubeSize))*(cubeSize + 1) + ((j%cubeSize) + 1)].x,
+							cubeColor[(cubeSize + 1)*(cubeSize + 1) + ((i%cubeSize))*(cubeSize + 1) + ((j%cubeSize) + 1)].y,
+							cubeColor[(cubeSize + 1)*(cubeSize + 1) + ((i%cubeSize))*(cubeSize + 1) + ((j%cubeSize) + 1)].z);
+						glVertex3f((2.0f * (i + 1) / sizeWidth) - 1.0f, (2.0f * j / sizeHeight) - 1.0f, 0.0f);
+>>>>>>> origin/master
 						glEnd();
 					}
 				}
@@ -505,6 +569,7 @@ void GL2DProjWidget::paintGL() {
 						glColor3f(cubeColor[(i%cubeSize)*(cubeSize + 1) + (j%cubeSize)].x,
 							cubeColor[(i%cubeSize)*(cubeSize + 1) + (j%cubeSize)].y,
 							cubeColor[(i%cubeSize)*(cubeSize + 1) + (j%cubeSize)].z);
+<<<<<<< HEAD
 						glVertex3f((1.5f * i / sizeWidth) - 0.75f, (2.0f * j / sizeHeight) - 1.0f, 0.0f);
 						glColor3f(cubeColor[((i%cubeSize) + 1)*(cubeSize + 1) + (j%cubeSize)].x,
 							cubeColor[((i%cubeSize) + 1)*(cubeSize + 1) + (j%cubeSize)].y,
@@ -513,15 +578,33 @@ void GL2DProjWidget::paintGL() {
 						glEnd();
 					}
 					if (i != cubeSize && i != 3 * cubeSize){
+=======
+						glVertex3f((2.0f * i / sizeWidth) - 1.0f, (2.0f * j / sizeHeight) - 1.0f, 0.0f);
+						glColor3f(cubeColor[((i%cubeSize) + 1)*(cubeSize + 1) + (j%cubeSize)].x,
+							cubeColor[((i%cubeSize) + 1)*(cubeSize + 1) + (j%cubeSize)].y,
+							cubeColor[((i%cubeSize) + 1)*(cubeSize + 1) + (j%cubeSize)].z);
+						glVertex3f((2.0f * i / sizeWidth) - 1.0f, (2.0f * (j + 1) / sizeHeight) - 1.0f, 0.0f);
+						glEnd();
+					}
+					if (i != cubeSize || i != 3 * cubeSize){
+>>>>>>> origin/master
 						glBegin(GL_LINES);
 						glColor3f(cubeColor[(i%cubeSize)*(cubeSize + 1) + (j%cubeSize)].x,
 							cubeColor[(i%cubeSize)*(cubeSize + 1) + (j%cubeSize)].y,
 							cubeColor[(i%cubeSize)*(cubeSize + 1) + (j%cubeSize)].z);
+<<<<<<< HEAD
 						glVertex3f((1.5f * i / sizeWidth) - 0.75f, (2.0f * j / sizeHeight) - 1.0f, 0.0f);
 						glColor3f(cubeColor[(i%cubeSize)*(cubeSize + 1) + ((j%cubeSize) + 1)].x,
 							cubeColor[(i%cubeSize)*(cubeSize + 1) + ((j%cubeSize) + 1)].y,
 							cubeColor[(i%cubeSize)*(cubeSize + 1) + ((j%cubeSize) + 1)].z);
 						glVertex3f((1.5f * (i + 1) / sizeWidth) - 0.75f, (2.0f * j / sizeHeight) - 1.0f, 0.0f);
+=======
+						glVertex3f((2.0f * i / sizeWidth) - 1.0f, (2.0f * j / sizeHeight) - 1.0f, 0.0f);
+						glColor3f(cubeColor[(i%cubeSize)*(cubeSize + 1) + ((j%cubeSize) + 1)].x,
+							cubeColor[(i%cubeSize)*(cubeSize + 1) + ((j%cubeSize) + 1)].y,
+							cubeColor[(i%cubeSize)*(cubeSize + 1) + ((j%cubeSize) + 1)].z);
+						glVertex3f((2.0f * (i + 1) / sizeWidth) - 1.0f, (2.0f * j / sizeHeight) - 1.0f, 0.0f);
+>>>>>>> origin/master
 						glEnd();
 					}
 				}
@@ -531,6 +614,7 @@ void GL2DProjWidget::paintGL() {
 						glColor3f(cubeColor[2 * (cubeSize + 1)*(cubeSize + 1) + (i%cubeSize)*(cubeSize + 1) + (j%cubeSize)].x,
 							cubeColor[2 * (cubeSize + 1)*(cubeSize + 1) + (i%cubeSize)*(cubeSize + 1) + (j%cubeSize)].y,
 							cubeColor[2 * (cubeSize + 1)*(cubeSize + 1) + (i%cubeSize)*(cubeSize + 1) + (j%cubeSize)].z);
+<<<<<<< HEAD
 						glVertex3f((1.5f * i / sizeWidth) - 0.75f, (2.0f * j / sizeHeight) - 1.0f, 0.0f);
 						glColor3f(cubeColor[2 * (cubeSize + 1)*(cubeSize + 1) + ((i%cubeSize) + 1)*(cubeSize + 1) + (j%cubeSize)].x,
 							cubeColor[2 * (cubeSize + 1)*(cubeSize + 1) + ((i%cubeSize) + 1)*(cubeSize + 1) + (j%cubeSize)].y,
@@ -539,20 +623,39 @@ void GL2DProjWidget::paintGL() {
 						glEnd();
 					}
 					if (i != 2 * cubeSize && i != sizeWidth){
+=======
+						glVertex3f((2.0f * i / sizeWidth) - 1.0f, (2.0f * j / sizeHeight) - 1.0f, 0.0f);
+						glColor3f(cubeColor[2 * (cubeSize + 1)*(cubeSize + 1) + ((i%cubeSize) + 1)*(cubeSize + 1) + (j%cubeSize)].x,
+							cubeColor[2 * (cubeSize + 1)*(cubeSize + 1) + ((i%cubeSize) + 1)*(cubeSize + 1) + (j%cubeSize)].y,
+							cubeColor[2 * (cubeSize + 1)*(cubeSize + 1) + ((i%cubeSize) + 1)*(cubeSize + 1) + (j%cubeSize)].z);
+						glVertex3f((2.0f * i / sizeWidth) - 1.0f, (2.0f * (j + 1) / sizeHeight) - 1.0f, 0.0f);
+						glEnd();
+					}
+					if (i != 2 * cubeSize || i != 4 * sizeWidth){
+>>>>>>> origin/master
 						glBegin(GL_LINES);
 						glColor3f(cubeColor[2 * (cubeSize + 1)*(cubeSize + 1) + (i%cubeSize)*(cubeSize + 1) + (j%cubeSize)].x,
 							cubeColor[2 * (cubeSize + 1)*(cubeSize + 1) + (i%cubeSize)*(cubeSize + 1) + (j%cubeSize)].y,
 							cubeColor[2 * (cubeSize + 1)*(cubeSize + 1) + (i%cubeSize)*(cubeSize + 1) + (j%cubeSize)].z);
+<<<<<<< HEAD
 						glVertex3f((1.5f * i / sizeWidth) - 0.75f, (2.0f * j / sizeHeight) - 1.0f, 0.0f);
 						glColor3f(cubeColor[2 * (cubeSize + 1)*(cubeSize + 1) + (i%cubeSize)*(cubeSize + 1) + ((j%cubeSize) + 1)].x,
 							cubeColor[2 * (cubeSize + 1)*(cubeSize + 1) + (i%cubeSize)*(cubeSize + 1) + ((j%cubeSize) + 1)].y,
 							cubeColor[2 * (cubeSize + 1)*(cubeSize + 1) + (i%cubeSize)*(cubeSize + 1) + ((j%cubeSize) + 1)].z);
 						glVertex3f((1.5f * (i + 1) / sizeWidth) - 0.75f, (2.0f * j / sizeHeight) - 1.0f, 0.0f);
+=======
+						glVertex3f((2.0f * i / sizeWidth) - 1.0f, (2.0f * j / sizeHeight) - 1.0f, 0.0f);
+						glColor3f(cubeColor[2 * (cubeSize + 1)*(cubeSize + 1) + (i%cubeSize)*(cubeSize + 1) + ((j%cubeSize) + 1)].x,
+							cubeColor[2 * (cubeSize + 1)*(cubeSize + 1) + (i%cubeSize)*(cubeSize + 1) + ((j%cubeSize) + 1)].y,
+							cubeColor[2 * (cubeSize + 1)*(cubeSize + 1) + (i%cubeSize)*(cubeSize + 1) + ((j%cubeSize) + 1)].z);
+						glVertex3f((2.0f * (i + 1) / sizeWidth) - 1.0f, (2.0f * j / sizeHeight) - 1.0f, 0.0f);
+>>>>>>> origin/master
 						glEnd();
 					}
 				}
 			}
 		}
+<<<<<<< HEAD
 		
 		label1->show();
 		label2->show();
@@ -568,6 +671,52 @@ void GL2DProjWidget::paintGL() {
 		label11->hide();
 		label12->hide();
 		label13->hide();
+=======
+
+
+
+		static char tmp_str1[25];
+		static char tmp_str2[25];
+		static char tmp_str3[25];
+		static char tmp_str4[25];
+		static char tmp_str5[25];
+		static char tmp_str6[25];
+		//glDisable(GL_DEPTH_TEST);
+		glLoadIdentity();
+		//glColor3ub(255, 255, 0);
+		glColor3ub(255, 255, 0);
+
+		//renderText(-0.4, 0.0, 0.0, "Z+");
+
+		//mark the faces
+		glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
+		glRasterPos2f(-0.22, 0.05);
+		sprintf(tmp_str1, "+Z");
+		draw_string(tmp_str1);
+
+		glRasterPos2f(0.7, 0.43);
+		sprintf(tmp_str2, "-Z");
+		draw_string(tmp_str2);
+
+		glRasterPos2f(0.2, 0.43);
+		sprintf(tmp_str3, "+X");
+		draw_string(tmp_str3);
+
+		glRasterPos2f(-0.8, 0.43);
+		sprintf(tmp_str4, "-X");
+		draw_string(tmp_str4);
+
+		glRasterPos2f(-0.63, -0.68);
+		sprintf(tmp_str5, "-Y");
+		draw_string(tmp_str5);
+
+		glRasterPos2f(-0.63, 0.66);
+		sprintf(tmp_str6, "+Y");
+		draw_string(tmp_str6);
+
+		//glEnable(GL_DEPTH_TEST);
+
+>>>>>>> origin/master
 	}
 	else {
 		if (nullptr == tex)
@@ -596,6 +745,7 @@ void GL2DProjWidget::paintGL() {
 		glProg->disable();
 		m_vao->release();
 
+<<<<<<< HEAD
 		label7->show();
 		label8->show();
 		label9->show();
@@ -612,6 +762,48 @@ void GL2DProjWidget::paintGL() {
 		label6->hide();
 
 
+=======
+		//mark the faces
+		static char tmp_str1[25];
+		static char tmp_str2[25];
+		static char tmp_str3[25];
+		static char tmp_str4[25];
+		static char tmp_str5[25];
+		static char tmp_str6[25];
+		//glDisable(GL_DEPTH_TEST);
+		glLoadIdentity();
+		//glColor3ub(255, 255, 0);
+		glColor3ub(255, 255, 0);
+
+		//renderText(-0.4, 0.0, 0.0, "Z+");
+
+		glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
+		glRasterPos2f(0.5, 0.1);
+		sprintf(tmp_str1, "+Z");
+		draw_string(tmp_str1);
+
+		glRasterPos2f(-0.5, 0.1);
+		sprintf(tmp_str2, "-Z");
+		draw_string(tmp_str2);
+
+		glRasterPos2f(0.0, 0.1);
+		sprintf(tmp_str3, "+X");
+		draw_string(tmp_str3);
+
+		glRasterPos2f(-0.95, 0.0);
+		sprintf(tmp_str4, "-X");
+		draw_string(tmp_str4);
+		glRasterPos2f(0.85, 0.0);
+		draw_string(tmp_str4);
+
+		glRasterPos2f(0.0, 0.8);
+		sprintf(tmp_str5, "-Y");
+		draw_string(tmp_str5);
+
+		glRasterPos2f(0.0, -0.9);
+		sprintf(tmp_str1, "+Y");
+		draw_string(tmp_str1);
+>>>>>>> origin/master
 	}
 }
 
@@ -638,12 +830,20 @@ void GL2DProjWidget::mousePressEvent(QMouseEvent *event)
 	if (event->button() == Qt::RightButton){
 		if (texMode == 0)
 			texMode = 1;
+<<<<<<< HEAD
 		else{
 			texMode = 0;
 		}
 	}
 
 	update();
+=======
+		else
+			texMode = 0;
+	}
+
+	QOpenGLWidget::update();
+>>>>>>> origin/master
 }
 
 void GL2DProjWidget::mouseReleaseEvent(QMouseEvent *event)
@@ -719,6 +919,10 @@ void GL2DProjWidget::SlotSetCubeTexture(GLTextureCube* v, Cube* c)
 		}
 	}
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/master
 	update();
 }
 

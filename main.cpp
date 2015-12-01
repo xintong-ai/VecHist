@@ -43,6 +43,8 @@
 
 int main(int argc, char **argv)
 {
+	//CHANGE_Huijie
+	//glutInit(&argc, argv);
 	QApplication app(argc, argv);
 
 	Window win;
