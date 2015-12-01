@@ -354,15 +354,16 @@ inline bool inside(int3 pos, int3 vmin, int3 vmax) {
 		&& pos.x < vmax.x && pos.y < vmax.y && pos.z < vmax.z;
 }
 
-std::vector<Cube*> Cubemap::GetCubes(int x, int y, int z, int nx, int ny, int nz)
+void Cubemap::GetCubes(int x, int y, int z, int nx, int ny, int nz, std::vector<Cube*> &ret)
 {
-	std::vector<Cube*> ret;
-	for (auto c : cubes) {
+	//std::vector<Cube*> ret;
+	ret.clear();
+	for (auto c : innerCubes) {
 		if (inside(c->pos, make_int3(x, y, z), make_int3(x + nx, y + ny, z + nz))){
 			ret.push_back(c);
 		}
 	}
-	return ret;
+	//return ret;
 }
 
 
@@ -547,7 +548,7 @@ void Cubemap::LoadHist(const char* filename)
 		for (int i = 0; i < size3; i++) {
 			c->data[i] = tmp[i + 4];
 		}
-		cubes.push_back(c);
+		innerCubes.push_back(c);
 	}
 	fclose(f);
 }

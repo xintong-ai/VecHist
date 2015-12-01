@@ -47,7 +47,7 @@ class Cubemap{
 	void GetBlockXYZ(float3* out, float3* in, int x, int y, int z, int nx, int ny, int nz);
 	void CountIndex(unsigned short* out, float3* in, int n);
 	std::vector<float> solAng;//
-	std::vector<Cube*> cubes;
+	std::vector<Cube*> innerCubes;
 	int mode = 0; //0: vector,  1: hist
 public:
 	Cubemap(VecReader* r);
@@ -62,7 +62,9 @@ public:
 	int GetInnerDim(int i){ return innerDim[i]; }
 	void LoadHist(const char* filename);
 	int GetMode(){ return mode; }
-	std::vector<Cube*> GetCubes(int x, int y, int z, int nx, int ny, int nz);
+	//std::vector<Cube*> GetCubes(int x, int y, int z, int nx, int ny, int nz);
+	void GetCubes(int x, int y, int z, int nx, int ny, int nz, std::vector<Cube*> &ret);
+
 };
 
 #endif //CUBEMAP_H

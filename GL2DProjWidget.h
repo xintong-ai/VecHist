@@ -3,6 +3,9 @@
 
 #include <QtWidgets>
 #include <QOpenGLWidget>
+//CHANGE_Huijie
+#include "vector_types.h"
+#include "vector_functions.h"
 
 class ShaderProgram;
 class GLTextureCube;
@@ -28,6 +31,13 @@ private:
 
 	int type = 1;
 
+	//CHANGE_Huijie
+	int cubeSize = 0;
+	float cubeMax, cubeMin;
+	int texMode = 0;
+	int lineVerNum = 0;
+	float3 *cubeColor;
+
 protected:
 
 	virtual void initializeGL() Q_DECL_OVERRIDE;
@@ -44,8 +54,10 @@ protected:
 
 	ShaderProgram *glProg;
 	ShaderProgram *glProg6Faces;
+	//CHANGE_Huijie
+	ShaderProgram *glProgGrid;
 
-public slots:
+	public slots:
 	void SlotSetCubeTexture(GLTextureCube* v, Cube* c);// { tex = v; }
 };
 #endif //GL_2D_PROJ_WIDGET_H

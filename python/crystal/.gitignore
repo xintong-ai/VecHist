@@ -1,0 +1,5 @@
+#data
+data/
+
+#checkpoints
+.ipynb_checkpoints

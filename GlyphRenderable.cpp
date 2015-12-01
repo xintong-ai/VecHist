@@ -199,9 +199,9 @@ void GlyphRenderable::UpdateData()
 	int numGlyphSide2 = dim2 / n_step;
 	//the .clear() does not trigger the destructor, 
 	//so we need to delete the pointer first
-	for (auto v : cubes) delete v;
-	cubes.clear();
 	if (0 == cubemap->GetMode()) {
+		for (auto v : cubes) delete v;
+		cubes.clear();
 		for (int i = 0; i < numGlyphSide1; i++) {
 			for (int j = 0; j < numGlyphSide2; j++) {
 				int startCoords[] = { 0, 0, 0 };
@@ -217,7 +217,19 @@ void GlyphRenderable::UpdateData()
 		}
 	}
 	else {
-		cubes = cubemap->GetCubes(0,0,0, 63,63,63);
+		cubes.clear();
+		float3 block_start, block_size;
+		(&(block_start.x))[sliceDimIdx] = sliceStart;
+		(&(block_start.x))[(sliceDimIdx + 1) % 3] = 0;
+		(&(block_start.x))[(sliceDimIdx + 2) % 3] = 0;
+		(&(block_size.x))[sliceDimIdx] = 16;
+		(&(block_size.x))[(sliceDimIdx + 1) % 3] = dim1;
+		(&(block_size.x))[(sliceDimIdx + 2) % 3] = dim2;
+		if (2 == sliceStart)
+			sliceStart = 4;
+		cubemap->GetCubes(block_start.x, block_start.y, block_start.z, block_size.x, block_size.y, block_size.z, cubes);
+		//cubemap->GetCubes(0,0,0,63,63,63, cubes);
+
 	}
 
 	for (auto v : textures) delete v;
@@ -226,6 +238,8 @@ void GlyphRenderable::UpdateData()
 	bboxes.clear();
 	int cubemap_size = cubemap->GetCubemapSize();
 	for (int i = 0; i < cubes.size(); i++) {
+		if (!cubes[i]->data)
+			continue;
 		GLTextureCube* tex = new GLTextureCube(cubemap_size);
 		tex->load(cubes[i]->data, cubemap_size);
 		textures.push_back(tex);
