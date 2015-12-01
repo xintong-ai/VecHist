@@ -23,11 +23,8 @@ public:
 	//CHANGE_Huijie
 	void drawPicking(float modelview[16], float projection[16]) override;
 
-<<<<<<< HEAD
-=======
 	void animate() override;
 
->>>>>>> origin/master
 	GlyphRenderable(Cubemap* r);
 	void SetCubemap(Cubemap* r) { cubemap = r; }
 	void SetVolumeDim(int x, int y, int z){ dataDim[0] = x; dataDim[1] = y; dataDim[2] = z; }
@@ -67,14 +64,11 @@ private:
 	//bool picking = false;
 	unsigned int framebufID = 0;
 
-<<<<<<< HEAD
-=======
 	int aniTimer = 0;
 	int aniTimerScale = 20;
 	bool animationOn = false;
 	
 
->>>>>>> origin/master
 protected:
 	void mousePress(int x, int y, int modifier) override;
 

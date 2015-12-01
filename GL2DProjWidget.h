@@ -37,7 +37,6 @@ private:
 	int texMode = 0;
 	int lineVerNum = 0;
 	float3 *cubeColor;
-<<<<<<< HEAD
 	QOpenGLVertexArrayObject* m_vao2;
 	unsigned int vbo_vert2;
 
@@ -54,8 +53,6 @@ private:
 	QLabel *label11;
 	QLabel *label12;
 	QLabel *label13;
-=======
->>>>>>> origin/master
 
 protected:
 
@@ -73,8 +70,6 @@ protected:
 
 	ShaderProgram *glProg;
 	ShaderProgram *glProg6Faces;
-	//CHANGE_Huijie
-	ShaderProgram *glProgGrid;
 
 	public slots:
 	void SlotSetCubeTexture(GLTextureCube* v, Cube* c);// { tex = v; }

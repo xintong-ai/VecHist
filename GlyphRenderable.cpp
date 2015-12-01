@@ -234,71 +234,9 @@ void GlyphRenderable::LoadShaders()
 		layout(location = 0) out vec4 FragColor;
 		uniform vec4 PickingColor;
 
-<<<<<<< HEAD
-	//CHANGE_Huijie: shaders for picking color
-	const char* pickingVS =
-		GLSL(
-		layout(location = 0) in vec3 VertexPosition;
-
-	void main()
-	{
-		gl_Position = vec4(VertexPosition, 1.0f);// ProjectionMatrix * ModelViewMatrix * vec4(posDeformed * Scale + Transform, 1.0);
-	}
-	);
-
-	const char* pickingGS =
-		GLSL(
-		#extension GL_NV_shadow_samplers_cube : enable \n
-		layout(lines_adjacency) in;
-	layout(triangle_strip, max_vertices = 4) out;
-	uniform mat4 ModelViewMatrix;
-	uniform mat4 ProjectionMatrix;
-	uniform vec3 Transform;
-	uniform float Scale;
-	uniform samplerCube env;
-	uniform int heightScale;
-
-	vec3 GetDeformed(vec3 dir, float v){
-		//we use sqrt(), because the projected area is proportional to the square of the radius.
-		return dir * (0.04 + sqrt(v) * heightScale * 0.1);
-	}
-
-	vec4 GetNDCPos(vec3 v) {
-		return ProjectionMatrix * ModelViewMatrix * vec4(GetDeformed(v, textureCube(env, v).x) * Scale + Transform, 1.0);
-	}
-
-	void main(void)
-	{
-		vec3 A = gl_in[0].gl_Position.xyz;
-		vec3 B = gl_in[1].gl_Position.xyz;
-		vec3 C = gl_in[2].gl_Position.xyz;
-		vec3 D = gl_in[3].gl_Position.xyz;
-
-		gl_Position = GetNDCPos(gl_in[0].gl_Position.xyz);
-		EmitVertex();
-		gl_Position = GetNDCPos(gl_in[1].gl_Position.xyz);
-		EmitVertex();
-		gl_Position = GetNDCPos(gl_in[3].gl_Position.xyz);
-		EmitVertex();
-		gl_Position = GetNDCPos(gl_in[2].gl_Position.xyz);
-		EmitVertex();
-		EndPrimitive();
-	}
-	);
-
-	const char* pickingFS =
-		GLSL(
-		layout(location = 0) out vec4 FragColor;
-	uniform vec4 PickingColor;
-
-	void main() {
-		FragColor = PickingColor;
-	}
-=======
 		void main() {
 			FragColor = PickingColor;
 		}
->>>>>>> origin/master
 	);
 
 	glPickingProg = new ShaderProgram();
@@ -312,14 +250,9 @@ void GlyphRenderable::LoadShaders()
 	glPickingProg->addUniform("Transform");
 	glPickingProg->addUniform("Scale");
 	glPickingProg->addUniform("env");
-<<<<<<< HEAD
-	glPickingProg->addUniform("heightScale");
-	glPickingProg->addUniform("PickingColor");
-=======
 	glPickingProg->addUniform("PickingColor");
 	glPickingProg->addUniform("mapOrder");
 	glPickingProg->addUniform("heightScale");
->>>>>>> origin/master
 }
 
 void GlyphRenderable::init()
@@ -371,10 +304,6 @@ void GlyphRenderable::UpdateData()
 				startCoords[(sliceDimIdx + 2) % 3] = j * n_step;
 
 				Cube* c = new Cube(startCoords[0], startCoords[1], startCoords[2], n_step, n_step, n_step);
-<<<<<<< HEAD
-				c->phase = 0;// rand() % 20;
-=======
->>>>>>> origin/master
 				cubemap->GenCubeMapOptimized(c->pos.x, c->pos.y, c->pos.z, c->size.x, c->size.y, c->size.z, c->data, c->cubemap_size, c->mag);
 				cubes.push_back(c);
 			}
@@ -386,11 +315,7 @@ void GlyphRenderable::UpdateData()
 		(&(block_start.x))[sliceDimIdx] = sliceStart;
 		(&(block_start.x))[(sliceDimIdx + 1) % 3] = 0;
 		(&(block_start.x))[(sliceDimIdx + 2) % 3] = 0;
-<<<<<<< HEAD
-		(&(block_size.x))[sliceDimIdx] = 16;
-=======
 		(&(block_size.x))[sliceDimIdx] = numGlyphPerDim;
->>>>>>> origin/master
 		(&(block_size.x))[(sliceDimIdx + 1) % 3] = dim1;
 		(&(block_size.x))[(sliceDimIdx + 2) % 3] = dim2;
 		if (2 == sliceStart)
@@ -399,11 +324,8 @@ void GlyphRenderable::UpdateData()
 		//cubemap->GetCubes(0,0,0,63,63,63, cubes);
 
 	}
-<<<<<<< HEAD
-=======
 	for (auto c : cubes)
 		c->phase = rand() % aniTimerScale;
->>>>>>> origin/master
 
 	for (auto v : textures) delete v;
 	textures.clear();
@@ -621,20 +543,12 @@ void GlyphRenderable::drawPicking(float modelview[16], float projection[16])
 		q_modelview = q_modelview.transposed();
 		qgl->glUniform3fv(glPickingProg->uniform("Transform"), 1, &shift.x);
 		qgl->glUniform1f(glPickingProg->uniform("Scale"), min_dim);
-<<<<<<< HEAD
-		qgl->glUniform1i(glPickingProg->uniform("heightScale"), heightScale);
-		qgl->glUniform1i(glPickingProg->uniform("env"), GLint(0));
-		qgl->glUniformMatrix4fv(glPickingProg->uniform("ModelViewMatrix"), 1, GL_FALSE, modelview);
-		qgl->glUniformMatrix4fv(glPickingProg->uniform("ProjectionMatrix"), 1, GL_FALSE, projection);
-		qgl->glUniform4f(glPickingProg->uniform("PickingColor"), r / 255.0f, g / 255.0f, b / 255.0f, 1.0f);
-=======
 		qgl->glUniform1i(glPickingProg->uniform("env"), GLint(0));
 		qgl->glUniform1i(glPickingProg->uniform("mapOrder"), mapOrder);
 		qgl->glUniformMatrix4fv(glPickingProg->uniform("ModelViewMatrix"), 1, GL_FALSE, modelview);
 		qgl->glUniformMatrix4fv(glPickingProg->uniform("ProjectionMatrix"), 1, GL_FALSE, projection);
 		qgl->glUniform4f(glPickingProg->uniform("PickingColor"), r / 255.0f, g / 255.0f, b / 255.0f, 1.0f);
 		qgl->glUniform1i(glPickingProg->uniform("heightScale"), heightScale);
->>>>>>> origin/master
 
 		tex->bind();
 		glDrawArrays(GL_LINES_ADJACENCY, 0, glyphMesh->GetNumVerts());
@@ -661,9 +575,6 @@ void GlyphRenderable::mousePress(int x, int y, int modifier)
 		return;
 	else
 		emit SigChangeTex(textures[pickID - 1], cubes[pickID - 1]);
-<<<<<<< HEAD
-}
-=======
 }
 
 void GlyphRenderable::animate()
@@ -675,4 +586,3 @@ void GlyphRenderable::SetAnimationOn(bool b) {
 	animationOn = b; 
 	actor->UpdateGL();
 }
->>>>>>> origin/master
