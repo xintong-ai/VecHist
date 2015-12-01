@@ -23,6 +23,8 @@ public:
 	//CHANGE_Huijie
 	void drawPicking(float modelview[16], float projection[16]) override;
 
+	void animate() override;
+
 	GlyphRenderable(Cubemap* r);
 	void SetCubemap(Cubemap* r) { cubemap = r; }
 	void SetVolumeDim(int x, int y, int z){ dataDim[0] = x; dataDim[1] = y; dataDim[2] = z; }
@@ -34,6 +36,7 @@ public:
 		else
 			return nullptr;
 	}
+	void SetAnimationOn(bool b);
 private:
 	std::vector<GLTextureCube*> textures;
 	std::vector <Cube*> cubes;
@@ -44,6 +47,7 @@ private:
 	int numGlyphPerDim = 1;
 	int sliceDimIdx = 0;// 0 is x, 1 is y, 2 is z
 	int heightScale = 10;
+	int mapOrder = 2;
 	GLSphere* glyphMesh;
 	ShaderProgram *glProg;
 	ShaderProgram *glPickingProg;
@@ -59,6 +63,11 @@ private:
 	//CHANGE_Huijie
 	//bool picking = false;
 	unsigned int framebufID = 0;
+
+	int aniTimer = 0;
+	int aniTimerScale = 20;
+	bool animationOn = false;
+	
 
 protected:
 	void mousePress(int x, int y, int modifier) override;

@@ -48,6 +48,7 @@ public:
 
 	virtual void cleanup(){}
 
+	virtual void animate() {}
 	virtual void mousePress(int x, int y, int modifier) {}
 	virtual void mouseRelease(int x, int y, int modifier) {}
 	virtual void mouseMove(int x, int y, int modifier) {}

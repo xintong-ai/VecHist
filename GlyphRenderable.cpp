@@ -49,6 +49,8 @@ void GlyphRenderable::LoadShaders()
 	uniform float Scale;
 	uniform samplerCube env;
 	smooth out float height;
+	uniform int mapOrder;
+	uniform int heightScale;
 
 	vec3 GetDeformed(vec3 dir, float v){
 		//we use sqrt(), because the projected area is proportional to the square of the radius.
@@ -59,10 +61,6 @@ void GlyphRenderable::LoadShaders()
 	vec4 GetNDCPos(vec3 v, float h) {
 		return ProjectionMatrix * ModelViewMatrix * vec4(GetDeformed(v, h) * Scale + Transform, 1.0);
 	}
-
-	//vec4 GetNDCPos(vec3 v) {
-	//	return ProjectionMatrix * ModelViewMatrix * vec4(GetDeformed(v, textureCube(env, v).x) * Scale + Transform, 1.0);
-	//}
 
 	void main(void)
 	{
@@ -75,16 +73,16 @@ void GlyphRenderable::LoadShaders()
 			f_norm = -f_norm;
 		tnorm = normalize(NormalMatrix * f_norm);
 		eyeCoords = ModelViewMatrix * vec4(f_norm, 1.0);
-		height = pow(textureCube(env, gl_in[0].gl_Position.xyz).x, 0.5);// 0.333);
+		height = pow(textureCube(env, gl_in[0].gl_Position.xyz).x, 1.0f / mapOrder) * heightScale * 0.1;// 0.333);
 		gl_Position = GetNDCPos(gl_in[0].gl_Position.xyz, height);
 		EmitVertex();
-		height = pow(textureCube(env, gl_in[1].gl_Position.xyz).x, 0.5);//0.333);
+		height = pow(textureCube(env, gl_in[1].gl_Position.xyz).x, 1.0f / mapOrder) * heightScale * 0.1;//0.333);
 		gl_Position = GetNDCPos(gl_in[1].gl_Position.xyz, height);
 		EmitVertex();
-		height = pow(textureCube(env, gl_in[3].gl_Position.xyz).x, 0.5);//0.333);
+		height = pow(textureCube(env, gl_in[3].gl_Position.xyz).x, 1.0f / mapOrder) * heightScale * 0.1;//0.333);
 		gl_Position = GetNDCPos(gl_in[3].gl_Position.xyz, height);
 		EmitVertex();
-		height = pow(textureCube(env, gl_in[2].gl_Position.xyz).x, 0.5);//0.333);
+		height = pow(textureCube(env, gl_in[2].gl_Position.xyz).x, 1.0f / mapOrder) * heightScale * 0.1;//0.333);
 		gl_Position = GetNDCPos(gl_in[2].gl_Position.xyz, height);
 		EmitVertex();
 		EndPrimitive();
@@ -100,13 +98,16 @@ void GlyphRenderable::LoadShaders()
 	uniform vec3 Ks; // Diffuse reflectivity
 	uniform float Shininess;
 	uniform samplerCube env;
-	uniform int heightScale;
+	uniform float aniRatio;
+	uniform int mapOrder;
+	uniform bool animationOn;
 
 	in vec4 eyeCoords;
 	in vec3 f_norm;
 	in vec3 tnorm;
 	smooth in float height;
 	layout(location = 0) out vec4 FragColor;
+
 
 	vec3 GetColor2(vec3 norm) {
 		return vec3(abs(norm.x), abs(norm.y), abs(norm.z));
@@ -130,13 +131,23 @@ void GlyphRenderable::LoadShaders()
 		vec3 unlitColor = GetColor2(f_norm);
 		FragColor = vec4(phongModel(unlitColor, eyeCoords, tnorm) /** 0.5*/, 1.0);
 		//FragColor = vec4(phongModel(unlitColor, eyeCoords, tnorm), 1.0);
-		if (height > 0.03 * heightScale && height < 0.04 * heightScale)
-			//if (height > 0.05 * heightScale && height < 0.04 * heightScale)
-			//if (height < 0.0001 || height < 0.03 * heightScale || height > 0.04 * heightScale)
-		{
-			float r = (height - 0.03 * heightScale) / (heightScale * 0.01);
-			FragColor = (1 - r) * FragColor + r * vec4(1.0f, 1.0f, 1.0f, 1.0f);
+		if (animationOn) {
+			float maxHeight = pow(1.0f, 1.0f / mapOrder);
+			float width = 0.1 * maxHeight;
+			float lowerHeight = aniRatio * maxHeight;
+			if ((height > lowerHeight) && (height < (lowerHeight + width)))
+			{
+				float r = (height - lowerHeight) / width;
+				FragColor = (1 - r) * FragColor + r * vec4(1.0f, 1.0f, 1.0f, 1.0f);
+			}
 		}
+
+		//lowerHeight = (aniRatio + 0.5) * maxHeight;
+		//if ((height > lowerHeight) && (height < (lowerHeight + width)))
+		//{
+		//	float r = (height - lowerHeight) / width;
+		//	FragColor = (1 - r) * FragColor + r * vec4(1.0f, 1.0f, 1.0f, 1.0f);
+		//}
 	}
 	);
 
@@ -158,6 +169,10 @@ void GlyphRenderable::LoadShaders()
 	glProg->addUniform("Scale");
 	glProg->addUniform("env");
 	glProg->addUniform("heightScale");
+	glProg->addUniform("aniRatio");
+	glProg->addUniform("mapOrder");
+	glProg->addUniform("animationOn");
+	
 
 	//CHANGE_Huijie: shaders for picking color
 	const char* pickingVS =
@@ -166,7 +181,7 @@ void GlyphRenderable::LoadShaders()
 
 	void main()
 	{
-		gl_Position = vec4(VertexPosition, 1.0f);// ProjectionMatrix * ModelViewMatrix * vec4(posDeformed * Scale + Transform, 1.0);
+		gl_Position = vec4(VertexPosition, 1.0f);
 	}
 	);
 
@@ -181,14 +196,14 @@ void GlyphRenderable::LoadShaders()
 	uniform float Scale;
 	uniform samplerCube env;
 	uniform int heightScale;
+	uniform int mapOrder;
 
 	vec3 GetDeformed(vec3 dir, float v){
-		//we use sqrt(), because the projected area is proportional to the square of the radius.
-		return dir * (0.04 + sqrt(v) * heightScale * 0.1);
+		return dir * (0.05 + v * 1.8);
 	}
 
-	vec4 GetNDCPos(vec3 v) {
-		return ProjectionMatrix * ModelViewMatrix * vec4(GetDeformed(v, textureCube(env, v).x) * Scale + Transform, 1.0);
+	vec4 GetNDCPos(vec3 v, float h) {
+		return ProjectionMatrix * ModelViewMatrix * vec4(GetDeformed(v, h) * Scale + Transform, 1.0);
 	}
 
 	void main(void)
@@ -197,14 +212,18 @@ void GlyphRenderable::LoadShaders()
 		vec3 B = gl_in[1].gl_Position.xyz;
 		vec3 C = gl_in[2].gl_Position.xyz;
 		vec3 D = gl_in[3].gl_Position.xyz;
-
-		gl_Position = GetNDCPos(gl_in[0].gl_Position.xyz);
+		float height;
+		height = pow(textureCube(env, gl_in[0].gl_Position.xyz).x, 1.0f / mapOrder) * heightScale * 0.1;
+		gl_Position = GetNDCPos(gl_in[0].gl_Position.xyz, height);
 		EmitVertex();
-		gl_Position = GetNDCPos(gl_in[1].gl_Position.xyz);
+		height = pow(textureCube(env, gl_in[1].gl_Position.xyz).x, 1.0f / mapOrder) * heightScale * 0.1;
+		gl_Position = GetNDCPos(gl_in[1].gl_Position.xyz, height);
 		EmitVertex();
-		gl_Position = GetNDCPos(gl_in[3].gl_Position.xyz);
+		height = pow(textureCube(env, gl_in[3].gl_Position.xyz).x, 1.0f / mapOrder) * heightScale * 0.1;
+		gl_Position = GetNDCPos(gl_in[3].gl_Position.xyz, height);
 		EmitVertex();
-		gl_Position = GetNDCPos(gl_in[2].gl_Position.xyz);
+		height = pow(textureCube(env, gl_in[2].gl_Position.xyz).x, 1.0f / mapOrder) * heightScale * 0.1;
+		gl_Position = GetNDCPos(gl_in[2].gl_Position.xyz, height);
 		EmitVertex();
 		EndPrimitive();
 	}
@@ -213,11 +232,11 @@ void GlyphRenderable::LoadShaders()
 	const char* pickingFS =
 		GLSL(
 		layout(location = 0) out vec4 FragColor;
-	uniform vec4 PickingColor;
+		uniform vec4 PickingColor;
 
-	void main() {
-		FragColor = PickingColor;
-	}
+		void main() {
+			FragColor = PickingColor;
+		}
 	);
 
 	glPickingProg = new ShaderProgram();
@@ -231,8 +250,9 @@ void GlyphRenderable::LoadShaders()
 	glPickingProg->addUniform("Transform");
 	glPickingProg->addUniform("Scale");
 	glPickingProg->addUniform("env");
-	glPickingProg->addUniform("heightScale");
 	glPickingProg->addUniform("PickingColor");
+	glPickingProg->addUniform("mapOrder");
+	glPickingProg->addUniform("heightScale");
 }
 
 void GlyphRenderable::init()
@@ -284,7 +304,6 @@ void GlyphRenderable::UpdateData()
 				startCoords[(sliceDimIdx + 2) % 3] = j * n_step;
 
 				Cube* c = new Cube(startCoords[0], startCoords[1], startCoords[2], n_step, n_step, n_step);
-				c->phase = 0;// rand() % 20;
 				cubemap->GenCubeMapOptimized(c->pos.x, c->pos.y, c->pos.z, c->size.x, c->size.y, c->size.z, c->data, c->cubemap_size, c->mag);
 				cubes.push_back(c);
 			}
@@ -296,7 +315,7 @@ void GlyphRenderable::UpdateData()
 		(&(block_start.x))[sliceDimIdx] = sliceStart;
 		(&(block_start.x))[(sliceDimIdx + 1) % 3] = 0;
 		(&(block_start.x))[(sliceDimIdx + 2) % 3] = 0;
-		(&(block_size.x))[sliceDimIdx] = 16;
+		(&(block_size.x))[sliceDimIdx] = numGlyphPerDim;
 		(&(block_size.x))[(sliceDimIdx + 1) % 3] = dim1;
 		(&(block_size.x))[(sliceDimIdx + 2) % 3] = dim2;
 		if (2 == sliceStart)
@@ -305,6 +324,8 @@ void GlyphRenderable::UpdateData()
 		//cubemap->GetCubes(0,0,0,63,63,63, cubes);
 
 	}
+	for (auto c : cubes)
+		c->phase = rand() % aniTimerScale;
 
 	for (auto v : textures) delete v;
 	textures.clear();
@@ -361,9 +382,13 @@ void GlyphRenderable::draw(float modelview[16], float projection[16])
 		qgl->glUniform1f(glProg->uniform("Shininess"), 5);
 		qgl->glUniform3fv(glProg->uniform("Transform"), 1, &shift.x);
 		qgl->glUniform1f(glProg->uniform("Scale"), min_dim);
-		qgl->glUniform1i(glProg->uniform("heightScale"), int((heightScale + c->phase) /** (c->mag)*/) % 20);
+		qgl->glUniform1i(glProg->uniform("heightScale"), heightScale);
+		qgl->glUniform1f(glProg->uniform("aniRatio"), (float)((aniTimer + c->phase) % (aniTimerScale)) / (aniTimerScale - 1));
+		
 		//qgl->glUniform1i(glProg->uniform("heightScale"), heightScale);
 		qgl->glUniform1i(glProg->uniform("env"), GLint(0));
+		qgl->glUniform1i(glProg->uniform("mapOrder"), mapOrder);
+		qgl->glUniform1i(glProg->uniform("animationOn"), animationOn);
 		qgl->glUniformMatrix4fv(glProg->uniform("ModelViewMatrix"), 1, GL_FALSE, modelview);
 		qgl->glUniformMatrix4fv(glProg->uniform("ProjectionMatrix"), 1, GL_FALSE, projection);
 		qgl->glUniformMatrix3fv(glProg->uniform("NormalMatrix"), 1, GL_FALSE, q_modelview.normalMatrix().data());
@@ -518,11 +543,12 @@ void GlyphRenderable::drawPicking(float modelview[16], float projection[16])
 		q_modelview = q_modelview.transposed();
 		qgl->glUniform3fv(glPickingProg->uniform("Transform"), 1, &shift.x);
 		qgl->glUniform1f(glPickingProg->uniform("Scale"), min_dim);
-		qgl->glUniform1i(glPickingProg->uniform("heightScale"), heightScale);
 		qgl->glUniform1i(glPickingProg->uniform("env"), GLint(0));
+		qgl->glUniform1i(glPickingProg->uniform("mapOrder"), mapOrder);
 		qgl->glUniformMatrix4fv(glPickingProg->uniform("ModelViewMatrix"), 1, GL_FALSE, modelview);
 		qgl->glUniformMatrix4fv(glPickingProg->uniform("ProjectionMatrix"), 1, GL_FALSE, projection);
 		qgl->glUniform4f(glPickingProg->uniform("PickingColor"), r / 255.0f, g / 255.0f, b / 255.0f, 1.0f);
+		qgl->glUniform1i(glPickingProg->uniform("heightScale"), heightScale);
 
 		tex->bind();
 		glDrawArrays(GL_LINES_ADJACENCY, 0, glyphMesh->GetNumVerts());
@@ -549,4 +575,14 @@ void GlyphRenderable::mousePress(int x, int y, int modifier)
 		return;
 	else
 		emit SigChangeTex(textures[pickID - 1], cubes[pickID - 1]);
+}
+
+void GlyphRenderable::animate()
+{
+	aniTimer = (aniTimer + 1) % aniTimerScale;
+}
+
+void GlyphRenderable::SetAnimationOn(bool b) { 
+	animationOn = b; 
+	actor->UpdateGL();
 }

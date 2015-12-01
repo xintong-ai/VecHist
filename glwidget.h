@@ -33,6 +33,8 @@ public:
 
 	void UpdateGL();
 
+	void animate();
+
 protected:
     virtual void initializeGL() Q_DECL_OVERRIDE;
     virtual void paintGL() Q_DECL_OVERRIDE;
