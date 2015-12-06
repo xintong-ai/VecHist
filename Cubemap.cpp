@@ -359,17 +359,17 @@ void Cubemap::GenCubeMapOptimized(int x, int y, int z, int nx, int ny, int nz, f
 	}
 }
 
-inline bool inside(int3 pos, int3 vmin, int3 vmax) {
+inline bool inside(float3 pos, float3 vmin, float3 vmax) {
 	return pos.x > vmin.x && pos.y > vmin.y && pos.z > vmin.z
 		&& pos.x < vmax.x && pos.y < vmax.y && pos.z < vmax.z;
 }
 
-void Cubemap::GetCubes(int x, int y, int z, int nx, int ny, int nz, std::vector<Cube*> &ret)
+void Cubemap::GetCubes(float x, float y, float z, float nx, float ny, float nz, std::vector<Cube*> &ret)
 {
 	//std::vector<Cube*> ret;
 	ret.clear();
 	for (auto c : innerCubes) {
-		if (inside(c->pos, make_int3(x, y, z), make_int3(x + nx, y + ny, z + nz))){
+		if (inside(c->pos, make_float3(x, y, z), make_float3(x + nx, y + ny, z + nz))){
 			ret.push_back(c);
 		}
 	}
@@ -550,7 +550,7 @@ void Cubemap::LoadHist(const char* filename)
 		x = tmp[0];
 		y = tmp[1];
 		z = tmp[2];
-		r = tmp[3] * 4;
+		r = tmp[3];
 		Cube* c = new Cube(x - r, y - r, z - r, 2 * r, 2 * r, 2 * r);
 		int size3 = cubemap_size * cubemap_size * 6;
 		c->data = new float[size3];

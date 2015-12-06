@@ -30,17 +30,17 @@ Window::Window()
 	//VecReader* vecReader = new VecReader("D:/OneDrive/data/plume/15plume3d421.vec");
 	//VecReader* vecReader = new VecReader("D:/OneDrive/data/nek/nek.d_4.vec");
 
-	VecReader* vecReader = new VecReader("E:/OSU-files/HaloWorkNew/vechist_data/15plume3d421.vec");
+	//VecReader* vecReader = new VecReader("E:/OSU-files/HaloWorkNew/vechist_data/15plume3d421.vec");
 	//VecReader* vecReader = new VecReader("D:/OneDrive/data/plume/15plume3d421-504x504x2048.vec");
 	//VecReader* vecReader = new VecReader("D:/OneDrive/data/isabel/UVWf01.vec");
-	//VecReader* vecReader = new VecReader("D:/OneDrive/data/tornado/1.vec");
+	VecReader* vecReader = new VecReader("D:/OneDrive/data/tornado/1.vec");
 
 	//Streamline* streamline = new Streamline(vecReader->GetFileName().c_str());
 	//LineRenderable* lineRenderable = new LineRenderable(streamline);
 	//openGL->AddRenderable("streamlines", lineRenderable);
 
-	//cubemap = new Cubemap(vecReader);
-	cubemap = new Cubemap("D:/Dropbox/hist/VecHist/python/crystal/data/universe_hist.bin");
+	cubemap = new Cubemap(vecReader);
+	//cubemap = new Cubemap("D:/Dropbox/hist/VecHist/python/crystal/data/universe_hist.bin");
 	//cubemap->GenCubeMap(55, 55, 300, 10, 10, 10);
 	glyphRenderable = new GlyphRenderable(cubemap);
 	int3 innerDim = cubemap->GetInnerDim();
@@ -92,9 +92,22 @@ Window::Window()
 	QLabel* heightScaleLabel = new QLabel("Glyph Height Scale:", this);
 	heightScaleSlider = new QSlider(Qt::Horizontal);
 	//numPartSlider->setFixedSize(120, 30);
-	heightScaleSlider->setRange(0, nHeightScale);
-	heightScaleSlider->setValue(nHeightScale * 0.8);
-	glyphRenderable->SetHeightScale(nHeightScale * 0.8);
+	heightScaleSlider->setRange(0, nScale);
+	heightScaleSlider->setValue(glyphRenderable->GetHeightScale());
+
+	QLabel* sizeScaleLabel = new QLabel("Glyph Size Scale:", this);
+	sizeScaleSlider = new QSlider(Qt::Horizontal);
+	//numPartSlider->setFixedSize(120, 30);
+	sizeScaleSlider->setRange(1, nScale);
+	sizeScaleSlider->setValue(glyphRenderable->GetSizeScale());
+	//glyphRenderable->SetSizeScale(5);
+
+	QLabel* expScaleLabel = new QLabel("Exponential Scale:", this);
+	QComboBox *expScaleCombo = new QComboBox();
+	expScaleCombo->addItem("1", 0);
+	expScaleCombo->addItem("2", 1);
+	expScaleCombo->addItem("3", 2);
+	expScaleCombo->setCurrentIndex(1);
 
 	QVBoxLayout *interactLayout = new QVBoxLayout;
 	QGroupBox *interactGrpBox = new QGroupBox(tr("Interactions"));
@@ -105,11 +118,17 @@ Window::Window()
 	interactLayout->addWidget(numPartSlider);
 	interactLayout->addWidget(heightScaleLabel);
 	interactLayout->addWidget(heightScaleSlider);
+	interactLayout->addWidget(expScaleLabel);
+	interactLayout->addWidget(expScaleCombo);
+	interactLayout->addWidget(sizeScaleLabel);
+	interactLayout->addWidget(sizeScaleSlider);
 	interactGrpBox->setLayout(interactLayout);
 	controlLayout->addWidget(interactGrpBox);
 	connect(sliceSlider, SIGNAL(valueChanged(int)), glyphRenderable, SLOT(SlotSliceNumChanged(int)));
 	connect(numPartSlider, SIGNAL(valueChanged(int)), glyphRenderable, SLOT(SlotNumPartChanged(int)));
 	connect(heightScaleSlider, SIGNAL(valueChanged(int)), glyphRenderable, SLOT(SlotHeightScaleChanged(int)));
+	connect(sizeScaleSlider, SIGNAL(valueChanged(int)), glyphRenderable, SLOT(SlotSizeScaleChanged(int)));
+	connect(expScaleCombo, SIGNAL(currentIndexChanged(int)), glyphRenderable, SLOT(SlotExpScaleChanged(int)));
 
 	GL2DProjWidget* gl2DProjWidget = new GL2DProjWidget(this);
 	controlLayout->addWidget(gl2DProjWidget);
@@ -119,7 +138,7 @@ Window::Window()
 
 	aTimer = new QTimer;
 	connect(aTimer,SIGNAL(timeout()),SLOT(animate()));
-	aTimer->start(20);
+	aTimer->start(33);
 	aTimer->stop();
 	
 	QCheckBox* animationCheck = new QCheckBox("Animation", this);

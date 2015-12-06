@@ -48,14 +48,15 @@ void GlyphRenderable::LoadShaders()
 	uniform vec3 Transform;
 	uniform float Scale;
 	uniform samplerCube env;
-	smooth out float height;
+	smooth out float probScaled;
 	uniform int mapOrder;
-	uniform int heightScale;
+	uniform float heightScale;
+	uniform float sizeScale;
 
-	vec3 GetDeformed(vec3 dir, float v){
+	vec3 GetDeformed(vec3 dir, float h){
 		//we use sqrt(), because the projected area is proportional to the square of the radius.
 		//return dir * (0.04 + sqrt(v) * heightScale * 0.1);
-		return dir * (0.1 + v * 1.8);
+		return dir * (1 + h * heightScale * 17 /** mapOrder */) * sizeScale * 0.1;
 	}
 
 	vec4 GetNDCPos(vec3 v, float h) {
@@ -73,17 +74,17 @@ void GlyphRenderable::LoadShaders()
 			f_norm = -f_norm;
 		tnorm = normalize(NormalMatrix * f_norm);
 		eyeCoords = ModelViewMatrix * vec4(f_norm, 1.0);
-		height = pow(textureCube(env, gl_in[0].gl_Position.xyz).x, 1.0f / mapOrder) * heightScale * 0.1;// 0.333);
-		gl_Position = GetNDCPos(gl_in[0].gl_Position.xyz, height);
+		probScaled = pow(textureCube(env, gl_in[0].gl_Position.xyz).x, 1.0f / mapOrder);
+		gl_Position = GetNDCPos(gl_in[0].gl_Position.xyz, probScaled);
 		EmitVertex();
-		height = pow(textureCube(env, gl_in[1].gl_Position.xyz).x, 1.0f / mapOrder) * heightScale * 0.1;//0.333);
-		gl_Position = GetNDCPos(gl_in[1].gl_Position.xyz, height);
+		probScaled = pow(textureCube(env, gl_in[1].gl_Position.xyz).x, 1.0f / mapOrder);
+		gl_Position = GetNDCPos(gl_in[1].gl_Position.xyz, probScaled);
 		EmitVertex();
-		height = pow(textureCube(env, gl_in[3].gl_Position.xyz).x, 1.0f / mapOrder) * heightScale * 0.1;//0.333);
-		gl_Position = GetNDCPos(gl_in[3].gl_Position.xyz, height);
+		probScaled = pow(textureCube(env, gl_in[3].gl_Position.xyz).x, 1.0f / mapOrder);
+		gl_Position = GetNDCPos(gl_in[3].gl_Position.xyz, probScaled);
 		EmitVertex();
-		height = pow(textureCube(env, gl_in[2].gl_Position.xyz).x, 1.0f / mapOrder) * heightScale * 0.1;//0.333);
-		gl_Position = GetNDCPos(gl_in[2].gl_Position.xyz, height);
+		probScaled = pow(textureCube(env, gl_in[2].gl_Position.xyz).x, 1.0f / mapOrder);
+		gl_Position = GetNDCPos(gl_in[2].gl_Position.xyz, probScaled);
 		EmitVertex();
 		EndPrimitive();
 	}
@@ -99,13 +100,13 @@ void GlyphRenderable::LoadShaders()
 	uniform float Shininess;
 	uniform samplerCube env;
 	uniform float aniRatio;
-	uniform int mapOrder;
+	//uniform int mapOrder;
 	uniform bool animationOn;
 
 	in vec4 eyeCoords;
 	in vec3 f_norm;
 	in vec3 tnorm;
-	smooth in float height;
+	smooth in float probScaled;
 	layout(location = 0) out vec4 FragColor;
 
 
@@ -130,24 +131,15 @@ void GlyphRenderable::LoadShaders()
 	void main() {
 		vec3 unlitColor = GetColor2(f_norm);
 		FragColor = vec4(phongModel(unlitColor, eyeCoords, tnorm) /** 0.5*/, 1.0);
-		//FragColor = vec4(phongModel(unlitColor, eyeCoords, tnorm), 1.0);
 		if (animationOn) {
-			float maxHeight = pow(1.0f, 1.0f / mapOrder);
-			float width = 0.1 * maxHeight;
-			float lowerHeight = aniRatio * maxHeight;
-			if ((height > lowerHeight) && (height < (lowerHeight + width)))
+			float width = 0.2;// *maxHeight;
+			float prob2 = probScaled * 2;
+			if ((prob2 > aniRatio) && (prob2 < (aniRatio + width)))
 			{
-				float r = (height - lowerHeight) / width;
+				float r = (prob2 - aniRatio) / width;
 				FragColor = (1 - r) * FragColor + r * vec4(1.0f, 1.0f, 1.0f, 1.0f);
 			}
 		}
-
-		//lowerHeight = (aniRatio + 0.5) * maxHeight;
-		//if ((height > lowerHeight) && (height < (lowerHeight + width)))
-		//{
-		//	float r = (height - lowerHeight) / width;
-		//	FragColor = (1 - r) * FragColor + r * vec4(1.0f, 1.0f, 1.0f, 1.0f);
-		//}
 	}
 	);
 
@@ -169,6 +161,7 @@ void GlyphRenderable::LoadShaders()
 	glProg->addUniform("Scale");
 	glProg->addUniform("env");
 	glProg->addUniform("heightScale");
+	glProg->addUniform("sizeScale");
 	glProg->addUniform("aniRatio");
 	glProg->addUniform("mapOrder");
 	glProg->addUniform("animationOn");
@@ -195,11 +188,12 @@ void GlyphRenderable::LoadShaders()
 	uniform vec3 Transform;
 	uniform float Scale;
 	uniform samplerCube env;
-	uniform int heightScale;
 	uniform int mapOrder;
+	uniform float heightScale;
+	uniform float sizeScale;
 
-	vec3 GetDeformed(vec3 dir, float v){
-		return dir * (0.1 + v * 1.8);
+	vec3 GetDeformed(vec3 dir, float h){
+		return dir * (1 + h * heightScale * 17 /** mapOrder */) * sizeScale * 0.1;
 	}
 
 	vec4 GetNDCPos(vec3 v, float h) {
@@ -212,18 +206,18 @@ void GlyphRenderable::LoadShaders()
 		vec3 B = gl_in[1].gl_Position.xyz;
 		vec3 C = gl_in[2].gl_Position.xyz;
 		vec3 D = gl_in[3].gl_Position.xyz;
-		float height;
-		height = pow(textureCube(env, gl_in[0].gl_Position.xyz).x, 1.0f / mapOrder) * heightScale * 0.1;
-		gl_Position = GetNDCPos(gl_in[0].gl_Position.xyz, height);
+		float probScaled;
+		probScaled = pow(textureCube(env, gl_in[0].gl_Position.xyz).x, 1.0f / mapOrder);
+		gl_Position = GetNDCPos(gl_in[0].gl_Position.xyz, probScaled);
 		EmitVertex();
-		height = pow(textureCube(env, gl_in[1].gl_Position.xyz).x, 1.0f / mapOrder) * heightScale * 0.1;
-		gl_Position = GetNDCPos(gl_in[1].gl_Position.xyz, height);
+		probScaled = pow(textureCube(env, gl_in[1].gl_Position.xyz).x, 1.0f / mapOrder);
+		gl_Position = GetNDCPos(gl_in[1].gl_Position.xyz, probScaled);
 		EmitVertex();
-		height = pow(textureCube(env, gl_in[3].gl_Position.xyz).x, 1.0f / mapOrder) * heightScale * 0.1;
-		gl_Position = GetNDCPos(gl_in[3].gl_Position.xyz, height);
+		probScaled = pow(textureCube(env, gl_in[3].gl_Position.xyz).x, 1.0f / mapOrder);
+		gl_Position = GetNDCPos(gl_in[3].gl_Position.xyz, probScaled);
 		EmitVertex();
-		height = pow(textureCube(env, gl_in[2].gl_Position.xyz).x, 1.0f / mapOrder) * heightScale * 0.1;
-		gl_Position = GetNDCPos(gl_in[2].gl_Position.xyz, height);
+		probScaled = pow(textureCube(env, gl_in[2].gl_Position.xyz).x, 1.0f / mapOrder);
+		gl_Position = GetNDCPos(gl_in[2].gl_Position.xyz, probScaled);
 		EmitVertex();
 		EndPrimitive();
 	}
@@ -253,6 +247,7 @@ void GlyphRenderable::LoadShaders()
 	glPickingProg->addUniform("PickingColor");
 	glPickingProg->addUniform("mapOrder");
 	glPickingProg->addUniform("heightScale");
+	glPickingProg->addUniform("sizeScale");
 }
 
 void GlyphRenderable::init()
@@ -318,11 +313,8 @@ void GlyphRenderable::UpdateData()
 		(&(block_size.x))[sliceDimIdx] = numGlyphPerDim;
 		(&(block_size.x))[(sliceDimIdx + 1) % 3] = dim1;
 		(&(block_size.x))[(sliceDimIdx + 2) % 3] = dim2;
-		if (2 == sliceStart)
-			sliceStart = 4;
 		cubemap->GetCubes(block_start.x, block_start.y, block_start.z, block_size.x, block_size.y, block_size.z, cubes);
 		//cubemap->GetCubes(0,0,0,63,63,63, cubes);
-
 	}
 	for (auto c : cubes)
 		c->phase = rand() % aniTimerScale;
@@ -382,9 +374,12 @@ void GlyphRenderable::draw(float modelview[16], float projection[16])
 		qgl->glUniform1f(glProg->uniform("Shininess"), 5);
 		qgl->glUniform3fv(glProg->uniform("Transform"), 1, &shift.x);
 		qgl->glUniform1f(glProg->uniform("Scale"), min_dim);
-		qgl->glUniform1i(glProg->uniform("heightScale"), heightScale);
-		qgl->glUniform1f(glProg->uniform("aniRatio"), (float)((aniTimer + c->phase) % (aniTimerScale)) / (aniTimerScale - 1));
-		
+		qgl->glUniform1f(glProg->uniform("heightScale"), heightScale * 0.1); ////this value varies in [0, 2], defalt is 1
+		qgl->glUniform1f(glProg->uniform("sizeScale"), sizeScale * 0.2); //this value varies in [0.2, 4], defalt is 1
+		qgl->glUniform1f(glProg->uniform("aniRatio"), (float)((aniTimer + c->phase) % (aniTimerScale)) / (aniTimerScale - 1));//aniRatio varies in [0, 1]
+		if (0 == i) {
+			std::cout << "aniRatio: " << (float)((aniTimer /*+ c->phase*/) % (aniTimerScale)) / (aniTimerScale - 1) << std::endl;
+		}
 		//qgl->glUniform1i(glProg->uniform("heightScale"), heightScale);
 		qgl->glUniform1i(glProg->uniform("env"), GLint(0));
 		qgl->glUniform1i(glProg->uniform("mapOrder"), mapOrder);
@@ -441,6 +436,19 @@ void GlyphRenderable::SlotNumPartChanged(int i)
 void GlyphRenderable::SlotHeightScaleChanged(int i)
 {
 	heightScale = i;
+	actor->UpdateGL();
+}
+
+void GlyphRenderable::SlotSizeScaleChanged(int i)
+{
+	sizeScale = i;
+	actor->UpdateGL();
+}
+
+void GlyphRenderable::SlotExpScaleChanged(int i)
+{
+	mapOrder = i + 1;
+	std::cout << "mapOrder: " << mapOrder << std::endl;
 	actor->UpdateGL();
 }
 
@@ -548,7 +556,8 @@ void GlyphRenderable::drawPicking(float modelview[16], float projection[16])
 		qgl->glUniformMatrix4fv(glPickingProg->uniform("ModelViewMatrix"), 1, GL_FALSE, modelview);
 		qgl->glUniformMatrix4fv(glPickingProg->uniform("ProjectionMatrix"), 1, GL_FALSE, projection);
 		qgl->glUniform4f(glPickingProg->uniform("PickingColor"), r / 255.0f, g / 255.0f, b / 255.0f, 1.0f);
-		qgl->glUniform1i(glPickingProg->uniform("heightScale"), heightScale);
+		qgl->glUniform1f(glPickingProg->uniform("heightScale"), heightScale * 0.1); ////this value varies in [0, 2], defalt is 1
+		qgl->glUniform1f(glPickingProg->uniform("sizeScale"), sizeScale * 0.2); //this value varies in [0.2, 4], defalt is 1
 
 		tex->bind();
 		glDrawArrays(GL_LINES_ADJACENCY, 0, glyphMesh->GetNumVerts());

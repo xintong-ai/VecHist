@@ -10,7 +10,7 @@ public:
 	BoxRenderable(int3 d);
 	//BoxRenderable(VecReader* r);
 	BoxRenderable(float x, float y, float z, float nx, float ny, float nz);
-	BoxRenderable(int3 _pos, int3 _dim);
+	BoxRenderable(float3 _pos, float3 _dim);
 
 	//void init() override;
 	//void resize(int width, int height) override;

@@ -26,7 +26,7 @@ BoxRenderable::BoxRenderable(float x, float y, float z, float nx, float ny, floa
 	dim = make_float3(nx, ny, nz);
 }
 
-BoxRenderable::BoxRenderable(int3 _pos, int3 _dim)
+BoxRenderable::BoxRenderable(float3 _pos, float3 _dim)
 {
 	pos = make_float3(_pos.x, _pos.y, _pos.z);
 	dim = make_float3(_dim.x, _dim.y, _dim.z);

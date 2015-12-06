@@ -5,8 +5,8 @@
 #include <vector>
 
 struct Cube{
-	int3 pos;
-	int3 size;
+	float3 pos;
+	float3 size;
 	float* data = nullptr;
 	int cubemap_size;
 	int phase;
@@ -20,9 +20,9 @@ struct Cube{
 	//	size = make_int3(nx, ny, nz);
 	//	data = new float[cubemap_size * cubemap_size * 6];
 	//}
-	Cube(int x, int y, int z, int nx, int ny, int nz){
-		pos = make_int3(x, y, z);
-		size = make_int3(nx, ny, nz);
+	Cube(float x, float y, float z, float nx, float ny, float nz){
+		pos = make_float3(x, y, z);
+		size = make_float3(nx, ny, nz);
 	}
 	~Cube(){
 		if (nullptr != data) {
@@ -67,8 +67,7 @@ public:
 	void LoadHist(const char* filename);
 	int GetMode(){ return mode; }
 	//std::vector<Cube*> GetCubes(int x, int y, int z, int nx, int ny, int nz);
-	void GetCubes(int x, int y, int z, int nx, int ny, int nz, std::vector<Cube*> &ret);
-
+	void GetCubes(float x, float y, float z, float nx, float ny, float nz, std::vector<Cube*> &ret);
 };
 
 #endif //CUBEMAP_H

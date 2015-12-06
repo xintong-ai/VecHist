@@ -30,6 +30,7 @@ public:
 	void SetVolumeDim(int x, int y, int z){ dataDim[0] = x; dataDim[1] = y; dataDim[2] = z; }
 	int GetSliceDimIdx(){ return sliceDimIdx; }
 	void SetHeightScale(int i) { heightScale = i; }
+	void SetSizeScale(int i) { sizeScale = i; }
 	GLTextureCube* GetCubeTexture(int i) { 
 		if (textures.size() > i)
 			return textures[i];
@@ -37,6 +38,8 @@ public:
 			return nullptr;
 	}
 	void SetAnimationOn(bool b);
+	int GetHeightScale(){ return heightScale; }
+	int GetSizeScale(){ return sizeScale; }
 private:
 	std::vector<GLTextureCube*> textures;
 	std::vector <Cube*> cubes;
@@ -47,6 +50,7 @@ private:
 	int numGlyphPerDim = 1;
 	int sliceDimIdx = 0;// 0 is x, 1 is y, 2 is z
 	int heightScale = 10;
+	int sizeScale = 5;
 	int mapOrder = 2;
 	GLSphere* glyphMesh;
 	ShaderProgram *glProg;
@@ -77,8 +81,11 @@ public slots:
 	void SlotSliceNumChanged(int i);
 	void SlotNumPartChanged(int i);
 	void SlotHeightScaleChanged(int i);
+	void SlotSizeScaleChanged(int i);
+	void SlotExpScaleChanged(int i);
 	void SlotSetSliceOrie(int i);
 	void SlotSetCubesVisible(bool visible);
+	
 
 signals:
 	void SigChangeTex(GLTextureCube* v, Cube* c);

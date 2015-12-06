@@ -27,13 +27,14 @@ private:
     GLWidget *openGL;
 	QSlider* sliceSlider;
 	QSlider* heightScaleSlider;
+	QSlider* sizeScaleSlider;
 	Cubemap* cubemap;
 	GlyphRenderable* glyphRenderable;
 	QRadioButton *radioX;
 	QRadioButton *radioY;
 	QRadioButton *radioZ;
 	QTimer *aTimer;
-	const int nHeightScale = 20;
+	const int nScale = 20;
 	//QPushButton* addLensBtn;
 	//QPushButton* addNodeBtn;
 	//QPushButton* viewBtn;
