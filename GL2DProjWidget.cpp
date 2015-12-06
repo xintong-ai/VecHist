@@ -43,7 +43,8 @@ void GL2DProjWidget::loadShaders()
 	smooth out vec2 UV;
 	void main(){
 		gl_Position = vec4(vertexPosition.x, vertexPosition.y, vertexPosition.z, 1);
-		UV = vertexPosition.xy;
+		//UV = vertexPosition.xy;
+		UV = vec2(-vertexPosition.x, -vertexPosition.y);
 	}
 	);
 
@@ -78,8 +79,13 @@ void GL2DProjWidget::loadShaders()
 			double a = norm.y / abs(norm.x);
 			double b = norm.z / abs(norm.x);
 			double d = 2.0 / (cubesize - 1);
+			double boundErra = 0.036;
+			double boundErrb = 0.04;
+			if (a + 1.0 < boundErrb && a + 1.0 > -boundErra || b + 1.0 < boundErrb && b + 1.0 > -boundErrb ||
+				a - 1.0 < boundErrb && a - 1.0 > -boundErra || b - 1.0 < boundErrb && b - 1.0 > -boundErrb)
+				color = vec3(abs(norm.x), abs(norm.y), abs(norm.z));
 			for (int i = 0; i < cubesize - 1; ++i){
-				double err = 0.02;
+				double err = 0.0;
 				double offset = 0.0;
 				if (cubesize % 2 == 1)
 					offset = d * (0.1 + abs(1.0 * (cubesize) / 2 - 1 - i)*0.03);
@@ -96,8 +102,8 @@ void GL2DProjWidget::loadShaders()
 					err = 0.015;
 					offset = 0;
 				}
-				if (a + 1.0 - (i + 0.5) * d - offset < err && a + 1.0 - (i + 0.5) * d - offset > -err ||
-					b + 1.0 - (i + 0.5) * d - offset < err && b + 1.0 - (i + 0.5) * d - offset > -err){
+				if ((a + 1.0 - (i + 0.5) * d - offset < err) && (a + 1.0 - (i + 0.5) * d - offset > -err) ||
+					(b + 1.0 - (i + 0.5) * d - offset < err) && (b + 1.0 - (i + 0.5) * d - offset > -err)){
 					color = vec3(abs(norm.x), abs(norm.y), abs(norm.z));
 					break;
 				}
@@ -107,6 +113,11 @@ void GL2DProjWidget::loadShaders()
 			double a = norm.x / abs(norm.y);
 			double b = norm.z / abs(norm.y);
 			double d = 2.0 / (cubesize - 1);
+			double boundErra = 0.036;
+			double boundErrb = 0.04;
+			if (a + 1.0 < boundErra && a + 1.0 > -boundErrb || b + 1.0 < boundErra && b + 1.0 > -boundErrb ||
+				a - 1.0 < boundErra && a - 1.0 > -boundErrb || b - 1.0 < boundErra && b - 1.0 > -boundErrb)
+				color = vec3(abs(norm.x), abs(norm.y), abs(norm.z));
 			for (int i = 0; i < cubesize - 1; ++i){
 				double err = 0.02;
 				double offset = 0.0;
@@ -125,8 +136,8 @@ void GL2DProjWidget::loadShaders()
 					err = 0.015;
 					offset = 0;
 				}
-				if (a + 1.0 - (i + 0.5) * d - offset < err && a + 1.0 - (i + 0.5) * d - offset > -err ||
-					b + 1.0 - (i + 0.5) * d - offset < err && b + 1.0 - (i + 0.5) * d - offset > -err){
+				if ((a + 1.0 - (i + 0.5) * d - offset < err) && (a + 1.0 - (i + 0.5) * d - offset > -err) ||
+					(b + 1.0 - (i + 0.5) * d - offset < err) && (b + 1.0 - (i + 0.5) * d - offset > -err)){
 					color = vec3(abs(norm.x), abs(norm.y), abs(norm.z));
 					break;
 				}
@@ -136,6 +147,11 @@ void GL2DProjWidget::loadShaders()
 			double a = norm.x / abs(norm.z);
 			double b = norm.y / abs(norm.z);
 			double d = 2.0 / (cubesize - 1);
+			double boundErra = 0.036;
+			double boundErrb = 0.04;
+			if (a + 1.0 < boundErra && a + 1.0 > -boundErra || b + 1.0 < boundErra && b + 1.0 > -boundErrb ||
+				a - 1.0 < boundErra && a - 1.0 > -boundErra || b - 1.0 < boundErra && b - 1.0 > -boundErrb)
+				color = vec3(abs(norm.x), abs(norm.y), abs(norm.z));
 			for (int i = 0; i < cubesize - 1; ++i){
 				double err = 0.02;
 				double offset = 0.0;
@@ -154,8 +170,8 @@ void GL2DProjWidget::loadShaders()
 					err = 0.015;
 					offset = 0;
 				}
-				if (a + 1.0 - (i + 0.5) * d - offset < err && a + 1.0 - (i + 0.5) * d - offset > -err ||
-					b + 1.0 - (i + 0.5) * d - offset < err && b + 1.0 - (i + 0.5) * d - offset > -err){
+				if ((a + 1.0 - (i + 0.5) * d - offset < err) && (a + 1.0 - (i + 0.5) * d - offset > -err) ||
+					(b + 1.0 - (i + 0.5) * d - offset < err) && (b + 1.0 - (i + 0.5) * d - offset > -err)){
 					color = vec3(abs(norm.x), abs(norm.y), abs(norm.z));
 					break;
 				}
@@ -335,14 +351,14 @@ void GL2DProjWidget::initializeGL()
 
 	label8->setObjectName(QStringLiteral("label8"));
 	label8->setGeometry(QRect(220, 12, 30, 30));
-	label8->setText("-Y");
+	label8->setText("+Y");
 	label8->setAlignment(Qt::AlignCenter);
 	label8->setFont(ft);
 	label8->setPalette(pa);
 
 	label9->setObjectName(QStringLiteral("label9"));
 	label9->setGeometry(QRect(100, 90, 30, 30));
-	label9->setText("-Z");
+	label9->setText("+Z");
 	label9->setAlignment(Qt::AlignCenter);
 	label9->setFont(ft);
 	label9->setPalette(pa);
@@ -356,13 +372,13 @@ void GL2DProjWidget::initializeGL()
 
 	label11->setObjectName(QStringLiteral("label11"));
 	label11->setGeometry(QRect(350, 90, 30, 30));
-	label11->setText("+Z");
+	label11->setText("-Z");
 	label11->setAlignment(Qt::AlignCenter);
 	label11->setFont(ft);
 	label11->setPalette(pa);
 
 	label12->setObjectName(QStringLiteral("label12"));
-	label12->setGeometry(QRect(10, 105, 30, 30));
+	label12->setGeometry(QRect(8, 105, 30, 30));
 	label12->setText("-X");
 	label12->setAlignment(Qt::AlignCenter);
 	label12->setFont(ft);
@@ -370,7 +386,7 @@ void GL2DProjWidget::initializeGL()
 
 	label13->setObjectName(QStringLiteral("label13"));
 	label13->setGeometry(QRect(220, 205, 30, 30));
-	label13->setText("+Y");
+	label13->setText("-Y");
 	label13->setAlignment(Qt::AlignCenter);
 	label13->setFont(ft);
 	label13->setPalette(pa);
@@ -633,12 +649,12 @@ void GL2DProjWidget::SlotSetCubeTexture(GLTextureCube* v, Cube* c)
 	}
 	for (int j = 0; j < sz; j++) {
 		for (int i = 0; i < sz; i++) {
-			img[sz * 4 * sz + i + j * 4 * sz] = c->data[sz * sz + j * sz + i];	//X- 
-			img[sz * 4 * sz + sz + i + j * 4 * sz] = c->data[4 * sz * sz + j * sz + i];	//Z+ 
-			img[sz * 4 * sz + sz * 2 + i + j * 4 * sz] = c->data[j * sz + i];	//X+ 
-			img[sz * 4 * sz + sz * 3 + i + j * 4 * sz] = c->data[5 * sz * sz + j * sz + i];	//Z-
-			img[sz * 8 * sz + sz + i + j * 4 * sz] = c->data[3 * sz * sz + j * sz + i];	//Y- 
-			img[sz + i + j * 4 * sz] = c->data[2 * sz * sz + j * sz + i];	//Y+ 
+			img[sz * 4 * sz + i + j * 4 * sz] = c->data[sz * sz + j * sz + i];	//-X
+			img[sz * 4 * sz + sz + i + j * 4 * sz] = c->data[4 * sz * sz + j * sz + i];	//+Z
+			img[sz * 4 * sz + sz * 2 + i + j * 4 * sz] = c->data[j * sz + i];	//+X
+			img[sz * 4 * sz + sz * 3 + i + j * 4 * sz] = c->data[5 * sz * sz + j * sz + i];	//-Z
+			img[sz * 8 * sz + sz + i + j * 4 * sz] = c->data[3 * sz * sz + j * sz + i];	//-Y
+			img[sz + i + j * 4 * sz] = c->data[2 * sz * sz + j * sz + i];	//+Y
 		}
 	}
 	if (nullptr == tex2d) {
