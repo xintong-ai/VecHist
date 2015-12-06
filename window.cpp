@@ -39,8 +39,8 @@ Window::Window()
 	//LineRenderable* lineRenderable = new LineRenderable(streamline);
 	//openGL->AddRenderable("streamlines", lineRenderable);
 
-	cubemap = new Cubemap(vecReader);
-	//cubemap = new Cubemap("D:/Dropbox/hist/VecHist/python/crystal/data/universe_hist.bin");
+	//cubemap = new Cubemap(vecReader);
+	cubemap = new Cubemap("D:/Dropbox/hist/VecHist/python/crystal/data/universe_hist.bin");
 	//cubemap->GenCubeMap(55, 55, 300, 10, 10, 10);
 	glyphRenderable = new GlyphRenderable(cubemap);
 	int3 innerDim = cubemap->GetInnerDim();

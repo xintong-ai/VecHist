@@ -55,7 +55,7 @@ void GlyphRenderable::LoadShaders()
 	vec3 GetDeformed(vec3 dir, float v){
 		//we use sqrt(), because the projected area is proportional to the square of the radius.
 		//return dir * (0.04 + sqrt(v) * heightScale * 0.1);
-		return dir * (0.05 + v * 1.8);
+		return dir * (0.1 + v * 1.8);
 	}
 
 	vec4 GetNDCPos(vec3 v, float h) {
@@ -199,7 +199,7 @@ void GlyphRenderable::LoadShaders()
 	uniform int mapOrder;
 
 	vec3 GetDeformed(vec3 dir, float v){
-		return dir * (0.05 + v * 1.8);
+		return dir * (0.1 + v * 1.8);
 	}
 
 	vec4 GetNDCPos(vec3 v, float h) {
