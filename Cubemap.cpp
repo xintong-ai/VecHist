@@ -291,6 +291,8 @@ void Cubemap::IndexVolumeByHist()
 		}
 		//std::cout << k << " ";
 	}
+	//the original data have no use any more, so free it
+	vecReader->FreeData();
 }
 
 

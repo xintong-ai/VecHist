@@ -174,6 +174,7 @@ public:
 	//void BuildOctree(Node *nd);
 
 	float* GetVecData(){return data;}
+	void FreeData(){ delete[]data; }
 	//float* GetVecDataXFirst(){ return (float*)data_x_first; }
 
 	//virtual vector<AbstractNode*> GetAllNode();

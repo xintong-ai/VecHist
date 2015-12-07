@@ -377,9 +377,6 @@ void GlyphRenderable::draw(float modelview[16], float projection[16])
 		qgl->glUniform1f(glProg->uniform("heightScale"), heightScale * 0.1); ////this value varies in [0, 2], defalt is 1
 		qgl->glUniform1f(glProg->uniform("sizeScale"), sizeScale * 0.2); //this value varies in [0.2, 4], defalt is 1
 		qgl->glUniform1f(glProg->uniform("aniRatio"), (float)((aniTimer + c->phase) % (aniTimerScale)) / (aniTimerScale - 1));//aniRatio varies in [0, 1]
-		if (0 == i) {
-			std::cout << "aniRatio: " << (float)((aniTimer /*+ c->phase*/) % (aniTimerScale)) / (aniTimerScale - 1) << std::endl;
-		}
 		//qgl->glUniform1i(glProg->uniform("heightScale"), heightScale);
 		qgl->glUniform1i(glProg->uniform("env"), GLint(0));
 		qgl->glUniform1i(glProg->uniform("mapOrder"), mapOrder);

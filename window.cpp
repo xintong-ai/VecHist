@@ -33,14 +33,14 @@ Window::Window()
 	//VecReader* vecReader = new VecReader("E:/OSU-files/HaloWorkNew/vechist_data/15plume3d421.vec");
 	//VecReader* vecReader = new VecReader("D:/OneDrive/data/plume/15plume3d421-504x504x2048.vec");
 	//VecReader* vecReader = new VecReader("D:/OneDrive/data/isabel/UVWf01.vec");
-	VecReader* vecReader = new VecReader("D:/OneDrive/data/tornado/1.vec");
+	//VecReader* vecReader = new VecReader("D:/OneDrive/data/tornado/1.vec");
 
 	//Streamline* streamline = new Streamline(vecReader->GetFileName().c_str());
 	//LineRenderable* lineRenderable = new LineRenderable(streamline);
 	//openGL->AddRenderable("streamlines", lineRenderable);
 
-	cubemap = new Cubemap(vecReader);
-	//cubemap = new Cubemap("D:/Dropbox/hist/VecHist/python/crystal/data/universe_hist.bin");
+	//cubemap = new Cubemap(vecReader);
+	cubemap = new Cubemap("D:/Dropbox/hist/VecHist/python/crystal/data/universe_hist.bin");
 	//cubemap->GenCubeMap(55, 55, 300, 10, 10, 10);
 	glyphRenderable = new GlyphRenderable(cubemap);
 	int3 innerDim = cubemap->GetInnerDim();
@@ -86,7 +86,7 @@ Window::Window()
 	QLabel* sliceThicknessLabel = new QLabel("Number of layers:", this);
 	QSlider* numPartSlider = new QSlider(Qt::Horizontal);
 	//numPartSlider->setFixedSize(120, 30);
-	numPartSlider->setRange(1, 20);
+	numPartSlider->setRange(1, cubemap->GetInnerDim(glyphRenderable->GetSliceDimIdx()));
 	numPartSlider->setValue(1);
 
 	QLabel* heightScaleLabel = new QLabel("Glyph Height Scale:", this);
